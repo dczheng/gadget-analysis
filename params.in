@@ -1,0 +1,10 @@
+FILE_PREFIX /mnt/ddnfs/data_users/xllian/Simulate_Radio/Gadget3_Simulation/209_209/outputs/209_209_012
+NUM_FILES 1
+OUT_FILE ./ic.hdf5
+OUT_PICTURE_PREFIX ./png/pic
+SLICE_NUM 4
+SLICE_INDEX_NUM 2
+SLICE_INDEX 1 3
+REDSHIFT 1.0
+PIC_XSIZE 100
+PIC_YSIZE 100
