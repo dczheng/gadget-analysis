@@ -98,3 +98,5 @@ void write_file( char *fn, struct io_header header, struct Particle_Struct *Part
 void plot_scalar( int pt, enum iofields blk );
 void get_dataset_name( enum iofields blk, char *buf );
 void plot_position( int pt );
+void magnetic_field_analysis();
+void density_analysis();

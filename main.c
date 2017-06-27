@@ -105,8 +105,9 @@ int main( int argc, char *argv[] ){
     read_all_data();
     //plot_scalar( 0, IO_RHO );
     //plot_scalar( 0, IO_MAG );
-    //Analysis_Magnetic_Field();
-    plot_position( 1 );
+    //magnetic_field_analysis();
+    density_analysis();
+    //plot_position( 1 );
     free_all_memory();
     free( slice_index );
 }
