@@ -57,23 +57,27 @@ void read_para() {
             if ( !strcmp( "SLICE_INDEX_NUM", name ) ) {
                 slice_index_num = atoi( data );
                 fprintf( stdout, "slice_index_num: %i\n", slice_index_num );
-                slice_index = ( int* ) malloc( sizeof( int ) * slice_index_num );
-                memset( slice_index, -1, sizeof( int ) * slice_index_num );
+                if ( slice_index_num !=0 ) {
+                    slice_index = ( int* ) malloc( sizeof( int ) * slice_index_num );
+                    memset( slice_index, -1, sizeof( int ) * slice_index_num );
+                }
             }
             if ( !strcmp( "SLICE_INDEX", name ) ) {
                 if ( -1 == slice_index_num ) {
                     fprintf( stderr, "SLICE_INDEX_NUM must appear before SLICE_INDEX!\n" );
                     end_run( 2 );
                 }
-                int i;
-                char *s;
-                s = strtok( line, " " );
-                fprintf( stdout, "slice_index: " );
-                i=0;
-                while ( s=strtok( NULL, " " ) ){
-                    slice_index[i] = atoi( s );
-                    fprintf( stdout, "%i ", slice_index[i] );
-                    i++;
+                if ( slice_index_num !=0 ) {
+                    int i;
+                    char *s;
+                    s = strtok( line, " " );
+                    fprintf( stdout, "slice_index: " );
+                    i=0;
+                    while ( s=strtok( NULL, " " ) ){
+                        slice_index[i] = atoi( s );
+                        fprintf( stdout, "%i ", slice_index[i] );
+                        i++;
+                    }
                 }
                 fprintf( stdout, "\n" );
             }
@@ -99,10 +103,10 @@ int main( int argc, char *argv[] ){
     strcpy( Para_file, argv[1] );
     read_para();
     read_all_data();
-    plot_scalar( 0, IO_RHO );
+    //plot_scalar( 0, IO_RHO );
     //plot_scalar( 0, IO_MAG );
     //Analysis_Magnetic_Field();
-    //Plot_2D_Point( 0 );
+    plot_position( 1 );
     free_all_memory();
     free( slice_index );
 }

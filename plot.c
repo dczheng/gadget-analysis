@@ -1,27 +1,28 @@
 #include "allvars.h"
-#define SLICE_NUM 6
 
-
-void generate_2D_img( char *fn_prefix, PLFLT **z, PLINT *nxy, PLFLT *xymm  ){
+void generate_2D_img( char *fn_prefix, PLFLT **z, PLINT *nxy ){
     char buf[50];
     PLFLT zmin, zmax;
     PLINT i,j;
-    sprintf( buf, "%s.svg", fn_prefix );
-    plsdev( "svg" );
+    sprintf( buf, "%s.png", fn_prefix );
+    plsdev( "png" );
     plsfnam( buf );
     sprintf( buf, "z=%.2f", redshift );
     plinit();
     plcol0( 2 );
-    plenv( 0.1, 0.9, 0.1, 0.9, 1, -1 );
+    plenv( 0.0, (PLFLT)header.BoxSize ,
+           0.0, (PLFLT)header.BoxSize ,
+           1, 0 );
     pllab( "", "", buf );
     zmin = zmax = z[0][0];
     //zmin = zmax = 0;
     for ( i=0; i<nxy[0]; i++ )
         for ( j=0; j<nxy[1]; j++ ){
-            if ( zmin==0  && z[i][j]!=0 ) zmin = zmax = z[i][j];
             zmin = ( z[i][j]<zmin ) ? z[i][j] : zmin;
             zmax = ( z[i][j]>zmax ) ? z[i][j] : zmax;
+            //fprintf( stdout, "%e\n", z[i][j] );
             /*
+            if ( zmin==0  && z[i][j]!=0 ) zmin = zmax = z[i][j];
             zmin = ( z[i][j]<zmin && z[i][j] != 0 ) ? z[i][j] : zmin;
             zmax = ( z[i][j]>zmax ) ? z[i][j] : zmax;
             */
@@ -37,13 +38,15 @@ void generate_2D_img( char *fn_prefix, PLFLT **z, PLINT *nxy, PLFLT *xymm  ){
     */
     fprintf( stdout, "zmin=%e, zmax=%e\n", zmin, zmax );
     plimage( (PLFLT_MATRIX)z, nxy[0], nxy[1],
-            0.0, 1.0, 0.0, 1.0,
+            0.0, ( PLFLT ) header.BoxSize,
+            0.0, ( PLFLT ) header.BoxSize,
             zmin, zmax,
-            0.0, 1.0, 0.0, 1.0 );
+            0.0, ( PLFLT ) header.BoxSize,
+            0.0, ( PLFLT ) header.BoxSize );
     plend();
 }
 
-int compare_for_plot_baryon_density( const void *a, const void *b ) {
+int compare_for_plot_scalar( const void *a, const void *b ) {
     float *aa, *bb;
     aa = ( float* )a;
     bb = ( float* )b;
@@ -140,7 +143,7 @@ void plot_scalar( int pt, enum iofields blk ){
                 data[ i*4+3 ] );
     }
     qsort( (void*)data, N, sizeof( float )*4,
-                &compare_for_plot_baryon_density );
+                &compare_for_plot_scalar );
     fputs( "Sorted by z: \n", stdout );
     for ( i=0; i<test_num; i++ ) {
         fprintf( stdout, "( %15.5f %15.5f %15.5f ):   %e\n",
@@ -182,16 +185,13 @@ void plot_scalar( int pt, enum iofields blk ){
                     r = ( dz - (data[ k*4+2 ] - i*dz) ) / dz;
                     //r = ( float )( z2-k ) / ( z2-z1-1 ) ;
                     //fprintf( stdout, "%f\n", r );
-                    rho[ii][jj] += ( PLFLT ) ( data[ k*4+3 ] * pow( r,1 ) );
+                    r=1;
+                    rho[ii][jj] = ( PLFLT ) ( data[ k*4+3 ] * pow( r,1 ) );
                     //r=1;
                     //rho[ii][jj] += ( PLFLT ) ( data[ k*4+3 ] * pow( r,1 ) );
                 }
                 sprintf( fn_buf, "%s_%i_%i", Out_Picture_Prefix, ( int )( i*dz ), ( int )((i+1)*dz) );
-                xymm[0] = i * dz;
-                xymm[1] = (i+1) * dz;
-                xymm[2] = i * dz;
-                xymm[4] = (i+1) * dz;
-                generate_2D_img( fn_buf, rho, nxy, xymm );
+                generate_2D_img( fn_buf, rho, nxy );
             }
         }
     }
@@ -209,81 +209,85 @@ void plot_scalar( int pt, enum iofields blk ){
     }
 }
 
-int Compare_For_Plot_2D_Point( const void *a, const void *b ){
+int compare_for_plot_position( const void *a, const void *b ){
     return ( ( (float*)b )[2] < ( ( float*)a )[2] ) ? 1 : 0;
 }
 
-void Plot_2D_Point( int pt ) {
-    PLFLT *x, *y, dz, z, nz, xmin, xmax, ymin, ymax;
-    PLINT i, j, k, num, array_len, index, flag, s;
-    PLINT slice_id[SLICE_NUM] = {
-        10,
-        20,
-        30,
-        40,
-        50
-    };
-    char buf[50];
+void plot_position( int pt ) {
+    PLFLT *x, *y, dz, xmin, xmax, ymin, ymax;
+    PLINT i, j, k, num, array_len, index, s, test_num, z1, z2, z, flag;
+    char fn_buf[50], buf[20];
     float *pos;
     fputs( sep_str, stdout );
-    fputs( "Plot 2D Point ...\n", stdout );
+    fprintf( stdout, "plot particle %i position ...\n", pt );
     pos = ( float* ) malloc( sizeof( float ) * Particle[pt].num * 3 );
     memcpy( pos, Particle[pt].pos, sizeof( float ) * Particle[pt].num *3 );
-    /*
-    for ( i=0; i<100; i++ ) {
+    test_num = 10;
+    for ( i=0; i<test_num; i++ ) {
         fprintf( stdout, "%f %f %f\n", pos[i*3+0], pos[i*3+1], pos[i*3+2] );
     }
-    */
-    fprintf( stdout, "\n" );
+    fputs( "Sorted by z: \n", stdout );
     qsort( (void*)pos, Particle[pt].num, sizeof( float )*3,
-                &Compare_For_Plot_2D_Point );
-    /*
-    for ( i=0; i<100; i++ ) {
+                &compare_for_plot_position );
+    for ( i=0; i<test_num; i++ ) {
         fprintf( stdout, "%f %f %f\n", pos[i*3+0], pos[i*3+1], pos[i*3+2] );
     }
-    */
-    nz = 1000;
-    dz = header.BoxSize / nz;
-    z = dz;
-    i = j = 0;
-    index = 0;
-    while( j<Particle[pt].num ) {
-        while( pos[j*3+2]<z  &&
-                j<Particle[pt].num ) j++;
-        index ++;
-        //fprintf( stdout, "i=%i j=%i num=%i\n", i, j, num  );
+    fprintf( stdout, "\n" );
+    dz = header.BoxSize / slice_num;
+    fprintf( stdout, "dz = %f\n", dz );
+    for ( i=0; i<slice_num; i++ ) {
         flag = 0;
-        for ( s=0; s<SLICE_NUM; s++ ) {
-            if ( index == slice_id[s] ){
+        if ( slice_index_num == 0 )
+            flag = 1;
+        else
+        for ( j=0; j<=slice_index_num; j++ )
+            if ( i == slice_index[j] ) {
                 flag = 1;
                 break;
             }
-        }
         if ( flag ) {
-            num = j-i;
-            x = ( PLFLT* ) malloc( sizeof( PLFLT ) * num );
-            y = ( PLFLT* ) malloc( sizeof( PLFLT ) * num );
-            for ( k=i; k<j; k++ ) {
-                x[k-i] = pos[k*3+0];
-                y[k-i] = pos[k*3+1];
+            fprintf( stdout, "plot slice: %i ( %.3f, %.3f )\n", i, i*dz, (i+1)*dz );
+            z1 = 0;
+            while ( pos[ z1*3+2 ] < i * dz ) z1++;
+            z2 = z1;
+            while ( pos[ z2*3+2 ] < ( i+1 )*dz && z2<Particle[pt].num ) z2++;
+            z2--;
+            fprintf( stdout, "slice_info: z1=%li, z2=%li\n", z1, z2 );
+            for ( k=z1; k<z1+test_num; k++ ) {
+                fprintf( stdout, "( %15.5f %15.5f %15.5f ):  \n",
+                        pos[ k*3+0 ], pos[ k*3+1 ], pos[ k*3+2 ] );
             }
+            for ( k=z2; k>z2-test_num; k-- ) {
+                fprintf( stdout, "( %15.5f %15.5f %15.5f ):  \n",
+                        pos[ k*3+0 ], pos[ k*3+1 ], pos[ k*3+2 ] );
+            }
+            sprintf( fn_buf, "%s_%i_%.2f_%i_%i.png", Out_Picture_Prefix, pt, redshift, ( int )( i*dz ), ( int )((i+1)*dz) );
             plsdev( "pngcairo" );
-            sprintf( buf, "%s_%i_%i.png", Out_Picture_Prefix,
-                        (int)(z-dz), (int)z);
-            plsfnam( buf );
+            plsfnam( fn_buf );
             plinit();
+            plcol0( 15 );
             xmin = 0;
             xmax = header.BoxSize;
             ymin = 0;
             ymax = header.BoxSize;
-            plenv( xmin, xmax, ymin, ymax, 0,0 );
-            plpoin( num, x, y, 1 );
+            plenv( xmin, xmax, ymin, ymax, 1, 0 );
+            sprintf( buf, "z=%.2f", redshift );
+            pllab( "", "", buf );
+            num = z2 - z1;
+            x = ( PLFLT* ) malloc( sizeof( PLFLT ) * num );
+            y = ( PLFLT* ) malloc( sizeof( PLFLT ) * num );
+            for ( k=z1; k<z2; k++ ){
+                x[k-z1] = pos[ k*3+0 ];
+                y[k-z1] = pos[ k*3+1 ];
+                //fprintf( stdout, "( %f, %f )\n", x[k-z1], y[k-z1] );
+            }
+            plcol0( 2 );
+            plssym( 0.35, 1 );
+            plsym( num, x, y, 148 );
             plend();
             free( x );
             free( y );
         }
-        i = j;
-        z += dz;
     }
     free( pos );
     fputs( sep_str, stdout );
