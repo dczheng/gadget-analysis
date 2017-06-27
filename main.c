@@ -99,7 +99,8 @@ int main( int argc, char *argv[] ){
     strcpy( Para_file, argv[1] );
     read_para();
     read_all_data();
-    plot_baryon_density();
+    plot_scalar( 0, IO_RHO );
+    //plot_scalar( 0, IO_MAG );
     //Analysis_Magnetic_Field();
     //Plot_2D_Point( 0 );
     free_all_memory();

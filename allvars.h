@@ -57,7 +57,7 @@ struct io_header{
   char names[15][2];
 };
 
-enum iofileds {
+enum iofields {
     IO_POS,
     IO_VEL,
     IO_ACCEL,
@@ -97,4 +97,5 @@ void free_all_memory();
 void write_file( char *fn, struct io_header header, struct Particle_Struct *Particle);
 void Plot_3D_Point( int pt );
 void Plot_2D_Point( int pt );
-void plot_baryon_density();
+void plot_scalar( int pt, enum iofields blk );
+void get_dataset_name( enum iofields blk, char *buf );

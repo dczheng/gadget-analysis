@@ -14,17 +14,17 @@ void generate_2D_img( char *fn_prefix, PLFLT **z, PLINT *nxy, PLFLT *xymm  ){
     plcol0( 2 );
     plenv( 0.1, 0.9, 0.1, 0.9, 1, -1 );
     pllab( "", "", buf );
-    //zmin = zmax = z[0][0];
-    zmin = zmax = 0;
+    zmin = zmax = z[0][0];
+    //zmin = zmax = 0;
     for ( i=0; i<nxy[0]; i++ )
         for ( j=0; j<nxy[1]; j++ ){
             if ( zmin==0  && z[i][j]!=0 ) zmin = zmax = z[i][j];
-            /*
             zmin = ( z[i][j]<zmin ) ? z[i][j] : zmin;
             zmax = ( z[i][j]>zmax ) ? z[i][j] : zmax;
-            */
+            /*
             zmin = ( z[i][j]<zmin && z[i][j] != 0 ) ? z[i][j] : zmin;
             zmax = ( z[i][j]>zmax ) ? z[i][j] : zmax;
+            */
         }
     /*
     for ( i=0; i<nxy[0]; i++ )
@@ -51,24 +51,86 @@ int compare_for_plot_baryon_density( const void *a, const void *b ) {
     return -1;
 }
 
-void plot_baryon_density(){
-    float *data, dz, r;
-    char fn_buf[50];
+void plot_scalar( int pt, enum iofields blk ){
+    float *data, dz, r, *p;
+    char fn_buf[50], buf[20];
     long i, N, j, z1, z2, k, test_num, ii, jj;
     PLINT nxy[2];
     PLFLT **rho, xymm[4];
+    switch ( blk ) {
+        case IO_U:
+            if ( pt != 0 ) {
+                get_dataset_name( blk, buf );
+                fprintf( stderr, "Particle %i hasn't field: \"%s\"\n", pt, buf );
+                end_run( 3 );
+            }
+            p = Particle[pt].u;
+            break;
+        case IO_RHO:
+            if ( pt != 0 ) {
+                get_dataset_name( blk, buf );
+                fprintf( stderr, "Particle %i hasn't field: \"%s\"\n", pt, buf );
+                end_run( 3 );
+            }
+            p = Particle[pt].rho;
+            break;
+        case IO_MASS:
+            p = Particle[pt].m;
+            break;
+        case IO_POT:
+            p = Particle[pt].m;
+            break;
+        case IO_ELEC:
+            if ( pt != 0 ) {
+                get_dataset_name( blk, buf );
+                fprintf( stderr, "Particle %i hasn't field: \"%s\"\n", pt, buf );
+                end_run( 3 );
+            }
+            p = Particle[pt].elec;
+            break;
+        case IO_VEL:
+            p = ( float* ) malloc( sizeof(float) * Particle[pt].num );
+            for ( i=0; i<Particle[pt].num; i++ ) {
+                p[i] = sqrt( pow( Particle[pt].vel[i*3+0], 2 ) +
+                             pow( Particle[pt].vel[i*3+1], 2 ) +
+                             pow( Particle[pt].vel[i*3+2], 2 ) );
+            }
+            break;
+        case IO_ACCEL:
+            p = ( float* ) malloc( sizeof(float) * Particle[pt].num );
+            for ( i=0; i<Particle[pt].num; i++ ) {
+                p[i] = sqrt( pow( Particle[pt].accel[i*3+0], 2 ) +
+                             pow( Particle[pt].accel[i*3+1], 2 ) +
+                             pow( Particle[pt].accel[i*3+2], 2 ) );
+            }
+            break;
+        case IO_MAG:
+            if ( pt != 0 ) {
+                get_dataset_name( blk, buf );
+                fprintf( stderr, "Particle %i hasn't field: \"%s\"\n", pt, buf );
+                end_run( 3 );
+            }
+            p = ( float* ) malloc( sizeof(float) * Particle[pt].num );
+            for ( i=0; i<Particle[pt].num; i++ ) {
+                p[i] = sqrt( pow( Particle[pt].mag[i*3+0], 2 ) +
+                             pow( Particle[pt].mag[i*3+1], 2 ) +
+                             pow( Particle[pt].mag[i*3+2], 2 ) );
+            }
+            break;
+    }
     nxy[0] = pic_xsize;
     nxy[1] = pic_ysize;
     plAlloc2dGrid( &rho, nxy[0], nxy[1] );
     N = Particle[0].num;
     fputs( sep_str, stdout );
-    fprintf( stdout, "plot baryon density ... \n" );
+    get_dataset_name( blk, buf );
+    fprintf( stdout, "plot partilcle %i field: \"%s\" ... \n", pt, buf );
     data = ( float* ) malloc( sizeof( float ) * N * 4 );
     for ( i=0; i<N; i++ ){
-        data[ i*4+0 ] = Particle[0].pos[ i*3+0 ];
-        data[ i*4+1 ] = Particle[0].pos[ i*3+1 ];
-        data[ i*4+2 ] = Particle[0].pos[ i*3+2 ];
-        data[ i*4+3 ] = Particle[0].rho[ i ];
+        data[ i*4+0 ] = Particle[pt].pos[ i*3+0 ];
+        data[ i*4+1 ] = Particle[pt].pos[ i*3+1 ];
+        data[ i*4+2 ] = Particle[pt].pos[ i*3+2 ];
+        data[ i*4+3 ] = p[ i ];
     }
     test_num = 10;
     fputs( sep_str, stdout );
@@ -94,7 +156,10 @@ void plot_baryon_density(){
                 z1 = 0;
                 while ( data[ z1*4+2 ] < i * dz ) z1++;
                 z2 = z1;
-                while ( data[ z2*4+2 ] < ( i+1 )*dz ) z2++;
+                while ( data[ z2*4+2 ] < ( i+1 )*dz && z2<Particle[pt].num ) {
+                    //fprintf( stdout, "%i: %f\n", z2, data[ z2*4+2 ] );
+                    z2++;
+                }
                 z2--;
                 fprintf( stdout, "slice_info: z1=%li, z2=%li ( %.4lf ~ %.4lf )\n",
                         z1, z2, i*dz, (i+1)*dz );
@@ -111,12 +176,15 @@ void plot_baryon_density(){
                 for ( ii=0; ii< nxy[0]; ii++ )
                     for ( jj=0; jj<nxy[1]; jj++ )
                         rho[ii][jj] = 0;
-                for ( k=z1; k<z2; k++ ) {
+                for ( k=z2; k>z1; k-- ) {
                     ii = ( PLINT )(data[ k*4+0 ] / ( header.BoxSize / nxy[0] ));
                     jj = ( PLINT )(data[ k*4+1 ] / ( header.BoxSize / nxy[1] ));
-                    r=1;
-                    r = data[ k*4+2 ] / dz;
-                    rho[ii][jj] += ( PLFLT ) ( data[ k*4+3 ] * r );
+                    r = ( dz - (data[ k*4+2 ] - i*dz) ) / dz;
+                    //r = ( float )( z2-k ) / ( z2-z1-1 ) ;
+                    //fprintf( stdout, "%f\n", r );
+                    rho[ii][jj] += ( PLFLT ) ( data[ k*4+3 ] * pow( r,1 ) );
+                    //r=1;
+                    //rho[ii][jj] += ( PLFLT ) ( data[ k*4+3 ] * pow( r,1 ) );
                 }
                 sprintf( fn_buf, "%s_%i_%i", Out_Picture_Prefix, ( int )( i*dz ), ( int )((i+1)*dz) );
                 xymm[0] = i * dz;
@@ -130,6 +198,15 @@ void plot_baryon_density(){
     plFree2dGrid( rho, nxy[0], nxy[1] );
     fputs( sep_str, stdout );
     free( data );
+    switch ( blk ) {
+        case IO_MAG:
+            if ( pt==0 ) free( p );
+            break;
+        case IO_VEL:
+        case IO_ACCEL:
+            free( p );
+            break;
+    }
 }
 
 int Compare_For_Plot_2D_Point( const void *a, const void *b ){

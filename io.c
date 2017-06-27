@@ -281,7 +281,7 @@ void write_file( char *fn, struct io_header header, struct Particle_Struct *Part
     H5Fclose( hdf5_file );
 }
 
-int get_block_nbytes( enum iofileds blk ) {
+int get_block_nbytes( enum iofields blk ) {
     int block_nbytes = 0;
     switch ( blk ) {
         case IO_POS:
@@ -304,7 +304,7 @@ int get_block_nbytes( enum iofileds blk ) {
     return block_nbytes;
 }
 
-void get_block_dims( int pt, enum iofileds blk, hsize_t *dims ) {
+void get_block_dims( int pt, enum iofields blk, hsize_t *dims ) {
     int dim2 = 0;
     switch ( blk ) {
         case IO_POS:
@@ -326,7 +326,7 @@ void get_block_dims( int pt, enum iofileds blk, hsize_t *dims ) {
     }
 }
 
-int get_dataset_name( enum iofileds blk, char *buf ) {
+void get_dataset_name( enum iofields blk, char *buf ) {
     switch ( blk ) {
         case IO_POS:
             strcpy( buf, "Coordinates" );
@@ -361,7 +361,7 @@ int get_dataset_name( enum iofileds blk, char *buf ) {
     }
 }
 
-void get_hdf5_native_type( enum iofileds blk, hid_t *hdf5_type ) {
+void get_hdf5_native_type( enum iofields blk, hid_t *hdf5_type ) {
     switch ( blk ) {
         case IO_ID:
 #ifdef LONGIDS
@@ -376,7 +376,7 @@ void get_hdf5_native_type( enum iofileds blk, hid_t *hdf5_type ) {
     }
 }
 
-void read_block( int pt, void *data, enum iofileds blk ) {
+void read_block( int pt, void *data, enum iofields blk ) {
     char buf[50], buf1[20], file_name[FILENAME_MAX];
     void *p;
     long i;
