@@ -292,3 +292,38 @@ void plot_position( int pt ) {
     free( pos );
     fputs( sep_str, stdout );
 }
+
+void plot_3d_position( int pt ) {
+    char fn_buf[50], buf[20];
+    PLFLT box[3];
+    fputs( sep_str, stdout );
+    fprintf( stdout, "plot 3d position for particle %i ...\n", pt );
+    box[0] = corner2[0] - corner1[0];
+    box[1] = corner2[1] - corner1[1];
+    box[2] = corner2[2] - corner1[2];
+    plsdev( "pngcairo" );
+    sprintf( fn_buf, "%s_%i_%.2f_%.2f_%.2f.png", Out_Picture_Prefix, pt, redshift, al, az );
+    plsfnam( fn_buf );
+    plinit();
+    pladv( 0 );
+    plcol0( 15 );
+    plvpor( 0.0, 1.0, 0.0, 1.0 );
+    plwind( -box[0] / 2.0 * sqrt( 3 ),
+            box[0] / 2.0 *  sqrt( 3 ),
+            0.0,
+            box[1]* sqrt( 3 ) );
+    /*
+    plbox( "bcnt", 0.0, 0,
+            "bcnt", 0.0, 0 );
+            */
+    plw3d(  box[0], box[1], box[2],
+            0.0, box[0],
+            0.0, box[1],
+            0.0, box[2],
+            ( PLFLT )al, ( PLFLT )az );
+    plbox3( "bnstu", "Mpc", 0.0, 0,
+            "bnstu", "Mpc", 0.0, 0,
+            "bdmstu", "Mpc", 0.0, 0 );
+    plend();
+    fputs( sep_str, stdout );
+}

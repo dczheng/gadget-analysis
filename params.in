@@ -1,4 +1,4 @@
-%FILE_PREFIX /mnt/ddnfs/data_users/xllian/Simulate_Radio/Gadget3_Simulation/707_707/outputs/707_707_011
+FILE_PREFIX /mnt/ddnfs/data_users/xllian/Simulate_Radio/Gadget3_Simulation/707_707/outputs/707_707_011
 FILE_PREFIX /mnt/ddnfs/data_users/xllian/Simulate_Radio/Gadget3_Simulation/209_209/outputs/209_209_013
 NUM_FILES 1
 OUT_FILE ./ic.hdf5
@@ -9,3 +9,7 @@ SLICE_INDEX 1 4 8 16 25
 REDSHIFT 0.0
 PIC_XSIZE 256
 PIC_YSIZE 256
+3D_AL 15.0
+3D_AZ 360
+3D_CORNER1 0.0 0.0 0.0
+3D_CORNER2 10.0 10.0 10.0

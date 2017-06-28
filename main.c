@@ -7,6 +7,8 @@ void end_run( int ierr ) {
 
 void read_para() {
     FILE *fd;
+    int i;
+    char *s;
     char line[ MAX_PARA_FILE_LINE_LEN ],
          name[ MAX_PARA_FILE_LINE_LEN ],
          data[ MAX_PARA_FILE_LINE_LEN ];
@@ -54,6 +56,42 @@ void read_para() {
                 redshift = atof( data );
                 fprintf( stdout, "reshift: %.2f\n", redshift );
             }
+            if ( !strcmp( "3D_AL", name ) ) {
+                al = atof( data );
+                fprintf( stdout, "al: %.2f\n", al );
+            }
+            if ( !strcmp( "3D_AZ", name ) ) {
+                az = atof( data );
+                fprintf( stdout, "az: %.2f\n", az );
+            }
+            if ( !strcmp( "3D_CORNER1", name ) ) {
+                s = strtok( line, " " );
+                fprintf( stdout, "corner1: " );
+                for ( i=0; i<3; i++ ) {
+                    if ( NULL == s ){
+                        fprintf( stdout, "too few parameters for corner1\n" );
+                        end_run( 2 );
+                    }
+                    s = strtok( NULL, " " );
+                    corner1[i] = atof( s );
+                    fprintf( stdout, "%.2f ", corner1[i] );
+                }
+                fprintf( stdout, "\n" );
+            }
+            if ( !strcmp( "3D_CORNER2", name ) ) {
+                s = strtok( line, " " );
+                fprintf( stdout, "corner2: " );
+                for ( i=0; i<3; i++ ) {
+                    if ( NULL == s ){
+                        fprintf( stdout, "too few parameters for corner2\n" );
+                        end_run( 2 );
+                    }
+                    s = strtok( NULL, " " );
+                    corner2[i] = atof( s );
+                    fprintf( stdout, "%.2f ", corner2[i] );
+                }
+                fprintf( stdout, "\n" );
+            }
             if ( !strcmp( "SLICE_INDEX_NUM", name ) ) {
                 slice_index_num = atoi( data );
                 fprintf( stdout, "slice_index_num: %i\n", slice_index_num );
@@ -68,8 +106,6 @@ void read_para() {
                     end_run( 2 );
                 }
                 if ( slice_index_num !=0 ) {
-                    int i;
-                    char *s;
                     s = strtok( line, " " );
                     fprintf( stdout, "slice_index: " );
                     i=0;
@@ -102,13 +138,15 @@ int main( int argc, char *argv[] ){
     init_sep_str();
     strcpy( Para_file, argv[1] );
     read_para();
-    read_all_data();
+    //read_all_data();
     //plot_scalar( 0, IO_RHO );
     //plot_scalar( 0, IO_MAG );
     //magnetic_field_analysis();
-    density_analysis();
+    //density_analysis();
     //plot_position( 1 );
-    free_all_memory();
-    free( slice_index );
+    plot_3d_position( 1 );
+    //free_all_memory();
+    if ( slice_index_num >0 )
+        free( slice_index );
 }
 

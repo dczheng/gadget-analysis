@@ -6,7 +6,7 @@ char Out_file[ FILENAME_MAX ];
 char Out_Picture_Prefix[ FILENAME_MAX ];
 char sep_str[ SEP_LEN ];
 int Num_files;
-float redshift;
+float redshift, al, az, corner1[3], corner2[3];
 
 struct Particle_Struct Particle[6];
 struct io_header header;

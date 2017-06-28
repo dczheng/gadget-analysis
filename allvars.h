@@ -82,7 +82,7 @@ extern char  Out_Picture_Prefix[ FILENAME_MAX ];
 extern char sep_str[ SEP_LEN ];
 extern int Num_files;
 extern int slice_num, slice_index_num, *slice_index, pic_xsize, pic_ysize;
-extern float redshift;
+extern float redshift, al, az, corner1[3], corner2[3];
 
 
 extern hid_t hdf5_file, hdf5_group, hdf5_dataset, hdf5_dataspace, hdf5_dataspace_in_file, hdf5_dataspace_in_memory, hdf5_type, hdf5_hdf5_type_mem, hdf5_attribute, hdf5_type;
@@ -98,5 +98,6 @@ void write_file( char *fn, struct io_header header, struct Particle_Struct *Part
 void plot_scalar( int pt, enum iofields blk );
 void get_dataset_name( enum iofields blk, char *buf );
 void plot_position( int pt );
+void plot_3d_position( int pt );
 void magnetic_field_analysis();
 void density_analysis();
