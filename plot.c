@@ -630,3 +630,125 @@ void plot_3d_scalar( int pt, enum iofields blk ) {
             break;
     }
 }
+
+
+void plot_3d_baryon() {
+    char fn_buf[50], buf[20], title_buf2[300];
+    unsigned int bit_flag, i;
+    long num, n, png_index, snum;
+    PLFLT box[3], *x, *y, *z, al_local, az_local, *sx, *sy, *sz;
+    fputs( sep_str, stdout );
+    fputs( "plot baryon ...\n", stdout );
+    box[0] = corner2[0] - corner1[0];
+    box[1] = corner2[1] - corner1[1];
+    box[2] = corner2[2] - corner1[2];
+
+    num = 0;
+    for ( i=0; i<Particle[0].num; i++ ) {
+        if ( Particle[0].pos[i*3+0] <= corner2[0] && Particle[0].pos[i*3+0] >= corner1[0] &&
+             Particle[0].pos[i*3+1] <= corner2[1] && Particle[0].pos[i*3+1] >= corner1[1] &&
+             Particle[0].pos[i*3+2] <= corner2[2] && Particle[0].pos[i*3+2] >= corner1[2] )
+            //fprintf( stdout, "%.2f %.2f %.2f\n", Particle[0].pos[i*3+0], Particle[0].pos[i*3+1], Particle[0].pos[i*3+2] );
+            num ++;
+    }
+
+    snum = 0;
+    for ( i=0; i<Particle[4].num; i++ ) {
+        if ( Particle[4].pos[i*3+0] <= corner2[0] && Particle[4].pos[i*3+0] >= corner1[0] &&
+             Particle[4].pos[i*3+1] <= corner2[1] && Particle[4].pos[i*3+1] >= corner1[1] &&
+             Particle[4].pos[i*3+2] <= corner2[2] && Particle[4].pos[i*3+2] >= corner1[2] )
+            //fprintf( stdout, "%.2f %.2f %.2f\n", Particle[4].pos[i*3+0], Particle[4].pos[i*3+1], Particle[4].pos[i*3+2] );
+            snum ++;
+    }
+
+    x = ( PLFLT* ) malloc( sizeof( PLFLT ) * num );
+    y = ( PLFLT* ) malloc( sizeof( PLFLT ) * num );
+    z = ( PLFLT* ) malloc( sizeof( PLFLT ) * num );
+    sx = ( PLFLT* ) malloc( sizeof( PLFLT ) * snum );
+    sy = ( PLFLT* ) malloc( sizeof( PLFLT ) * snum );
+    sz = ( PLFLT* ) malloc( sizeof( PLFLT ) * snum );
+
+    n = 0;
+    for ( i=0; i<Particle[0].num; i++ ) {
+        if ( Particle[0].pos[i*3+0] <= corner2[0] && Particle[0].pos[i*3+0] >= corner1[0] &&
+             Particle[0].pos[i*3+1] <= corner2[1] && Particle[0].pos[i*3+1] >= corner1[1] &&
+             Particle[0].pos[i*3+2] <= corner2[2] && Particle[0].pos[i*3+2] >= corner1[2] ){
+            x[n] = Particle[0].pos[i*3+0] - corner1[0];
+            y[n] = Particle[0].pos[i*3+1] - corner1[1];
+            z[n] = Particle[0].pos[i*3+2] - corner1[2];
+            n++;
+        }
+    }
+
+    n = 0;
+    for ( i=0; i<Particle[4].num; i++ ) {
+        if ( Particle[4].pos[i*3+0] <= corner2[0] && Particle[4].pos[i*3+0] >= corner1[0] &&
+             Particle[4].pos[i*3+1] <= corner2[1] && Particle[4].pos[i*3+1] >= corner1[1] &&
+             Particle[4].pos[i*3+2] <= corner2[2] && Particle[4].pos[i*3+2] >= corner1[2] ){
+            sx[n] = Particle[4].pos[i*3+0] - corner1[0];
+            sy[n] = Particle[4].pos[i*3+1] - corner1[1];
+            sz[n] = Particle[4].pos[i*3+2] - corner1[2];
+            n++;
+        }
+    }
+
+        fprintf( stdout, "plot gas number: %i, star num %i\n", num, snum );
+    png_index = 0;
+    for ( al_local=al[0]; al_local<=al[2]; al_local += al[1] )
+        for ( az_local=az[0]; az_local<=az[2]; az_local += az[1] ){
+            plsdev( "pngcairo" );
+            //sprintf( fn_buf, "%s_%i_%.2f_%.2f_%.2f.png", Out_Picture_Prefix, pt, redshift, al_local, az_local );
+            sprintf( fn_buf, "%s/%04i.png", Out_Picture_Prefix, png_index );
+            png_index++;
+            fprintf( stdout, "plot: al_local=%lf, az_local=%lf, file name : %s\n",
+                    al_local, az_local, fn_buf );
+            plsfnam( fn_buf );
+            plinit();
+            pladv( 0 );
+            plcol0( 15 );
+            plvpor( 0.0, 1.0, 0.0, 1.0 );
+            //sprintf( title_buf2, "%s\n%s\n%s", title_buf, y_buf, x_buf );
+            //pllab( x_buf, y_buf, title_buf );
+            plwind( -box[0] * sqrt( 3.0 ),
+                     box[0] * sqrt( 3.0 ),
+                    -box[1] * sqrt( 3.0 ),
+                     box[1] * sqrt( 3.0 ) );
+            //plwind( -box[0], box[0], -box[1], box[1] );
+            /*
+            plbox( "bcnt", 0.0, 0,
+                    "bcnt", 0.0, 0 );
+                    */
+            plw3d(  box[0], box[1], box[2],
+                    0.0, box[0],
+                    0.0, box[1],
+                    0.0, box[2],
+                    al_local, az_local );
+            plbox3( "", "", 0.0, 0,
+                    "", "", 0.0, 0,
+                    "", "", 0.0, 0 );
+            bit_flag = 1;
+            for ( i=0; i<12; i++ ){
+                bit_flag = bit_flag << 1;
+                bit_flag ++;
+            }
+            plcol0( 15 );
+            plwidth( 0.2 );
+            plot_box( bit_flag, box );
+            fputs( "plot gas ...\n", stdout );
+            plcol0( 1 );
+            plssym( 0.35, 1 );
+            plpoin3( (PLINT)num, x, y, z, 1 );
+            fputs( "plot star ...\n", stdout );
+            plcol0( 2 );
+            plssym( 0.35, 1 );
+            plpoin3( (PLINT)snum, sx, sy, sz, 1 );
+            plend();
+        }
+    free( x );
+    free( y );
+    free( z );
+    free( sx );
+    free( sy );
+    free( sz );
+    fputs( sep_str, stdout );
+}

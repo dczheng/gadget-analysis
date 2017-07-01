@@ -1,16 +1,16 @@
-FILE_PREFIX /mnt/ddnfs/data_users/xllian/Simulate_Radio/Gadget3_Simulation/test/outputs/snapshot_009
+FILE_PREFIX /mnt/ddnfs/data_users/xllian/Simulate_Radio/Gadget3_Simulation/cool_feedbak_mag_88/outputs/snapshot_054
 NUM_FILES 1
 OUT_FILE ./ic.hdf5
-OUT_PICTURE_PREFIX  ./png/
+OUT_PICTURE_PREFIX ./
 SLICE_NUM 30
 SLICE_INDEX_NUM 5
 SLICE_INDEX 1 4 8 16 25
-REDSHIFT 0.60
+REDSHIFT 0.00
 PIC_XSIZE 256
 PIC_YSIZE 256
 3D_BOX 512 512 512
 SCALAR_UNIT 1e-8
 3D_AL 30.0 1.0 30.0
-3D_AZ 0.0 5.0 360.0
+3D_AZ 360.0 5.0 360.0
 3D_CORNER1 0.0 0.0 0.0
 3D_CORNER2 20000.0 20000.0 20000.0

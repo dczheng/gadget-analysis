@@ -54,7 +54,7 @@ void show_header( struct io_header header ) {
     fputs( "header Info: \n", stdout );
     fprintf( stdout, "%-25s: ", "npart" );
     for ( i=0; i<6; i++ )
-        fprintf( stdout, "%i ", header.npart[i] );
+        fprintf( stdout, "%li ", header.npart[i] );
     fprintf( stdout, "\n" );
     fprintf( stdout, "%-25s: ", "mass" );
     for ( i=0; i<6; i++ )
@@ -413,13 +413,12 @@ void read_all_data() {
     read_header( file_name );
     show_header( header );
     for ( pt=0; pt<6; pt++ ) {
-        if ( pt>=2 ) continue;
         Particle[pt].num = header.npartTotalHighWord[pt];
         Particle[pt].num = header.npartTotal[pt] + ( Particle[pt].num<<32 );
         //fprintf( stdout, "%li\n", Particle[pt].num );
         fputs( sep_str, stdout );
-        fprintf( stdout, "Particle %i\n", pt );
-        if ( Particle[pt].num != 0 )
+        if ( Particle[pt].num != 0 ){
+            fprintf( stdout, "Particle %i\n", pt );
             for ( blk=0; blk<IO_NBLOCKS; blk++ ){
                 switch ( blk ){
                     case IO_POS:
@@ -443,7 +442,6 @@ void read_all_data() {
                         Particle[pt].accel = ( float* ) malloc( nbytes * Particle[pt].num );
                         read_block( pt, (void*)(Particle[pt].accel), blk );
                         break;
-                        /*
                     case IO_MAG:
                         if ( pt>0 ) break;
                         nbytes = get_block_nbytes( blk );
@@ -452,7 +450,6 @@ void read_all_data() {
                         Particle[pt].mag = ( float* ) malloc(  nbytes * Particle[pt].num );
                         read_block( pt, (void*)(Particle[pt].mag), blk );
                         break;
-                        */
                     case IO_MASS:
                         nbytes = get_block_nbytes( blk );
                         get_dataset_name( blk, buf );
@@ -504,6 +501,7 @@ void read_all_data() {
                         break;
                 }
             }
+        }
         fputs( sep_str, stdout );
     }
     fputs( sep_str, stdout );
@@ -516,10 +514,9 @@ void free_all_memory() {
     fputs( sep_str, stdout );
     fputs( "free all memory ...\n", stdout );
     for ( pt=0; pt<6; pt++) {
-        if ( pt>=2 ) continue;
         fputs( sep_str, stdout );
-        fprintf( stdout, "Particle %i\n", pt );
-        if ( Particle[pt].num != 0 )
+        if ( Particle[pt].num != 0 ){
+            fprintf( stdout, "Particle %i\n", pt );
             for ( blk=0; blk<IO_NBLOCKS; blk++ ){
                 switch ( blk ){
                     case IO_POS:
@@ -578,6 +575,7 @@ void free_all_memory() {
                         break;
                 }
             }
+        }
         fputs( sep_str, stdout );
     }
     fputs( sep_str, stdout );

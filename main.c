@@ -182,7 +182,8 @@ int main( int argc, char *argv[] ){
     //magnetic_field_analysis();
     //density_analysis();
     //plot_position( 1 );
-    plot_3d_position( 0 );
+    //plot_3d_position( 4 );
+    plot_3d_baryon();
     //plot_3d_scalar( 0, IO_MAG );
     free_all_memory();
     if ( slice_index_num >0 )
