@@ -7,6 +7,7 @@ void density_analysis() {
      fputs( "analyze density ...\n", stdout );
      sum = 0;
      index = 0;
+     /*
      for ( i=0; i<Particle[0].num; i++ ) {
          rho = Particle[0].rho[i] * 1.989 * 1e43 / pow( 3.08e21,3 ); //* 150000 * 3.085e21;
          fprintf( stdout, "%e\n", rho );
@@ -19,5 +20,18 @@ void density_analysis() {
         max = ( Particle[0].m[i]>max ) ? Particle[0].m[i] : max;
      }
      fprintf( stdout, "min = %lf, max = %lf\n", min, max );
+     min = 1e10;
+     max = -1;
+     for ( i=0; i<Particle[0].num; i++ ) {
+        min = ( Particle[0].rho[i]<min ) ? Particle[0].rho[i] : min;
+        max = ( Particle[0].rho[i]>max ) ? Particle[0].rho[i] : max;
+     }
+     fprintf( stdout, "min = %e, max = %e\n", min, max );
+     */
+    sum = 0;
+     for ( i=0; i<Particle[0].num; i++ ) {
+         sum += Particle[0].m[i];
+     }
+     fprintf( stdout, "m=%e\n", sum );
      fputs( sep_str, stdout );
 }

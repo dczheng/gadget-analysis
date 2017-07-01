@@ -56,13 +56,51 @@ void read_para() {
                 redshift = atof( data );
                 fprintf( stdout, "reshift: %.2f\n", redshift );
             }
+            if ( !strcmp( "SCALAR_UNIT", name ) ) {
+                scalar_unit = atof( data );
+                fprintf( stdout, "scalar_unit: %e\n", scalar_unit );
+            }
+            if ( !strcmp( "3D_BOX", name ) ) {
+                s = strtok( line, " " );
+                fprintf( stdout, "box: " );
+                for ( i=0; i<3; i++ ) {
+                    if ( NULL == s ){
+                        fprintf( stdout, "too few parameters for box\n" );
+                        end_run( 2 );
+                    }
+                    s = strtok( NULL, " " );
+                    box[i] = atoi( s );
+                    fprintf( stdout, "%i ", box[i] );
+                }
+                fprintf( stdout, "\n" );
+            }
             if ( !strcmp( "3D_AL", name ) ) {
-                al = atof( data );
-                fprintf( stdout, "al: %.2f\n", al );
+                s = strtok( line, " " );
+                fprintf( stdout, "al: " );
+                for ( i=0; i<3; i++ ) {
+                    if ( NULL == s ){
+                        fprintf( stdout, "too few parameters for al\n" );
+                        end_run( 2 );
+                    }
+                    s = strtok( NULL, " " );
+                    al[i] = atof( s );
+                    fprintf( stdout, "%.2f ", al[i] );
+                }
+                fprintf( stdout, "\n" );
             }
             if ( !strcmp( "3D_AZ", name ) ) {
-                az = atof( data );
-                fprintf( stdout, "az: %.2f\n", az );
+                s = strtok( line, " " );
+                fprintf( stdout, "az: " );
+                for ( i=0; i<3; i++ ) {
+                    if ( NULL == s ){
+                        fprintf( stdout, "too few parameters for az\n" );
+                        end_run( 2 );
+                    }
+                    s = strtok( NULL, " " );
+                    az[i] = atof( s );
+                    fprintf( stdout, "%.2f ", az[i] );
+                }
+                fprintf( stdout, "\n" );
             }
             if ( !strcmp( "3D_CORNER1", name ) ) {
                 s = strtok( line, " " );
@@ -138,14 +176,15 @@ int main( int argc, char *argv[] ){
     init_sep_str();
     strcpy( Para_file, argv[1] );
     read_para();
-    //read_all_data();
-    //plot_scalar( 0, IO_RHO );
+    read_all_data();
+    //plot_scalar( 0, IO_MAG );
     //plot_scalar( 0, IO_MAG );
     //magnetic_field_analysis();
     //density_analysis();
     //plot_position( 1 );
-    plot_3d_position( 1 );
-    //free_all_memory();
+    plot_3d_position( 0 );
+    //plot_3d_scalar( 0, IO_MAG );
+    free_all_memory();
     if ( slice_index_num >0 )
         free( slice_index );
 }

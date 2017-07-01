@@ -81,7 +81,7 @@ void plot_scalar( int pt, enum iofields blk ){
             p = Particle[pt].m;
             break;
         case IO_POT:
-            p = Particle[pt].m;
+            p = Particle[pt].pot;
             break;
         case IO_ELEC:
             if ( pt != 0 ) {
@@ -293,37 +293,340 @@ void plot_position( int pt ) {
     fputs( sep_str, stdout );
 }
 
-void plot_3d_position( int pt ) {
-    char fn_buf[50], buf[20];
-    PLFLT box[3];
+void plot_box( unsigned int bit_flag, PLFLT *box ) {
+    PLFLT x[2], y[2], z[2];
+    if ( bit_flag & 1 ){
+        x[0] = 0;
+        y[0] = 0;
+        z[0] = 0;
+        x[1] = 0;
+        y[1] = 0;
+        z[1] = box[2];
+        plline3( 2, x, y, z );
+    }
+    if ( bit_flag & 2 ){
+        x[0] = 0;
+        y[0] = box[1];
+        z[0] = 0;
+        x[1] = 0;
+        y[1] = box[1];
+        z[1] = box[2];
+        plline3( 2, x, y, z );
+    }
+    if ( bit_flag & 4 ){
+        x[0] = box[0];
+        y[0] = 0;
+        z[0] = 0;
+        x[1] = box[0];
+        y[1] = 0;
+        z[1] = box[2];
+        plline3( 2, x, y, z );
+    }
+    if ( bit_flag & 8 ){
+        x[0] = box[0];
+        y[0] = box[1];
+        z[0] = 0;
+        x[1] = box[0];
+        y[1] = box[1];
+        z[1] = box[2];
+        plline3( 2, x, y, z );
+    }
+    if ( bit_flag & 16 ){
+        x[0] = 0;
+        y[0] = 0;
+        z[0] = 0;
+        x[1] = box[0];
+        y[1] = 0;
+        z[1] = 0;
+        plline3( 2, x, y, z );
+    }
+    if ( bit_flag & 32 ){
+        x[0] = 0;
+        y[0] = 0;
+        z[0] = box[2];
+        x[1] = box[0];
+        y[1] = 0;
+        z[1] = box[2];
+        plline3( 2, x, y, z );
+    }
+    if ( bit_flag & 64 ){
+        x[0] = 0;
+        y[0] = box[1];
+        z[0] = 0;
+        x[1] = box[0];
+        y[1] = box[1];
+        z[1] = 0;
+        plline3( 2, x, y, z );
+    }
+    if ( bit_flag & 128 ){
+        x[0] = 0;
+        y[0] = box[1];
+        z[0] = box[2];
+        x[1] = box[0];
+        y[1] = box[1];
+        z[1] = box[2];
+        plline3( 2, x, y, z );
+    }
+    if ( bit_flag & 256 ){
+        x[0] = 0;
+        y[0] = 0;
+        z[0] = 0;
+        x[1] = 0;
+        y[1] = box[1];
+        z[1] = 0;
+        plline3( 2, x, y, z );
+    }
+    if ( bit_flag & 512 ){
+        x[0] = 0;
+        y[0] = 0;
+        z[0] = box[2];
+        x[1] = 0;
+        y[1] = box[1];
+        z[1] = box[2];
+        plline3( 2, x, y, z );
+    }
+    if ( bit_flag & 1024 ){
+        x[0] = box[0];
+        y[0] = 0;
+        z[0] = 0;
+        x[1] = box[0];
+        y[1] = box[1];
+        z[1] = 0;
+        plline3( 2, x, y, z );
+    }
+    if ( bit_flag & 2048 ){
+        x[0] = box[0];
+        y[0] = 0;
+        z[0] = box[2];
+        x[1] = box[0];
+        y[1] = box[1];
+        z[1] = box[2];
+        plline3( 2, x, y, z );
+    }
+}
+
+void plot_3d( long point_num, float *data, char *title_buf, char *x_buf, char *y_buf ) {
+    char fn_buf[50], buf[20], title_buf2[300];
+    unsigned int bit_flag, i;
+    long num, n, png_index;
+    PLFLT box[3], *x, *y, *z, al_local, az_local;
     fputs( sep_str, stdout );
-    fprintf( stdout, "plot 3d position for particle %i ...\n", pt );
     box[0] = corner2[0] - corner1[0];
     box[1] = corner2[1] - corner1[1];
     box[2] = corner2[2] - corner1[2];
-    plsdev( "pngcairo" );
-    sprintf( fn_buf, "%s_%i_%.2f_%.2f_%.2f.png", Out_Picture_Prefix, pt, redshift, al, az );
-    plsfnam( fn_buf );
-    plinit();
-    pladv( 0 );
-    plcol0( 15 );
-    plvpor( 0.0, 1.0, 0.0, 1.0 );
-    plwind( -box[0] / 2.0 * sqrt( 3 ),
-            box[0] / 2.0 *  sqrt( 3 ),
-            0.0,
-            box[1]* sqrt( 3 ) );
-    /*
-    plbox( "bcnt", 0.0, 0,
-            "bcnt", 0.0, 0 );
-            */
-    plw3d(  box[0], box[1], box[2],
-            0.0, box[0],
-            0.0, box[1],
-            0.0, box[2],
-            ( PLFLT )al, ( PLFLT )az );
-    plbox3( "bnstu", "Mpc", 0.0, 0,
-            "bnstu", "Mpc", 0.0, 0,
-            "bdmstu", "Mpc", 0.0, 0 );
-    plend();
+    num = 0;
+    for ( i=0; i<point_num; i++ ) {
+        if ( data[i*3+0] <= corner2[0] && data[i*3+0] >= corner1[0] &&
+             data[i*3+1] <= corner2[1] && data[i*3+1] >= corner1[1] &&
+             data[i*3+2] <= corner2[2] && data[i*3+2] >= corner1[2] )
+            //fprintf( stdout, "%.2f %.2f %.2f\n", data[i*3+0], data[i*3+1], data[i*3+2] );
+            num ++;
+    }
+    x = ( PLFLT* ) malloc( sizeof( PLFLT ) * num );
+    y = ( PLFLT* ) malloc( sizeof( PLFLT ) * num );
+    z = ( PLFLT* ) malloc( sizeof( PLFLT ) * num );
+    n = 0;
+    for ( i=0; i<point_num; i++ ) {
+        if ( data[i*3+0] <= corner2[0] && data[i*3+0] >= corner1[0] &&
+             data[i*3+1] <= corner2[1] && data[i*3+1] >= corner1[1] &&
+             data[i*3+2] <= corner2[2] && data[i*3+2] >= corner1[2] ){
+            x[n] = data[i*3+0] - corner1[0];
+            y[n] = data[i*3+1] - corner1[1];
+            z[n] = data[i*3+2] - corner1[2];
+            n++;
+        }
+    }
+    fprintf( stdout, "point number: %i\n", num );
+    png_index = 0;
+    for ( al_local=al[0]; al_local<=al[2]; al_local += al[1] )
+        for ( az_local=az[0]; az_local<=az[2]; az_local += az[1] ){
+            plsdev( "pngcairo" );
+            //sprintf( fn_buf, "%s_%i_%.2f_%.2f_%.2f.png", Out_Picture_Prefix, pt, redshift, al_local, az_local );
+            sprintf( fn_buf, "%s/%04i.png", Out_Picture_Prefix, png_index );
+            png_index++;
+            fprintf( stdout, "plot: al_local=%lf, az_local=%lf, file name : %s\n",
+                    al_local, az_local, fn_buf );
+            plsfnam( fn_buf );
+            plinit();
+            pladv( 0 );
+            plcol0( 15 );
+            plvpor( 0.0, 1.0, 0.0, 1.0 );
+            //sprintf( title_buf2, "%s\n%s\n%s", title_buf, y_buf, x_buf );
+            //pllab( x_buf, y_buf, title_buf );
+            plwind( -box[0] * sqrt( 3.0 ),
+                     box[0] * sqrt( 3.0 ),
+                    -box[1] * sqrt( 3.0 ),
+                     box[1] * sqrt( 3.0 ) );
+            //plwind( -box[0], box[0], -box[1], box[1] );
+            /*
+            plbox( "bcnt", 0.0, 0,
+                    "bcnt", 0.0, 0 );
+                    */
+            plw3d(  box[0], box[1], box[2],
+                    0.0, box[0],
+                    0.0, box[1],
+                    0.0, box[2],
+                    al_local, az_local );
+            plbox3( "", "", 0.0, 0,
+                    "", "", 0.0, 0,
+                    "", "", 0.0, 0 );
+            bit_flag = 1;
+            for ( i=0; i<12; i++ ){
+                bit_flag = bit_flag << 1;
+                bit_flag ++;
+            }
+            plcol0( 15 );
+            plwidth( 0.2 );
+            plot_box( bit_flag, box );
+            plcol0( 2 );
+            plssym( 0.35, 1 );
+            plpoin3( (PLINT)num, x, y, z, 1 );
+            plend();
+        }
+    free( x );
+    free( y );
+    free( z );
     fputs( sep_str, stdout );
+}
+
+void plot_3d_position( int pt ) {
+    char title_buf[20], x_buf[100], y_buf[100];
+    sprintf( title_buf, "z=%.2f", redshift );
+    sprintf( x_buf, "boxsize(%.0f, %.0f, %.0f(Mpc))",
+            (corner2[0]-corner1[0]) / 1000.0,
+            (corner2[1]-corner1[1]) / 1000.0,
+            (corner2[2]-corner1[2]) / 1000.0 );
+    sprintf( y_buf, "" );
+    plot_3d( Particle[pt].num, Particle[pt].pos, title_buf, x_buf, y_buf);
+}
+
+void plot_3d_scalar( int pt, enum iofields blk ) {
+    float *density, *data, *p;
+    char buf[20], title_buf[20], x_buf[100], y_buf[100];
+    int i,j,k, tmp;
+    long ii, num, n;
+    srand( time(0) );
+    density = ( float* ) malloc( sizeof( float ) * box[0] * box[1] * box[2] );
+    memset( density, 0, sizeof(float) * box[0] * box[1] * box[2] );
+    sprintf( title_buf, "z=%.2f", redshift );
+    sprintf( x_buf, "boxsize(%.0f, %.0f, %.0f(Mpc))",
+            (corner2[0]-corner1[0]) / 1000.0,
+            (corner2[1]-corner1[1]) / 1000.0,
+            (corner2[2]-corner1[2]) / 1000.0 );
+    switch ( blk ) {
+        case IO_U:
+            get_dataset_name( blk, buf );
+            if ( pt != 0 ) {
+                get_dataset_name( blk, buf );
+                fprintf( stderr, "Particle %i hasn't field: \"%s\"\n", pt, buf );
+                end_run( 3 );
+            }
+            sprintf( y_buf, "%s(>%.2e)", buf, scalar_unit );
+            p = Particle[pt].u;
+            break;
+        case IO_RHO:
+            get_dataset_name( blk, buf );
+            if ( pt != 0 ) {
+                get_dataset_name( blk, buf );
+                fprintf( stderr, "Particle %i hasn't field: \"%s\"\n", pt, buf );
+                end_run( 3 );
+            }
+            sprintf( y_buf, "%s(>%.2e)", buf, scalar_unit );
+            p = Particle[pt].rho;
+            break;
+        case IO_MASS:
+            get_dataset_name( blk, buf );
+            p = Particle[pt].m;
+            sprintf( y_buf, "%s(>%.2e)", buf, scalar_unit );
+            break;
+        case IO_POT:
+            get_dataset_name( blk, buf );
+            p = Particle[pt].pot;
+            sprintf( y_buf, "%s(>%.2e)", buf, scalar_unit );
+            break;
+        case IO_ELEC:
+            get_dataset_name( blk, buf );
+            if ( pt != 0 ) {
+                fprintf( stderr, "Particle %i hasn't field: \"%s\"\n", pt, buf );
+                end_run( 3 );
+            }
+            sprintf( y_buf, "%s(>%.2e)", buf, scalar_unit );
+            p = Particle[pt].elec;
+            break;
+        case IO_VEL:
+            get_dataset_name( blk, buf );
+            p = ( float* ) malloc( sizeof(float) * Particle[pt].num );
+            for ( i=0; i<Particle[pt].num; i++ ) {
+                p[i] = sqrt( pow( Particle[pt].vel[i*3+0], 2 ) +
+                             pow( Particle[pt].vel[i*3+1], 2 ) +
+                             pow( Particle[pt].vel[i*3+2], 2 ) );
+            }
+            sprintf( y_buf, "%s(>%.2e)", buf, scalar_unit );
+            break;
+        case IO_ACCEL:
+            get_dataset_name( blk, buf );
+            p = ( float* ) malloc( sizeof(float) * Particle[pt].num );
+            for ( i=0; i<Particle[pt].num; i++ ) {
+                p[i] = sqrt( pow( Particle[pt].accel[i*3+0], 2 ) +
+                             pow( Particle[pt].accel[i*3+1], 2 ) +
+                             pow( Particle[pt].accel[i*3+2], 2 ) );
+            }
+            sprintf( y_buf, "%s(>%.2e)", buf, scalar_unit );
+            break;
+        case IO_MAG:
+            get_dataset_name( blk, buf );
+            if ( pt != 0 ) {
+                fprintf( stderr, "Particle %i hasn't field: \"%s\"\n", pt, buf );
+                end_run( 3 );
+            }
+            p = ( float* ) malloc( sizeof(float) * Particle[pt].num );
+            for ( i=0; i<Particle[pt].num; i++ ) {
+                p[i] = sqrt( pow( Particle[pt].mag[i*3+0], 2 ) +
+                             pow( Particle[pt].mag[i*3+1], 2 ) +
+                             pow( Particle[pt].mag[i*3+2], 2 ) );
+            }
+            sprintf( y_buf, "%s(>%.2e)", buf, scalar_unit );
+            break;
+    }
+    for ( ii=0; ii<Particle[pt].num; ii++ ) {
+        i = ( long ) ( Particle[pt].pos[ii*3+0] / ( header.BoxSize / box[0] ) );
+        j = ( long ) ( Particle[pt].pos[ii*3+1] / ( header.BoxSize / box[1] ) );
+        k = ( long ) ( Particle[pt].pos[ii*3+2] / ( header.BoxSize / box[2] ) );
+        density[ i*box[1]*box[2] + j*box[2] + k ] += ( p[ii] / scalar_unit );
+    }
+    num = 0;
+    for ( i=0; i<box[0]; i++ )
+        for ( j=0; j<box[1]; j++ )
+            for ( k=0; k<box[2]; k++ ){
+                num += (int)( density[ i*box[1]*box[2] + j*box[2] + k ] );
+            }
+    fprintf( stdout, "num = %li\n", num );
+    data = ( float* ) malloc( sizeof( float ) * num * 3 );
+    n = 0;
+    for ( i=0; i<box[0]; i++ )
+        for ( j=0; j<box[1]; j++ )
+            for ( k=0; k<box[2]; k++ ) {
+                tmp = ( int )(density[ i*box[1]*box[2] + j*box[2] + k ]);
+                for ( ii=0; ii<tmp; ii++ ){
+                    data[n*3+0] = rand()/(float)(RAND_MAX) * ( header.BoxSize / box[0] ) +
+                                                            i * ( header.BoxSize / box[0] );
+                    data[n*3+1] = rand()/(float)(RAND_MAX) * ( header.BoxSize / box[1] ) +
+                                                            j * ( header.BoxSize / box[1] );
+                    data[n*3+2] = rand()/(float)(RAND_MAX) * ( header.BoxSize / box[2] ) +
+                                                            k * ( header.BoxSize / box[2] );
+                    n++;
+                }
+            }
+    plot_3d( num, data, title_buf, x_buf, y_buf );
+    free( data );
+    free( density );
+    switch ( blk ) {
+        case IO_MAG:
+            if ( pt==0 ) free( p );
+            break;
+        case IO_VEL:
+        case IO_ACCEL:
+            free( p );
+            break;
+    }
 }

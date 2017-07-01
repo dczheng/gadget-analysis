@@ -443,6 +443,7 @@ void read_all_data() {
                         Particle[pt].accel = ( float* ) malloc( nbytes * Particle[pt].num );
                         read_block( pt, (void*)(Particle[pt].accel), blk );
                         break;
+                        /*
                     case IO_MAG:
                         if ( pt>0 ) break;
                         nbytes = get_block_nbytes( blk );
@@ -451,6 +452,7 @@ void read_all_data() {
                         Particle[pt].mag = ( float* ) malloc(  nbytes * Particle[pt].num );
                         read_block( pt, (void*)(Particle[pt].mag), blk );
                         break;
+                        */
                     case IO_MASS:
                         nbytes = get_block_nbytes( blk );
                         get_dataset_name( blk, buf );
@@ -505,7 +507,7 @@ void read_all_data() {
         fputs( sep_str, stdout );
     }
     fputs( sep_str, stdout );
-    test();
+    //test();
 }
 
 void free_all_memory() {
