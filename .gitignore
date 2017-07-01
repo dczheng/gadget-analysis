@@ -2,3 +2,9 @@
 *png/
 *.o
 *.zip
+*pos*
+*test*
+*.txt
+*log
+nohup.out
+*.dat
