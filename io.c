@@ -1,4 +1,5 @@
 #include "allvars.h"
+//#define GROUP_DEBUG
 
 void test();
 
@@ -207,7 +208,7 @@ void write_header( char *fn, struct io_header header ) {
     H5Fclose( hdf5_file );
 }
 
-void write_file( char *fn, struct io_header header, struct Particle_Struct *Particle ) {
+void write_file( char *fn, struct io_header header, struct particle_struct *Particle ) {
     write_header( fn, header );
     long pt;
     char buf[50];
@@ -387,9 +388,9 @@ void read_block( int pt, void *data, enum iofields blk ) {
     sprintf( buf, "PartType%i/%s", pt, buf1 );
     p = data;
     for ( i=0; i<header.num_files; i++ ) {
-        sprintf( file_name, "%s.%i.hdf5", file_Prefix, i );
+        sprintf( file_name, "%s.%i.hdf5", file_prefix, i );
         if ( header.num_files < 2 )
-            sprintf( file_name, "%s.hdf5", file_Prefix);
+            sprintf( file_name, "%s.hdf5", file_prefix);
         read_header( file_name );
         hdf5_file = H5Fopen( file_name , H5F_ACC_RDWR, H5P_DEFAULT );
         hdf5_dataset = H5Dopen( hdf5_file, buf );
@@ -407,9 +408,9 @@ void read_all_data() {
     char file_name[FILENAME_MAX], buf[20];
     fputs( sep_str, stdout );
     fputs( "read all data ...\n", stdout );
-    sprintf( file_name, "%s.%i.hdf5", file_Prefix, 0 );
+    sprintf( file_name, "%s.%i.hdf5", file_prefix, 0 );
     if ( Num_files < 2 )
-        sprintf( file_name, "%s.hdf5", file_Prefix );
+        sprintf( file_name, "%s.hdf5", file_prefix );
     read_header( file_name );
     show_header( header );
     for ( pt=0; pt<6; pt++ ) {
@@ -692,3 +693,269 @@ void test() {
     fputs( sep_str, stdout );
 }
 
+//****************group io function**********************//
+void read_group() {
+    DIR *dir;
+    FILE *fd;
+    char group_file[ FILENAME_MAX ];
+    struct dirent *ptr;
+    struct group_struct *group_local;
+    int Ngroups, Ntask, Nids, malloc_flag;
+    int group_offset, *len, i, j, *offset, *lentype;
+    long long TotNids;
+    float *mass, *cm, *vel, *veldisp, *tensor, *rmax, *vmax, *pos;
+    float *angmom;
+    fputs( sep_str, stdout );
+    fputs( "read group ...\n", stdout );
+    if ( !( dir=opendir( group_dir ) ) ){
+        fprintf( stderr, "Failed to open group_dir %s\n", group_dir );
+        end_run( 4 );
+    }
+    malloc_flag = 1;
+    group_offset = 0;
+    while (  ptr=readdir( dir ) ) {
+        if ( ( strcmp( ptr->d_name, "." ) == 0 ) ||
+             ( strcmp( ptr->d_name, ".." ) == 0 ) )
+            continue;
+        sprintf( group_file, "%s%s", group_dir, ptr->d_name );
+#ifdef GROUP_DEBUG
+        fprintf( stdout, "%s\n", ptr->d_name );
+#endif
+        if ( !( fd = fopen( group_file, "r" ) ) ) {
+            fprintf( stderr, "Failed to open group file :%s\n", group_file );
+            end_run( 5 );
+        }
+        fread( &Ngroups, sizeof( int ), 1, fd );
+        fread( &TotNgroups, sizeof( int ), 1, fd );
+        fread( &Nids, sizeof( int ), 1, fd );
+        fread( &TotNids, sizeof( long long ), 1, fd );
+        fread( &Ntask, sizeof( int ), 1, fd );
+        if ( malloc_flag ) {
+            group = ( struct group_struct * ) malloc(
+                    sizeof( struct group_struct ) *
+                    TotNgroups );
+            malloc_flag = 0;
+        }
+        if ( Ngroups ){
+#ifdef GROUP_DEBUG
+            fprintf( stdout, "Ngroups = %i, TotNgroups = %i,"
+                    " Nids = %i, TotNids = %lli, Ntask = %i\n",
+                    Ngroups, TotNgroups, Nids, TotNids, Ntask );
+#endif
+
+            len = ( int * ) malloc( sizeof( int ) * Ngroups );
+            if ( ! fread( len, sizeof( int ), Ngroups, fd ) ) {
+                fprintf( stderr, "Failed to read Len array!\n" );
+                end_run( 6 );
+            }
+            for ( i=0; i<Ngroups; i++ ) {
+#ifdef GROUP_DEBUG
+                fprintf( stdout, "len[%i] = %i\n", i, len[i] );
+#endif
+                group[i+group_offset].Len = len[i];
+            }
+            free( len );
+
+            offset = ( int * ) malloc( sizeof( int ) * Ngroups );
+            if ( !fread( offset, sizeof( int ), Ngroups, fd ) ){
+                fprintf( stderr, "Failed to read Offset array!\n" );
+                end_run( 6 );
+            }
+            for ( i=0; i<Ngroups; i++ ) {
+#ifdef GROUP_DEBUG
+                fprintf( stdout, "offset[%i] = %i\n", i, offset[i] );
+#endif
+                group[i+group_offset].Offset = offset[i];
+            }
+            free( offset );
+
+            mass = ( float* ) malloc( sizeof( float ) * Ngroups );
+            if ( !fread( mass, sizeof( float ), Ngroups, fd ) ) {
+                fprintf( stderr, "Failed to read Mass array!\n" );
+                end_run( 6 );
+            }
+            for ( i=0; i<Ngroups; i++ ) {
+#ifdef GROUP_DEBUG
+                fprintf( stdout, "mass[%i] = %f\n", i, mass[i] );
+#endif
+                group[i+group_offset].Mass = mass[i];
+            }
+            free( mass );
+
+            cm = ( float* ) malloc( sizeof( float ) * Ngroups * 3 );
+            if ( !fread( cm, sizeof( float )*3, Ngroups, fd ) ){
+                fprintf( stderr, "Failed to read CM array.\n" );
+                end_run( 6 );
+            }
+            for ( i=0; i<Ngroups; i++ ){
+                for ( j=0; j<3; j++ ) {
+#ifdef GROUP_DEBUG
+                    fprintf( stdout, "cm[%i][%i]=%-15.7f ", i, j, cm[ i*3+j ] );
+#endif
+                    group[ i+group_offset ].CM[j] = cm[ i*3+j ];
+                }
+#ifdef GROUP_DEBUG
+                fprintf( stdout, "\n" );
+#endif
+            }
+            free( cm );
+
+            vel = ( float* ) malloc( sizeof( float ) * Ngroups * 3 );
+            if ( !fread( vel, sizeof( float )*3, Ngroups, fd ) ) {
+                fprintf( stderr, "Failed to read Vel array.\n" );
+                end_run( 6 );
+            }
+            for ( i=0; i<Ngroups; i++ ){
+                for ( j=0; j<3; j++ ) {
+#ifdef GROUP_DEBUG
+                    fprintf( stdout, "vel[%i][%i]=%-15.7f ", i, j, vel[ i*3+j ] );
+#endif
+                    group[ i+group_offset ].Vel[j] = vel[ i*3+j ];
+                }
+#ifdef GROUP_DEBUG
+                fprintf( stdout, "\n" );
+#endif
+            }
+            free( vel );
+
+#ifndef FOF_EXTENDED_PROPERTIES
+            lentype = ( int * ) malloc( sizeof( int ) * Ngroups * 6 );
+            if ( !fread( lentype, sizeof( int )*6, Ngroups, fd ) ) {
+                fprintf( stderr, "Failed to read LenType array.\n" );
+                end_run( 6 );
+            }
+            for ( i=0; i<Ngroups; i++ ) {
+                for ( j=0; j<6; j++ ) {
+#ifdef GROUP_DEBUG
+                    fprintf( stdout, "lentype[%i][%i]=%i ", i, j, lentype[ i*6+j ] );
+#endif
+                    group[ i+group_offset ].LenType[j] = len[ i*6+j ];
+                }
+#ifdef GROUP_DEBUG
+                fprintf( stdout, "\n" );
+#endif
+            }
+            free( lentype );
+#endif
+#ifdef FOF_EXTENDED_PROPERTIES
+            veldisp = ( float* ) malloc( sizeof( float ) * Ngroups );
+            if ( !fread( veldisp, sizeof( float ), Ngroups ) ) {
+                fprintf( stderr, "Failed to read VelDisp array.\n" );
+                end_run( 6 );
+            }
+            for ( i=0; i<Ngroups; i++ ) {
+#ifdef GROUP_DEBUG
+                fprintf( stdout, "veldisp[i]=%f\n", i, veldisp[i] );
+#endif
+                group[ i+group_offset ].VelDisp = veldisp[i];
+            }
+            free( veldisp );
+
+            tensor = ( float* ) malloc( sizeof( float ) * Ngroups * 9 );
+            if( !fread( tensor, sizeof( float ) * 9, Ngroups, fd ) ) {
+                fprintf( stderr, "Failed to read ToI array.\n" );
+                end_run( 6 );
+            }
+            for ( i=0; i<Ngroups; i++ ) {
+                for( j=0; j<9; j++ ) {
+                    group[ i+group_offset ].ToI[j] = tensor[ i*9+j ];
+                }
+            }
+            free( tensor );
+
+            rmax = ( float* ) malloc( sizeof( float ) * Ngroups );
+            if( !fread( rmax, sizeof( float ), Ngroups, fd) ) {
+                fprintf( stderr, "Failed to read Rmax array.\n" );
+                end_run( 6 );
+            }
+            for ( i=0; i<Ngroups; i++ ){
+                group[ i+group_offset ].Rmax = rmax[i];
+            }
+            free( rmax );
+
+            vmax = ( float* ) malloc( sizeof( float ) * Ngroups );
+            if( !fread( vmax, sizeof( float ), Ngroups, fd) ) {
+                fprintf( stderr, "Failed to read Vmax array.\n" );
+                end_run( 6 );
+            }
+            for ( i=0; i<Ngroups; i++ ){
+                group[ i+group_offset ].Vmax = vmax[i];
+            }
+            free( rmax );
+
+            pos = ( float* ) malloc( sizeof( float ) * Ngroups * 3 );
+            if( !fread( pos, sizeof( float )*3, Ngroups, fd) ) {
+                fprintf( stderr, "Failed to read Pos array.\n" );
+                end_run( 6 );
+            }
+            for ( i=0; i<Ngroups; i++ ){
+                for ( j=0; j<3; j++ ) {
+                    group[ i+group_offset ].Pos[j] = pos[ i*3+j ];
+                }
+            }
+            free( pos );
+
+            angmom = ( float* ) malloc( sizeof( float ) * Ngroups * 3 );
+            if( !fread( angmom, sizeof( float )*3, Ngroups, fd) ) {
+                fprintf( stderr, "Failed to read AngMom array.\n" );
+                end_run( 6 );
+            }
+            for ( i=0; i<Ngroups; i++ ){
+                for ( j=0; j<3; j++ ) {
+                    group[ i+group_offset ].AngMom[j] = angmom[ i*3+j ];
+                }
+            }
+            free( angmom );
+#endif
+#ifdef SFR
+            mass = ( float* ) malloc( sizeof( float ) * Ngroups );
+            if( !fread( mass, sizeof( float ), Ngroups, fd ) ) {
+                fprintf( stderr, "Failed to read Sfr array.\n" );
+                end_run( 6 );
+            }
+            for ( i=0; i<Ngroups; i++ ) {
+#ifdef GROUP_DEBUG
+                fprintf( stdout, "sfr_mass[%i]=%f\n", i, mass[i] );
+#endif
+                group[ i+group_offset ].Sfr = mass[i];
+            }
+            free( mass );
+#endif
+#ifdef BLACK_HOLES
+            mass = ( float* ) malloc( sizeof( float ) * Ngroups );
+            if( !fread( mass, sizeof( float ), Ngroups, fd ) ) {
+                fprintf( stderr, "Failed to read BH_Mass array.\n" );
+                end_run( 6 );
+            }
+            for ( i=0; i<Ngroups; i++ ) {
+#ifdef GROUP_DEBUG
+                fprintf( stdout, "bh_mass[%i]=%f\n", i, mass[i] );
+#endif
+                group[ i+group_offset ].BH_Mass = mass[i];
+            }
+            free( mass );
+
+            mass = ( float* ) malloc( sizeof( float ) * Ngroups );
+            if ( !fread( mass, sizeof( float ), Ngroups, fd ) ) {
+                fprintf( stderr, "Failed to read BH_Mdot array.\n" );
+                end_run( 6 );
+            }
+            for ( i=0; i<Ngroups; i++ ) {
+#ifdef GROUP_DEBUG
+                fprintf( stdout, "bh_mdot_mass[%i]\n", i, mass[i] );
+#endif
+                group[ i+group_offset ].BH_Mdot = mass[i];
+            }
+            free( mass );
+#endif
+            group_offset += Ngroups;
+        }
+        fclose( fd );
+    }
+    closedir( dir );
+    fputs( sep_str, stdout );
+}
+
+void free_group() {
+    free( group );
+}

@@ -1,15 +1,17 @@
 #include "allvars.h"
 
-char Para_file[ FILENAME_MAX ];
-char file_Prefix[ FILENAME_MAX ];
-char Out_file[ FILENAME_MAX ];
-char Out_Picture_Prefix[ FILENAME_MAX ];
+char para_file[ FILENAME_MAX ];
+char file_prefix[ FILENAME_MAX ];
+char out_file[ FILENAME_MAX ];
+char out_picture_prefix[ FILENAME_MAX ];
 char sep_str[ SEP_LEN ];
-int Num_files, box[3];
+char group_dir[ FILENAME_MAX ];
+int Num_files, box[3], TotNgroups;
 float redshift, al[3], az[3], corner1[3], corner2[3], scalar_unit;
 
-struct Particle_Struct Particle[6];
+struct particle_struct Particle[6];
 struct io_header header;
+struct group_struct *group;
 
 
 hid_t hdf5_file, hdf5_group, hdf5_dataset, hdf5_dataspace_in_file, hdf5_dataspace_in_memory, hdf5_dataspace, hdf5_type, hdf5_hdf5_type_mem, hdf5_attribute;

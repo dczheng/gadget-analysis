@@ -14,9 +14,9 @@ void read_para() {
          data[ MAX_PARA_FILE_LINE_LEN ];
     fputs( sep_str, stdout );
     fprintf( stdout, "read Parameter... \n" );
-    fd = fopen( Para_file, "r" );
+    fd = fopen( para_file, "r" );
     if ( NULL == fd ) {
-        fprintf( stderr, "Faile to Open Parameter file %s\n", Para_file );
+        fprintf( stderr, "Faile to Open Parameter file %s\n", para_file );
         end_run( 1 );
     }
     fgets( line, MAX_PARA_FILE_LINE_LEN, fd );
@@ -25,16 +25,22 @@ void read_para() {
         if ( ( line[0] != '#' ) && ( line[0] != '\n' ) ) {
             sscanf( line, "%s %s", name, data );
             if ( !strcmp( "FILE_PREFIX", name ) ) {
-                strcpy( file_Prefix, data );
-                fprintf( stdout, "file_Prefix: %s\n",  file_Prefix );
+                strcpy( file_prefix, data );
+                fprintf( stdout, "file_prefix: %s\n",  file_prefix );
+            }
+            if ( !strcmp( "GROUP_DIR", name ) ) {
+                strcpy( group_dir, data );
+                if ( group_dir[strlen(group_dir)-1] != '/' )
+                    strcat( group_dir, "/" );
+                fprintf( stdout, "group_dir: %s\n",  group_dir );
             }
             if ( !strcmp( "OUT_FILE", name ) ) {
-                strcpy( Out_file, data );
-                fprintf( stdout, "Out_file: %s\n",  Out_file );
+                strcpy( out_file, data );
+                fprintf( stdout, "out_file: %s\n",  out_file );
             }
             if ( !strcmp( "OUT_PICTURE_PREFIX", name ) ) {
-                strcpy( Out_Picture_Prefix, data );
-                fprintf( stdout, "Out_Picture_Prefix: %s\n",  Out_Picture_Prefix );
+                strcpy( out_picture_prefix, data );
+                fprintf( stdout, "out_picture_prefix: %s\n",  out_picture_prefix );
             }
             if ( !strcmp( "NUM_FILES", name ) ) {
                 Num_files = atoi( data );
@@ -174,17 +180,19 @@ int main( int argc, char *argv[] ){
         end_run( 1 );
     }
     init_sep_str();
-    strcpy( Para_file, argv[1] );
+    strcpy( para_file, argv[1] );
     read_para();
     read_all_data();
+    //group_analysis();
     //plot_scalar( 0, IO_MAG );
     //plot_scalar( 0, IO_MAG );
-    //magnetic_field_analysis();
+    magnetic_field_analysis();
     //density_analysis();
     //plot_position( 1 );
     //plot_3d_position( 4 );
-    plot_3d_baryon();
-    //plot_3d_scalar( 0, IO_MAG );
+    //plot_3d_multi( 3 );
+    //plot_3d_scalar( 0, IO_ELEC );
+    //velocity_analysis();
     free_all_memory();
     if ( slice_index_num >0 )
         free( slice_index );

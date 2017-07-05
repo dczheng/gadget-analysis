@@ -190,7 +190,7 @@ void plot_scalar( int pt, enum iofields blk ){
                     //r=1;
                     //rho[ii][jj] += ( PLFLT ) ( data[ k*4+3 ] * pow( r,1 ) );
                 }
-                sprintf( fn_buf, "%s_%i_%i", Out_Picture_Prefix, ( int )( i*dz ), ( int )((i+1)*dz) );
+                sprintf( fn_buf, "%s_%i_%i", out_picture_prefix, ( int )( i*dz ), ( int )((i+1)*dz) );
                 generate_2D_img( fn_buf, rho, nxy );
             }
         }
@@ -261,7 +261,7 @@ void plot_position( int pt ) {
                 fprintf( stdout, "( %15.5f %15.5f %15.5f ):  \n",
                         pos[ k*3+0 ], pos[ k*3+1 ], pos[ k*3+2 ] );
             }
-            sprintf( fn_buf, "%s_%i_%.2f_%i_%i.png", Out_Picture_Prefix, pt, redshift, ( int )( i*dz ), ( int )((i+1)*dz) );
+            sprintf( fn_buf, "%s_%i_%.2f_%i_%i.png", out_picture_prefix, pt, redshift, ( int )( i*dz ), ( int )((i+1)*dz) );
             plsdev( "pngcairo" );
             plsfnam( fn_buf );
             plinit();
@@ -425,6 +425,10 @@ void plot_3d( long point_num, float *data, char *title_buf, char *x_buf, char *y
     x = ( PLFLT* ) malloc( sizeof( PLFLT ) * num );
     y = ( PLFLT* ) malloc( sizeof( PLFLT ) * num );
     z = ( PLFLT* ) malloc( sizeof( PLFLT ) * num );
+    if ( NULL == x || NULL == y || NULL == z ) {
+        fprintf( stdout, "Failed to allocate x y z array!\n" );
+        end_run( 7 );
+    }
     n = 0;
     for ( i=0; i<point_num; i++ ) {
         if ( data[i*3+0] <= corner2[0] && data[i*3+0] >= corner1[0] &&
@@ -438,11 +442,11 @@ void plot_3d( long point_num, float *data, char *title_buf, char *x_buf, char *y
     }
     fprintf( stdout, "point number: %i\n", num );
     png_index = 0;
-    for ( al_local=al[0]; al_local<=al[2]; al_local += al[1] )
+    for ( al_local=al[0]; al_local<=al[2]; al_local += al[1] ){
         for ( az_local=az[0]; az_local<=az[2]; az_local += az[1] ){
             plsdev( "pngcairo" );
-            //sprintf( fn_buf, "%s_%i_%.2f_%.2f_%.2f.png", Out_Picture_Prefix, pt, redshift, al_local, az_local );
-            sprintf( fn_buf, "%s/%04i.png", Out_Picture_Prefix, png_index );
+            //sprintf( fn_buf, "%s_%i_%.2f_%.2f_%.2f.png", out_picture_prefix, pt, redshift, al_local, az_local );
+            sprintf( fn_buf, "%s/%04i.png", out_picture_prefix, png_index );
             png_index++;
             fprintf( stdout, "plot: al_local=%lf, az_local=%lf, file name : %s\n",
                     al_local, az_local, fn_buf );
@@ -458,10 +462,6 @@ void plot_3d( long point_num, float *data, char *title_buf, char *x_buf, char *y
                     -box[1] * sqrt( 3.0 ),
                      box[1] * sqrt( 3.0 ) );
             //plwind( -box[0], box[0], -box[1], box[1] );
-            /*
-            plbox( "bcnt", 0.0, 0,
-                    "bcnt", 0.0, 0 );
-                    */
             plw3d(  box[0], box[1], box[2],
                     0.0, box[0],
                     0.0, box[1],
@@ -480,9 +480,15 @@ void plot_3d( long point_num, float *data, char *title_buf, char *x_buf, char *y
             plot_box( bit_flag, box );
             plcol0( 2 );
             plssym( 0.35, 1 );
+            /*
+            for ( i=0; i<num; i++ ) {
+                fprintf( stdout, "%f %f %f\n", x[i], y[i], z[i] );
+            }
+            */
             plpoin3( (PLINT)num, x, y, z, 1 );
             plend();
         }
+    }
     free( x );
     free( y );
     free( z );
@@ -550,8 +556,12 @@ void plot_3d_scalar( int pt, enum iofields blk ) {
                 fprintf( stderr, "Particle %i hasn't field: \"%s\"\n", pt, buf );
                 end_run( 3 );
             }
+            p = ( float* ) malloc( sizeof(float) * Particle[pt].num );
+            for ( i=0; i<Particle[pt].num; i++ ) {
+                p[i] = Particle[pt].rho[i] * Particle[pt].elec[i];
+                //fprintf( stdout, "%e\n", p[i] );
+            }
             sprintf( y_buf, "%s(>%.2e)", buf, scalar_unit );
-            p = Particle[pt].elec;
             break;
         case IO_VEL:
             get_dataset_name( blk, buf );
@@ -624,6 +634,9 @@ void plot_3d_scalar( int pt, enum iofields blk ) {
         case IO_MAG:
             if ( pt==0 ) free( p );
             break;
+        case IO_ELEC:
+            if ( pt==0 ) free( p );
+            break;
         case IO_VEL:
         case IO_ACCEL:
             free( p );
@@ -631,74 +644,118 @@ void plot_3d_scalar( int pt, enum iofields blk ) {
     }
 }
 
-
-void plot_3d_baryon() {
+void plot_3d_multi( int flag ) {
     char fn_buf[50], buf[20], title_buf2[300];
     unsigned int bit_flag, i;
-    long num, n, png_index, snum;
-    PLFLT box[3], *x, *y, *z, al_local, az_local, *sx, *sy, *sz;
+    long n, png_index, num[4];
+    PLFLT box[3], sx, sy, sz;
+    PLFLT *x[4], *y[4], *z[4], az_local, al_local, *m;
     fputs( sep_str, stdout );
-    fputs( "plot baryon ...\n", stdout );
     box[0] = corner2[0] - corner1[0];
     box[1] = corner2[1] - corner1[1];
     box[2] = corner2[2] - corner1[2];
-
-    num = 0;
-    for ( i=0; i<Particle[0].num; i++ ) {
-        if ( Particle[0].pos[i*3+0] <= corner2[0] && Particle[0].pos[i*3+0] >= corner1[0] &&
-             Particle[0].pos[i*3+1] <= corner2[1] && Particle[0].pos[i*3+1] >= corner1[1] &&
-             Particle[0].pos[i*3+2] <= corner2[2] && Particle[0].pos[i*3+2] >= corner1[2] )
-            //fprintf( stdout, "%.2f %.2f %.2f\n", Particle[0].pos[i*3+0], Particle[0].pos[i*3+1], Particle[0].pos[i*3+2] );
-            num ++;
+    switch ( flag ) {
+        case 3:
+            num[3] = 0;
+            for ( i=0; i<TotNgroups; i++ ) {
+                if ( group[i].Mass>1000 ) {
+                    num[3] ++;
+                }
+            }
+            x[3] = ( PLFLT* ) malloc( sizeof( PLFLT ) * num[3] );
+            y[3] = ( PLFLT* ) malloc( sizeof( PLFLT ) * num[3] );
+            z[3] = ( PLFLT* ) malloc( sizeof( PLFLT ) * num[3] );
+            m = ( PLFLT* ) malloc( sizeof( PLFLT ) * num[3] );
+            n = 0;
+            for ( i=0; i<TotNgroups; i++ ) {
+                if ( group[i].Mass>1000 ) {
+                    x[3][n] = group[i].CM[0];
+                    y[3][n] = group[i].CM[1];
+                    z[3][n] = group[i].CM[2];
+                    m[n] = group[i].Mass;
+                    n++;
+                }
+            }
+            fprintf( stdout, "plot fof number: %i\n", num[3] );
+        case 2:
+            num[2] = 0;
+            for ( i=0; i<Particle[1].num; i++ ) {
+            if ( Particle[1].pos[i*3+0] <= corner2[0] && Particle[1].pos[i*3+0] >= corner1[0] &&
+                Particle[1].pos[i*3+1] <= corner2[1] && Particle[1].pos[i*3+1] >= corner1[1] &&
+                Particle[1].pos[i*3+2] <= corner2[2] && Particle[1].pos[i*3+2] >= corner1[2] )
+                //fprintf( stdout, "%.2f %.2f %.2f\n", Particle[1].pos[i*3+0], Particle[1].pos[i*3+1], Particle[1].pos[i*3+2] );
+                num[2] ++;
+            }
+            x[2] = ( PLFLT* ) malloc( sizeof( PLFLT ) * num[2] );
+            y[2] = ( PLFLT* ) malloc( sizeof( PLFLT ) * num[2] );
+            z[2] = ( PLFLT* ) malloc( sizeof( PLFLT ) * num[2] );
+            n = 0;
+            for ( i=0; i<Particle[1].num; i++ ) {
+                if ( Particle[1].pos[i*3+0] <= corner2[0] && Particle[1].pos[i*3+0] >= corner1[0] &&
+                    Particle[1].pos[i*3+1] <= corner2[1] && Particle[1].pos[i*3+1] >= corner1[1] &&
+                    Particle[1].pos[i*3+2] <= corner2[2] && Particle[1].pos[i*3+2] >= corner1[2] ){
+                    x[2][n] = Particle[1].pos[i*3+0] - corner1[0];
+                    y[2][n] = Particle[1].pos[i*3+1] - corner1[1];
+                    z[2][n] = Particle[1].pos[i*3+2] - corner1[2];
+                    n++;
+                }
+            }
+            fprintf( stdout, "plot halo number: %i\n", num[2] );
+        case 1:
+            num[1] = 0;
+            for ( i=0; i<Particle[4].num; i++ ) {
+            if ( Particle[4].pos[i*3+0] <= corner2[0] && Particle[4].pos[i*3+0] >= corner1[0] &&
+                Particle[4].pos[i*3+1] <= corner2[1] && Particle[4].pos[i*3+1] >= corner1[1] &&
+                Particle[4].pos[i*3+2] <= corner2[2] && Particle[4].pos[i*3+2] >= corner1[2] )
+                //fprintf( stdout, "%.2f %.2f %.2f\n", Particle[4].pos[i*3+0], Particle[4].pos[i*3+1], Particle[4].pos[i*3+2] );
+                num[1] ++;
+            }
+            x[1] = ( PLFLT* ) malloc( sizeof( PLFLT ) * num[1] );
+            y[1] = ( PLFLT* ) malloc( sizeof( PLFLT ) * num[1] );
+            z[1] = ( PLFLT* ) malloc( sizeof( PLFLT ) * num[1] );
+            n = 0;
+            for ( i=0; i<Particle[4].num; i++ ) {
+                if ( Particle[4].pos[i*3+0] <= corner2[0] && Particle[4].pos[i*3+0] >= corner1[0] &&
+                    Particle[4].pos[i*3+1] <= corner2[1] && Particle[4].pos[i*3+1] >= corner1[1] &&
+                    Particle[4].pos[i*3+2] <= corner2[2] && Particle[4].pos[i*3+2] >= corner1[2] ){
+                    x[1][n] = Particle[4].pos[i*3+0] - corner1[0];
+                    y[1][n] = Particle[4].pos[i*3+1] - corner1[1];
+                    z[1][n] = Particle[4].pos[i*3+2] - corner1[2];
+                    n++;
+                }
+            }
+            fprintf( stdout, "plot star number: %i\n", num[1] );
+            num[0] = 0;
+            for ( i=0; i<Particle[0].num; i++ ) {
+                if ( Particle[0].pos[i*3+0] <= corner2[0] && Particle[0].pos[i*3+0] >= corner1[0] &&
+                     Particle[0].pos[i*3+1] <= corner2[1] && Particle[0].pos[i*3+1] >= corner1[1] &&
+                     Particle[0].pos[i*3+2] <= corner2[2] && Particle[0].pos[i*3+2] >= corner1[2] )
+                    //fprintf( stdout, "%.2f %.2f %.2f\n", Particle[0].pos[i*3+0], Particle[0].pos[i*3+1], Particle[0].pos[i*3+2] );
+                    num[0] ++;
+            }
+            x[0] = ( PLFLT* ) malloc( sizeof( PLFLT ) * num[0] );
+            y[0] = ( PLFLT* ) malloc( sizeof( PLFLT ) * num[0] );
+            z[0] = ( PLFLT* ) malloc( sizeof( PLFLT ) * num[0] );
+            n = 0;
+            for ( i=0; i<Particle[0].num; i++ ) {
+            if ( Particle[0].pos[i*3+0] <= corner2[0] && Particle[0].pos[i*3+0] >= corner1[0] &&
+                Particle[0].pos[i*3+1] <= corner2[1] && Particle[0].pos[i*3+1] >= corner1[1] &&
+                Particle[0].pos[i*3+2] <= corner2[2] && Particle[0].pos[i*3+2] >= corner1[2] ){
+                x[0][n] = Particle[0].pos[i*3+0] - corner1[0];
+                y[0][n] = Particle[0].pos[i*3+1] - corner1[1];
+                z[0][n] = Particle[0].pos[i*3+2] - corner1[2];
+                n++;
+                }
+            }
+            fprintf( stdout, "plot gas number: %i\n", num[0] );
+            break;
     }
-
-    snum = 0;
-    for ( i=0; i<Particle[4].num; i++ ) {
-        if ( Particle[4].pos[i*3+0] <= corner2[0] && Particle[4].pos[i*3+0] >= corner1[0] &&
-             Particle[4].pos[i*3+1] <= corner2[1] && Particle[4].pos[i*3+1] >= corner1[1] &&
-             Particle[4].pos[i*3+2] <= corner2[2] && Particle[4].pos[i*3+2] >= corner1[2] )
-            //fprintf( stdout, "%.2f %.2f %.2f\n", Particle[4].pos[i*3+0], Particle[4].pos[i*3+1], Particle[4].pos[i*3+2] );
-            snum ++;
-    }
-
-    x = ( PLFLT* ) malloc( sizeof( PLFLT ) * num );
-    y = ( PLFLT* ) malloc( sizeof( PLFLT ) * num );
-    z = ( PLFLT* ) malloc( sizeof( PLFLT ) * num );
-    sx = ( PLFLT* ) malloc( sizeof( PLFLT ) * snum );
-    sy = ( PLFLT* ) malloc( sizeof( PLFLT ) * snum );
-    sz = ( PLFLT* ) malloc( sizeof( PLFLT ) * snum );
-
-    n = 0;
-    for ( i=0; i<Particle[0].num; i++ ) {
-        if ( Particle[0].pos[i*3+0] <= corner2[0] && Particle[0].pos[i*3+0] >= corner1[0] &&
-             Particle[0].pos[i*3+1] <= corner2[1] && Particle[0].pos[i*3+1] >= corner1[1] &&
-             Particle[0].pos[i*3+2] <= corner2[2] && Particle[0].pos[i*3+2] >= corner1[2] ){
-            x[n] = Particle[0].pos[i*3+0] - corner1[0];
-            y[n] = Particle[0].pos[i*3+1] - corner1[1];
-            z[n] = Particle[0].pos[i*3+2] - corner1[2];
-            n++;
-        }
-    }
-
-    n = 0;
-    for ( i=0; i<Particle[4].num; i++ ) {
-        if ( Particle[4].pos[i*3+0] <= corner2[0] && Particle[4].pos[i*3+0] >= corner1[0] &&
-             Particle[4].pos[i*3+1] <= corner2[1] && Particle[4].pos[i*3+1] >= corner1[1] &&
-             Particle[4].pos[i*3+2] <= corner2[2] && Particle[4].pos[i*3+2] >= corner1[2] ){
-            sx[n] = Particle[4].pos[i*3+0] - corner1[0];
-            sy[n] = Particle[4].pos[i*3+1] - corner1[1];
-            sz[n] = Particle[4].pos[i*3+2] - corner1[2];
-            n++;
-        }
-    }
-
-        fprintf( stdout, "plot gas number: %i, star num %i\n", num, snum );
     png_index = 0;
     for ( al_local=al[0]; al_local<=al[2]; al_local += al[1] )
         for ( az_local=az[0]; az_local<=az[2]; az_local += az[1] ){
             plsdev( "pngcairo" );
-            //sprintf( fn_buf, "%s_%i_%.2f_%.2f_%.2f.png", Out_Picture_Prefix, pt, redshift, al_local, az_local );
-            sprintf( fn_buf, "%s/%04i.png", Out_Picture_Prefix, png_index );
+            //sprintf( fn_buf, "%s_%i_%.2f_%.2f_%.2f.png", out_picture_prefix, pt, redshift, al_local, az_local );
+            sprintf( fn_buf, "%s/%04i.png", out_picture_prefix, png_index );
             png_index++;
             fprintf( stdout, "plot: al_local=%lf, az_local=%lf, file name : %s\n",
                     al_local, az_local, fn_buf );
@@ -734,21 +791,56 @@ void plot_3d_baryon() {
             plcol0( 15 );
             plwidth( 0.2 );
             plot_box( bit_flag, box );
-            fputs( "plot gas ...\n", stdout );
-            plcol0( 1 );
-            plssym( 0.35, 1 );
-            plpoin3( (PLINT)num, x, y, z, 1 );
-            fputs( "plot star ...\n", stdout );
-            plcol0( 2 );
-            plssym( 0.35, 1 );
-            plpoin3( (PLINT)snum, sx, sy, sz, 1 );
+            switch ( flag ) {
+                case 3:
+                    fputs( "plot fof ...\n", stdout );
+                    plcol0( 15 );
+                    plssym( 0.35, 20 );
+                    plpoin3( (PLINT)(num[3]), x[3], y[3], z[3], 12 );
+                    /*
+                    for ( i=0; i<num[3]; i++ ){
+                        sprintf( buf, "%.1f", m[i] );
+                        sx = x[3][i];
+                        sy = y[3][i];
+                        sz = z[3][i];
+                        plstring3( 1, &sx, &sy, &sz, buf );
+                    }
+                    */
+                case 2:
+                    fputs( "plot halo ...\n", stdout );
+                    plcol0( 9 );
+                    plssym( 0.35, 1 );
+                    plpoin3( (PLINT)(num[2]), x[2], y[2], z[2], 1 );
+                case 1:
+                    fputs( "plot star ...\n", stdout );
+                    plcol0( 2 );
+                    plssym( 0.35, 1 );
+                    plpoin3( (PLINT)(num[1]), x[1], y[1], z[1], 1 );
+                    fputs( "plot gas ...\n", stdout );
+                    plcol0( 1 );
+                    plssym( 0.35, 1 );
+                    plpoin3( (PLINT)(num[0]), x[0], y[0], z[0], 1 );
+            }
             plend();
         }
-    free( x );
-    free( y );
-    free( z );
-    free( sx );
-    free( sy );
-    free( sz );
+    switch ( flag ) {
+        case 3:
+            free( x[3] );
+            free( y[3] );
+            free( z[3] );
+        case 2:
+            free( x[2] );
+            free( y[2] );
+            free( z[2] );
+        case 1:
+            free( x[1] );
+            free( y[1] );
+            free( z[1] );
+            free( x[0] );
+            free( y[0] );
+            free( z[0] );
+
+    }
     fputs( sep_str, stdout );
 }
+
