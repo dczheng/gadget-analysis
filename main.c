@@ -179,12 +179,15 @@ int main( int argc, char *argv[] ){
         fprintf( stderr, "Parameter file is required on command line!\n " );
         end_run( 1 );
     }
+    MPI_Init( &argc, &argv );
+    MPI_Comm_rank( MPI_COMM_WORLD, &this_task );
+    MPI_Comm_size( MPI_COMM_WORLD, &task_num );
     init_sep_str();
     strcpy( para_file, argv[1] );
     read_para();
     read_all_data();
     //group_analysis();
-    plot_slice( 0, IO_RHO );
+    plot_slice( 0, IO_MASS );
     //plot_slice( 0, IO_MAG );
     //magnetic_field_analysis();
     //density_analysis();
@@ -196,5 +199,6 @@ int main( int argc, char *argv[] ){
     free_all_memory();
     if ( slice_index_num >0 )
         free( slice_index );
+    MPI_Finalize();
 }
 

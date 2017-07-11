@@ -1,13 +1,13 @@
-FILE_PREFIX /mnt/ddnfs/data_users/xllian/Simulate_Radio/Gadget3_Simulation/cool_feedbak_init_mag_bh_fof_209/outputs/snapshot_20_199
+FILE_PREFIX /mnt/ddnfs/data_users/xllian/Simulate_Radio/Gadget3_Simulation/cool_feedbak_mag_bh_fof_88/outputs/snapshot_054
 NUM_FILES 1
 OUT_FILE ./ic.hdf5
-OUT_PICTURE_PREFIX ./test
-SLICE_NUM 30
-SLICE_INDEX_NUM 5
-SLICE_INDEX 1 4 8 16 25
+OUT_PICTURE_PREFIX ./test/
+SLICE_NUM 2
+SLICE_INDEX_NUM 1
+SLICE_INDEX 0
 REDSHIFT 0.00
-PIC_XSIZE 256
-PIC_YSIZE 256
+PIC_XSIZE 128
+PIC_YSIZE 128
 3D_BOX 512 512 512
 SCALAR_UNIT 1e-8
 3D_AL 30.0 1.0 30.0

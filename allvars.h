@@ -9,6 +9,7 @@
 #include "time.h"
 #include "dirent.h"
 #include "gsl/gsl_integration.h"
+#include "mpi.h"
 
 #define MAX_PARA_FILE_LINE_LEN 200
 #define SEP_LEN 50
@@ -183,6 +184,7 @@ extern char sep_str[ SEP_LEN ];
 extern int Num_files, TotNgroups;
 extern int slice_num, slice_index_num, *slice_index, pic_xsize, pic_ysize, box[3];
 extern float redshift, al[3], az[3], corner1[3], corner2[3], scalar_unit;
+extern int this_task, task_num;
 
 
 extern hid_t hdf5_file, hdf5_group, hdf5_dataset, hdf5_dataspace, hdf5_dataspace_in_file, hdf5_dataspace_in_memory, hdf5_type, hdf5_hdf5_type_mem, hdf5_attribute, hdf5_type;

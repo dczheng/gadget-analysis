@@ -406,19 +406,24 @@ void read_all_data() {
     int pt, blk, nbytes, dim2;
     long i;
     char file_name[FILENAME_MAX], buf[20];
-    fputs( sep_str, stdout );
-    fputs( "read all data ...\n", stdout );
+    if ( this_task == 0 ){
+        fputs( sep_str, stdout );
+        fputs( "read all data ...\n", stdout );
+    }
     sprintf( file_name, "%s.%i.hdf5", file_prefix, 0 );
     if ( Num_files < 2 )
         sprintf( file_name, "%s.hdf5", file_prefix );
     read_header( file_name );
+    if ( this_task == 0 )
     show_header( header );
     for ( pt=0; pt<6; pt++ ) {
         Particle[pt].num = header.npartTotalHighWord[pt];
         Particle[pt].num = header.npartTotal[pt] + ( Particle[pt].num<<32 );
         //fprintf( stdout, "%li\n", Particle[pt].num );
+        if ( this_task == 0 )
         fputs( sep_str, stdout );
         if ( Particle[pt].num != 0 ){
+            if ( this_task == 0 )
             fprintf( stdout, "Particle %i\n", pt );
             for ( blk=0; blk<IO_NBLOCKS; blk++ ){
                 switch ( blk ){
