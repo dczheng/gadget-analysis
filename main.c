@@ -184,9 +184,9 @@ int main( int argc, char *argv[] ){
     read_para();
     read_all_data();
     //group_analysis();
-    //plot_scalar( 0, IO_MAG );
-    //plot_scalar( 0, IO_MAG );
-    magnetic_field_analysis();
+    plot_slice( 0, IO_RHO );
+    //plot_slice( 0, IO_MAG );
+    //magnetic_field_analysis();
     //density_analysis();
     //plot_position( 1 );
     //plot_3d_position( 4 );

@@ -14,18 +14,16 @@ void generate_2D_img( char *fn_prefix, PLFLT **z, PLINT *nxy ){
            0.0, (PLFLT)header.BoxSize ,
            1, 0 );
     pllab( "", "", buf );
-    zmin = zmax = z[0][0];
+    //zmin = zmax = z[0][0];
     //zmin = zmax = 0;
     for ( i=0; i<nxy[0]; i++ )
         for ( j=0; j<nxy[1]; j++ ){
-            zmin = ( z[i][j]<zmin ) ? z[i][j] : zmin;
-            zmax = ( z[i][j]>zmax ) ? z[i][j] : zmax;
+            //zmin = ( z[i][j]<zmin ) ? z[i][j] : zmin;
+            //zmax = ( z[i][j]>zmax ) ? z[i][j] : zmax;
             //fprintf( stdout, "%e\n", z[i][j] );
-            /*
             if ( zmin==0  && z[i][j]!=0 ) zmin = zmax = z[i][j];
             zmin = ( z[i][j]<zmin && z[i][j] != 0 ) ? z[i][j] : zmin;
             zmax = ( z[i][j]>zmax ) ? z[i][j] : zmax;
-            */
         }
     /*
     for ( i=0; i<nxy[0]; i++ )
@@ -46,7 +44,7 @@ void generate_2D_img( char *fn_prefix, PLFLT **z, PLINT *nxy ){
     plend();
 }
 
-int compare_for_plot_scalar( const void *a, const void *b ) {
+int compare_for_plot_slice( const void *a, const void *b ) {
     float *aa, *bb;
     aa = ( float* )a;
     bb = ( float* )b;
@@ -54,10 +52,105 @@ int compare_for_plot_scalar( const void *a, const void *b ) {
     return -1;
 }
 
-void plot_scalar( int pt, enum iofields blk ){
+double kernel( double r, double h ) {
+    double v;
+    v = r/h;
+    if ( ( 0<=v ) && ( v<=1 ) )
+        return 3.0 / 4.0 / M_PI / pow( h, 3 ) * (10.0/3.0 - 7 * pow( v, 2 ) + 4 * pow( v, 3 ));
+    if( ( 1<v ) && ( v<= 2) )
+        return 3.0 / 4.0 / M_PI / pow( h, 3 ) * ( pow( 2-v, 2 ) * ( 5-4*v ) / 3.0 );
+    return 0;
+}
+
+double z_integrand( double z, void *params ) {
+    double r, *p;
+    p = ( double* ) params;
+    r = sqrt( pow( p[7] - p[2], 2 ) +
+              pow( p[8] - p[3], 2 ) +
+              pow( p[4], 2 ) );
+    return kernel( r, p[6] );
+}
+
+double y_integrand( double y, void *params ) {
+    double epsabs, epsrel, abserr, result, *p;
+    size_t subinter;
+    epsabs = epsrel = 1e-5;
+    subinter = 10000;
+    p = ( double* ) params;
+    gsl_function F;
+    gsl_integration_workspace *integration_workspace =
+        gsl_integration_workspace_alloc( subinter );
+    p[8] = y;
+    F.function = &z_integrand;
+    F.params = params;
+    gsl_integration_qag( &F, -p[6], p[6], epsabs, epsrel,
+            subinter, GSL_INTEG_GAUSS21, integration_workspace, &result, &abserr );
+    gsl_integration_workspace_free( integration_workspace );
+    return result;
+}
+
+double x_integrand( double x, void *params ) {
+    double epsabs, epsrel, abserr, result, *p;
+    size_t subinter;
+    epsabs = epsrel = 1e-5;
+    subinter = 10000;
+    gsl_function F;
+    p = ( double* ) params;
+    p[7] = x;
+    F.function = &y_integrand;
+    F.params = params;
+    gsl_integration_workspace *integration_workspace =
+        gsl_integration_workspace_alloc( subinter );
+    gsl_integration_qag( &F, p[1]-p[5]/2.0, p[1]+p[5]/2.0, epsabs, epsrel,
+            subinter, GSL_INTEG_GAUSS21, integration_workspace, &result, &abserr );
+    gsl_integration_workspace_free( integration_workspace );
+    return result;
+}
+
+double los_integration( double *params ) {
+    double epsabs, epsrel, abserr, result;
+    size_t subinter;
+    epsabs = epsrel = 1e-5;
+    subinter = 10000;
+    gsl_function F;
+    F.function = &x_integrand;
+    F.params = ( void* )params;
+    gsl_integration_workspace *integration_workspace =
+        gsl_integration_workspace_alloc( subinter );
+    gsl_integration_qag( &F, params[0]-params[5]/2.0, params[0]+params[5]/2.0, epsabs, epsrel,
+            subinter, GSL_INTEG_GAUSS21, integration_workspace, &result, &abserr );
+    gsl_integration_workspace_free( integration_workspace );
+    return result;
+}
+
+double los_integration2( double x0, double y0, float *p, double h, double g ) {
+    int N, i, j, k;
+    double delta_xy, delta_z, x, y, z, r, sum;
+    N = 1000;
+    delta_xy =  g / N;
+    delta_z =  h / N;
+    sum = 0;
+    for ( i=0; i<N; i++) {
+        for ( j=0; j<N; j++ ) {
+            for ( k=0; k<N; k++ ) {
+                x = x0 - g / 2.0 + i*delta_xy;
+                y = y0 - g / 2.0 + j*delta_xy;
+                z = -h / 2.0 + k*delta_z;
+                r = sqrt( pow( x-p[0], 2 ) +
+                          pow( y-p[1], 2 ) +
+                          pow( p[2], 2 ) );
+                sum += kernel( r, h );
+            }
+        }
+    }
+    return sum;
+}
+
+void plot_slice( int pt, enum iofields blk ){
     float *data, dz, r, *p;
     char fn_buf[50], buf[20];
     long i, N, j, z1, z2, k, test_num, ii, jj;
+    double g, h, params[9];
     PLINT nxy[2];
     PLFLT **rho, xymm[4];
     switch ( blk ) {
@@ -143,7 +236,7 @@ void plot_scalar( int pt, enum iofields blk ){
                 data[ i*4+3 ] );
     }
     qsort( (void*)data, N, sizeof( float )*4,
-                &compare_for_plot_scalar );
+                &compare_for_plot_slice );
     fputs( "Sorted by z: \n", stdout );
     for ( i=0; i<test_num; i++ ) {
         fprintf( stdout, "( %15.5f %15.5f %15.5f ):   %e\n",
@@ -153,6 +246,10 @@ void plot_scalar( int pt, enum iofields blk ){
     fputs( sep_str, stdout );
     dz = header.BoxSize / slice_num;
     fprintf( stdout, "slice info: dz=%f\n", dz );
+    g = header.BoxSize / nxy[0];
+    h = 2.5;
+    params[5] = g;
+    params[6] = h;
     for ( i=0; i<slice_num; i++ ) {
         for ( j=0; j<slice_index_num; j++ ) {
             if ( i == slice_index[j] ) {
@@ -176,21 +273,42 @@ void plot_scalar( int pt, enum iofields blk ){
                             data[ k*4+0 ], data[ k*4+1 ], data[ k*4+2 ],
                             data[ k*4+3 ] );
                 }
+                /*
                 for ( ii=0; ii< nxy[0]; ii++ )
                     for ( jj=0; jj<nxy[1]; jj++ )
                         rho[ii][jj] = 0;
                 for ( k=z2; k>z1; k-- ) {
                     ii = ( PLINT )(data[ k*4+0 ] / ( header.BoxSize / nxy[0] ));
                     jj = ( PLINT )(data[ k*4+1 ] / ( header.BoxSize / nxy[1] ));
-                    r = ( dz - (data[ k*4+2 ] - i*dz) ) / dz;
+                    rho[ii][jj] += ( PLFLT ) ( data[ k*4+3 ]  );
+                    //fprintf( stdout, "(i=%i, j=%i): %f\n", ii, jj, rho[ii][jj] );
+                    //r = ( dz - (data[ k*4+2 ] - i*dz) ) / dz;
                     //r = ( float )( z2-k ) / ( z2-z1-1 ) ;
-                    //fprintf( stdout, "%f\n", r );
-                    r=1;
-                    rho[ii][jj] = ( PLFLT ) ( data[ k*4+3 ] * pow( r,1 ) );
-                    //r=1;
                     //rho[ii][jj] += ( PLFLT ) ( data[ k*4+3 ] * pow( r,1 ) );
+                    //fprintf( stdout, "%f\n", r );
                 }
-                sprintf( fn_buf, "%s_%i_%i", out_picture_prefix, ( int )( i*dz ), ( int )((i+1)*dz) );
+                */
+                for ( ii=0; ii<nxy[0]; ii++ ){
+                    fprintf( stdout, "%i \n", ii );
+                    for ( jj=0; jj<nxy[1]; jj++ ) {
+                        fprintf( stdout, "%i %i\n", ii, jj );
+                        rho[ii][jj] = 0;
+                        params[0] = ii * g;
+                        params[1] = jj * g;
+                        for ( k=z1; k<z2; k++ ) {
+                            params[2] = data[ k*4+0 ];
+                            params[3] = data[ k*4+1 ];
+                            params[4] = data[ k*4+2 ];
+//                            fprintf( stdout, "%i %i %i\n", ii, jj, k );
+                            rho[ii][jj] +=  pow( g, -2 ) * pow( h, -3 ) *
+                                //data[ k*4+3 ] * los_integration2( ii*g, jj*g, data+k*4 , h, g );
+                                data[ k*4+3 ] * los_integration( (void*) params );
+//                            fprintf( stdout, "%e\n", rho[ii][jj] );
+                        }
+                            fprintf( stdout, "%e\n", rho[ii][jj] );
+                    }
+                }
+                sprintf( fn_buf, "%s%i_%i", out_picture_prefix, ( int )( i*dz ), ( int )((i+1)*dz) );
                 generate_2D_img( fn_buf, rho, nxy );
             }
         }
