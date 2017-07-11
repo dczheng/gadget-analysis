@@ -13,7 +13,7 @@
 
 #define MAX_PARA_FILE_LINE_LEN 200
 #define SEP_LEN 50
-#define IO_NBLOCKS 10
+#define IO_NBLOCKS 11
 #define LONGIDS
 #define SFR
 #define BLACK_HOLES
@@ -130,6 +130,7 @@ struct particle_struct {
     float *m;
     float *u;
     float *rho;
+    float *mn;
 };
 
 struct io_header{
@@ -167,7 +168,8 @@ enum iofields {
     IO_RHO,
     IO_POT,
     IO_ELEC,
-    IO_ID
+    IO_ID,
+    IO_MN
 };
 
 

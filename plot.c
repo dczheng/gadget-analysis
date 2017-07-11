@@ -25,6 +25,7 @@ void generate_2D_img( char *fn_prefix, PLFLT **z, PLINT *nxy ){
             zmin = ( z[i][j]<zmin && z[i][j] != 0 ) ? z[i][j] : zmin;
             zmax = ( z[i][j]>zmax ) ? z[i][j] : zmax;
         }
+    zmin = zmin / 10.0;
     for ( i=0; i<nxy[0]; i++ )
         for ( j=0; j<nxy[1]; j++ ){
             if ( z[i][j] == 0 ) z[i][j] = zmin;
@@ -167,6 +168,9 @@ void plot_slice( int pt, enum iofields blk ){
         case IO_POT:
             p = Particle[pt].pot;
             break;
+        case IO_MN:
+            p = Particle[pt].mn;
+            break;
         case IO_ELEC:
             if ( pt != 0 ) {
                 get_dataset_name( blk, buf );
@@ -212,6 +216,7 @@ void plot_slice( int pt, enum iofields blk ){
     if ( this_task == 0 )
         v2 = ( double * ) malloc( sizeof( double ) * nxy[0] * nxy[1] );
     N = Particle[0].num;
+    if ( this_task == 0 )
     fputs( sep_str, stdout );
     get_dataset_name( blk, buf );
     if ( this_task == 0 )
@@ -354,6 +359,7 @@ void plot_slice( int pt, enum iofields blk ){
     free( v1 );
     if ( this_task == 0 )
         free( v2 );
+    if ( this_task == 0 )
     fputs( sep_str, stdout );
     free( data );
     switch ( blk ) {
