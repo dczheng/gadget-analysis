@@ -10,10 +10,10 @@ void generate_2D_img( char *fn_prefix, PLFLT **z, PLINT *nxy ){
     sprintf( buf, "z=%.2f", redshift );
     plinit();
     plcol0( 2 );
-    plenv( 0.0, (PLFLT)header.BoxSize ,
-           0.0, (PLFLT)header.BoxSize ,
+    plenv( 0.0, (PLFLT)header.BoxSize/1000 ,
+           0.0, (PLFLT)header.BoxSize/1000 ,
            1, 0 );
-    pllab( "", "", buf );
+    pllab( "Mpc", "", buf );
     //zmin = zmax = z[0][0];
     zmin = zmax = 0;
     for ( i=0; i<nxy[0]; i++ )
@@ -35,11 +35,31 @@ void generate_2D_img( char *fn_prefix, PLFLT **z, PLINT *nxy ){
     zmax = log10( zmax );
     fprintf( stdout, "zmin=%e, zmax=%e\n", zmin, zmax );
     plimage( (PLFLT_MATRIX)z, nxy[0], nxy[1],
-            0.0, ( PLFLT ) header.BoxSize,
-            0.0, ( PLFLT ) header.BoxSize,
+            0.0, ( PLFLT ) header.BoxSize/1000,
+            0.0, ( PLFLT ) header.BoxSize/1000,
             zmin, zmax,
-            0.0, ( PLFLT ) header.BoxSize,
-            0.0, ( PLFLT ) header.BoxSize );
+            0.0, ( PLFLT ) header.BoxSize/1000,
+            0.0, ( PLFLT ) header.BoxSize/1000 );
+    //set colorbar
+    PLINT n_axis = 1;
+    PLCHAR_VECTOR axis_opts[] = { "bcvtm", };
+    PLFLT axis_ticks[1] = { 0.0, };
+    PLINT axis_subticks[1] = { 0, };
+    PLINT num_values[1] = { 10 };
+    PLFLT *values[1];
+    values[0] = ( PLFLT* ) malloc( num_values[0] * sizeof( PLFLT ) );
+    for ( i=0; i<num_values[0]; i++ ) {
+        values[0][i] = i * ( zmax-zmin ) / num_values[0] + zmin;
+    }
+    plcolorbar( &colorbar_width, &colorbar_heigh,
+            PL_COLORBAR_IMAGE, 0,
+            0.05, 0, 0.05, 0.9, 0, 1, 1, 0.0, 0.0, 0.0, 0.0,
+            0, NULL, NULL,
+            n_axis, axis_opts,
+            axis_ticks, axis_subticks,
+            num_values, (PLFLT_MATRIX) values );
+    free( values[0] );
+    //set colorbar
     plend();
 }
 
@@ -140,11 +160,15 @@ double los_integration( double *params ) {
 void plot_slice( int pt, enum iofields blk ){
     float *data, dz, r, *p;
     char fn_buf[50], buf[20];
-    long i, N, j, z1, z2, k, test_num, ii, jj;
-    double g, h, params[9], rr;
+    long i, N, j, z1, z2, k, test_num, ii, jj, index, index2;
+    double g, h, params[9], rr1, rr2, rr3, rr4;
     PLINT nxy[2];
     PLFLT **v3, xymm[4];
     double *v1, *v2;;
+    struct ngb_struct {
+        int N, *ngb, len;
+    } *ngb;
+
     switch ( blk ) {
         case IO_U:
             if ( pt != 0 ) {
@@ -264,6 +288,11 @@ void plot_slice( int pt, enum iofields blk ){
         fprintf( stdout, "g=%f, h=%f\n", g, h );
     params[5] = g;
     params[6] = h;
+    ngb = ( struct ngb_struct* ) malloc( sizeof ( struct ngb_struct ) * pic_xsize * pic_ysize );
+    for ( i=0; i<pic_xsize*pic_ysize; i++ ){
+        ngb[i].N = 0;
+        ngb[i].len = 0;
+    }
     for ( i=0; i<slice_num; i++ ) {
         for ( j=0; j<slice_index_num; j++ ) {
             if ( i == slice_index[j] ) {
@@ -307,26 +336,59 @@ void plot_slice( int pt, enum iofields blk ){
                 for ( ii=0; ii<nxy[0]; ii++ )
                     for ( jj=0; jj<nxy[1]; jj++ )
                         v1[ii * nxy[1] + jj] = 0;
-                for ( ii=0; ii<nxy[0]; ii++ ){
+                for ( ii=0; ii<nxy[0]; ii++ )
                     for ( jj=0; jj<nxy[1]; jj++ ) {
-                        if ( (ii * nxy[1] + jj) % task_num == this_task ){
+                        index = ii*nxy[1] + jj;
+                        for ( k=z1; k<z2; k++ ) {
+                            if ( ngb[ index ].len == 0 ) {
+                                ngb[ index ].len = 32;
+                                ngb[ index ].ngb = ( int* ) malloc( sizeof( int ) *
+                                        ngb[ index ].len );
+                            }
+                            if ( ngb[ index ].N == ngb[ index ].len ) {
+                                ngb[ index ].len += 32;
+                                ngb[ index ].ngb = ( int* ) realloc( ngb[ index ].ngb,
+                                        sizeof( int ) * ngb[ index ].len);
+                            }
                             params[0] = ii * g;
                             params[1] = jj * g;
-                            for ( k=z1; k<z2; k++ ) {
-                                /*
-                                rr = sqrt( pow( data[k*4+0]-params[0], 2 ) +
-                                          pow( data[k*4+1]-params[1], 2 ) +
-                                          pow( data[k*4+2], 2 ));
-                                if ( kernel( rr, h ) == 0 ) continue;
-                                */
-                                if ( ( data[k*4+0] < ii * g - g/2.0 ) ||
-                                     ( data[k*4+0] > ii * g + g/2.0 ) ||
-                                     ( data[k*4+1] < jj * g - g/2.0 ) ||
-                                     ( data[k*4+1] > jj * g + g/2.0 ) ) continue;
-                                params[2] = data[ k*4+0 ];
-                                params[3] = data[ k*4+1 ];
-                                params[4] = data[ k*4+2 ];
-                                double tmp;
+                            rr1 = sqrt( pow( data[k*4+0]-params[0], 2 ) +
+                                      pow( data[k*4+1]-params[1], 2 ) +
+                                      pow( data[k*4+2], 2 ));
+                            rr2 = sqrt( pow( data[k*4+0]-params[0]-g, 2 ) +
+                                      pow( data[k*4+1]-params[1], 2 ) +
+                                      pow( data[k*4+2], 2 ));
+                            rr3 = sqrt( pow( data[k*4+0]-params[0], 2 ) +
+                                      pow( data[k*4+1]-params[1]-g, 2 ) +
+                                      pow( data[k*4+2], 2 ));
+                            rr4 = sqrt( pow( data[k*4+0]-params[0]-g, 2 ) +
+                                      pow( data[k*4+1]-params[1]-g, 2 ) +
+                                      pow( data[k*4+2], 2 ));
+                            if  ( ( ( data[k*4+0] < ii * g - g ) ||
+                                 ( data[k*4+0] > ii * g + g ) ||
+                                 ( data[k*4+1] < jj * g - g ) ||
+                                 ( data[k*4+1] > jj * g + g ) ) &&
+                                    kernel( rr1, h ) == 0 &&
+                                    kernel( rr2, h ) == 0 &&
+                                    kernel( rr3, h ) == 0 &&
+                                    kernel( rr4, h ) == 0 )
+                                 continue;
+                            ngb[ index ].ngb[ ngb[ index ].N ] = k;
+                            ngb[ index ].N++;
+                        }
+                 //       fprintf( stdout, "%i %i %i\n", ii, jj, ngb[index].N );
+                    }
+                for ( ii=0; ii<nxy[0]; ii++ ){
+                    for ( jj=0; jj<nxy[1]; jj++ ) {
+                        index = ii * nxy[1] + jj;
+                        if ( index % task_num == this_task ){
+                            params[0] = ii * g;
+                            params[1] = jj * g;
+                            for ( k=0; k<ngb[index].N; k++ ) {
+                                index2 = ngb[index].ngb[k];
+                                params[2] = data[ index2*4+0 ];
+                                params[3] = data[ index2*4+1 ];
+                                params[4] = data[ index2*4+2 ];
                                 v1[ii * nxy[1] + jj] +=  pow( g, -2 ) * pow( h, -3 ) *
                                     data[ k*4+3 ] * los_integration( (void*) params );
                                 //fprintf( stdout, "%i %i %e %e %e\n", ii, jj, tmp, v1[ ii * nxy[1] + jj ], data[ k*4+3 ] );
@@ -334,6 +396,11 @@ void plot_slice( int pt, enum iofields blk ){
                         }
                     }
                 }
+                for ( ii=0; ii<nxy[0]; ii++ )
+                    for ( jj=0; jj<nxy[1]; jj++ ) {
+                        index = ii*nxy[1] + jj;
+                        free( ngb[index].ngb );
+                    }
                 MPI_Reduce( v1, v2, nxy[0]*nxy[1], MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD );
                 if ( this_task == 0 ) {
                     sprintf( fn_buf, "%s%i_%i", out_picture_prefix, ( int )( i*dz ), ( int )((i+1)*dz) );
@@ -356,6 +423,7 @@ void plot_slice( int pt, enum iofields blk ){
         }
     }
     plFree2dGrid( v3, nxy[0], nxy[1] );
+    free( ngb );
     free( v1 );
     if ( this_task == 0 )
         free( v2 );
