@@ -116,7 +116,6 @@ double y_integrand( double y, void *params ) {
             subinter, GSL_INTEG_GAUSS31, integration_workspace, &result, &abserr );
     fprintf( stdout, "result: %lf\n", result );
             */
-    //fprintf( stdout, "z: %e\n", abserr );
     gsl_integration_workspace_free( integration_workspace );
     return result;
 }

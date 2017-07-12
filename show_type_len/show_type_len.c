@@ -1,4 +1,5 @@
 #include "stdio.h"
+
 void main() {
     char *buf = "%20s : %i\n";
     printf( buf, "char", sizeof( char ) );
