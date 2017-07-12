@@ -123,3 +123,4 @@ void velocity_analysis() {
     fprintf( stdout, "Vmax: %f ( %f, %f, %f )\n", v, vmax[0],
             vmax[1], vmax[2] );
 }
+

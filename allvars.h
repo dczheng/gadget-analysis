@@ -131,6 +131,7 @@ struct particle_struct {
     float *u;
     float *rho;
     float *mn;
+    float *j;
 };
 
 struct io_header{

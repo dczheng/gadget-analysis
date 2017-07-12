@@ -164,9 +164,11 @@ void plot_slice( int pt, enum iofields blk ){
     PLINT nxy[2];
     PLFLT **v3, xymm[4];
     double *v1, *v2;;
+    /*
     struct ngb_struct {
         int N, *ngb, len;
     } *ngb;
+    */
 
     switch ( blk ) {
         case IO_U:
@@ -287,11 +289,13 @@ void plot_slice( int pt, enum iofields blk ){
         fprintf( stdout, "g=%f, h=%f\n", g, h );
     params[5] = g;
     params[6] = h;
+    /*
     ngb = ( struct ngb_struct* ) malloc( sizeof ( struct ngb_struct ) * pic_xsize * pic_ysize );
     for ( i=0; i<pic_xsize*pic_ysize; i++ ){
         ngb[i].N = 0;
         ngb[i].len = 0;
     }
+    */
     for ( i=0; i<slice_num; i++ ) {
         for ( j=0; j<slice_index_num; j++ ) {
             if ( i == slice_index[j] ) {
@@ -332,6 +336,7 @@ void plot_slice( int pt, enum iofields blk ){
                     //fprintf( stdout, "%f\n", r );
                 }
                 */
+                /*
                 for ( ii=0; ii<nxy[0]; ii++ )
                     for ( jj=0; jj<nxy[1]; jj++ )
                         v1[ii * nxy[1] + jj] = 0;
@@ -400,6 +405,45 @@ void plot_slice( int pt, enum iofields blk ){
                         index = ii*nxy[1] + jj;
                         free( ngb[index].ngb );
                     }
+                    */
+                for ( ii=0; ii<nxy[0]; ii++ ){
+                    for ( jj=0; jj<nxy[1]; jj++ ) {
+                        index = ii * nxy[1] + jj;
+                        if ( index % task_num == this_task ){
+                            params[0] = ii * g;
+                            params[1] = jj * g;
+                            for ( k=z1; k<z2; k++ ) {
+                            rr1 = sqrt( pow( data[k*4+0]-params[0], 2 ) +
+                                      pow( data[k*4+1]-params[1], 2 ) +
+                                      pow( data[k*4+2], 2 ));
+                            rr2 = sqrt( pow( data[k*4+0]-params[0]-g, 2 ) +
+                                      pow( data[k*4+1]-params[1], 2 ) +
+                                      pow( data[k*4+2], 2 ));
+                            rr3 = sqrt( pow( data[k*4+0]-params[0], 2 ) +
+                                      pow( data[k*4+1]-params[1]-g, 2 ) +
+                                      pow( data[k*4+2], 2 ));
+                            rr4 = sqrt( pow( data[k*4+0]-params[0]-g, 2 ) +
+                                      pow( data[k*4+1]-params[1]-g, 2 ) +
+                                      pow( data[k*4+2], 2 ));
+                            if  ( ( ( data[k*4+0] < ii * g - g ) ||
+                                 ( data[k*4+0] > ii * g + g ) ||
+                                 ( data[k*4+1] < jj * g - g ) ||
+                                 ( data[k*4+1] > jj * g + g ) ) &&
+                                    kernel( rr1, h ) == 0 &&
+                                    kernel( rr2, h ) == 0 &&
+                                    kernel( rr3, h ) == 0 &&
+                                    kernel( rr4, h ) == 0 )
+                                 continue;
+                                params[2] = data[ k*4+0 ];
+                                params[3] = data[ k*4+1 ];
+                                params[4] = data[ k*4+2 ];
+                                v1[ index ] +=  pow( g, -2 ) *
+                                    data[ k*4+3 ] * los_integration( (void*) params );
+                                //fprintf( stdout, "%i %i %e %e %e\n", ii, jj, tmp, v1[ ii * nxy[1] + jj ], data[ k*4+3 ] );
+                            }
+                        }
+                    }
+                }
                 MPI_Reduce( v1, v2, nxy[0]*nxy[1], MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD );
                 if ( this_task == 0 ) {
                     sprintf( fn_buf, "%s%i_%i", out_picture_prefix, ( int )( i*dz ), ( int )((i+1)*dz) );
@@ -422,7 +466,7 @@ void plot_slice( int pt, enum iofields blk ){
         }
     }
     plFree2dGrid( v3, nxy[0], nxy[1] );
-    free( ngb );
+    //free( ngb );
     free( v1 );
     if ( this_task == 0 )
         free( v2 );
