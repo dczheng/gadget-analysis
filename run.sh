@@ -12,3 +12,4 @@ do
     ./process_data ./params.in
 done
 BLOCK
+make clean

@@ -191,10 +191,28 @@ void plot_slice( int pt, enum iofields blk ){
             p = Particle[pt].m;
             break;
         case IO_POT:
+            if ( pt != 0 ) {
+                get_dataset_name( blk, buf );
+                fprintf( stderr, "Particle %i hasn't field: \"%s\"\n", pt, buf );
+                end_run( 3 );
+            }
             p = Particle[pt].pot;
             break;
         case IO_MN:
+            if ( pt != 0 ) {
+                get_dataset_name( blk, buf );
+                fprintf( stderr, "Particle %i hasn't field: \"%s\"\n", pt, buf );
+                end_run( 3 );
+            }
             p = Particle[pt].mn;
+            break;
+        case IO_J:
+            if ( pt != 0 ) {
+                get_dataset_name( blk, buf );
+                fprintf( stderr, "Particle %i hasn't field: \"%s\"\n", pt, buf );
+                end_run( 3 );
+            }
+            p = Particle[pt].j;
             break;
         case IO_ELEC:
             if ( pt != 0 ) {

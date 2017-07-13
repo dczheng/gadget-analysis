@@ -228,7 +228,8 @@ if ( this_task == 0 )
     read_para();
     read_all_data();
     //group_analysis();
-    plot_slice( 0, IO_MN );
+   // plot_slice( 0, IO_MAG );
+   analysis_radio();
     //plot_slice( 0, IO_MAG );
     //magnetic_field_analysis();
     //density_analysis();

@@ -298,6 +298,9 @@ int get_block_nbytes( enum iofields blk ) {
         case IO_POT:
         case IO_ELEC:
         case IO_MN:
+        case IO_C0:
+        case IO_Q0:
+        case IO_J:
             block_nbytes = sizeof( float );
             break;
         case IO_ID:
@@ -324,6 +327,9 @@ void get_block_dims( int pt, enum iofields blk, hsize_t *dims ) {
         case IO_ELEC:
         case IO_ID:
         case IO_MN:
+        case IO_J:
+        case IO_C0:
+        case IO_Q0:
             dims[0] = header.npart[pt];
             dims[1] = 1;
             break;
@@ -364,6 +370,15 @@ void get_dataset_name( enum iofields blk, char *buf ) {
             break;
         case IO_MN:
             strcpy( buf, "MachNumber" );
+            break;
+        case IO_J:
+            strcpy( buf, "SynchrotronEmissivity" );
+            break;
+        case IO_C0:
+            strcpy( buf, "CR_C0" );
+            break;
+        case IO_Q0:
+            strcpy( buf, "CR_q0" );
             break;
     }
 }
@@ -468,6 +483,32 @@ if ( this_task == 0 )
                         fprintf( stdout, "reading %s\n", buf);
                         Particle[pt].mag = ( float* ) malloc(  nbytes * Particle[pt].num );
                         read_block( pt, (void*)(Particle[pt].mag), blk );
+                        break;
+                    case IO_C0:
+                        if ( pt>0 ) break;
+                        nbytes = get_block_nbytes( blk );
+                        get_dataset_name( blk, buf );
+if ( this_task == 0 )
+                        fprintf( stdout, "reading %s\n", buf);
+                        Particle[pt].c0 = ( float* ) malloc(  nbytes * Particle[pt].num );
+                        read_block( pt, (void*)(Particle[pt].c0), blk );
+                        break;
+                    case IO_Q0:
+                        if ( pt>0 ) break;
+                        nbytes = get_block_nbytes( blk );
+                        get_dataset_name( blk, buf );
+if ( this_task == 0 )
+                        fprintf( stdout, "reading %s\n", buf);
+                        Particle[pt].q0 = ( float* ) malloc(  nbytes * Particle[pt].num );
+                        read_block( pt, (void*)(Particle[pt].q0), blk );
+                        break;
+                    case IO_J:
+                        if ( pt>0 ) break;
+                        nbytes = get_block_nbytes( blk );
+                        get_dataset_name( blk, buf );
+if ( this_task == 0 )
+                        fprintf( stdout, "allocate memory for %s\n", buf);
+                        Particle[pt].j = ( float* ) malloc(  nbytes * Particle[pt].num );
                         break;
                     case IO_MASS:
                         nbytes = get_block_nbytes( blk );
@@ -583,6 +624,27 @@ if ( this_task == 0 )
 if ( this_task == 0 )
                         fprintf( stdout, "free memory: %s\n", buf);
                         free( Particle[pt].mag );
+                        break;
+                    case IO_C0:
+                        if ( pt>0 ) break;
+                        get_dataset_name( blk, buf );
+if ( this_task == 0 )
+                        fprintf( stdout, "free memory: %s\n", buf);
+                        free( Particle[pt].c0 );
+                        break;
+                    case IO_Q0:
+                        if ( pt>0 ) break;
+                        get_dataset_name( blk, buf );
+if ( this_task == 0 )
+                        fprintf( stdout, "free memory: %s\n", buf);
+                        free( Particle[pt].q0 );
+                        break;
+                    case IO_J:
+                        if ( pt>0 ) break;
+                        get_dataset_name( blk, buf );
+if ( this_task == 0 )
+                        fprintf( stdout, "free memory: %s\n", buf);
+                        free( Particle[pt].j);
                         break;
                     case IO_MASS:
                         get_dataset_name( blk, buf );
