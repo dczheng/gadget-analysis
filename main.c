@@ -3,6 +3,7 @@
 void end_run( int ierr ) {
 if ( this_task == 0 )
     fprintf( stderr, "EXIT CODE: %i\n", ierr );
+    MPI_Abort( MPI_COMM_WORLD, ierr );
     exit( ierr );
 }
 
@@ -228,14 +229,14 @@ if ( this_task == 0 )
     read_para();
     read_all_data();
     //group_analysis();
-   // plot_slice( 0, IO_MAG );
-   analysis_radio();
+   // plot_slice( 0, IO_MASS );
+   //analysis_radio();
     //plot_slice( 0, IO_MAG );
     //magnetic_field_analysis();
     //density_analysis();
     //plot_position( 1 );
     //plot_3d_position( 4 );
-    //plot_3d_multi( 3 );
+    plot_3d_multi( 3 );
     //plot_3d_scalar( 0, IO_ELEC );
     //velocity_analysis();
     free_all_memory();

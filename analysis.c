@@ -148,7 +148,7 @@ double gamma( double x ) {
 
 void analysis_radio() {
     double alpha_e, alpha, sigma_pp, sigma_t, me, mp, GeV, C, e;
-    double Bcmb, alpha_v, XHe, Ecmb, Ce, Ae, Bc, C_phy, q_phy, Eb, v, gamma_fac;
+    double Bcmb, alpha_v, XHe, Ecmb, Ce, Ae, Bc, C_phy, Eb, v, gamma_fac, q_phy;
     long i;
     alpha = 2.5;
     sigma_pp = 32 * ( 0.96 + exp( 4.4 - 2.4 * alpha ) ) * 1e-28 * 1e4; // cm^2
@@ -163,7 +163,7 @@ void analysis_radio() {
     XHe = 0.24;
     e = 1.6021766208e-19; // C
     Ecmb = Bcmb * Bcmb / 8.0 / M_PI;
-    v = 100000;
+    v = 150000;
     gamma_fac = gamma( (3*alpha_e-1) / 12.0 ) *
             gamma( (3*alpha_e+7) / 12.0 ) *
             gamma( (alpha_e+5) / 4.0 ) /
@@ -182,10 +182,10 @@ void analysis_radio() {
         }
         C_phy =  Particle[0].c0[i] * pow( Particle[0].rho[i], ( alpha - 1 ) * 0.33333 ) *
             Particle[0].rho[i] * 1.989e43 / pow( 3.085678e21, 3) / mp;
-        q_phy = Particle[0].q0[i] * pow( Particle[0].rho[i], 0.3333333 );
-        Eb = ( pow( Particle[0].mag[0], 2 ) +
-             pow( Particle[0].mag[1], 2 ) +
-             pow( Particle[0].mag[2], 2 ) ) / 8.0 / M_PI;
+        //q_phy = Particle[0].q0[i] * pow( Particle[0].rho[i], 0.3333333 );
+        Eb = ( pow( Particle[0].mag[i*3 + 0], 2 ) +
+             pow( Particle[0].mag[ i*3 +1 ], 2 ) +
+             pow( Particle[0].mag[ i*3 + 2 ], 2 ) ) / 8.0 / M_PI;
         Ce = pow( 16, 2-alpha_e ) / ( alpha_e-2 ) *
             sigma_pp * pow( me,2 ) * pow( C, 4 ) / ( sigma_t*GeV ) *
             C_phy * Particle[0].rho[i] * 1.989e43 / pow( 3.085678e21, 3) *
@@ -194,11 +194,8 @@ void analysis_radio() {
         Ae = sqrt( 3.0 * M_PI ) / 32.0 / M_PI * Bc * pow( e, 3 ) / me / pow( C, 2 ) *
             ( alpha_e + 7.0/3.0 ) / ( alpha_e + 1 ) * gamma_fac;
         Particle[0].j[i] = 1e100 * Ae * Ce * pow( Eb/( pow(Bc,2) / 8.0 / M_PI ), ( alpha_v+1 ) / 2.0 );
-        /*
-        fprintf( stdout, "C_phy = %e, q_phy = %e, Eb = %e, Ce = %e, Bc = %e\n"
-                " Ae = %e, j = %e\n",
+        fprintf( stdout, "C_phy = %e, q_phy = %e, Eb = %e, Ce = %e, Bc = %e, Ae = %e, j = %e\n",
                 C_phy, q_phy, Eb, Ce, Bc, Ae,  Particle[0].j[i] );
-                */
     }
-    plot_slice( 0, IO_J );
+    //plot_slice( 0, IO_J );
 }

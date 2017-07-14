@@ -8,8 +8,9 @@ void generate_2D_img( char *fn_prefix, PLFLT **z, PLINT *nxy ){
     plsdev( "png" );
     plsfnam( buf );
     sprintf( buf, "z=%.2f", redshift );
+    plspage( 300, 300, 1024, 1024, 0, 0 );
     plinit();
-    plcol0( 2 );
+    plcol0( 15 );
     plenv( 0.0, (PLFLT)header.BoxSize/1000 ,
            0.0, (PLFLT)header.BoxSize/1000 ,
            1, 0 );
@@ -34,6 +35,7 @@ void generate_2D_img( char *fn_prefix, PLFLT **z, PLINT *nxy ){
     zmin = log10( zmin );
     zmax = log10( zmax );
     fprintf( stdout, "zmin=%e, zmax=%e\n", zmin, zmax );
+    plspal1( "./plot.pal", 1 );
     plimage( (PLFLT_MATRIX)z, nxy[0], nxy[1],
             0.0, ( PLFLT ) header.BoxSize/1000,
             0.0, ( PLFLT ) header.BoxSize/1000,
@@ -45,15 +47,17 @@ void generate_2D_img( char *fn_prefix, PLFLT **z, PLINT *nxy ){
     PLCHAR_VECTOR axis_opts[] = { "bcvtm", };
     PLFLT axis_ticks[1] = { 0.0, };
     PLINT axis_subticks[1] = { 0, };
-    PLINT num_values[1] = { 10 };
+    PLINT num_values[1] = { 15 };
     PLFLT *values[1];
     values[0] = ( PLFLT* ) malloc( num_values[0] * sizeof( PLFLT ) );
     for ( i=0; i<num_values[0]; i++ ) {
         values[0][i] = i * ( zmax-zmin ) / num_values[0] + zmin;
     }
+    plcol0( 2 );
+    plschr( 0, 0.6 );
     plcolorbar( &colorbar_width, &colorbar_heigh,
             PL_COLORBAR_IMAGE, 0,
-            0.05, 0, 0.05, 0.9, 0, 1, 1, 0.0, 0.0, 0.0, 0.0,
+            0.02, 0, 0.05, 0.9, 0, 1, 1, 0.0, 0.0, 0.0, 0.0,
             0, NULL, NULL,
             n_axis, axis_opts,
             axis_ticks, axis_subticks,
@@ -159,17 +163,12 @@ double los_integration( double *params ) {
 void plot_slice( int pt, enum iofields blk ){
     float *data, dz, r, *p;
     char fn_buf[50], buf[20];
-    long i, N, j, z1, z2, k, test_num, ii, jj, index, index2;
+    long i, N, j, z1, z2, k, test_num, ii, jj, index;
+    long index_i, index_j, index_k;
     double g, h, params[9], rr1, rr2, rr3, rr4;
     PLINT nxy[2];
     PLFLT **v3, xymm[4];
     double *v1, *v2;;
-    /*
-    struct ngb_struct {
-        int N, *ngb, len;
-    } *ngb;
-    */
-
     switch ( blk ) {
         case IO_U:
             if ( pt != 0 ) {
@@ -258,7 +257,7 @@ void plot_slice( int pt, enum iofields blk ){
     v1 = ( double * ) malloc( sizeof( double ) * nxy[0] * nxy[1] );
     if ( this_task == 0 )
         v2 = ( double * ) malloc( sizeof( double ) * nxy[0] * nxy[1] );
-    N = Particle[0].num;
+    N = Particle[pt].num;
     if ( this_task == 0 )
     fputs( sep_str, stdout );
     get_dataset_name( blk, buf );
@@ -307,13 +306,6 @@ void plot_slice( int pt, enum iofields blk ){
         fprintf( stdout, "g=%f, h=%f\n", g, h );
     params[5] = g;
     params[6] = h;
-    /*
-    ngb = ( struct ngb_struct* ) malloc( sizeof ( struct ngb_struct ) * pic_xsize * pic_ysize );
-    for ( i=0; i<pic_xsize*pic_ysize; i++ ){
-        ngb[i].N = 0;
-        ngb[i].len = 0;
-    }
-    */
     for ( i=0; i<slice_num; i++ ) {
         for ( j=0; j<slice_index_num; j++ ) {
             if ( i == slice_index[j] ) {
@@ -340,90 +332,6 @@ void plot_slice( int pt, enum iofields blk ){
                     }
                 }
                 /*
-                for ( ii=0; ii< nxy[0]; ii++ )
-                    for ( jj=0; jj<nxy[1]; jj++ )
-                        v3[ii][jj] = 0;
-                for ( k=z2; k>z1; k-- ) {
-                    ii = ( PLINT )(data[ k*4+0 ] / ( header.BoxSize / nxy[0] ));
-                    jj = ( PLINT )(data[ k*4+1 ] / ( header.BoxSize / nxy[1] ));
-                    v3[ii][jj] += ( PLFLT ) ( data[ k*4+3 ]  );
-                    //fprintf( stdout, "(i=%i, j=%i): %f\n", ii, jj, v3[ii][jj] );
-                    //r = ( dz - (data[ k*4+2 ] - i*dz) ) / dz;
-                    //r = ( float )( z2-k ) / ( z2-z1-1 ) ;
-                    //v3[ii][jj] += ( PLFLT ) ( data[ k*4+3 ] * pow( r,1 ) );
-                    //fprintf( stdout, "%f\n", r );
-                }
-                */
-                /*
-                for ( ii=0; ii<nxy[0]; ii++ )
-                    for ( jj=0; jj<nxy[1]; jj++ )
-                        v1[ii * nxy[1] + jj] = 0;
-                for ( ii=0; ii<nxy[0]; ii++ )
-                    for ( jj=0; jj<nxy[1]; jj++ ) {
-                        index = ii*nxy[1] + jj;
-                        for ( k=z1; k<z2; k++ ) {
-                            if ( ngb[ index ].len == 0 ) {
-                                ngb[ index ].len = 32;
-                                ngb[ index ].ngb = ( int* ) malloc( sizeof( int ) *
-                                        ngb[ index ].len );
-                            }
-                            if ( ngb[ index ].N == ngb[ index ].len ) {
-                                ngb[ index ].len += 32;
-                                ngb[ index ].ngb = ( int* ) realloc( ngb[ index ].ngb,
-                                        sizeof( int ) * ngb[ index ].len);
-                            }
-                            params[0] = ii * g;
-                            params[1] = jj * g;
-                            rr1 = sqrt( pow( data[k*4+0]-params[0], 2 ) +
-                                      pow( data[k*4+1]-params[1], 2 ) +
-                                      pow( data[k*4+2], 2 ));
-                            rr2 = sqrt( pow( data[k*4+0]-params[0]-g, 2 ) +
-                                      pow( data[k*4+1]-params[1], 2 ) +
-                                      pow( data[k*4+2], 2 ));
-                            rr3 = sqrt( pow( data[k*4+0]-params[0], 2 ) +
-                                      pow( data[k*4+1]-params[1]-g, 2 ) +
-                                      pow( data[k*4+2], 2 ));
-                            rr4 = sqrt( pow( data[k*4+0]-params[0]-g, 2 ) +
-                                      pow( data[k*4+1]-params[1]-g, 2 ) +
-                                      pow( data[k*4+2], 2 ));
-                            if  ( ( ( data[k*4+0] < ii * g - g ) ||
-                                 ( data[k*4+0] > ii * g + g ) ||
-                                 ( data[k*4+1] < jj * g - g ) ||
-                                 ( data[k*4+1] > jj * g + g ) ) &&
-                                    kernel( rr1, h ) == 0 &&
-                                    kernel( rr2, h ) == 0 &&
-                                    kernel( rr3, h ) == 0 &&
-                                    kernel( rr4, h ) == 0 )
-                                 continue;
-                            ngb[ index ].ngb[ ngb[ index ].N ] = k;
-                            ngb[ index ].N++;
-                        }
-                 //       fprintf( stdout, "%i %i %i\n", ii, jj, ngb[index].N );
-                    }
-                for ( ii=0; ii<nxy[0]; ii++ ){
-                    for ( jj=0; jj<nxy[1]; jj++ ) {
-                        index = ii * nxy[1] + jj;
-                        if ( index % task_num == this_task ){
-                            params[0] = ii * g;
-                            params[1] = jj * g;
-                            for ( k=0; k<ngb[index].N; k++ ) {
-                                index2 = ngb[index].ngb[k];
-                                params[2] = data[ index2*4+0 ];
-                                params[3] = data[ index2*4+1 ];
-                                params[4] = data[ index2*4+2 ];
-                                v1[ii * nxy[1] + jj] +=  pow( g, -2 ) * pow( h, -3 ) *
-                                    data[ k*4+3 ] * los_integration( (void*) params );
-                                //fprintf( stdout, "%i %i %e %e %e\n", ii, jj, tmp, v1[ ii * nxy[1] + jj ], data[ k*4+3 ] );
-                            }
-                        }
-                    }
-                }
-                for ( ii=0; ii<nxy[0]; ii++ )
-                    for ( jj=0; jj<nxy[1]; jj++ ) {
-                        index = ii*nxy[1] + jj;
-                        free( ngb[index].ngb );
-                    }
-                    */
                 for ( ii=0; ii<nxy[0]; ii++ ){
                     for ( jj=0; jj<nxy[1]; jj++ ) {
                         index = ii * nxy[1] + jj;
@@ -462,6 +370,21 @@ void plot_slice( int pt, enum iofields blk ){
                         }
                     }
                 }
+                */
+                for ( ii=0; ii<nxy[0]; ii++ )
+                    for ( jj=0; jj<nxy[1]; jj++ ){
+                        index = ii * nxy[1] + jj;
+                        v1 [ index ] = 0;
+                    }
+                for ( k=z1; k<z2; k++ ) {
+                    if ( k % task_num == this_task ) {
+                        index_i = ( long )( data[ k*4+0 ] / g );
+                        index_j = ( long )( data[ k*4+1 ] / g );
+                        index_k = ( long )( data[ k*4+2 ] / g );
+                        index = index_i * nxy[1] + index_j;
+                        v1[ index ] = data[ k*4+3 ];
+                    }
+                }
                 MPI_Reduce( v1, v2, nxy[0]*nxy[1], MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD );
                 if ( this_task == 0 ) {
                     sprintf( fn_buf, "%s%i_%i", out_picture_prefix, ( int )( i*dz ), ( int )((i+1)*dz) );
@@ -484,7 +407,6 @@ void plot_slice( int pt, enum iofields blk ){
         }
     }
     plFree2dGrid( v3, nxy[0], nxy[1] );
-    //free( ngb );
     free( v1 );
     if ( this_task == 0 )
         free( v2 );
@@ -701,8 +623,9 @@ void plot_box( unsigned int bit_flag, PLFLT *box ) {
 void plot_3d( long point_num, float *data, char *title_buf, char *x_buf, char *y_buf ) {
     char fn_buf[50], buf[20], title_buf2[300];
     unsigned int bit_flag, i;
-    long num, n, png_index;
+    long num, n, png_index, naz, nal, iaz, ial;
     PLFLT box[3], *x, *y, *z, al_local, az_local;
+if ( this_task == 0 )
     fputs( sep_str, stdout );
     box[0] = corner2[0] - corner1[0];
     box[1] = corner2[1] - corner1[1];
@@ -719,6 +642,7 @@ void plot_3d( long point_num, float *data, char *title_buf, char *x_buf, char *y
     y = ( PLFLT* ) malloc( sizeof( PLFLT ) * num );
     z = ( PLFLT* ) malloc( sizeof( PLFLT ) * num );
     if ( NULL == x || NULL == y || NULL == z ) {
+if ( this_task == 0 )
         fprintf( stdout, "Failed to allocate x y z array!\n" );
         end_run( 7 );
     }
@@ -733,59 +657,70 @@ void plot_3d( long point_num, float *data, char *title_buf, char *x_buf, char *y
             n++;
         }
     }
+if ( this_task == 0 )
     fprintf( stdout, "point number: %i\n", num );
-    png_index = 0;
+    nal = ( long ) ( ( al[2]-al[0] ) / al[1] ) + 1;
+    naz = ( long ) ( ( az[2]-az[0] ) / az[1] ) + 1;
+if ( this_task == 0 )
+    fprintf( stdout, "nal = %li, naz = %li\n", nal , naz );
+sleep( 2 );
     for ( al_local=al[0]; al_local<=al[2]; al_local += al[1] ){
         for ( az_local=az[0]; az_local<=az[2]; az_local += az[1] ){
-            plsdev( "pngcairo" );
-            //sprintf( fn_buf, "%s_%i_%.2f_%.2f_%.2f.png", out_picture_prefix, pt, redshift, al_local, az_local );
-            sprintf( fn_buf, "%s/%04i.png", out_picture_prefix, png_index );
-            png_index++;
-            fprintf( stdout, "plot: al_local=%lf, az_local=%lf, file name : %s\n",
-                    al_local, az_local, fn_buf );
-            plsfnam( fn_buf );
-            plinit();
-            pladv( 0 );
-            plcol0( 15 );
-            plvpor( 0.0, 1.0, 0.0, 1.0 );
-            //sprintf( title_buf2, "%s\n%s\n%s", title_buf, y_buf, x_buf );
-            //pllab( x_buf, y_buf, title_buf );
-            plwind( -box[0] * sqrt( 3.0 ),
-                     box[0] * sqrt( 3.0 ),
-                    -box[1] * sqrt( 3.0 ),
-                     box[1] * sqrt( 3.0 ) );
-            //plwind( -box[0], box[0], -box[1], box[1] );
-            plw3d(  box[0], box[1], box[2],
-                    0.0, box[0],
-                    0.0, box[1],
-                    0.0, box[2],
-                    al_local, az_local );
-            plbox3( "", "", 0.0, 0,
-                    "", "", 0.0, 0,
-                    "", "", 0.0, 0 );
-            bit_flag = 1;
-            for ( i=0; i<12; i++ ){
-                bit_flag = bit_flag << 1;
-                bit_flag ++;
+            ial = ( long ) ( ( al_local-al[0] ) / al[1] );
+            iaz = ( long ) ( ( az_local-az[0] ) / al[1] );
+            if ( ( ial * naz + iaz ) % task_num == this_task ) {
+                plsdev( "pngcairo" );
+                //sprintf( fn_buf, "%s_%i_%.2f_%.2f_%.2f.png", out_picture_prefix, pt, redshift, al_local, az_local );
+                sprintf( fn_buf, "%s/%04i_%04i.png", out_picture_prefix, ial, iaz );
+                fprintf( stdout, "process %3i plot: al_local=%8.2lf, az_local=%8.2lf, file name : %s\n", this_task,
+                        al_local, az_local, fn_buf );
+                plsfnam( fn_buf );
+                plspage( 300, 300, 1024, 1024, 0, 0 );
+                plinit();
+                pladv( 0 );
+                plcol0( 15 );
+                plvpor( 0.0, 1.0, 0.0, 1.0 );
+                //sprintf( title_buf2, "%s\n%s\n%s", title_buf, y_buf, x_buf );
+                //pllab( x_buf, y_buf, title_buf );
+                plwind( -box[0] * sqrt( 3.0 ),
+                         box[0] * sqrt( 3.0 ),
+                        -box[1] * sqrt( 3.0 ),
+                         box[1] * sqrt( 3.0 ) );
+                //plwind( -box[0], box[0], -box[1], box[1] );
+                plw3d(  box[0], box[1], box[2],
+                        0.0, box[0],
+                        0.0, box[1],
+                        0.0, box[2],
+                        al_local, az_local );
+                plbox3( "", "", 0.0, 0,
+                        "", "", 0.0, 0,
+                        "", "", 0.0, 0 );
+                bit_flag = 1;
+                for ( i=0; i<12; i++ ){
+                    bit_flag = bit_flag << 1;
+                    bit_flag ++;
+                }
+                plcol0( 15 );
+                plwidth( 0.2 );
+                plot_box( bit_flag, box );
+                plcol0( 2 );
+                plssym( 0.35, 1 );
+                /*
+                for ( i=0; i<num; i++ ) {
+                    fprintf( stdout, "%f %f %f\n", x[i], y[i], z[i] );
+                }
+               */
+                plpoin3( (PLINT)num, x, y, z, 1 );
+                plend();
             }
-            plcol0( 15 );
-            plwidth( 0.2 );
-            plot_box( bit_flag, box );
-            plcol0( 2 );
-            plssym( 0.35, 1 );
-            /*
-            for ( i=0; i<num; i++ ) {
-                fprintf( stdout, "%f %f %f\n", x[i], y[i], z[i] );
-            }
-            */
-            plpoin3( (PLINT)num, x, y, z, 1 );
-            plend();
         }
     }
     free( x );
     free( y );
     free( z );
+if ( this_task == 0 )
     fputs( sep_str, stdout );
+sleep( 2 );
 }
 
 void plot_3d_position( int pt ) {
@@ -817,6 +752,7 @@ void plot_3d_scalar( int pt, enum iofields blk ) {
             get_dataset_name( blk, buf );
             if ( pt != 0 ) {
                 get_dataset_name( blk, buf );
+if ( this_task == 0 )
                 fprintf( stderr, "Particle %i hasn't field: \"%s\"\n", pt, buf );
                 end_run( 3 );
             }
@@ -827,6 +763,7 @@ void plot_3d_scalar( int pt, enum iofields blk ) {
             get_dataset_name( blk, buf );
             if ( pt != 0 ) {
                 get_dataset_name( blk, buf );
+if ( this_task == 0 )
                 fprintf( stderr, "Particle %i hasn't field: \"%s\"\n", pt, buf );
                 end_run( 3 );
             }
@@ -846,6 +783,7 @@ void plot_3d_scalar( int pt, enum iofields blk ) {
         case IO_ELEC:
             get_dataset_name( blk, buf );
             if ( pt != 0 ) {
+if ( this_task == 0 )
                 fprintf( stderr, "Particle %i hasn't field: \"%s\"\n", pt, buf );
                 end_run( 3 );
             }
@@ -879,6 +817,7 @@ void plot_3d_scalar( int pt, enum iofields blk ) {
         case IO_MAG:
             get_dataset_name( blk, buf );
             if ( pt != 0 ) {
+if ( this_task == 0 )
                 fprintf( stderr, "Particle %i hasn't field: \"%s\"\n", pt, buf );
                 end_run( 3 );
             }
@@ -903,6 +842,7 @@ void plot_3d_scalar( int pt, enum iofields blk ) {
             for ( k=0; k<box[2]; k++ ){
                 num += (int)( density[ i*box[1]*box[2] + j*box[2] + k ] );
             }
+if ( this_task == 0 )
     fprintf( stdout, "num = %li\n", num );
     data = ( float* ) malloc( sizeof( float ) * num * 3 );
     n = 0;
@@ -940,9 +880,10 @@ void plot_3d_scalar( int pt, enum iofields blk ) {
 void plot_3d_multi( int flag ) {
     char fn_buf[50], buf[20], title_buf2[300];
     unsigned int bit_flag, i;
-    long n, png_index, num[4];
+    long n, png_index, num[4], naz, nal, iaz, ial;
     PLFLT box[3], sx, sy, sz;
     PLFLT *x[4], *y[4], *z[4], az_local, al_local, *m;
+if ( this_task == 0 )
     fputs( sep_str, stdout );
     box[0] = corner2[0] - corner1[0];
     box[1] = corner2[1] - corner1[1];
@@ -969,6 +910,7 @@ void plot_3d_multi( int flag ) {
                     n++;
                 }
             }
+if ( this_task == 0 )
             fprintf( stdout, "plot fof number: %i\n", num[3] );
         case 2:
             num[2] = 0;
@@ -993,6 +935,7 @@ void plot_3d_multi( int flag ) {
                     n++;
                 }
             }
+if ( this_task == 0 )
             fprintf( stdout, "plot halo number: %i\n", num[2] );
         case 1:
             num[1] = 0;
@@ -1017,6 +960,7 @@ void plot_3d_multi( int flag ) {
                     n++;
                 }
             }
+if ( this_task == 0 )
             fprintf( stdout, "plot star number: %i\n", num[1] );
             num[0] = 0;
             for ( i=0; i<Particle[0].num; i++ ) {
@@ -1040,81 +984,97 @@ void plot_3d_multi( int flag ) {
                 n++;
                 }
             }
+if ( this_task == 0 )
             fprintf( stdout, "plot gas number: %i\n", num[0] );
             break;
     }
-    png_index = 0;
+if ( this_task == 0 )
+    fprintf( stdout, "point number: %i\n", num );
+    nal = ( long ) ( ( al[2]-al[0] ) / al[1] ) + 1;
+    naz = ( long ) ( ( az[2]-az[0] ) / az[1] ) + 1;
+if ( this_task == 0 )
+    fprintf( stdout, "nal = %li, naz = %li\n", nal , naz );
+sleep( 2 );
     for ( al_local=al[0]; al_local<=al[2]; al_local += al[1] )
         for ( az_local=az[0]; az_local<=az[2]; az_local += az[1] ){
-            plsdev( "pngcairo" );
-            //sprintf( fn_buf, "%s_%i_%.2f_%.2f_%.2f.png", out_picture_prefix, pt, redshift, al_local, az_local );
-            sprintf( fn_buf, "%s/%04i.png", out_picture_prefix, png_index );
-            png_index++;
-            fprintf( stdout, "plot: al_local=%lf, az_local=%lf, file name : %s\n",
-                    al_local, az_local, fn_buf );
-            plsfnam( fn_buf );
-            plinit();
-            pladv( 0 );
-            plcol0( 15 );
-            plvpor( 0.0, 1.0, 0.0, 1.0 );
-            //sprintf( title_buf2, "%s\n%s\n%s", title_buf, y_buf, x_buf );
-            //pllab( x_buf, y_buf, title_buf );
-            plwind( -box[0] * sqrt( 3.0 ),
-                     box[0] * sqrt( 3.0 ),
-                    -box[1] * sqrt( 3.0 ),
-                     box[1] * sqrt( 3.0 ) );
-            //plwind( -box[0], box[0], -box[1], box[1] );
-            /*
-            plbox( "bcnt", 0.0, 0,
-                    "bcnt", 0.0, 0 );
-                    */
-            plw3d(  box[0], box[1], box[2],
-                    0.0, box[0],
-                    0.0, box[1],
-                    0.0, box[2],
-                    al_local, az_local );
-            plbox3( "", "", 0.0, 0,
-                    "", "", 0.0, 0,
-                    "", "", 0.0, 0 );
-            bit_flag = 1;
-            for ( i=0; i<12; i++ ){
-                bit_flag = bit_flag << 1;
-                bit_flag ++;
+            ial = ( long ) ( ( al_local-al[0] ) / al[1] );
+            iaz = ( long ) ( ( az_local-az[0] ) / al[1] );
+            if ( ( ial * naz + iaz ) % task_num == this_task ) {
+                plsdev( "pngcairo" );
+                //sprintf( fn_buf, "%s_%i_%.2f_%.2f_%.2f.png", out_picture_prefix, pt, redshift, al_local, az_local );
+                sprintf( fn_buf, "%s/%04i_%04i.png", out_picture_prefix, ial, iaz );
+                fprintf( stdout, "process %3i plot: al_local=%8.2lf, az_local=%8.2lf, file name : %s\n", this_task,
+                        al_local, az_local, fn_buf );
+sleep( 2 );
+                plsfnam( fn_buf );
+                plspage( 300, 300, 1024, 1024, 0, 0 );
+                plinit();
+                pladv( 0 );
+                plcol0( 15 );
+                plvpor( 0.0, 1.0, 0.0, 1.0 );
+                //sprintf( title_buf2, "%s\n%s\n%s", title_buf, y_buf, x_buf );
+                //pllab( x_buf, y_buf, title_buf );
+                plwind( -box[0] * sqrt( 3.0 ),
+                         box[0] * sqrt( 3.0 ),
+                        -box[1] * sqrt( 3.0 ),
+                         box[1] * sqrt( 3.0 ) );
+                //plwind( -box[0], box[0], -box[1], box[1] );
+                /*
+                plbox( "bcnt", 0.0, 0,
+                        "bcnt", 0.0, 0 );
+                        */
+                plw3d(  box[0], box[1], box[2],
+                        0.0, box[0],
+                        0.0, box[1],
+                        0.0, box[2],
+                        al_local, az_local );
+                plbox3( "", "", 0.0, 0,
+                        "", "", 0.0, 0,
+                        "", "", 0.0, 0 );
+                bit_flag = 1;
+                for ( i=0; i<12; i++ ){
+                    bit_flag = bit_flag << 1;
+                    bit_flag ++;
+                }
+                plcol0( 15 );
+                plwidth( 0.2 );
+                plot_box( bit_flag, box );
+                switch ( flag ) {
+                    case 3:
+if ( this_task == 0 )
+                        fputs( "plot fof ...\n", stdout );
+                        plcol0( 15 );
+                        plssym( 0.35, 20 );
+                        plpoin3( (PLINT)(num[3]), x[3], y[3], z[3], 12 );
+                        /*
+                        for ( i=0; i<num[3]; i++ ){
+                            sprintf( buf, "%.1f", m[i] );
+                            sx = x[3][i];
+                            sy = y[3][i];
+                            sz = z[3][i];
+                            plstring3( 1, &sx, &sy, &sz, buf );
+                        }
+                        */
+                    case 2:
+if ( this_task == 0 )
+                        fputs( "plot halo ...\n", stdout );
+                        plcol0( 9 );
+                        plssym( 0.35, 1 );
+                        plpoin3( (PLINT)(num[2]), x[2], y[2], z[2], 1 );
+                    case 1:
+if ( this_task == 0 )
+                        fputs( "plot star ...\n", stdout );
+                        plcol0( 2 );
+                        plssym( 0.35, 1 );
+                        plpoin3( (PLINT)(num[1]), x[1], y[1], z[1], 1 );
+if ( this_task == 0 )
+                        fputs( "plot gas ...\n", stdout );
+                        plcol0( 1 );
+                        plssym( 0.35, 1 );
+                        plpoin3( (PLINT)(num[0]), x[0], y[0], z[0], 1 );
+                }
+                plend();
             }
-            plcol0( 15 );
-            plwidth( 0.2 );
-            plot_box( bit_flag, box );
-            switch ( flag ) {
-                case 3:
-                    fputs( "plot fof ...\n", stdout );
-                    plcol0( 15 );
-                    plssym( 0.35, 20 );
-                    plpoin3( (PLINT)(num[3]), x[3], y[3], z[3], 12 );
-                    /*
-                    for ( i=0; i<num[3]; i++ ){
-                        sprintf( buf, "%.1f", m[i] );
-                        sx = x[3][i];
-                        sy = y[3][i];
-                        sz = z[3][i];
-                        plstring3( 1, &sx, &sy, &sz, buf );
-                    }
-                    */
-                case 2:
-                    fputs( "plot halo ...\n", stdout );
-                    plcol0( 9 );
-                    plssym( 0.35, 1 );
-                    plpoin3( (PLINT)(num[2]), x[2], y[2], z[2], 1 );
-                case 1:
-                    fputs( "plot star ...\n", stdout );
-                    plcol0( 2 );
-                    plssym( 0.35, 1 );
-                    plpoin3( (PLINT)(num[1]), x[1], y[1], z[1], 1 );
-                    fputs( "plot gas ...\n", stdout );
-                    plcol0( 1 );
-                    plssym( 0.35, 1 );
-                    plpoin3( (PLINT)(num[0]), x[0], y[0], z[0], 1 );
-            }
-            plend();
         }
     switch ( flag ) {
         case 3:
@@ -1134,6 +1094,8 @@ void plot_3d_multi( int flag ) {
             free( z[0] );
 
     }
+sleep( 2 );
+if ( this_task == 0 )
     fputs( sep_str, stdout );
 }
 
