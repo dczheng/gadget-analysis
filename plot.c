@@ -752,7 +752,6 @@ void plot_3d_scalar( int pt, enum iofields blk ) {
             get_dataset_name( blk, buf );
             if ( pt != 0 ) {
                 get_dataset_name( blk, buf );
-if ( this_task == 0 )
                 fprintf( stderr, "Particle %i hasn't field: \"%s\"\n", pt, buf );
                 end_run( 3 );
             }
@@ -763,7 +762,6 @@ if ( this_task == 0 )
             get_dataset_name( blk, buf );
             if ( pt != 0 ) {
                 get_dataset_name( blk, buf );
-if ( this_task == 0 )
                 fprintf( stderr, "Particle %i hasn't field: \"%s\"\n", pt, buf );
                 end_run( 3 );
             }
@@ -783,7 +781,6 @@ if ( this_task == 0 )
         case IO_ELEC:
             get_dataset_name( blk, buf );
             if ( pt != 0 ) {
-if ( this_task == 0 )
                 fprintf( stderr, "Particle %i hasn't field: \"%s\"\n", pt, buf );
                 end_run( 3 );
             }
@@ -817,7 +814,6 @@ if ( this_task == 0 )
         case IO_MAG:
             get_dataset_name( blk, buf );
             if ( pt != 0 ) {
-if ( this_task == 0 )
                 fprintf( stderr, "Particle %i hasn't field: \"%s\"\n", pt, buf );
                 end_run( 3 );
             }

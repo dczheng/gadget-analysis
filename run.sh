@@ -3,7 +3,7 @@ make clean
 make 
 #rm -rf png
 #mkdir  png
-mpirun -np 96 ./process_data ./param.in
+mpirun -np 128 ./process_data ./param.in
 :<<BLOCK
 for i in `seq  0 5 360`
 do
