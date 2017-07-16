@@ -56,6 +56,11 @@ if ( this_task == 0 )
 if ( this_task == 0 )
                 fprintf( stdout, "Num_files: %i\n",  Num_files );
             }
+            if ( !strcmp( "PROJECTION_MODE", name ) ) {
+                proj_mode = atoi( data );
+if ( this_task == 0 )
+                fprintf( stdout, "projection mode: %i\n",  proj_mode );
+            }
             if ( !strcmp( "PIC_XSIZE", name ) ) {
                 pic_xsize = atoi( data );
 if ( this_task == 0 )
@@ -216,6 +221,8 @@ void init_sep_str() {
 
 int main( int argc, char *argv[] ){
     int i;
+    time_t time1, time2;
+    struct tm *tb;
     if ( argc < 2 ) {
 if ( this_task == 0 )
         fprintf( stderr, "Parameter file is required on command line!\n " );
@@ -224,24 +231,34 @@ if ( this_task == 0 )
     MPI_Init( &argc, &argv );
     MPI_Comm_rank( MPI_COMM_WORLD, &this_task );
     MPI_Comm_size( MPI_COMM_WORLD, &task_num );
+    time1 = time( NULL );
+    tb = localtime( &time1 );
+    if ( this_task == 0 )
+        fprintf( stdout, "Start At: %s", asctime(tb) );
     init_sep_str();
     strcpy( para_file, argv[1] );
     read_para();
     read_all_data();
     //group_analysis();
-   // plot_slice( 0, IO_MASS );
+    plot_slice( 0, IO_MASS );
    //analysis_radio();
     //plot_slice( 0, IO_MAG );
     //magnetic_field_analysis();
     //density_analysis();
     //plot_position( 1 );
     //plot_3d_position( 4 );
-    plot_3d_multi( 3 );
+    //plot_3d_multi( 3 );
     //plot_3d_scalar( 0, IO_ELEC );
     //velocity_analysis();
     free_all_memory();
     if ( slice_index_num >0 )
         free( slice_index );
     MPI_Finalize();
+    time2 = time( NULL );
+    tb = localtime( &time2 );
+    if ( this_task == 0 ){
+        fprintf( stdout, "End At: %s", asctime(tb) );
+        fprintf( stdout, "Total Time %i\n", time2-time1 );
+    }
 }
 

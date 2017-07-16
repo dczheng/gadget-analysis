@@ -97,14 +97,13 @@ double z_integrand( double z, void *params ) {
     r = sqrt( pow( p[7] - p[2], 2 ) +
               pow( p[8] - p[3], 2 ) +
               pow( z, 2 ) );
-              //pow( p[4], 2 ) );
-    return kernel( z, p[6] );
+    return kernel( r, p[6] );
 }
 
 double y_integrand( double y, void *params ) {
     double epsabs, epsrel, abserr, result, *p;
     size_t subinter;
-    epsabs = epsrel = 1e-7;
+    epsabs = epsrel = 1e-2;
     subinter = 10000;
     p = ( double* ) params;
     gsl_function F;
@@ -114,12 +113,7 @@ double y_integrand( double y, void *params ) {
     F.function = &z_integrand;
     F.params = params;
     gsl_integration_qag( &F, -p[6], p[6], epsabs, epsrel,
-            subinter, GSL_INTEG_GAUSS31, integration_workspace, &result, &abserr );
-    /*
-    gsl_integration_qag( &F, 0, p[6], epsabs, epsrel,
-            subinter, GSL_INTEG_GAUSS31, integration_workspace, &result, &abserr );
-    fprintf( stdout, "result: %lf\n", result );
-            */
+            subinter, GSL_INTEG_GAUSS21, integration_workspace, &result, &abserr );
     gsl_integration_workspace_free( integration_workspace );
     return result;
 }
@@ -127,7 +121,7 @@ double y_integrand( double y, void *params ) {
 double x_integrand( double x, void *params ) {
     double epsabs, epsrel, abserr, result, *p;
     size_t subinter;
-    epsabs = epsrel = 1e-7;
+    epsabs = epsrel = 1e-2;
     subinter = 10000;
     gsl_function F;
     p = ( double* ) params;
@@ -136,8 +130,8 @@ double x_integrand( double x, void *params ) {
     F.params = params;
     gsl_integration_workspace *integration_workspace =
         gsl_integration_workspace_alloc( subinter );
-    gsl_integration_qag( &F, p[1]-p[5]/2.0, p[1]+p[5]/2.0, epsabs, epsrel,
-            subinter, GSL_INTEG_GAUSS31, integration_workspace, &result, &abserr );
+    gsl_integration_qag( &F, p[1], p[1]+p[5], epsabs, epsrel,
+            subinter, GSL_INTEG_GAUSS21, integration_workspace, &result, &abserr );
     gsl_integration_workspace_free( integration_workspace );
     //fprintf( stdout, "y: %e\n", abserr );
     return result;
@@ -146,26 +140,26 @@ double x_integrand( double x, void *params ) {
 double los_integration( double *params ) {
     double epsabs, epsrel, abserr, result;
     size_t subinter;
-    epsabs = epsrel = 1e-7;
+    epsabs = epsrel = 1e-2;
     subinter = 10000;
     gsl_function F;
     F.function = &x_integrand;
     F.params = ( void* )params;
     gsl_integration_workspace *integration_workspace =
         gsl_integration_workspace_alloc( subinter );
-    gsl_integration_qag( &F, params[0]-params[5]/2.0, params[0]+params[5]/2.0, epsabs, epsrel,
-            subinter, GSL_INTEG_GAUSS31, integration_workspace, &result, &abserr );
+    gsl_integration_qag( &F, params[0], params[0]+params[5], epsabs, epsrel,
+            subinter, GSL_INTEG_GAUSS21, integration_workspace, &result, &abserr );
     gsl_integration_workspace_free( integration_workspace );
     //fprintf( stdout, "x: %e\n", abserr );
     return result;
 }
 
 void plot_slice( int pt, enum iofields blk ){
-    float *data, dz, r, *p;
+    float *data, dz, r, *p, r1, r2,u;
     char fn_buf[50], buf[20];
-    long i, N, j, z1, z2, k, test_num, ii, jj, index;
-    long index_i, index_j, index_k;
-    double g, h, params[9], rr1, rr2, rr3, rr4;
+    long i, N, j, z1, z2, k, test_num, ii, jj, index, i1, i2, index1;
+    long index_i, index_j, index_k, flag, index_i1, index_j1, index_k1, kN;
+    double g, h, params[9], rr1, rr2, rr3, rr4, tmp, *kmatrix;
     PLINT nxy[2];
     PLFLT **v3, xymm[4];
     double *v1, *v2;;
@@ -255,14 +249,14 @@ void plot_slice( int pt, enum iofields blk ){
     nxy[1] = pic_ysize;
     plAlloc2dGrid( &v3, nxy[0], nxy[1] );
     v1 = ( double * ) malloc( sizeof( double ) * nxy[0] * nxy[1] );
-    if ( this_task == 0 )
+if ( this_task == 0 )
         v2 = ( double * ) malloc( sizeof( double ) * nxy[0] * nxy[1] );
     N = Particle[pt].num;
-    if ( this_task == 0 )
+if ( this_task == 0 ){
     fputs( sep_str, stdout );
     get_dataset_name( blk, buf );
-    if ( this_task == 0 )
     fprintf( stdout, "plot partilcle %i field: \"%s\" ... \n", pt, buf );
+}
     data = ( float* ) malloc( sizeof( float ) * N * 4 );
     for ( i=0; i<N; i++ ){
         data[ i*4+0 ] = Particle[pt].pos[ i*3+0 ];
@@ -271,14 +265,14 @@ void plot_slice( int pt, enum iofields blk ){
         data[ i*4+3 ] = p[ i ];
     }
     test_num = 10;
-    if ( this_task == 0 ){
+if ( this_task == 0 ){
         fputs( sep_str, stdout );
         for ( i=0; i<test_num; i++ ) {
             fprintf( stdout, "( %15.5f %15.5f %15.5f ):   %e\n",
                     data[ i*4+0 ], data[ i*4+1 ], data[ i*4+2 ],
                     data[ i*4+3 ] );
         }
-    }
+}
     qsort( (void*)data, N, sizeof( float )*4,
                 &compare_for_plot_slice );
     if ( this_task == 0 ){
@@ -288,11 +282,11 @@ void plot_slice( int pt, enum iofields blk ){
                     data[ i*4+0 ], data[ i*4+1 ], data[ i*4+2 ],
                     data[ i*4+3 ] );
         }
-    }
-    if ( this_task == 0 )
+}
+if ( this_task == 0 )
         fputs( sep_str, stdout );
     dz = header.BoxSize / slice_num;
-    if ( this_task == 0 )
+if ( this_task == 0 )
         fprintf( stdout, "slice info: dz=%f\n", dz );
     g = header.BoxSize / nxy[0];
     h = 2.5;
@@ -302,10 +296,37 @@ void plot_slice( int pt, enum iofields blk ){
                 data[ i*4+3 ] *= g * g * h;
             break;
     }
-    if ( this_task == 0 )
-        fprintf( stdout, "g=%f, h=%f\n", g, h );
+/*
+if ( this_task == 0 )
+    fprintf( stdout, "g=%f, h=%f\n", g, h );
     params[5] = g;
     params[6] = h;
+    */
+if ( this_task == 0 )
+    fputs( "initialize kernel matrix ...\n", stdout );
+    kN = 200;
+    kmatrix = ( double* ) malloc( kN * kN * sizeof( double ) );
+    memset( kmatrix, 0,  kN * kN * sizeof(double) );
+    for ( i=0; i<kN; i++ )
+        for ( j=0; j<kN; j++ )
+            for ( k=0; k<kN; k++ ) {
+                r = sqrt( pow( (i-kN/2)*h/kN, 2 ) +
+                          pow( (j-kN/2)*h/kN, 2 ) +
+                          pow( (k-kN/2)*h/kN, 2 ) );
+                kmatrix[ i*kN+j ] += kernel( r, h ) * pow( h/kN, 3 );
+            }
+if ( this_task == 0 ) {
+    FILE *fd;
+    fd = fopen( "kernel.dat", "w" );
+    for ( i=0; i<kN; i++ ) {
+        for ( j=0; j<kN; j++ )
+            fprintf( fd, "%e ", kmatrix[ i*kN+j ] );
+        fprintf( fd, "\n" );
+    }
+    fclose( fd );
+}
+if ( this_task == 0 )
+    fputs( "initialize kernel matrix ... done\n", stdout );
     for ( i=0; i<slice_num; i++ ) {
         for ( j=0; j<slice_index_num; j++ ) {
             if ( i == slice_index[j] ) {
@@ -331,46 +352,6 @@ void plot_slice( int pt, enum iofields blk ){
                                 data[ k*4+3 ] );
                     }
                 }
-                /*
-                for ( ii=0; ii<nxy[0]; ii++ ){
-                    for ( jj=0; jj<nxy[1]; jj++ ) {
-                        index = ii * nxy[1] + jj;
-                        if ( index % task_num == this_task ){
-                            params[0] = ii * g;
-                            params[1] = jj * g;
-                            for ( k=z1; k<z2; k++ ) {
-                            rr1 = sqrt( pow( data[k*4+0]-params[0], 2 ) +
-                                      pow( data[k*4+1]-params[1], 2 ) +
-                                      pow( data[k*4+2], 2 ));
-                            rr2 = sqrt( pow( data[k*4+0]-params[0]-g, 2 ) +
-                                      pow( data[k*4+1]-params[1], 2 ) +
-                                      pow( data[k*4+2], 2 ));
-                            rr3 = sqrt( pow( data[k*4+0]-params[0], 2 ) +
-                                      pow( data[k*4+1]-params[1]-g, 2 ) +
-                                      pow( data[k*4+2], 2 ));
-                            rr4 = sqrt( pow( data[k*4+0]-params[0]-g, 2 ) +
-                                      pow( data[k*4+1]-params[1]-g, 2 ) +
-                                      pow( data[k*4+2], 2 ));
-                            if  ( ( ( data[k*4+0] < ii * g - g ) ||
-                                 ( data[k*4+0] > ii * g + g ) ||
-                                 ( data[k*4+1] < jj * g - g ) ||
-                                 ( data[k*4+1] > jj * g + g ) ) &&
-                                    kernel( rr1, h ) == 0 &&
-                                    kernel( rr2, h ) == 0 &&
-                                    kernel( rr3, h ) == 0 &&
-                                    kernel( rr4, h ) == 0 )
-                                 continue;
-                                params[2] = data[ k*4+0 ];
-                                params[3] = data[ k*4+1 ];
-                                params[4] = data[ k*4+2 ];
-                                v1[ index ] +=  pow( g, -2 ) *
-                                    data[ k*4+3 ] * los_integration( (void*) params );
-                                //fprintf( stdout, "%i %i %e %e %e\n", ii, jj, tmp, v1[ ii * nxy[1] + jj ], data[ k*4+3 ] );
-                            }
-                        }
-                    }
-                }
-                */
                 for ( ii=0; ii<nxy[0]; ii++ )
                     for ( jj=0; jj<nxy[1]; jj++ ){
                         index = ii * nxy[1] + jj;
@@ -380,37 +361,50 @@ void plot_slice( int pt, enum iofields blk ){
                     if ( k % task_num == this_task ) {
                         index_i = ( long )( data[ k*4+0 ] / g );
                         index_j = ( long )( data[ k*4+1 ] / g );
-                        index_k = ( long )( data[ k*4+2 ] / g );
                         index = index_i * nxy[1] + index_j;
-                        v1[ index ] = data[ k*4+3 ];
+                        if ( (long)( ( data[ k*4+0 ]-h ) / g ) != index_i ||
+                             (long)( ( data[ k*4+0 ]+h ) / g ) != index_i ||
+                             (long)( ( data[ k*4+1 ]-h ) / g ) != index_j ||
+                             (long)( ( data[ k*4+1 ]+h ) / g ) != index_j ) {
+                            for ( ii=0; ii<kN; ii++ )
+                                for ( jj=0; jj<kN; jj++ ) {
+                                    index1 = (long) (( ii-kN/2 ) * h / kN + data[ k*4+0 ] / g) * nxy[1] +
+                                             (long) (( jj-kN/2 ) * h / kN + data[ k*4+1 ] / g);
+                                    v1[ index1 ] += pow( g, -2 ) * data[ k*4+3 ] * kmatrix[ ii * kN +jj ];
+                                }
+                        }
+                        else {
+                            v1[ index ] += pow( g, -2 ) * data[ k*4+3 ];
+                        }
                     }
                 }
                 MPI_Reduce( v1, v2, nxy[0]*nxy[1], MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD );
-                if ( this_task == 0 ) {
-                    sprintf( fn_buf, "%s%i_%i", out_picture_prefix, ( int )( i*dz ), ( int )((i+1)*dz) );
-                    for ( ii=0; ii<nxy[0]; ii++ )
-                        for ( jj=0; jj<nxy[1]; jj++ ){
-                            v3[ii][jj]  = ( PLFLT ) ( v2[ ii*nxy[1]+jj ] );
-                        }
-                    generate_2D_img( fn_buf, v3, nxy );
-                    FILE *fd;
-                    fd = fopen( fn_buf, "w" );
-                    for ( ii=0; ii<nxy[0]; ii++ ) {
-                        for ( jj=0; jj<nxy[1]; jj++ ) {
-                            fprintf( fd, "%e ", v2[ ii*nxy[1]+jj ] );
-                        }
-                        fprintf( fd, "\n" );
-                    }
-                    fclose( fd );
-                }
+if ( this_task == 0 ) {
+               sprintf( fn_buf, "%s%i_%i", out_picture_prefix, ( int )( i*dz ), ( int )((i+1)*dz) );
+               for ( ii=0; ii<nxy[0]; ii++ )
+                   for ( jj=0; jj<nxy[1]; jj++ ){
+                       v3[ii][jj]  = ( PLFLT ) ( v2[ ii*nxy[1]+jj ] );
+                   }
+               generate_2D_img( fn_buf, v3, nxy );
+               FILE *fd;
+               fd = fopen( fn_buf, "w" );
+               for ( ii=0; ii<nxy[0]; ii++ ) {
+                   for ( jj=0; jj<nxy[1]; jj++ ) {
+                       fprintf( fd, "%e ", v2[ ii*nxy[1]+jj ] );
+                   }
+                   fprintf( fd, "\n" );
+               }
+               fclose( fd );
+}
             }
         }
     }
     plFree2dGrid( v3, nxy[0], nxy[1] );
     free( v1 );
-    if ( this_task == 0 )
+    free( kmatrix );
+if ( this_task == 0 )
         free( v2 );
-    if ( this_task == 0 )
+if ( this_task == 0 )
     fputs( sep_str, stdout );
     free( data );
     switch ( blk ) {
