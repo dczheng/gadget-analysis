@@ -91,69 +91,6 @@ double kernel( double r, double h ) {
     return 0;
 }
 
-double z_integrand( double z, void *params ) {
-    double r, *p;
-    p = ( double* ) params;
-    r = sqrt( pow( p[7] - p[2], 2 ) +
-              pow( p[8] - p[3], 2 ) +
-              pow( z, 2 ) );
-    return kernel( r, p[6] );
-}
-
-double y_integrand( double y, void *params ) {
-    double epsabs, epsrel, abserr, result, *p;
-    size_t subinter;
-    epsabs = epsrel = 1e-2;
-    subinter = 10000;
-    p = ( double* ) params;
-    gsl_function F;
-    gsl_integration_workspace *integration_workspace =
-        gsl_integration_workspace_alloc( subinter );
-    p[8] = y;
-    F.function = &z_integrand;
-    F.params = params;
-    gsl_integration_qag( &F, -p[6], p[6], epsabs, epsrel,
-            subinter, GSL_INTEG_GAUSS21, integration_workspace, &result, &abserr );
-    gsl_integration_workspace_free( integration_workspace );
-    return result;
-}
-
-double x_integrand( double x, void *params ) {
-    double epsabs, epsrel, abserr, result, *p;
-    size_t subinter;
-    epsabs = epsrel = 1e-2;
-    subinter = 10000;
-    gsl_function F;
-    p = ( double* ) params;
-    p[7] = x;
-    F.function = &y_integrand;
-    F.params = params;
-    gsl_integration_workspace *integration_workspace =
-        gsl_integration_workspace_alloc( subinter );
-    gsl_integration_qag( &F, p[1], p[1]+p[5], epsabs, epsrel,
-            subinter, GSL_INTEG_GAUSS21, integration_workspace, &result, &abserr );
-    gsl_integration_workspace_free( integration_workspace );
-    //fprintf( stdout, "y: %e\n", abserr );
-    return result;
-}
-
-double los_integration( double *params ) {
-    double epsabs, epsrel, abserr, result;
-    size_t subinter;
-    epsabs = epsrel = 1e-2;
-    subinter = 10000;
-    gsl_function F;
-    F.function = &x_integrand;
-    F.params = ( void* )params;
-    gsl_integration_workspace *integration_workspace =
-        gsl_integration_workspace_alloc( subinter );
-    gsl_integration_qag( &F, params[0], params[0]+params[5], epsabs, epsrel,
-            subinter, GSL_INTEG_GAUSS21, integration_workspace, &result, &abserr );
-    gsl_integration_workspace_free( integration_workspace );
-    //fprintf( stdout, "x: %e\n", abserr );
-    return result;
-}
-
 void plot_slice( int pt, enum iofields blk ){
     float *data, dz, r, *p, r1, r2,u;
     char fn_buf[50], buf[20];
