@@ -8,7 +8,7 @@ void generate_2D_img( char *fn_prefix, PLFLT **z, PLINT *nxy ){
     plsdev( "png" );
     plsfnam( buf );
     sprintf( buf, "z=%.2f", redshift );
-    plspage( 300, 300, 1024, 1024, 0, 0 );
+    plspage( 100, 100, 1024, 1024, 0, 0 );
     plinit();
     plcol0( 15 );
     plenv( 0.0, (PLFLT)header.BoxSize/1000 ,
@@ -241,7 +241,7 @@ void plot_slice( int pt, enum iofields blk ){
             for ( i=0; i<Particle[pt].num; i++ ) {
                 p[i] = sqrt( pow( Particle[pt].mag[i*3+0], 2 ) +
                              pow( Particle[pt].mag[i*3+1], 2 ) +
-                             pow( Particle[pt].mag[i*3+2], 2 ) );
+                             pow( Particle[pt].mag[i*3+2], 2 ) ) / scalar_unit;
             }
             break;
     }
@@ -317,6 +317,7 @@ if ( this_task == 0 )
             }
 if ( this_task == 0 ) {
     FILE *fd;
+    fputs( "save kernel data to kernel.dat\n", stdout );
     fd = fopen( "kernel.dat", "w" );
     for ( i=0; i<kN; i++ ) {
         for ( j=0; j<kN; j++ )
@@ -362,14 +363,18 @@ if ( this_task == 0 )
                         index_i = ( long )( data[ k*4+0 ] / g );
                         index_j = ( long )( data[ k*4+1 ] / g );
                         index = index_i * nxy[1] + index_j;
-                        if ( (long)( ( data[ k*4+0 ]-h ) / g ) != index_i ||
+                        if ( (proj_mode == 1 ) &&
+                             ( (long)( ( data[ k*4+0 ]-h ) / g ) != index_i ||
                              (long)( ( data[ k*4+0 ]+h ) / g ) != index_i ||
                              (long)( ( data[ k*4+1 ]-h ) / g ) != index_j ||
-                             (long)( ( data[ k*4+1 ]+h ) / g ) != index_j ) {
+                             (long)( ( data[ k*4+1 ]+h ) / g ) != index_j ) ) {
                             for ( ii=0; ii<kN; ii++ )
                                 for ( jj=0; jj<kN; jj++ ) {
-                                    index1 = (long) (( ii-kN/2 ) * h / kN + data[ k*4+0 ] / g) * nxy[1] +
-                                             (long) (( jj-kN/2 ) * h / kN + data[ k*4+1 ] / g);
+                                    index_i1 = (long) ( ( ( ii-kN/2 ) * h / kN + data[ k*4+0 ] ) / g );
+                                    index_i1 = (long) ( ( ( ii-kN/2 ) * h / kN + data[ k*4+0 ] ) / g );
+                                    if ( index_i1 < 0 || index_i1 > nxy[0] ||
+                                         index_j1 < 0 || index_j1 > nxy[1] ) continue;
+                                    index1 = index_i1 * nxy[1] + index_j1;
                                     v1[ index1 ] += pow( g, -2 ) * data[ k*4+3 ] * kmatrix[ ii * kN +jj ];
                                 }
                         }

@@ -223,6 +223,7 @@ int main( int argc, char *argv[] ){
     int i;
     time_t time1, time2;
     struct tm *tb;
+    char tmp[100];
     if ( argc < 2 ) {
 if ( this_task == 0 )
         fprintf( stderr, "Parameter file is required on command line!\n " );
@@ -240,7 +241,18 @@ if ( this_task == 0 )
     read_para();
     read_all_data();
     //group_analysis();
+    sprintf( tmp, "%s", out_picture_prefix );
+    /*
+    sprintf( out_picture_prefix, "%s/%s", tmp, "gas" );
     plot_slice( 0, IO_MASS );
+    sprintf( out_picture_prefix, "%s/%s", tmp, "dm" );
+    plot_slice( 1, IO_MASS );
+    sprintf( out_picture_prefix, "%s/%s", tmp, "star" );
+    plot_slice( 4, IO_MASS );
+    */
+    sprintf( out_picture_prefix, "%s/%s", tmp, "mag" );
+    plot_slice( 0, IO_MAG );
+    sprintf( out_picture_prefix, "%s", tmp );
    //analysis_radio();
     //plot_slice( 0, IO_MAG );
     //magnetic_field_analysis();
