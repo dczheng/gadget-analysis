@@ -1,6 +1,6 @@
 #include "allvars.h"
 
-void generate_2D_img( char *fn_prefix, PLFLT **z, PLINT *nxy ){
+void generate_2D_img( char *fn_prefix, char *x_buf, char *y_buf, PLFLT **z, PLINT *nxy, int log_flag ){
     char buf[50];
     PLFLT zmin, zmax, colorbar_width, colorbar_heigh;
     PLINT i,j;
@@ -11,10 +11,17 @@ void generate_2D_img( char *fn_prefix, PLFLT **z, PLINT *nxy ){
     plspage( 100, 100, 1024, 1024, 0, 0 );
     plinit();
     plcol0( 15 );
+    /*
+    plvpor( 0.0, 1.0, 0.0, 1.0 );
+    plvpor( 0,0, (PLFLT)header.BoxSize/1000,
+            0.0, (PLFLT)header.Boxsize/1000 );
+    plbox( "n", 0, 0, "n", 0, 0 );
+           */
     plenv( 0.0, (PLFLT)header.BoxSize/1000 ,
            0.0, (PLFLT)header.BoxSize/1000 ,
            1, 0 );
-    pllab( "Mpc", "", buf );
+
+    pllab( x_buf, y_buf, buf );
     //zmin = zmax = z[0][0];
     zmin = zmax = 0;
     for ( i=0; i<nxy[0]; i++ )
@@ -27,13 +34,15 @@ void generate_2D_img( char *fn_prefix, PLFLT **z, PLINT *nxy ){
             zmax = ( z[i][j]>zmax ) ? z[i][j] : zmax;
         }
     zmin = zmin / 10.0;
-    for ( i=0; i<nxy[0]; i++ )
-        for ( j=0; j<nxy[1]; j++ ){
-            if ( z[i][j] == 0 ) z[i][j] = zmin;
-            z[i][j] = log10( z[i][j] );
-        }
-    zmin = log10( zmin );
-    zmax = log10( zmax );
+    if ( log_flag ) {
+        for ( i=0; i<nxy[0]; i++ )
+            for ( j=0; j<nxy[1]; j++ ){
+                if ( z[i][j] == 0 ) z[i][j] = zmin;
+                z[i][j] = log10( z[i][j] );
+            }
+        zmin = log10( zmin );
+        zmax = log10( zmax );
+    }
     fprintf( stdout, "zmin=%e, zmax=%e\n", zmin, zmax );
     plspal1( "./plot.pal", 1 );
     plimage( (PLFLT_MATRIX)z, nxy[0], nxy[1],
@@ -44,7 +53,8 @@ void generate_2D_img( char *fn_prefix, PLFLT **z, PLINT *nxy ){
             0.0, ( PLFLT ) header.BoxSize/1000 );
     //set colorbar
     PLINT n_axis = 1;
-    PLCHAR_VECTOR axis_opts[] = { "bcvtm", };
+    PLCHAR_VECTOR axis_optsl[] = { "vstml", };
+    PLCHAR_VECTOR axis_opts[] = { "vstm", };
     PLFLT axis_ticks[1] = { 0.0, };
     PLINT axis_subticks[1] = { 0, };
     PLINT num_values[1] = { 15 };
@@ -54,10 +64,19 @@ void generate_2D_img( char *fn_prefix, PLFLT **z, PLINT *nxy ){
         values[0][i] = i * ( zmax-zmin ) / num_values[0] + zmin;
     }
     plcol0( 2 );
-    plschr( 0, 0.6 );
-    plcolorbar( &colorbar_width, &colorbar_heigh,
+    plschr( 0, 0.5 );
+    if ( log_flag )
+        plcolorbar( &colorbar_width, &colorbar_heigh,
             PL_COLORBAR_IMAGE, 0,
-            0.02, 0, 0.05, 0.9, 0, 1, 1, 0.0, 0.0, 0.0, 0.0,
+            0.02, 0, 0.03, 0.9, 0, 1, 1, 0.0, 0.0, 0.0, 0.0,
+            0, NULL, NULL,
+            n_axis, axis_optsl,
+            axis_ticks, axis_subticks,
+            num_values, (PLFLT_MATRIX) values );
+    else
+        plcolorbar( &colorbar_width, &colorbar_heigh,
+            PL_COLORBAR_IMAGE, 0,
+            0.02, 0, 0.03, 0.9, 0, 1, 1, 0.0, 0.0, 0.0, 0.0,
             0, NULL, NULL,
             n_axis, axis_opts,
             axis_ticks, axis_subticks,
@@ -93,84 +112,114 @@ double kernel( double r, double h ) {
 
 void plot_slice( int pt, enum iofields blk ){
     float *data, dz, r, *p, r1, r2,u;
-    char fn_buf[50], buf[20];
+    char fn_buf[50], buf[50], x_buf[100], y_buf[100], log_flag, mean_flag;
     long i, N, j, z1, z2, k, test_num, ii, jj, index, i1, i2, index1;
     long index_i, index_j, index_k, flag, index_i1, index_j1, index_k1, kN;
-    double g, h, params[9], rr1, rr2, rr3, rr4, tmp, *kmatrix;
+    double g, h, params[9], rr1, rr2, rr3, rr4, tmp, *kmatrix, g2;
     PLINT nxy[2];
     PLFLT **v3, xymm[4];
     double *v1, *v2;;
     switch ( blk ) {
         case IO_U:
+            get_dataset_name( blk, buf );
             if ( pt != 0 ) {
-                get_dataset_name( blk, buf );
                 fprintf( stderr, "Particle %i hasn't field: \"%s\"\n", pt, buf );
                 end_run( 3 );
             }
+            sprintf( x_buf, "log(%s)", buf );
+            log_flag = 1;
+            mean_flag = 0;
             p = Particle[pt].u;
             break;
         case IO_RHO:
+            get_dataset_name( blk, buf );
             if ( pt != 0 ) {
-                get_dataset_name( blk, buf );
                 fprintf( stderr, "Particle %i hasn't field: \"%s\"\n", pt, buf );
                 end_run( 3 );
             }
+            sprintf( x_buf, "log(%s)(10^10Msun/Kpc^2)", buf );
+            log_flag = 1;
+            mean_flag = 1;
             p = Particle[pt].rho;
             break;
         case IO_MASS:
+            get_dataset_name( blk, buf );
             p = Particle[pt].m;
+            sprintf( x_buf, "log(%s)(10^10Msun/Kpc^2)", buf );
+            log_flag = 1;
+            mean_flag = 1;
             break;
         case IO_POT:
+            get_dataset_name( blk, buf );
             if ( pt != 0 ) {
-                get_dataset_name( blk, buf );
                 fprintf( stderr, "Particle %i hasn't field: \"%s\"\n", pt, buf );
                 end_run( 3 );
             }
+            sprintf( x_buf, "log(%s)", buf );
+            log_flag = 1;
+            mean_flag = 0;
             p = Particle[pt].pot;
             break;
         case IO_MN:
+            get_dataset_name( blk, buf );
             if ( pt != 0 ) {
-                get_dataset_name( blk, buf );
                 fprintf( stderr, "Particle %i hasn't field: \"%s\"\n", pt, buf );
                 end_run( 3 );
             }
+            sprintf( x_buf, "%s", buf );
+            log_flag = 0;
+            mean_flag = 0;
             p = Particle[pt].mn;
             break;
         case IO_J:
+            get_dataset_name( blk, buf );
             if ( pt != 0 ) {
-                get_dataset_name( blk, buf );
                 fprintf( stderr, "Particle %i hasn't field: \"%s\"\n", pt, buf );
                 end_run( 3 );
             }
+            sprintf( x_buf, "log(%s)", buf );
+            log_flag = 1;
+            mean_flag = 0;
             p = Particle[pt].j;
             break;
         case IO_ELEC:
+            get_dataset_name( blk, buf );
             if ( pt != 0 ) {
-                get_dataset_name( blk, buf );
                 fprintf( stderr, "Particle %i hasn't field: \"%s\"\n", pt, buf );
                 end_run( 3 );
             }
+            sprintf( x_buf, "%s", buf );
+            log_flag = 0;
+            mean_flag = 0;
             p = Particle[pt].elec;
             break;
         case IO_VEL:
+            get_dataset_name( blk, buf );
             p = ( float* ) malloc( sizeof(float) * Particle[pt].num );
             for ( i=0; i<Particle[pt].num; i++ ) {
                 p[i] = sqrt( pow( Particle[pt].vel[i*3+0], 2 ) +
                              pow( Particle[pt].vel[i*3+1], 2 ) +
                              pow( Particle[pt].vel[i*3+2], 2 ) );
             }
+            sprintf( x_buf, "%s(km/s^2)", buf );
+            log_flag = 0;
+            mean_flag = 0;
             break;
         case IO_ACCEL:
+            get_dataset_name( blk, buf );
             p = ( float* ) malloc( sizeof(float) * Particle[pt].num );
             for ( i=0; i<Particle[pt].num; i++ ) {
                 p[i] = sqrt( pow( Particle[pt].accel[i*3+0], 2 ) +
                              pow( Particle[pt].accel[i*3+1], 2 ) +
                              pow( Particle[pt].accel[i*3+2], 2 ) );
             }
+            log_flag = 0;
+            mean_flag = 0;
+            sprintf( x_buf, "%s", buf );
             break;
         case IO_MAG:
+            get_dataset_name( blk, buf );
             if ( pt != 0 ) {
-                get_dataset_name( blk, buf );
                 fprintf( stderr, "Particle %i hasn't field: \"%s\"\n", pt, buf );
                 end_run( 3 );
             }
@@ -180,6 +229,9 @@ void plot_slice( int pt, enum iofields blk ){
                              pow( Particle[pt].mag[i*3+1], 2 ) +
                              pow( Particle[pt].mag[i*3+2], 2 ) ) / scalar_unit;
             }
+            sprintf( x_buf, "log(%s)(uG/Kpc^2)", buf );
+            log_flag = 1;
+            mean_flag = 1;
             break;
     }
     nxy[0] = pic_xsize;
@@ -210,18 +262,19 @@ if ( this_task == 0 ){
                     data[ i*4+3 ] );
         }
 }
-    qsort( (void*)data, N, sizeof( float )*4,
+    if ( slice_num > 1 ) {
+        qsort( (void*)data, N, sizeof( float )*4,
                 &compare_for_plot_slice );
-    if ( this_task == 0 ){
-        fputs( "Sorted by z: \n", stdout );
-        for ( i=0; i<test_num; i++ ) {
-            fprintf( stdout, "( %15.5f %15.5f %15.5f ):   %e\n",
-                    data[ i*4+0 ], data[ i*4+1 ], data[ i*4+2 ],
-                    data[ i*4+3 ] );
-        }
-}
-if ( this_task == 0 )
+        if ( this_task == 0 ){
+            fputs( "Sorted by z: \n", stdout );
+            for ( i=0; i<test_num; i++ ) {
+                fprintf( stdout, "( %15.5f %15.5f %15.5f ):   %e\n",
+                        data[ i*4+0 ], data[ i*4+1 ], data[ i*4+2 ],
+                        data[ i*4+3 ] );
+            }
         fputs( sep_str, stdout );
+        }
+    }
     dz = header.BoxSize / slice_num;
 if ( this_task == 0 )
         fprintf( stdout, "slice info: dz=%f\n", dz );
@@ -239,19 +292,22 @@ if ( this_task == 0 )
     params[5] = g;
     params[6] = h;
     */
+    if ( proj_mode == 1 ) {
 if ( this_task == 0 )
     fputs( "initialize kernel matrix ...\n", stdout );
-    kN = 200;
-    kmatrix = ( double* ) malloc( kN * kN * sizeof( double ) );
-    memset( kmatrix, 0,  kN * kN * sizeof(double) );
-    for ( i=0; i<kN; i++ )
-        for ( j=0; j<kN; j++ )
-            for ( k=0; k<kN; k++ ) {
-                r = sqrt( pow( (i-kN/2)*h/kN, 2 ) +
-                          pow( (j-kN/2)*h/kN, 2 ) +
-                          pow( (k-kN/2)*h/kN, 2 ) );
-                kmatrix[ i*kN+j ] += kernel( r, h ) * pow( h/kN, 3 );
+        kN = 200;
+        kmatrix = ( double* ) malloc( kN * kN * sizeof( double ) );
+        memset( kmatrix, 0,  kN * kN * sizeof(double) );
+        for ( i=0; i<kN; i++ )
+            for ( j=0; j<kN; j++ )
+                for ( k=0; k<kN; k++ ) {
+                    r = sqrt( pow( (i-kN/2)*h/kN, 2 ) +
+                              pow( (j-kN/2)*h/kN, 2 ) +
+                              pow( (k-kN/2)*h/kN, 2 ) );
+                    kmatrix[ i*kN+j ] += kernel( r, h ) * pow( h/kN, 3 );
             }
+    }
+/*
 if ( this_task == 0 ) {
     FILE *fd;
     fputs( "save kernel data to kernel.dat\n", stdout );
@@ -263,8 +319,14 @@ if ( this_task == 0 ) {
     }
     fclose( fd );
 }
+*/
+
 if ( this_task == 0 )
     fputs( "initialize kernel matrix ... done\n", stdout );
+    if ( mean_flag )
+        g2 = 1;
+    else
+        g2 = pow( g, 2 );
     for ( i=0; i<slice_num; i++ ) {
         for ( j=0; j<slice_index_num; j++ ) {
             if ( i == slice_index[j] ) {
@@ -312,38 +374,47 @@ if ( this_task == 0 )
                                     if ( index_i1 < 0 || index_i1 > nxy[0] ||
                                          index_j1 < 0 || index_j1 > nxy[1] ) continue;
                                     index1 = index_i1 * nxy[1] + index_j1;
-                                    v1[ index1 ] += pow( g, -2 ) * data[ k*4+3 ] * kmatrix[ ii * kN +jj ];
+                                    v1[ index1 ] += data[ k*4+3 ] * kmatrix[ ii * kN +jj ] / g2;
                                 }
+                            //fprintf( stdout, "index1: %li\n", index1 );
                         }
                         else {
-                            v1[ index ] += pow( g, -2 ) * data[ k*4+3 ];
+                            if ( index_i < 0 || index_i > nxy[0] ||
+                                 index_j < 0 || index_j > nxy[1] ) continue;
+                            v1[ index ] += data[ k*4+3 ] / g2;
+#ifdef DEBUG
+                            debug_l = index;
+#endif
                         }
                     }
                 }
                 MPI_Reduce( v1, v2, nxy[0]*nxy[1], MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD );
 if ( this_task == 0 ) {
-               sprintf( fn_buf, "%s%i_%i", out_picture_prefix, ( int )( i*dz ), ( int )((i+1)*dz) );
+               sprintf( fn_buf, "%s_%i_%i", out_picture_prefix, ( int )( i*dz ), ( int )((i+1)*dz) );
                for ( ii=0; ii<nxy[0]; ii++ )
                    for ( jj=0; jj<nxy[1]; jj++ ){
                        v3[ii][jj]  = ( PLFLT ) ( v2[ ii*nxy[1]+jj ] );
                    }
-               generate_2D_img( fn_buf, v3, nxy );
-               FILE *fd;
-               fd = fopen( fn_buf, "w" );
-               for ( ii=0; ii<nxy[0]; ii++ ) {
-                   for ( jj=0; jj<nxy[1]; jj++ ) {
-                       fprintf( fd, "%e ", v2[ ii*nxy[1]+jj ] );
-                   }
-                   fprintf( fd, "\n" );
+               generate_2D_img( fn_buf, x_buf, "Mpc", v3, nxy, log_flag );
+               if ( out_pic_data ) {
+                    FILE *fd;
+                    fd = fopen( fn_buf, "w" );
+                    for ( ii=0; ii<nxy[0]; ii++ ) {
+                        for ( jj=0; jj<nxy[1]; jj++ ) {
+                           fprintf( fd, "%e ", v2[ ii*nxy[1]+jj ] );
+                        }
+                       fprintf( fd, "\n" );
+                    }
+                    fclose( fd );
                }
-               fclose( fd );
 }
             }
         }
     }
     plFree2dGrid( v3, nxy[0], nxy[1] );
     free( v1 );
-    free( kmatrix );
+    if ( proj_mode == 1 )
+        free( kmatrix );
 if ( this_task == 0 )
         free( v2 );
 if ( this_task == 0 )
@@ -377,13 +448,15 @@ void plot_position( int pt ) {
     for ( i=0; i<test_num; i++ ) {
         fprintf( stdout, "%f %f %f\n", pos[i*3+0], pos[i*3+1], pos[i*3+2] );
     }
-    fputs( "Sorted by z: \n", stdout );
-    qsort( (void*)pos, Particle[pt].num, sizeof( float )*3,
+    if ( slice_num > 1 ){
+        fputs( "Sorted by z: \n", stdout );
+        qsort( (void*)pos, Particle[pt].num, sizeof( float )*3,
                 &compare_for_plot_position );
-    for ( i=0; i<test_num; i++ ) {
-        fprintf( stdout, "%f %f %f\n", pos[i*3+0], pos[i*3+1], pos[i*3+2] );
+        for ( i=0; i<test_num; i++ ) {
+            fprintf( stdout, "%f %f %f\n", pos[i*3+0], pos[i*3+1], pos[i*3+2] );
+        }
+        fprintf( stdout, "\n" );
     }
-    fprintf( stdout, "\n" );
     dz = header.BoxSize / slice_num;
     fprintf( stdout, "dz = %f\n", dz );
     for ( i=0; i<slice_num; i++ ) {

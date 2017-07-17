@@ -8,11 +8,19 @@ char sep_str[ SEP_LEN ];
 char group_dir[ FILENAME_MAX ];
 int Num_files, box[3], TotNgroups;
 float redshift, al[3], az[3], corner1[3], corner2[3], scalar_unit;
-int this_task, task_num, proj_mode;
+int this_task, task_num, proj_mode, out_pic_data;
 
 struct particle_struct Particle[6];
 struct io_header header;
 struct group_struct *group;
+
+#ifdef DEBUG
+    float debug_f;
+    int debug_i;
+    long debug_l;
+    double debug_d;
+    char debug_s[200];
+#endif
 
 
 hid_t hdf5_file, hdf5_group, hdf5_dataset, hdf5_dataspace_in_file, hdf5_dataspace_in_memory, hdf5_dataspace, hdf5_type, hdf5_hdf5_type_mem, hdf5_attribute;

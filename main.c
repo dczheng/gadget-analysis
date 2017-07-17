@@ -61,6 +61,11 @@ if ( this_task == 0 )
 if ( this_task == 0 )
                 fprintf( stdout, "projection mode: %i\n",  proj_mode );
             }
+            if ( !strcmp( "OUT_PIC_DATA", name ) ) {
+                out_pic_data = atoi( data );
+if ( this_task == 0 )
+                fprintf( stdout, "out_pic_data: %i\n",  out_pic_data );
+            }
             if ( !strcmp( "PIC_XSIZE", name ) ) {
                 pic_xsize = atoi( data );
 if ( this_task == 0 )
@@ -232,6 +237,9 @@ if ( this_task == 0 )
     MPI_Init( &argc, &argv );
     MPI_Comm_rank( MPI_COMM_WORLD, &this_task );
     MPI_Comm_size( MPI_COMM_WORLD, &task_num );
+#ifdef DEBUG
+    signal( SIGSEGV, signal_hander );
+#endif
     time1 = time( NULL );
     tb = localtime( &time1 );
     if ( this_task == 0 )
@@ -242,16 +250,18 @@ if ( this_task == 0 )
     read_all_data();
     //group_analysis();
     sprintf( tmp, "%s", out_picture_prefix );
-    /*
-    sprintf( out_picture_prefix, "%s/%s", tmp, "gas" );
+    sprintf( out_picture_prefix, "%s/%s_%.2f", tmp, "gas", redshift );
     plot_slice( 0, IO_MASS );
-    sprintf( out_picture_prefix, "%s/%s", tmp, "dm" );
+    sprintf( out_picture_prefix, "%s/%s_%.2f", tmp, "dm", redshift );
     plot_slice( 1, IO_MASS );
-    sprintf( out_picture_prefix, "%s/%s", tmp, "star" );
-    plot_slice( 4, IO_MASS );
-    */
-    sprintf( out_picture_prefix, "%s/%s", tmp, "mag" );
+    if ( header.npart[4] != 0 ) {
+        sprintf( out_picture_prefix, "%s/%s_%.2f", tmp, "star", redshift );
+        plot_slice( 4, IO_MASS );
+    }
+    sprintf( out_picture_prefix, "%s/%s_%.2f", tmp, "mag", redshift );
     plot_slice( 0, IO_MAG );
+    sprintf( out_picture_prefix, "%s/%s_%.2f", tmp, "mn", redshift );
+    plot_slice( 0, IO_MN );
     sprintf( out_picture_prefix, "%s", tmp );
    //analysis_radio();
     //plot_slice( 0, IO_MAG );
