@@ -228,3 +228,4 @@ void plot_3d_multi( int flag );
 void read_group();
 void free_group();
 void signal_hander( int sig );
+void end_run( int ierr );
