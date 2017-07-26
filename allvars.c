@@ -8,7 +8,8 @@ char sep_str[ SEP_LEN ];
 char group_dir[ FILENAME_MAX ];
 int Num_files, box[3], TotNgroups;
 float redshift, al[3], az[3], corner1[3], corner2[3], scalar_unit;
-int this_task, task_num, proj_mode, out_pic_data;
+float slice_corner1[2], slice_corner2[2];
+int this_task, task_num, proj_mode, out_pic_data, flag_arrow, arrow_x, arrow_y;
 
 struct particle_struct Particle[6];
 struct io_header header;

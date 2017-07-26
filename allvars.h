@@ -195,7 +195,8 @@ extern char sep_str[ SEP_LEN ];
 extern int Num_files, TotNgroups;
 extern int slice_num, slice_index_num, *slice_index, pic_xsize, pic_ysize, box[3];
 extern float redshift, al[3], az[3], corner1[3], corner2[3], scalar_unit;
-extern int this_task, task_num, proj_mode, out_pic_data;
+extern float slice_corner1[2], slice_corner2[2];
+extern int this_task, task_num, proj_mode, out_pic_data, flag_arrow, arrow_x, arrow_y;
 
 #ifdef DEBUG
     extern float debug_f;

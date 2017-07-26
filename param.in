@@ -6,14 +6,19 @@ OUT_PICTURE_PREFIX ./test
 SLICE_NUM 1
 SLICE_INDEX_NUM 1
 SLICE_INDEX 0
-PIC_XSIZE 1024
-PIC_YSIZE 1024
+SLICE_CORNER1 55000 55000
+SLICE_CORNER2 65000 65000
+FLAG_ARROW 1
+ARROW_X 64
+ARROW_Y 64
+PIC_XSIZE 256
+PIC_YSIZE 256
 3D_BOX 512 512 512
 SCALAR_UNIT 1e-6
 3D_AL 10.0 1.0 10.0
 3D_AZ 00.0 5.0 360.0
 3D_CORNER1 0.0 0.0 0.0
 3D_CORNER2 20000.0 20000.0 20000.0
-GROUP_DIR /mnt/ddnfs/data_users/xllian/Simulate_Radio/Gadget3_Simulation/cool_feedbak_init_mag_bh_fof_209/outputs/groups_000/
+GROUP_DIR /mnt/ddnfs/data_users/xllian/Simulate_Radio/Gadget3_Simulation/cool_feedbak_init_mag_bh_fof_1677/outputs/groups_023
 PROJECTION_MODE 0
 OUT_PIC_DATA 0

@@ -147,6 +147,7 @@ double gamma( double x ) {
 }
 
 void analysis_radio() {
+    /*
     double alpha_e, alpha, sigma_pp, sigma_t, me, mp, GeV, C, e;
     double Bcmb, alpha_v, XHe, Ecmb, Ce, Ae, Bc, C_phy, Eb, v, gamma_fac, q_phy;
     long i;
@@ -198,4 +199,5 @@ void analysis_radio() {
                 C_phy, q_phy, Eb, Ce, Bc, Ae,  Particle[0].j[i] );
     }
     //plot_slice( 0, IO_J );
+    */
 }

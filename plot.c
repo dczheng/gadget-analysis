@@ -1,9 +1,13 @@
 #include "allvars.h"
 
-void generate_2D_img( char *fn_prefix, char *x_buf, char *y_buf, PLFLT **z, PLINT *nxy, int log_flag ){
+void generate_2D_img( char *fn_prefix, char *x_buf, char *y_buf, PLFLT **z, PLINT *nxy,
+        int log_flag, PLFLT *xymm, PLFLT **u, PLFLT **v, PLcGrid2 *cgrid2, PLINT *anxy, int flag_a ){
     char buf[50];
     PLFLT zmin, zmax, colorbar_width, colorbar_heigh;
     PLINT i,j;
+    PLFLT arr_x[6] = { -0.5, 0.5, 0.3, 0.5, 0.3, 0.5 };
+    PLFLT arr_y[6] = { 0.0, 0.0, 0.2, 0.0, -0.2, 0.0 };
+    PLINT arr_n = 6;
     sprintf( buf, "%s.png", fn_prefix );
     plsdev( "png" );
     plsfnam( buf );
@@ -17,10 +21,9 @@ void generate_2D_img( char *fn_prefix, char *x_buf, char *y_buf, PLFLT **z, PLIN
             0.0, (PLFLT)header.Boxsize/1000 );
     plbox( "n", 0, 0, "n", 0, 0 );
            */
-    plenv( 0.0, (PLFLT)header.BoxSize/1000 ,
-           0.0, (PLFLT)header.BoxSize/1000 ,
+    plenv( xymm[0]/1000, xymm[1]/1000 ,
+           xymm[2]/1000, xymm[3]/1000 ,
            1, 0 );
-
     pllab( x_buf, y_buf, buf );
     //zmin = zmax = z[0][0];
     zmin = zmax = 0;
@@ -46,11 +49,11 @@ void generate_2D_img( char *fn_prefix, char *x_buf, char *y_buf, PLFLT **z, PLIN
     fprintf( stdout, "zmin=%e, zmax=%e\n", zmin, zmax );
     plspal1( "./plot.pal", 1 );
     plimage( (PLFLT_MATRIX)z, nxy[0], nxy[1],
-            0.0, ( PLFLT ) header.BoxSize/1000,
-            0.0, ( PLFLT ) header.BoxSize/1000,
+            xymm[0]/1000, xymm[1]/1000,
+            xymm[2]/1000, xymm[3]/1000,
             zmin, zmax,
-            0.0, ( PLFLT ) header.BoxSize/1000,
-            0.0, ( PLFLT ) header.BoxSize/1000 );
+            xymm[0]/1000, xymm[1]/1000,
+            xymm[2]/1000, xymm[3]/1000 );
     //set colorbar
     PLINT n_axis = 1;
     PLCHAR_VECTOR axis_optsl[] = { "vstml", };
@@ -83,6 +86,13 @@ void generate_2D_img( char *fn_prefix, char *x_buf, char *y_buf, PLFLT **z, PLIN
             num_values, (PLFLT_MATRIX) values );
     free( values[0] );
     //set colorbar
+    if ( flag_a ) {
+    plcol0( 15 );
+if ( this_task == 0 )
+    fputs( "plot arrow ...\n", stdout );
+    plsvect( arr_x, arr_y, arr_n, 0 );
+    plvect( (PLFLT_MATRIX)u, ( PLFLT_MATRIX )v, anxy[0], anxy[1], 0.0, pltr2, (void*)cgrid2 );
+    }
     plend();
 }
 
@@ -111,14 +121,25 @@ double kernel( double r, double h ) {
 }
 
 void plot_slice( int pt, enum iofields blk ){
-    float *data, dz, r, *p, r1, r2,u;
+    float *data, dz, r, *p, r1, r2;
     char fn_buf[50], buf[50], x_buf[100], y_buf[100], log_flag, mean_flag;
     long i, N, j, z1, z2, k, test_num, ii, jj, index, i1, i2, index1;
     long index_i, index_j, index_k, flag, index_i1, index_j1, index_k1, kN;
-    double g, h, params[9], rr1, rr2, rr3, rr4, tmp, *kmatrix, g2;
-    PLINT nxy[2];
-    PLFLT **v3, xymm[4];
+    double g, h, rr1, rr2, rr3, rr4, tmp, *kmatrix, g2, ag, max_mag;
+    PLINT nxy[2], anxy[2];
+    PLFLT **v3, xymm[4], **u, **v;
+    PLcGrid2 cgrid2;
     double *v1, *v2;;
+    xymm[0] = (PLFLT) slice_corner1[0];
+    xymm[1] = (PLFLT) slice_corner2[0];
+    xymm[2] = (PLFLT) slice_corner1[1];
+    xymm[3] = (PLFLT) slice_corner2[1];
+    nxy[0] = pic_xsize;
+    nxy[1] = pic_ysize;
+    anxy[0] = arrow_x;
+    anxy[1] = arrow_y;
+    cgrid2.nx = anxy[0];
+    cgrid2.ny = anxy[1];
     switch ( blk ) {
         case IO_U:
             get_dataset_name( blk, buf );
@@ -141,11 +162,19 @@ void plot_slice( int pt, enum iofields blk ){
             log_flag = 1;
             mean_flag = 1;
             p = Particle[pt].rho;
+            plAlloc2dGrid( &u, anxy[0], anxy[1] );
+            plAlloc2dGrid( &v, anxy[0], anxy[1] );
+            plAlloc2dGrid( &cgrid2.xg, anxy[0], anxy[1] );
+            plAlloc2dGrid( &cgrid2.yg, anxy[0], anxy[1] );
             break;
         case IO_MASS:
             get_dataset_name( blk, buf );
             p = Particle[pt].m;
             sprintf( x_buf, "log(%s)(10^10Msun/Kpc^2)", buf );
+            plAlloc2dGrid( &u, anxy[0], anxy[1] );
+            plAlloc2dGrid( &v, anxy[0], anxy[1] );
+            plAlloc2dGrid( &cgrid2.xg, anxy[0], anxy[1] );
+            plAlloc2dGrid( &cgrid2.yg, anxy[0], anxy[1] );
             log_flag = 1;
             mean_flag = 1;
             break;
@@ -202,6 +231,10 @@ void plot_slice( int pt, enum iofields blk ){
                              pow( Particle[pt].vel[i*3+2], 2 ) );
             }
             sprintf( x_buf, "%s(km/s^2)", buf );
+            plAlloc2dGrid( &u, anxy[0], anxy[1] );
+            plAlloc2dGrid( &v, anxy[0], anxy[1] );
+            plAlloc2dGrid( &cgrid2.xg, anxy[0], anxy[1] );
+            plAlloc2dGrid( &cgrid2.yg, anxy[0], anxy[1] );
             log_flag = 0;
             mean_flag = 0;
             break;
@@ -229,48 +262,108 @@ void plot_slice( int pt, enum iofields blk ){
                              pow( Particle[pt].mag[i*3+1], 2 ) +
                              pow( Particle[pt].mag[i*3+2], 2 ) ) / scalar_unit;
             }
+            plAlloc2dGrid( &u, anxy[0], anxy[1] );
+            plAlloc2dGrid( &v, anxy[0], anxy[1] );
+            plAlloc2dGrid( &cgrid2.xg, anxy[0], anxy[1] );
+            plAlloc2dGrid( &cgrid2.yg, anxy[0], anxy[1] );
             sprintf( x_buf, "log(%s)(uG/Kpc^2)", buf );
             log_flag = 1;
             mean_flag = 1;
             break;
     }
-    nxy[0] = pic_xsize;
-    nxy[1] = pic_ysize;
     plAlloc2dGrid( &v3, nxy[0], nxy[1] );
     v1 = ( double * ) malloc( sizeof( double ) * nxy[0] * nxy[1] );
 if ( this_task == 0 )
         v2 = ( double * ) malloc( sizeof( double ) * nxy[0] * nxy[1] );
-    N = Particle[pt].num;
+    //N = Particle[pt].num;
 if ( this_task == 0 ){
     fputs( sep_str, stdout );
     get_dataset_name( blk, buf );
     fprintf( stdout, "plot partilcle %i field: \"%s\" ... \n", pt, buf );
 }
-    data = ( float* ) malloc( sizeof( float ) * N * 4 );
-    for ( i=0; i<N; i++ ){
-        data[ i*4+0 ] = Particle[pt].pos[ i*3+0 ];
-        data[ i*4+1 ] = Particle[pt].pos[ i*3+1 ];
-        data[ i*4+2 ] = Particle[pt].pos[ i*3+2 ];
-        data[ i*4+3 ] = p[ i ];
+    N = 0;
+    max_mag = -1;
+    for ( i=0; i<Particle[pt].num; i++ ) {
+        if ( Particle[pt].pos[i*3+0] >= slice_corner1[0] &&
+             Particle[pt].pos[i*3+0] <= slice_corner2[0] &&
+             Particle[pt].pos[i*3+1] >= slice_corner1[1] &&
+             Particle[pt].pos[i*3+1] <= slice_corner2[1] ){
+            N++;
+            switch ( blk ) {
+                case IO_MAG:
+                    if ( p[i] > max_mag ) max_mag = p[i];
+                    break;
+            }
+        }
+    }
+if ( this_task == 0 )
+    fprintf( stdout, "total point number: %li\n", N );
+    data = ( float* ) malloc( sizeof( float ) * N * 6 );
+    index = 0;
+    for ( i=0; i<Particle[pt].num; i++ ){
+        if ( Particle[pt].pos[i*3+0] >= slice_corner1[0] &&
+             Particle[pt].pos[i*3+0] <= slice_corner2[0] &&
+             Particle[pt].pos[i*3+1] >= slice_corner1[1] &&
+             Particle[pt].pos[i*3+1] <= slice_corner2[1] ) {
+                data[ index*6+0 ] = Particle[pt].pos[ i*3+0 ];
+                data[ index*6+1 ] = Particle[pt].pos[ i*3+1 ];
+                data[ index*6+2 ] = Particle[pt].pos[ i*3+2 ];
+                data[ index*6+3 ] = p[ i ];
+                switch ( blk ) {
+                    case IO_MAG:
+                        data[ index*6+4 ] = Particle[pt].mag[ i*3+0 ] / scalar_unit / max_mag;
+                        /*
+                            sqrt( pow( Particle[pt].mag[ i*3+0 ], 2 ) +
+                                  pow( Particle[pt].mag[ i*3+1 ], 2 ) +
+                                  pow( Particle[pt].mag[ i*3+2 ], 2 ) );
+                                  */
+                        data[ index*6+5 ] = Particle[pt].mag[ i*3+1 ] / scalar_unit / max_mag;
+                        /*
+                            sqrt( pow( Particle[pt].mag[ i*3+0 ], 2 ) +
+                                  pow( Particle[pt].mag[ i*3+1 ], 2 ) +
+                                  pow( Particle[pt].mag[ i*3+2 ], 2 ) );
+                                  */
+                        break;
+                    case IO_MASS:
+                    case IO_RHO:
+                    case IO_VEL:
+                        data[ index*6+4 ] = Particle[pt].vel[ i*3+0 ] / scalar_unit;
+                        data[ index*6+4 ] = log10( data[ index*6+4 ] );
+                        /*
+                            sqrt( pow( Particle[pt].vel[ i*3+0 ], 2 ) +
+                                  pow( Particle[pt].vel[ i*3+1 ], 2 ) +
+                                  pow( Particle[pt].vel[ i*3+2 ], 2 ) );
+                                  */
+                        data[ index*6+5 ] = Particle[pt].vel[ i*3+1 ] / scalar_unit;
+                        data[ index*6+5 ] = log10( data[ index*6+5 ] );
+                        /*
+                            sqrt( pow( Particle[pt].vel[ i*3+0 ], 2 ) +
+                                  pow( Particle[pt].vel[ i*3+1 ], 2 ) +
+                                  pow( Particle[pt].vel[ i*3+2 ], 2 ) );
+                                  */
+                        break;
+                }
+                index++;
+        }
     }
     test_num = 10;
 if ( this_task == 0 ){
         fputs( sep_str, stdout );
         for ( i=0; i<test_num; i++ ) {
             fprintf( stdout, "( %15.5f %15.5f %15.5f ):   %e\n",
-                    data[ i*4+0 ], data[ i*4+1 ], data[ i*4+2 ],
-                    data[ i*4+3 ] );
+                    data[ i*6+0 ], data[ i*6+1 ], data[ i*6+2 ],
+                    data[ i*6+3 ] );
         }
 }
     if ( slice_num > 1 ) {
-        qsort( (void*)data, N, sizeof( float )*4,
+        qsort( (void*)data, N, sizeof( float )*6,
                 &compare_for_plot_slice );
         if ( this_task == 0 ){
             fputs( "Sorted by z: \n", stdout );
             for ( i=0; i<test_num; i++ ) {
                 fprintf( stdout, "( %15.5f %15.5f %15.5f ):   %e\n",
-                        data[ i*4+0 ], data[ i*4+1 ], data[ i*4+2 ],
-                        data[ i*4+3 ] );
+                        data[ i*6+0 ], data[ i*6+1 ], data[ i*6+2 ],
+                        data[ i*6+3 ] );
             }
         fputs( sep_str, stdout );
         }
@@ -278,20 +371,17 @@ if ( this_task == 0 ){
     dz = header.BoxSize / slice_num;
 if ( this_task == 0 )
         fprintf( stdout, "slice info: dz=%f\n", dz );
-    g = header.BoxSize / nxy[0];
+    g = ( slice_corner2[0] - slice_corner1[0] ) / nxy[0];
+    ag = ( slice_corner2[0] - slice_corner1[0] ) / anxy[0];
     h = 2.5;
     switch( blk ) {
         case IO_RHO:
             for ( i=0; i<N; i++ )
-                data[ i*4+3 ] *= g * g * h;
+                data[ i*6+3 ] *= g * g * h;
             break;
     }
-/*
 if ( this_task == 0 )
     fprintf( stdout, "g=%f, h=%f\n", g, h );
-    params[5] = g;
-    params[6] = h;
-    */
     if ( proj_mode == 1 ) {
 if ( this_task == 0 )
     fputs( "initialize kernel matrix ...\n", stdout );
@@ -331,10 +421,10 @@ if ( this_task == 0 )
         for ( j=0; j<slice_index_num; j++ ) {
             if ( i == slice_index[j] ) {
                 z1 = 0;
-                while ( data[ z1*4+2 ] < i * dz ) z1++;
+                while ( data[ z1*6+2 ] < i * dz ) z1++;
                 z2 = z1;
-                while ( data[ z2*4+2 ] < ( i+1 )*dz && z2<Particle[pt].num ) {
-                    //fprintf( stdout, "%i: %f\n", z2, data[ z2*4+2 ] );
+                while ( data[ z2*6+2 ] < ( i+1 )*dz && z2<Particle[pt].num ) {
+                    //fprintf( stdout, "%i: %f\n", z2, data[ z2*6+2 ] );
                     z2++;
                 }
                 z2--;
@@ -343,59 +433,101 @@ if ( this_task == 0 )
                             z1, z2, i*dz, (i+1)*dz );
                     for ( k=z1; k<z1+test_num; k++ ) {
                         fprintf( stdout, "( %15.5f %15.5f %15.5f ):   %e\n",
-                                data[ k*4+0 ], data[ k*4+1 ], data[ k*4+2 ],
-                                data[ k*4+3 ] );
+                                data[ k*6+0 ], data[ k*6+1 ], data[ k*6+2 ],
+                                data[ k*6+3 ] );
                     }
                     for ( k=z2; k>z2-test_num; k-- ) {
                         fprintf( stdout, "( %15.5f %15.5f %15.5f ):   %e\n",
-                                data[ k*4+0 ], data[ k*4+1 ], data[ k*4+2 ],
-                                data[ k*4+3 ] );
+                                data[ k*6+0 ], data[ k*6+1 ], data[ k*6+2 ],
+                                data[ k*6+3 ] );
                     }
                 }
                 for ( ii=0; ii<nxy[0]; ii++ )
                     for ( jj=0; jj<nxy[1]; jj++ ){
                         index = ii * nxy[1] + jj;
                         v1 [ index ] = 0;
-                    }
+                        }
+                for ( ii=0; ii<anxy[0]; ii++ )
+                    for ( jj=0; jj<anxy[1]; jj++ )
+                        switch ( blk ) {
+                            case IO_MAG:
+                            case IO_MASS:
+                            case IO_RHO:
+                            case IO_VEL:
+                                cgrid2.xg[ii][jj] = (ii * ag + slice_corner1[0]) / 1000;
+                                cgrid2.yg[ii][jj] = (jj * ag + slice_corner1[1]) / 1000;
+                                u[ii][jj] = 0;
+                                v[ii][jj] = 0;
+                        }
                 for ( k=z1; k<z2; k++ ) {
                     if ( k % task_num == this_task ) {
-                        index_i = ( long )( data[ k*4+0 ] / g );
-                        index_j = ( long )( data[ k*4+1 ] / g );
+                        index_i = ( long )( (data[ k*6+0 ]-slice_corner1[0]) / g );
+                        index_j = ( long )( (data[ k*6+1 ]-slice_corner1[1]) / g );
                         index = index_i * nxy[1] + index_j;
                         if ( (proj_mode == 1 ) &&
-                             ( (long)( ( data[ k*4+0 ]-h ) / g ) != index_i ||
-                             (long)( ( data[ k*4+0 ]+h ) / g ) != index_i ||
-                             (long)( ( data[ k*4+1 ]-h ) / g ) != index_j ||
-                             (long)( ( data[ k*4+1 ]+h ) / g ) != index_j ) ) {
+                             ( (long)( ( data[ k*6+0 ]-slice_corner1[0]-h ) / g ) != index_i ||
+                             (long)( ( data[ k*6+0 ]-slice_corner1[0]+h ) / g ) != index_i ||
+                             (long)( ( data[ k*6+1 ]-slice_corner1[1]-h ) / g ) != index_j ||
+                             (long)( ( data[ k*6+1 ]-slice_corner1[1]+h ) / g ) != index_j ) ) {
                             for ( ii=0; ii<kN; ii++ )
                                 for ( jj=0; jj<kN; jj++ ) {
-                                    index_i1 = (long) ( ( ( ii-kN/2 ) * h / kN + data[ k*4+0 ] ) / g );
-                                    index_i1 = (long) ( ( ( ii-kN/2 ) * h / kN + data[ k*4+0 ] ) / g );
+                                    index_i1 = (long) ( ( ( ii-kN/2 ) * h / kN + data[ k*6+0 ]-slice_corner1[0] ) / g );
+                                    index_j1 = (long) ( ( ( jj-kN/2 ) * h / kN + data[ k*6+1 ]-slice_corner1[1] ) / g );
                                     if ( index_i1 < 0 || index_i1 > nxy[0] ||
                                          index_j1 < 0 || index_j1 > nxy[1] ) continue;
                                     index1 = index_i1 * nxy[1] + index_j1;
-                                    v1[ index1 ] += data[ k*4+3 ] * kmatrix[ ii * kN +jj ] / g2;
+                                    v1[ index1 ] += data[ k*6+3 ] * kmatrix[ ii * kN +jj ] / g2;
                                 }
                             //fprintf( stdout, "index1: %li\n", index1 );
                         }
                         else {
                             if ( index_i < 0 || index_i > nxy[0] ||
                                  index_j < 0 || index_j > nxy[1] ) continue;
-                            v1[ index ] += data[ k*4+3 ] / g2;
+                            v1[ index ] += data[ k*6+3 ] / g2;
 #ifdef DEBUG
                             debug_l = index;
 #endif
+                        }
+                        index_i = ( long )( (data[ k*6+0 ]-slice_corner1[0]) / ag );
+                        index_j = ( long )( (data[ k*6+1 ]-slice_corner1[1]) / ag );
+                        switch ( blk ) {
+                            case IO_MAG:
+                            case IO_MASS:
+                            case IO_RHO:
+                            case IO_VEL:
+                                if ( index_i < 0 || index_i > anxy[0] ||
+                                    index_j < 0 || index_j > anxy[1] ) continue;
+                                u[index_i][index_j] += data[ k*6+4 ];
+                                v[index_i][index_j] += data[ k*6+5 ];
+                                break;
                         }
                     }
                 }
                 MPI_Reduce( v1, v2, nxy[0]*nxy[1], MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD );
 if ( this_task == 0 ) {
-               sprintf( fn_buf, "%s_%i_%i", out_picture_prefix, ( int )( i*dz ), ( int )((i+1)*dz) );
+               sprintf( fn_buf, "%s_%.2f_%.2f_%.2f_%.2f_%.2f_%.2f",
+                       out_picture_prefix,
+                       slice_corner1[0], slice_corner2[0],
+                       slice_corner1[1], slice_corner2[1],
+                       i*dz, (i+1)*dz );
+               fprintf( stdout, "picture name: %s\n", fn_buf );
                for ( ii=0; ii<nxy[0]; ii++ )
                    for ( jj=0; jj<nxy[1]; jj++ ){
                        v3[ii][jj]  = ( PLFLT ) ( v2[ ii*nxy[1]+jj ] );
                    }
-               generate_2D_img( fn_buf, x_buf, "Mpc", v3, nxy, log_flag );
+               switch ( blk ) {
+                    case IO_MAG:
+                    case IO_RHO:
+                    case IO_MASS:
+                    case IO_VEL:
+                        generate_2D_img( fn_buf, x_buf, "Mpc", v3, nxy, log_flag, xymm,
+                            u, v, &cgrid2, anxy, flag_arrow );
+                        break;
+                    default:
+                        generate_2D_img( fn_buf, x_buf, "Mpc", v3, nxy, log_flag, xymm,
+                                NULL, NULL, NULL, NULL, 0 );
+                        break;
+               }
                if ( out_pic_data ) {
                     FILE *fd;
                     fd = fopen( fn_buf, "w" );
@@ -421,10 +553,19 @@ if ( this_task == 0 )
     fputs( sep_str, stdout );
     free( data );
     switch ( blk ) {
-        case IO_MAG:
-            if ( pt==0 ) free( p );
+        case IO_MASS:
+        case IO_RHO:
+            plFree2dGrid( u, anxy[0], anxy[1] );
+            plFree2dGrid( v, anxy[0], anxy[1] );
+            plFree2dGrid( cgrid2.xg, anxy[0], anxy[1] );
+            plFree2dGrid( cgrid2.yg, anxy[0], anxy[1] );
             break;
+        case IO_MAG:
         case IO_VEL:
+            plFree2dGrid( u, anxy[0], anxy[1] );
+            plFree2dGrid( v, anxy[0], anxy[1] );
+            plFree2dGrid( cgrid2.xg, anxy[0], anxy[1] );
+            plFree2dGrid( cgrid2.yg, anxy[0], anxy[1] );
         case IO_ACCEL:
             free( p );
             break;

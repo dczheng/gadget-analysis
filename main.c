@@ -51,6 +51,21 @@ if ( this_task == 0 )
 if ( this_task == 0 )
                 fprintf( stdout, "out_picture_prefix: %s\n",  out_picture_prefix );
             }
+            if ( !strcmp( "FLAG_ARROW", name ) ) {
+                flag_arrow = atoi( data );
+if ( this_task == 0 )
+                fprintf( stdout, "flag_arrow: %i\n",  flag_arrow );
+            }
+            if ( !strcmp( "ARROW_X", name ) ) {
+                arrow_x = atoi( data );
+if ( this_task == 0 )
+                fprintf( stdout, "arrow_x: %i\n",  arrow_x );
+            }
+            if ( !strcmp( "ARROW_Y", name ) ) {
+                arrow_y = atoi( data );
+if ( this_task == 0 )
+                fprintf( stdout, "arrow_y: %i\n",  arrow_y );
+            }
             if ( !strcmp( "NUM_FILES", name ) ) {
                 Num_files = atoi( data );
 if ( this_task == 0 )
@@ -141,6 +156,42 @@ if ( this_task == 0 )
                     az[i] = atof( s );
 if ( this_task == 0 )
                     fprintf( stdout, "%.2f ", az[i] );
+                }
+if ( this_task == 0 )
+                fprintf( stdout, "\n" );
+            }
+            if ( !strcmp( "SLICE_CORNER1", name ) ) {
+                s = strtok( line, " " );
+if ( this_task == 0 )
+                fprintf( stdout, "slice_corner1: " );
+                for ( i=0; i<2; i++ ) {
+                    if ( NULL == s ){
+if ( this_task == 0 )
+                        fprintf( stdout, "too few parameters for slice_corner1\n" );
+                        end_run( 2 );
+                    }
+                    s = strtok( NULL, " " );
+                    slice_corner1[i] = atof( s );
+if ( this_task == 0 )
+                    fprintf( stdout, "%.2f ", slice_corner1[i] );
+                }
+if ( this_task == 0 )
+                fprintf( stdout, "\n" );
+            }
+            if ( !strcmp( "SLICE_CORNER2", name ) ) {
+                s = strtok( line, " " );
+if ( this_task == 0 )
+                fprintf( stdout, "sclie_corner2: " );
+                for ( i=0; i<2; i++ ) {
+                    if ( NULL == s ){
+if ( this_task == 0 )
+                        fprintf( stdout, "too few parameters for slice_corner2\n" );
+                        end_run( 2 );
+                    }
+                    s = strtok( NULL, " " );
+                    slice_corner2[i] = atof( s );
+if ( this_task == 0 )
+                    fprintf( stdout, "%.2f ", slice_corner2[i] );
                 }
 if ( this_task == 0 )
                 fprintf( stdout, "\n" );
@@ -250,6 +301,9 @@ if ( this_task == 0 )
     read_all_data();
     //group_analysis();
     sprintf( tmp, "%s", out_picture_prefix );
+    sprintf( out_picture_prefix, "%s/%s_%.2f", tmp, "mag", redshift );
+    plot_slice( 0, IO_MAG );
+    /*
     sprintf( out_picture_prefix, "%s/%s_%.2f", tmp, "gas", redshift );
     plot_slice( 0, IO_MASS );
     sprintf( out_picture_prefix, "%s/%s_%.2f", tmp, "dm", redshift );
@@ -258,10 +312,11 @@ if ( this_task == 0 )
         sprintf( out_picture_prefix, "%s/%s_%.2f", tmp, "star", redshift );
         plot_slice( 4, IO_MASS );
     }
-    sprintf( out_picture_prefix, "%s/%s_%.2f", tmp, "mag", redshift );
-    plot_slice( 0, IO_MAG );
+    */
+    /*
     sprintf( out_picture_prefix, "%s/%s_%.2f", tmp, "mn", redshift );
     plot_slice( 0, IO_MN );
+    */
     sprintf( out_picture_prefix, "%s", tmp );
    //analysis_radio();
     //plot_slice( 0, IO_MAG );
