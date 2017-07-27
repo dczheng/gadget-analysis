@@ -301,13 +301,19 @@ if ( this_task == 0 )
     read_all_data();
     //group_analysis();
     sprintf( tmp, "%s", out_picture_prefix );
+    /*
     sprintf( out_picture_prefix, "%s/%s_%.2f", tmp, "mag", redshift );
     plot_slice( 0, IO_MAG );
+    */
     /*
     sprintf( out_picture_prefix, "%s/%s_%.2f", tmp, "gas", redshift );
     plot_slice( 0, IO_MASS );
+    */
+    /*
     sprintf( out_picture_prefix, "%s/%s_%.2f", tmp, "dm", redshift );
     plot_slice( 1, IO_MASS );
+    */
+    /*
     if ( header.npart[4] != 0 ) {
         sprintf( out_picture_prefix, "%s/%s_%.2f", tmp, "star", redshift );
         plot_slice( 4, IO_MASS );
@@ -323,8 +329,8 @@ if ( this_task == 0 )
     //magnetic_field_analysis();
     //density_analysis();
     //plot_position( 1 );
-    //plot_3d_position( 4 );
-    //plot_3d_multi( 3 );
+    plot_3d_position( 1 );
+    //plot_3d_multi( 1 );
     //plot_3d_scalar( 0, IO_ELEC );
     //velocity_analysis();
     free_all_memory();

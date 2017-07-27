@@ -90,7 +90,7 @@ void generate_2D_img( char *fn_prefix, char *x_buf, char *y_buf, PLFLT **z, PLIN
     plcol0( 15 );
 if ( this_task == 0 )
     fputs( "plot arrow ...\n", stdout );
-    plsvect( arr_x, arr_y, arr_n, 0 );
+   // plsvect( arr_x, arr_y, arr_n, 0 );
     plvect( (PLFLT_MATRIX)u, ( PLFLT_MATRIX )v, anxy[0], anxy[1], 0.0, pltr2, (void*)cgrid2 );
     }
     plend();
@@ -296,8 +296,10 @@ if ( this_task == 0 ){
             }
         }
     }
-if ( this_task == 0 )
+if ( this_task == 0 ){
     fprintf( stdout, "total point number: %li\n", N );
+    fprintf( stdout, "max mag: %e\n", max_mag );
+}
     data = ( float* ) malloc( sizeof( float ) * N * 6 );
     index = 0;
     for ( i=0; i<Particle[pt].num; i++ ){
@@ -311,13 +313,16 @@ if ( this_task == 0 )
                 data[ index*6+3 ] = p[ i ];
                 switch ( blk ) {
                     case IO_MAG:
-                        data[ index*6+4 ] = Particle[pt].mag[ i*3+0 ] / scalar_unit / max_mag;
-                        /*
-                            sqrt( pow( Particle[pt].mag[ i*3+0 ], 2 ) +
+                        tmp = sqrt( pow( Particle[pt].mag[ i*3+0 ], 2 ) +
                                   pow( Particle[pt].mag[ i*3+1 ], 2 ) +
                                   pow( Particle[pt].mag[ i*3+2 ], 2 ) );
-                                  */
-                        data[ index*6+5 ] = Particle[pt].mag[ i*3+1 ] / scalar_unit / max_mag;
+                        data[ index*6+4 ] = Particle[pt].mag[ i*3+0 ];
+                        data[ index*6+5 ] = Particle[pt].mag[ i*3+1 ];
+                        if ( data[ index*6+4 ] > 1e-7 ) data[ index*6+4 ] = 0;
+                        if ( data[ index*6+5 ] > 1e-7 ) data[ index*6+5 ] = 0;
+                        if ( data[ index*6+4 ] < 1e-8 ) data[ index*6+4 ] = 0;
+                        if ( data[ index*6+5 ] < 1e-8 ) data[ index*6+5 ] = 0;
+   //                     fprintf( stdout, "%e, %e\n", data[ index*6+4 ], data[ index*6+5 ] );
                         /*
                             sqrt( pow( Particle[pt].mag[ i*3+0 ], 2 ) +
                                   pow( Particle[pt].mag[ i*3+1 ], 2 ) +
@@ -771,7 +776,7 @@ void plot_box( unsigned int bit_flag, PLFLT *box ) {
 }
 
 void plot_3d( long point_num, float *data, char *title_buf, char *x_buf, char *y_buf ) {
-    char fn_buf[50], buf[20], title_buf2[300];
+    char fn_buf[50], buf[50], title_buf2[300];
     unsigned int bit_flag, i;
     long num, n, png_index, naz, nal, iaz, ial;
     PLFLT box[3], *x, *y, *z, al_local, az_local;
@@ -817,11 +822,11 @@ sleep( 2 );
     for ( al_local=al[0]; al_local<=al[2]; al_local += al[1] ){
         for ( az_local=az[0]; az_local<=az[2]; az_local += az[1] ){
             ial = ( long ) ( ( al_local-al[0] ) / al[1] );
-            iaz = ( long ) ( ( az_local-az[0] ) / al[1] );
+            iaz = ( long ) ( ( az_local-az[0] ) / az[1] );
             if ( ( ial * naz + iaz ) % task_num == this_task ) {
                 plsdev( "pngcairo" );
                 //sprintf( fn_buf, "%s_%i_%.2f_%.2f_%.2f.png", out_picture_prefix, pt, redshift, al_local, az_local );
-                sprintf( fn_buf, "%s/%04i_%04i.png", out_picture_prefix, ial, iaz );
+                sprintf( fn_buf, "%s/%.2f_%04i_%04i.png", out_picture_prefix, redshift, ial, iaz );
                 fprintf( stdout, "process %3i plot: al_local=%8.2lf, az_local=%8.2lf, file name : %s\n", this_task,
                         al_local, az_local, fn_buf );
                 plsfnam( fn_buf );
@@ -836,6 +841,8 @@ sleep( 2 );
                          box[0] * sqrt( 3.0 ),
                         -box[1] * sqrt( 3.0 ),
                          box[1] * sqrt( 3.0 ) );
+                sprintf( buf, "z=%.0f (%iMpc)", redshift, (int)box[0]/1000 );
+                plptex( -0.3*box[0], box[1]*1.3, 0.0, 0.0, 0, buf);
                 //plwind( -box[0], box[0], -box[1], box[1] );
                 plw3d(  box[0], box[1], box[2],
                         0.0, box[0],
@@ -1024,7 +1031,7 @@ if ( this_task == 0 )
 }
 
 void plot_3d_multi( int flag ) {
-    char fn_buf[50], buf[20], title_buf2[300];
+    char fn_buf[50], buf[50], title_buf2[300], title_buf[100];
     unsigned int bit_flag, i;
     long n, png_index, num[4], naz, nal, iaz, ial;
     PLFLT box[3], sx, sy, sz;
@@ -1134,8 +1141,6 @@ if ( this_task == 0 )
             fprintf( stdout, "plot gas number: %i\n", num[0] );
             break;
     }
-if ( this_task == 0 )
-    fprintf( stdout, "point number: %i\n", num );
     nal = ( long ) ( ( al[2]-al[0] ) / al[1] ) + 1;
     naz = ( long ) ( ( az[2]-az[0] ) / az[1] ) + 1;
 if ( this_task == 0 )
@@ -1144,11 +1149,11 @@ sleep( 2 );
     for ( al_local=al[0]; al_local<=al[2]; al_local += al[1] )
         for ( az_local=az[0]; az_local<=az[2]; az_local += az[1] ){
             ial = ( long ) ( ( al_local-al[0] ) / al[1] );
-            iaz = ( long ) ( ( az_local-az[0] ) / al[1] );
+            iaz = ( long ) ( ( az_local-az[0] ) / az[1] );
             if ( ( ial * naz + iaz ) % task_num == this_task ) {
                 plsdev( "pngcairo" );
                 //sprintf( fn_buf, "%s_%i_%.2f_%.2f_%.2f.png", out_picture_prefix, pt, redshift, al_local, az_local );
-                sprintf( fn_buf, "%s/%04i_%04i.png", out_picture_prefix, ial, iaz );
+                sprintf( fn_buf, "%s/%.2f_%04i_%04i.png", redshift, out_picture_prefix, ial, iaz );
                 fprintf( stdout, "process %3i plot: al_local=%8.2lf, az_local=%8.2lf, file name : %s\n", this_task,
                         al_local, az_local, fn_buf );
 sleep( 2 );
@@ -1159,11 +1164,15 @@ sleep( 2 );
                 plcol0( 15 );
                 plvpor( 0.0, 1.0, 0.0, 1.0 );
                 //sprintf( title_buf2, "%s\n%s\n%s", title_buf, y_buf, x_buf );
-                //pllab( x_buf, y_buf, title_buf );
+                sprintf( buf, "z=%.0f (%iMpc)", redshift, (int)box[0]/1000 );
+                //pllab( "", "", title_buf );
                 plwind( -box[0] * sqrt( 3.0 ),
                          box[0] * sqrt( 3.0 ),
                         -box[1] * sqrt( 3.0 ),
                          box[1] * sqrt( 3.0 ) );
+                //pllab( "", "", title_buf );
+                sprintf( buf, "z=%.0f (%iMpc)", redshift, (int)box[0]/1000 );
+                plptex( -0.3*box[0], box[1]*1.3, 0.0, 0.0, 0, buf);
                 //plwind( -box[0], box[0], -box[1], box[1] );
                 /*
                 plbox( "bcnt", 0.0, 0,
