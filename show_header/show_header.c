@@ -345,6 +345,7 @@ void show_header2( struct io_header2 header ) {
         fprintf( stdout, "%i ", header.npartTotal[i] );
     fprintf( stdout, "\n" );
     fprintf( stdout, "%-25s: %lf\n", "readshift",             header.redshift );
+    fprintf( stdout, "%-25s: %lf\n", "time",                  header.time );
     fprintf( stdout, "%-25s: %i\n", "flag_sfr",               header.flag_sfr );
     fprintf( stdout, "%-25s: %i\n", "flag_feedback",          header.flag_feedback );
     fprintf( stdout, "%-25s: %i\n", "num_files",              header.num_files );
@@ -378,6 +379,7 @@ void show_header3_cr( struct io_header3_cr header ) {
         fprintf( stdout, "%i ", header.npartTotalHighWord[i] );
     fprintf( stdout, "\n" );
     fprintf( stdout, "%-25s: %lf\n", "readshift",             header.redshift );
+    fprintf( stdout, "%-25s: %lf\n", "time",                  header.time );
     fprintf( stdout, "%-25s: %i\n", "flag_sfr",               header.flag_sfr );
     fprintf( stdout, "%-25s: %i\n", "flag_feedback",          header.flag_feedback );
     fprintf( stdout, "%-25s: %i\n", "num_files",              header.num_files );
@@ -415,6 +417,7 @@ void show_header3_no_cr( struct io_header3_no_cr header ) {
         fprintf( stdout, "%i ", header.npartTotalHighWord[i] );
     fprintf( stdout, "\n" );
     fprintf( stdout, "%-25s: %lf\n", "readshift",             header.redshift );
+    fprintf( stdout, "%-25s: %lf\n", "time",                  header.time );
     fprintf( stdout, "%-25s: %i\n", "flag_sfr",               header.flag_sfr );
     fprintf( stdout, "%-25s: %i\n", "flag_feedback",          header.flag_feedback );
     fprintf( stdout, "%-25s: %i\n", "num_files",              header.num_files );
