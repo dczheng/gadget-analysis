@@ -344,6 +344,10 @@ void show_header2( struct io_header2 header ) {
     for ( i=0; i<6; i++ )
         fprintf( stdout, "%i ", header.npartTotal[i] );
     fprintf( stdout, "\n" );
+    fprintf( stdout, "%-25s: ", "npartTotalHighWord" );
+    for ( i=0; i<6; i++ )
+        fprintf( stdout, "%i ", header.npartTotalHighWord[i] );
+    fprintf( stdout, "\n" );
     fprintf( stdout, "%-25s: %lf\n", "readshift",             header.redshift );
     fprintf( stdout, "%-25s: %lf\n", "time",                  header.time );
     fprintf( stdout, "%-25s: %i\n", "flag_sfr",               header.flag_sfr );
