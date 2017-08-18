@@ -1,4 +1,0 @@
-Path               /mnt/ddnfs/data_users/xllian/Simulate_Radio/dfy
-FileBasename       snapshot_024
-Files              32
-Hdf5_File          ./out.hdf5
