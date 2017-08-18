@@ -91,12 +91,12 @@ if ( this_task == 0 )
     fprintf(  stdout, "write header To %s\n", fn  );
     hdf5_file = H5Fcreate( fn, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT );
     //hdf5_file = H5Fopen( fn, H5F_ACC_RDWR, H5P_DEFAULT );
-    hdf5_group = H5Gcreate( hdf5_file, "/header", 0 );
+    hdf5_group = H5Gcreate( hdf5_file, "/Header", 0 );
     hsize_t adim[1] = { 6 };
 
     hdf5_dataspace = H5Screate( H5S_SIMPLE );
     H5Sset_extent_simple( hdf5_dataspace, 1, adim, NULL );
-    hdf5_attribute = H5Acreate( hdf5_group, "NumPart_Thisfile", H5T_NATIVE_INT, hdf5_dataspace, H5P_DEFAULT );
+    hdf5_attribute = H5Acreate( hdf5_group, "NumPart_ThisFile", H5T_NATIVE_INT, hdf5_dataspace, H5P_DEFAULT );
     H5Awrite( hdf5_attribute, H5T_NATIVE_UINT, header.npart );
     H5Aclose( hdf5_attribute );
     H5Sclose( hdf5_dataspace );
@@ -141,7 +141,7 @@ if ( this_task == 0 )
     H5Sclose( hdf5_dataspace );
 
     hdf5_dataspace = H5Screate( H5S_SCALAR );
-    hdf5_attribute = H5Acreate( hdf5_group, "NumfilesPerSnapshot", H5T_NATIVE_INT, hdf5_dataspace, H5P_DEFAULT );
+    hdf5_attribute = H5Acreate( hdf5_group, "NumFilesPerSnapshot", H5T_NATIVE_INT, hdf5_dataspace, H5P_DEFAULT );
     H5Awrite( hdf5_attribute, H5T_NATIVE_INT, &header.num_files );
     H5Aclose( hdf5_attribute );
     H5Sclose( hdf5_dataspace );

@@ -1,5 +1,5 @@
-FILE_PREFIX /mnt/ddnfs/data_users/xllian/Simulate_Radio/Gadget3_Simulation/cool_feedbak_init_mag_bh_fof_1677/outputs/snapshot_023
-REDSHIFT 3.00
+FILE_PREFIX /mnt/ddnfs/data_users/xllian/Simulate_Radio/gadget_analysis/g2_bin2hdf5/out
+REDSHIFT 0.00
 NUM_FILES 1
 OUT_FILE ./ic.hdf5
 OUT_PICTURE_PREFIX ./test
@@ -7,7 +7,7 @@ SLICE_NUM 10
 SLICE_INDEX_NUM 10
 SLICE_INDEX 0 1 2 3 4 5 6 7 8 9
 SLICE_CORNER1 0 0
-SLICE_CORNER2 100000 100000
+SLICE_CORNER2 600000 600000
 FLAG_ARROW 0
 ARROW_X 64
 ARROW_Y 64
