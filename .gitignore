@@ -13,3 +13,4 @@ snapshot*
 out*
 *usedvalues
 *.bak
+bin/
