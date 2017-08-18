@@ -8,3 +8,8 @@
 *log
 nohup.out
 *.dat
+*.hdf5
+snapshot*
+out*
+*usedvalues
+*.bak
