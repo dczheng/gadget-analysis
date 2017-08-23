@@ -527,8 +527,10 @@ void write_hdf5_file() {
                 hdf5_dataspace, H5P_DEFAULT );
         H5Dwrite( hdf5_dataset, hdf5_type, hdf5_dataspace, H5S_ALL,
                 H5P_DEFAULT, pos0 );
+        H5Dclose( hdf5_dataset );
         H5Tclose( hdf5_type );
         H5Sclose( hdf5_dataspace );
+        H5Gclose( hdf5_group );
     }
 
     pt = 1;
@@ -543,8 +545,10 @@ void write_hdf5_file() {
             hdf5_dataspace, H5P_DEFAULT );
     H5Dwrite( hdf5_dataset, hdf5_type, hdf5_dataspace, H5S_ALL,
             H5P_DEFAULT, pos1 );
+    H5Dclose( hdf5_dataset );
     H5Tclose( hdf5_type );
     H5Sclose( hdf5_dataspace );
+    H5Gclose( hdf5_group );
 
     H5Fclose( hdf5_file );
     if ( header.npart[0]  != 0 )

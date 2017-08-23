@@ -272,7 +272,8 @@ if ( this_task == 0 )
 
 void init_sep_str() {
     memset( sep_str, '-', SEP_LEN-1 );
-    sep_str[ SEP_LEN-1 ] = '\n';
+    sep_str[ SEP_LEN-2 ] = '\n';
+    sep_str[ SEP_LEN-1 ] = '\0';
 }
 
 int main( int argc, char *argv[] ){

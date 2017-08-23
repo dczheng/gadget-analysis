@@ -356,6 +356,7 @@ void show_header2( struct io_header2 header ) {
     fprintf( stdout, "%-25s: %lf\n", "BoxSize",               header.BoxSize );
     fprintf( stdout, "%-25s: %lf\n", "Omega0",                header.Omega0 );
     fprintf( stdout, "%-25s: %lf\n", "OmegaLambda",           header.OmegaLambda );
+    fprintf( stdout, "%-25s: %lf\n", "Hubbleparam",           header.HubbleParam );
     fprintf( stdout, "%-25s: %i\n", "flag_stellarge",         header.flag_stellarage );
     fprintf( stdout, "%-25s: %i\n", "flag_metals",            header.flag_metals );
     fprintf( stdout, "%-25s: %i\n", "flag_entropy_instead_u", header.flag_entropy_instead_u );
@@ -390,6 +391,7 @@ void show_header3_cr( struct io_header3_cr header ) {
     fprintf( stdout, "%-25s: %lf\n", "BoxSize",               header.BoxSize );
     fprintf( stdout, "%-25s: %lf\n", "Omega0",                header.Omega0 );
     fprintf( stdout, "%-25s: %lf\n", "OmegaLambda",           header.OmegaLambda );
+    fprintf( stdout, "%-25s: %lf\n", "Hubbleparam",           header.HubbleParam );
     fprintf( stdout, "%-25s: %i\n", "flag_stellarge",         header.flag_stellarage );
     fprintf( stdout, "%-25s: %i\n", "flag_metals",            header.flag_metals );
     fprintf( stdout, "%-25s: %i\n", "flag_entropy_instead_u", header.flag_entropy_instead_u );
@@ -428,6 +430,7 @@ void show_header3_no_cr( struct io_header3_no_cr header ) {
     fprintf( stdout, "%-25s: %lf\n", "BoxSize",               header.BoxSize );
     fprintf( stdout, "%-25s: %lf\n", "Omega0",                header.Omega0 );
     fprintf( stdout, "%-25s: %lf\n", "OmegaLambda",           header.OmegaLambda );
+    fprintf( stdout, "%-25s: %lf\n", "Hubbleparam",           header.HubbleParam );
     fprintf( stdout, "%-25s: %i\n", "flag_stellarge",         header.flag_stellarage );
     fprintf( stdout, "%-25s: %i\n", "flag_metals",            header.flag_metals );
     fprintf( stdout, "%-25s: %i\n", "flag_entropy_instead_u", header.flag_entropy_instead_u );
