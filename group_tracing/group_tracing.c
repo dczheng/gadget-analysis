@@ -661,11 +661,11 @@ void main( int argc, char** argv ) {
     sep_str[ SEP_LEN-1 ] = '\0';
     read_parameter_file( argv[1] );
     fputs( sep_str, stdout );
-    printf( "fof file   :   %s\n", fof_file );
+    printf( "fof file          :   %s\n", fof_file );
     printf( "snapshot_prefix   :   %s\n", snapshot_prefix );
-    printf( "files      :   %d\n", files );
-    printf( "out file   :   %s\n", out_file );
-    printf( "group id file :   %s\n", group_id_file );
+    printf( "files             :   %d\n", files );
+    printf( "out file          :   %s\n", out_file );
+    printf( "group id file     :   %s\n", group_id_file );
     fputs( sep_str, stdout );
     read_group_id( group_id_file );
     fputs( sep_str, stdout );
