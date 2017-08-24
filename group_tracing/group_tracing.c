@@ -160,6 +160,11 @@ void show_header( struct io_header header ) {
     fputs( sep_str, stdout );
 }
 
+void endrun( int ierr ) {
+    fprintf( stderr, "Exit Code: %i\n", ierr );
+    exit( ierr );
+}
+
 void read_parameter_file(char *fname) {
 #define DOUBLE 1
 #define STRING 2
@@ -189,66 +194,60 @@ void read_parameter_file(char *fname) {
     addr[nt] = &group_id_file;
     id[nt++] = STRING;
 
-    if((fd = fopen(fname, "r")))
+    if(!(fd = fopen(fname, "r")))
     {
-        sprintf(buf, "%s%s", fname, "-usedvalues");
-        if(!(fdout = fopen(buf, "w")))
+        printf("Parameter file %s not found.\n", fname);
+        endrun( 1 );
+    }
+    sprintf(buf, "%s%s", fname, "-usedvalues");
+    if(!(fdout = fopen(buf, "w")))
+    {
+        printf("error opening file '%s' \n", buf);
+        endrun( 2 );
+    }
+    while(!feof(fd))
+    {
+        *buf = 0;
+        fgets(buf, 200, fd);
+        if(sscanf(buf, "%s%s%s", buf1, buf2, buf3) < 2)
+            continue;
+        if(buf1[0] == '%')
+            continue;
+        for(i = 0, j = -1; i < nt; i++)
+            if(strcmp(buf1, tag[i]) == 0)
+            {
+                j = i;
+                tag[i][0] = 0;
+                break;
+            }
+        if(j >= 0)
         {
-            printf("error opening file '%s' \n", buf);
-            errorFlag = 1;
+            switch (id[j])
+            {
+                case DOUBLE:
+                    *((double *) addr[j]) = atof(buf2);
+                    fprintf(fdout, "%-35s%g\n", buf1, *((double *) addr[j]));
+                    break;
+                case STRING:
+                    strcpy(addr[j], buf2);
+                    fprintf(fdout, "%-35s%s\n", buf1, buf2);
+                    break;
+                case INT:
+                    *((int *) addr[j]) = atoi(buf2);
+                    fprintf(fdout, "%-35s%d\n", buf1, *((int *) addr[j]));
+                    break;
+            }
         }
         else
         {
-            while(!feof(fd))
-            {
-                *buf = 0;
-                fgets(buf, 200, fd);
-                if(sscanf(buf, "%s%s%s", buf1, buf2, buf3) < 2)
-                    continue;
-                if(buf1[0] == '%')
-                    continue;
-                for(i = 0, j = -1; i < nt; i++)
-                    if(strcmp(buf1, tag[i]) == 0)
-                    {
-                        j = i;
-                        tag[i][0] = 0;
-                        break;
-                    }
-                if(j >= 0)
-                {
-                    switch (id[j])
-                    {
-                        case DOUBLE:
-                            *((double *) addr[j]) = atof(buf2);
-                            fprintf(fdout, "%-35s%g\n", buf1, *((double *) addr[j]));
-                            break;
-                        case STRING:
-                            strcpy(addr[j], buf2);
-                            fprintf(fdout, "%-35s%s\n", buf1, buf2);
-                            break;
-                        case INT:
-                            *((int *) addr[j]) = atoi(buf2);
-                            fprintf(fdout, "%-35s%d\n", buf1, *((int *) addr[j]));
-                            break;
-                    }
-                }
-                else
-                {
-                    fprintf(stdout, "Error in file %s:   Tag '%s' not allowed or multiple defined.\n",
-                            fname, buf1);
-                    errorFlag = 1;
-                }
-            }
-            fclose(fd);
-            fclose(fdout);
+            fprintf(stdout, "Error in file %s:   Tag '%s' not allowed or multiple defined.\n",
+                    fname, buf1);
+            errorFlag = 1;
         }
     }
-    else
-    {
-        printf("\nParameter file %s not found.\n\n", fname);
-        errorFlag = 2;
-    }
-    if(errorFlag != 2)
+    fclose(fd);
+    fclose(fdout);
+    if(errorFlag)
         for(i = 0; i < nt; i++)
         {
             if(*tag[i])
@@ -257,10 +256,6 @@ void read_parameter_file(char *fname) {
                 errorFlag = 1;
             }
         }
-    if(errorFlag)
-    {
-        exit(0);
-    }
 #undef DOUBLE
 #undef STRING
 #undef INT
@@ -272,6 +267,10 @@ void read_group_id( char *fname ) {
     char buf[500];
     int i;
     fd = fopen( fname, "r" );
+    if ( !fd ) {
+        fprintf( stderr, "Failed to open file: %s\n", fname );
+        endrun( 3 );
+    }
     group_num = 0;
     fgets( buf, 500, fd );
     while ( !feof( fd ) ) {
