@@ -324,13 +324,13 @@ if ( this_task == 0 )
     sprintf( out_picture_prefix, "%s/%s_%.2f", tmp, "mn", redshift );
     plot_slice( 0, IO_MN );
     */
-    sprintf( out_picture_prefix, "%s", tmp );
+    //sprintf( out_picture_prefix, "%s", tmp );
    //analysis_radio();
     //plot_slice( 0, IO_MAG );
     //magnetic_field_analysis();
     //density_analysis();
     //plot_position( 1 );
-    plot_3d_position( 1 );
+    //plot_3d_position( 1 );
     //plot_3d_multi( 1 );
     //plot_3d_scalar( 0, IO_ELEC );
     //velocity_analysis();

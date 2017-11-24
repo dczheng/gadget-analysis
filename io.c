@@ -298,8 +298,12 @@ int get_block_nbytes( enum iofields blk ) {
         case IO_POT:
         case IO_ELEC:
         case IO_MN:
-        case IO_C0:
-        case IO_Q0:
+        case IO_CR_C0:
+        case IO_CR_Q0:
+        case IO_CRE_C0:
+        case IO_CRE_Q0:
+        case IO_CRE_E0:
+        case IO_CRE_n0:
         case IO_J:
             block_nbytes = sizeof( float );
             break;
@@ -328,11 +332,44 @@ void get_block_dims( int pt, enum iofields blk, hsize_t *dims ) {
         case IO_ID:
         case IO_MN:
         case IO_J:
-        case IO_C0:
-        case IO_Q0:
+        case IO_CR_C0:
+        case IO_CR_Q0:
+        case IO_CRE_C0:
+        case IO_CRE_Q0:
+        case IO_CRE_E0:
+        case IO_CRE_n0:
             dims[0] = header.npart[pt];
             dims[1] = 1;
             break;
+    }
+}
+
+int blockpresent( enum iofields blk, double pt ) {
+    switch( blk ) {
+        case IO_POS:
+        case IO_VEL:
+        case IO_MASS:
+            return 1;
+        case IO_MAG:
+        case IO_RHO:
+        case IO_CR_C0:
+        case IO_CR_Q0:
+        case IO_CRE_C0:
+        case IO_CRE_Q0:
+        case IO_CRE_E0:
+        case IO_CRE_n0:
+            if ( pt>0 )
+                return 0;
+            else
+                return 1;
+        case IO_ID:
+        case IO_U:
+        case IO_ELEC:
+        case IO_MN:
+        case IO_J:
+        case IO_ACCEL:
+        case IO_POT:
+            return 0;
     }
 }
 
@@ -374,11 +411,23 @@ void get_dataset_name( enum iofields blk, char *buf ) {
         case IO_J:
             strcpy( buf, "SynchrotronEmissivity" );
             break;
-        case IO_C0:
+        case IO_CR_C0:
             strcpy( buf, "CR_C0" );
             break;
-        case IO_Q0:
+        case IO_CR_Q0:
             strcpy( buf, "CR_q0" );
+            break;
+        case IO_CRE_C0:
+            strcpy( buf, "CRE_C0" );
+            break;
+        case IO_CRE_Q0:
+            strcpy( buf, "CRE_q0" );
+            break;
+        case IO_CRE_E0:
+            strcpy( buf, "CRE_E0" );
+            break;
+        case IO_CRE_n0:
+            strcpy( buf, "CRE_n0" );
             break;
     }
 }
@@ -409,7 +458,7 @@ void read_block( int pt, void *data, enum iofields blk ) {
     sprintf( buf, "PartType%i/%s", pt, buf1 );
     p = data;
     for ( i=0; i<header.num_files; i++ ) {
-        sprintf( file_name, "%s.%i.hdf5", file_prefix, i );
+        sprintf( file_name, "%s.%3i.hdf5", file_prefix, i );
         if ( header.num_files < 2 )
             sprintf( file_name, "%s.hdf5", file_prefix);
         read_header( file_name );
@@ -433,7 +482,7 @@ if ( this_task == 0 )
 if ( this_task == 0 )
         fputs( "read all data ...\n", stdout );
     }
-    sprintf( file_name, "%s.%i.hdf5", file_prefix, 0 );
+    sprintf( file_name, "%s.%3i.hdf5", file_prefix, 0 );
     if ( Num_files < 2 )
         sprintf( file_name, "%s.hdf5", file_prefix );
     read_header( file_name );
@@ -452,6 +501,7 @@ if ( this_task == 0 )
             for ( blk=0; blk<IO_NBLOCKS; blk++ ){
                 switch ( blk ){
                     case IO_POS:
+                        if ( !blockpresent( blk, pt ) ) break;
                         nbytes = get_block_nbytes( blk );
                         get_dataset_name( blk, buf );
 if ( this_task == 0 )
@@ -460,6 +510,7 @@ if ( this_task == 0 )
                         read_block( pt, (void*)(Particle[pt].pos), blk );
                         break;
                     case IO_VEL:
+                        if ( !blockpresent( blk, pt ) ) break;
                         nbytes = get_block_nbytes( blk );
                         get_dataset_name( blk, buf );
 if ( this_task == 0 )
@@ -468,6 +519,7 @@ if ( this_task == 0 )
                         read_block( pt, (void*)(Particle[pt].vel), blk );
                         break;
                     case IO_ACCEL:
+                        if ( !blockpresent( blk, pt ) ) break;
                         nbytes = get_block_nbytes( blk );
                         get_dataset_name( blk, buf );
 if ( this_task == 0 )
@@ -476,7 +528,7 @@ if ( this_task == 0 )
                         read_block( pt, (void*)(Particle[pt].accel), blk );
                         break;
                     case IO_MAG:
-                        if ( pt>0 ) break;
+                        if ( !blockpresent( blk, pt ) ) break;
                         nbytes = get_block_nbytes( blk );
                         get_dataset_name( blk, buf );
 if ( this_task == 0 )
@@ -484,8 +536,8 @@ if ( this_task == 0 )
                         Particle[pt].mag = ( float* ) malloc(  nbytes * Particle[pt].num );
                         read_block( pt, (void*)(Particle[pt].mag), blk );
                         break;
-                    case IO_C0:
-                        if ( pt>0 ) break;
+                    case IO_CR_C0:
+                        if ( !blockpresent( blk, pt ) ) break;
                         nbytes = get_block_nbytes( blk );
                         get_dataset_name( blk, buf );
 if ( this_task == 0 )
@@ -493,8 +545,8 @@ if ( this_task == 0 )
                         Particle[pt].c0 = ( float* ) malloc(  nbytes * Particle[pt].num );
                         read_block( pt, (void*)(Particle[pt].c0), blk );
                         break;
-                    case IO_Q0:
-                        if ( pt>0 ) break;
+                    case IO_CR_Q0:
+                        if ( !blockpresent( blk, pt ) ) break;
                         nbytes = get_block_nbytes( blk );
                         get_dataset_name( blk, buf );
 if ( this_task == 0 )
@@ -503,6 +555,7 @@ if ( this_task == 0 )
                         read_block( pt, (void*)(Particle[pt].q0), blk );
                         break;
                     case IO_J:
+                        if ( !blockpresent( blk, pt ) ) break;
                         if ( pt>0 ) break;
                         nbytes = get_block_nbytes( blk );
                         get_dataset_name( blk, buf );
@@ -523,7 +576,7 @@ if ( this_task == 0 )
                                 Particle[pt].m[i] = header.mass[pt];
                         break;
                     case IO_U:
-                        if ( pt>0 ) break;
+                        if ( !blockpresent( blk, pt ) ) break;
                         nbytes = get_block_nbytes( blk );
                         get_dataset_name( blk, buf );
 if ( this_task == 0 )
@@ -532,6 +585,7 @@ if ( this_task == 0 )
                         read_block( pt, (void*)(Particle[pt].u), blk );
                         break;
                     case IO_POT:
+                        if ( !blockpresent( blk, pt ) ) break;
                         nbytes = get_block_nbytes( blk );
                         get_dataset_name( blk, buf );
 if ( this_task == 0 )
@@ -540,7 +594,7 @@ if ( this_task == 0 )
                         read_block( pt, (void*)(Particle[pt].pot), blk );
                         break;
                     case IO_ELEC:
-                        if ( pt>0 ) break;
+                        if ( !blockpresent( blk, pt ) ) break;
                         nbytes = get_block_nbytes( blk );
                         get_dataset_name( blk, buf );
 if ( this_task == 0 )
@@ -549,7 +603,7 @@ if ( this_task == 0 )
                         read_block( pt, (void*)(Particle[pt].elec), blk );
                         break;
                     case IO_RHO:
-                        if ( pt>0 ) break;
+                        if ( !blockpresent( blk, pt ) ) break;
                         nbytes = get_block_nbytes( blk );
                         get_dataset_name( blk, buf );
 if ( this_task == 0 )
@@ -558,6 +612,7 @@ if ( this_task == 0 )
                         read_block( pt, (void*)(Particle[pt].rho), blk );
                         break;
                     case IO_ID:
+                        if ( !blockpresent( blk, pt ) ) break;
                         nbytes = get_block_nbytes( blk );
                         get_dataset_name( blk, buf );
 if ( this_task == 0 )
@@ -566,13 +621,49 @@ if ( this_task == 0 )
                         read_block( pt, (void*)(Particle[pt].id), blk );
                         break;
                     case IO_MN:
-                        if ( pt>0 ) break;
+                        if ( !blockpresent( blk, pt ) ) break;
                         nbytes = get_block_nbytes( blk );
                         get_dataset_name( blk, buf );
 if ( this_task == 0 )
                         fprintf( stdout, "reading %s\n", buf);
                         Particle[pt].mn = ( float* ) malloc( nbytes * Particle[pt].num );
                         read_block( pt, (void*)(Particle[pt].mn), blk );
+                        break;
+                    case IO_CRE_C0:
+                        if ( !blockpresent( blk, pt ) ) break;
+                        nbytes = get_block_nbytes( blk );
+                        get_dataset_name( blk, buf );
+if ( this_task == 0 )
+                        fprintf( stdout, "reading %s\n", buf);
+                        Particle[pt].cre_c0 = ( float* ) malloc( nbytes * Particle[pt].num );
+                        read_block( pt, (void*)(Particle[pt].cre_c0), blk );
+                        break;
+                    case IO_CRE_Q0:
+                        if ( !blockpresent( blk, pt ) ) break;
+                        nbytes = get_block_nbytes( blk );
+                        get_dataset_name( blk, buf );
+if ( this_task == 0 )
+                        fprintf( stdout, "reading %s\n", buf);
+                        Particle[pt].cre_q0 = ( float* ) malloc( nbytes * Particle[pt].num );
+                        read_block( pt, (void*)(Particle[pt].cre_q0), blk );
+                        break;
+                    case IO_CRE_E0:
+                        if ( !blockpresent( blk, pt ) ) break;
+                        nbytes = get_block_nbytes( blk );
+                        get_dataset_name( blk, buf );
+if ( this_task == 0 )
+                        fprintf( stdout, "reading %s\n", buf);
+                        Particle[pt].cre_e0 = ( float* ) malloc( nbytes * Particle[pt].num );
+                        read_block( pt, (void*)(Particle[pt].cre_e0), blk );
+                        break;
+                    case IO_CRE_n0:
+                        if ( !blockpresent( blk, pt ) ) break;
+                        nbytes = get_block_nbytes( blk );
+                        get_dataset_name( blk, buf );
+if ( this_task == 0 )
+                        fprintf( stdout, "reading %s\n", buf);
+                        Particle[pt].cre_n0 = ( float* ) malloc( nbytes * Particle[pt].num );
+                        read_block( pt, (void*)(Particle[pt].cre_n0), blk );
                         break;
                 }
             }
@@ -601,46 +692,49 @@ if ( this_task == 0 )
             for ( blk=0; blk<IO_NBLOCKS; blk++ ){
                 switch ( blk ){
                     case IO_POS:
+                        if ( !blockpresent( blk, pt ) ) break;
                         get_dataset_name( blk, buf );
 if ( this_task == 0 )
                         fprintf( stdout, "free memory: %s\n", buf);
                         free( Particle[pt].pos );
                         break;
                     case IO_VEL:
+                        if ( !blockpresent( blk, pt ) ) break;
                         get_dataset_name( blk, buf );
 if ( this_task == 0 )
                         fprintf( stdout, "free memory: %s\n", buf);
                         free( Particle[pt].vel );
                         break;
                     case IO_ACCEL:
+                        if ( !blockpresent( blk, pt ) ) break;
                         get_dataset_name( blk, buf );
 if ( this_task == 0 )
                         fprintf( stdout, "free memory: %s\n", buf);
                         free( Particle[pt].accel );
                         break;
                     case IO_MAG:
-                        if ( pt>0 ) break;
+                        if ( !blockpresent( blk, pt ) ) break;
                         get_dataset_name( blk, buf );
 if ( this_task == 0 )
                         fprintf( stdout, "free memory: %s\n", buf);
                         free( Particle[pt].mag );
                         break;
-                    case IO_C0:
-                        if ( pt>0 ) break;
+                    case IO_CR_C0:
+                        if ( !blockpresent( blk, pt ) ) break;
                         get_dataset_name( blk, buf );
 if ( this_task == 0 )
                         fprintf( stdout, "free memory: %s\n", buf);
                         free( Particle[pt].c0 );
                         break;
-                    case IO_Q0:
-                        if ( pt>0 ) break;
+                    case IO_CR_Q0:
+                        if ( !blockpresent( blk, pt ) ) break;
                         get_dataset_name( blk, buf );
 if ( this_task == 0 )
                         fprintf( stdout, "free memory: %s\n", buf);
                         free( Particle[pt].q0 );
                         break;
                     case IO_J:
-                        if ( pt>0 ) break;
+                        if ( !blockpresent( blk, pt ) ) break;
                         get_dataset_name( blk, buf );
 if ( this_task == 0 )
                         fprintf( stdout, "free memory: %s\n", buf);
@@ -653,44 +747,74 @@ if ( this_task == 0 )
                         free( Particle[pt].m );
                         break;
                     case IO_U:
-                        if ( pt>0 ) break;
+                        if ( !blockpresent( blk, pt ) ) break;
                         get_dataset_name( blk, buf );
 if ( this_task == 0 )
                         fprintf( stdout, "free memory: %s\n", buf);
                         free( Particle[pt].u );
                         break;
                     case IO_POT:
+                        if ( !blockpresent( blk, pt ) ) break;
                         get_dataset_name( blk, buf );
 if ( this_task == 0 )
                         fprintf( stdout, "free memory: %s\n", buf);
                         free( Particle[pt].pot );
                         break;
                     case IO_ELEC:
-                        if ( pt>0 ) break;
+                        if ( !blockpresent( blk, pt ) ) break;
                         get_dataset_name( blk, buf );
 if ( this_task == 0 )
                         fprintf( stdout, "free memory: %s\n", buf);
                         free( Particle[pt].elec );
                         break;
                     case IO_RHO:
-                        if ( pt>0 ) break;
+                        if ( !blockpresent( blk, pt ) ) break;
                         get_dataset_name( blk, buf );
 if ( this_task == 0 )
                         fprintf( stdout, "free memory: %s\n", buf);
                         free( Particle[pt].rho );
                         break;
                     case IO_ID:
+                        if ( !blockpresent( blk, pt ) ) break;
                         get_dataset_name( blk, buf );
 if ( this_task == 0 )
                         fprintf( stdout, "free memory: %s\n", buf);
                         free( Particle[pt].id );
                         break;
                     case IO_MN:
-                        if ( pt>0 ) break;
+                        if ( !blockpresent( blk, pt ) ) break;
                         get_dataset_name( blk, buf );
 if ( this_task == 0 )
                         fprintf( stdout, "free memory: %s\n", buf);
                         free( Particle[pt].mn );
+                        break;
+                    case IO_CRE_C0:
+                        if ( !blockpresent( blk, pt ) ) break;
+                        get_dataset_name( blk, buf );
+if ( this_task == 0 )
+                        fprintf( stdout, "free memory: %s\n", buf);
+                        free( Particle[pt].cre_c0 );
+                        break;
+                    case IO_CRE_Q0:
+                        if ( !blockpresent( blk, pt ) ) break;
+                        get_dataset_name( blk, buf );
+if ( this_task == 0 )
+                        fprintf( stdout, "free memory: %s\n", buf);
+                        free( Particle[pt].cre_q0 );
+                        break;
+                    case IO_CRE_E0:
+                        if ( !blockpresent( blk, pt ) ) break;
+                        get_dataset_name( blk, buf );
+if ( this_task == 0 )
+                        fprintf( stdout, "free memory: %s\n", buf);
+                        free( Particle[pt].cre_e0 );
+                        break;
+                    case IO_CRE_n0:
+                        if ( !blockpresent( blk, pt ) ) break;
+                        get_dataset_name( blk, buf );
+if ( this_task == 0 )
+                        fprintf( stdout, "free memory: %s\n", buf);
+                        free( Particle[pt].cre_n0 );
                         break;
                 }
             }
