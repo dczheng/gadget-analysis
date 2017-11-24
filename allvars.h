@@ -2,8 +2,6 @@
 #include "stdio.h"
 #include "stdlib.h"
 #include "string.h"
-#include "plplot.h"
-#include "plConfig.h"
 #include "unistd.h"
 #include "math.h"
 #include "time.h"
@@ -19,6 +17,7 @@
 #define LONGIDS
 #define SFR
 #define BLACK_HOLES
+#define SEC_PER_MEGAYEAR 3.155e13
 #define DEBUG
 
 #ifdef LONGIDS
@@ -194,17 +193,17 @@ extern struct particle_struct Particle[6];
 extern struct io_header header;
 extern struct group_struct *group;
 
-extern char para_file[ FILENAME_MAX ];
-extern char file_prefix[ FILENAME_MAX ];
-extern char  out_file[ FILENAME_MAX ];
-extern char  out_picture_prefix[ FILENAME_MAX ];
-extern char group_dir[ FILENAME_MAX ];
+extern char FilePrefix[ FILENAME_MAX ];
+extern char GroupDir[ FILENAME_MAX ];
 extern char sep_str[ SEP_LEN ];
-extern int Num_files, TotNgroups;
-extern int slice_num, slice_index_num, *slice_index, pic_xsize, pic_ysize, box[3];
-extern float redshift, al[3], az[3], corner1[3], corner2[3], scalar_unit;
-extern float slice_corner1[2], slice_corner2[2];
-extern int this_task, task_num, proj_mode, out_pic_data, flag_arrow, arrow_x, arrow_y;
+extern int NumFiles, TotNgroups, PicSize;
+extern double UnitTime_in_s,
+              UnitMass_in_g,
+              UnitLength_in_cm,
+              UnitDensity_in_cgs,
+              UnitEnergy_in_cgs,
+              UnitVelocity_in_cm_per_s,
+              UnitTime_in_Megayears;
 
 #ifdef DEBUG
     extern float debug_f;
@@ -225,17 +224,12 @@ void read_header();
 void read_all_data();
 void free_all_memory();
 void write_file( char *fn, struct io_header header, struct particle_struct *Particle);
-void plot_slice( int pt, enum iofields blk );
 void get_dataset_name( enum iofields blk, char *buf );
-void plot_position( int pt );
-void plot_3d_position( int pt );
 void magnetic_field_analysis();
 void density_analysis();
 void hg_electrons_analysis();
-void plot_3d_scalar( int pt, enum iofields blk );
 void group_analysis();
-void plot_3d_multi( int flag );
 void read_group();
 void free_group();
 void signal_hander( int sig );
-void end_run( int ierr );
+void endrun( int ierr );

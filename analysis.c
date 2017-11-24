@@ -209,13 +209,13 @@ void hg_electrons_analysis() {
     FILE *fd;
     printf( "high energy electrons analysis...\n" );
     pt = 0;
-    img = ( double* ) malloc( sizeof(double) * pic_xsize * pic_ysize );
-    memset( img, 0, sizeof( double ) * pic_xsize * pic_ysize );
+    img = ( double* ) malloc( sizeof(double) * PicSize * PicSize );
+    memset( img, 0, sizeof( double ) * PicSize * PicSize );
     printf( "Particle Number: %ld\n", Particle[pt].num );
     pos_max[0] = pos_max[1] = pos_max[2] = -1e10;
     pos_min[0] = pos_min[1] = pos_min[2] = 1e10;
-    dx = header.BoxSize / pic_xsize;
-    dy = header.BoxSize / pic_ysize;
+    dx = header.BoxSize / PicSize;
+    dy = header.BoxSize / PicSize;
     for ( i=0; i<Particle[pt].num; i++ ) {
         if ( Particle[pt].pos[i*3+0] > pos_max[0] )
             pos_max[0] = Particle[pt].pos[i*3+0];
@@ -240,13 +240,13 @@ void hg_electrons_analysis() {
         z = Particle[pt].pos[i*3+2];
         xi = x / dx;
         yi = y / dy;
-        img[xi*pic_xsize+yi] += Particle[pt].cre_n0[i] * Particle[pt].rho[i];
-        //printf( "xi: %d, yi: %d, %g\n", xi, yi, img[xi*pic_xsize+yi] );
+        img[xi*PicSize+yi] += Particle[pt].cre_n0[i] * Particle[pt].rho[i];
+        //printf( "xi: %d, yi: %d, %g\n", xi, yi, img[xi*PicSize+yi] );
     }
     fd = fopen( "./hge_n0.txt", "w" );
-    for ( i=0; i<pic_xsize; i++ ){
-        for ( j=0; j<pic_ysize; j++ ) {
-            fprintf( fd, "%g ", img[i*pic_xsize+j] );
+    for ( i=0; i<PicSize; i++ ){
+        for ( j=0; j<PicSize; j++ ) {
+            fprintf( fd, "%g ", img[i*PicSize+j] );
         }
         fprintf( fd, "\n" );
     }

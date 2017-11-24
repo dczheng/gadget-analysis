@@ -1,24 +1,7 @@
-FILE_PREFIX /mnt/ddnfs/data_users/xllian/Simulate_Radio/gadget_analysis/g2_bin2hdf5/out
-REDSHIFT 0.00
-NUM_FILES 1
-OUT_FILE ./ic.hdf5
-OUT_PICTURE_PREFIX ./test
-SLICE_NUM 10
-SLICE_INDEX_NUM 10
-SLICE_INDEX 0 1 2 3 4 5 6 7 8 9
-SLICE_CORNER1 0 0
-SLICE_CORNER2 600000 600000
-FLAG_ARROW 0
-ARROW_X 64
-ARROW_Y 64
-PIC_XSIZE 800
-PIC_YSIZE 800
-3D_BOX 512 512 512
-SCALAR_UNIT 1e-6
-3D_AL 15.0 1.0 15.0
-3D_AZ 30.0 5.0 30.0
-3D_CORNER1 0.0 0.0 0.0
-3D_CORNER2 50000.0 50000.0 50000.0
-GROUP_DIR /mnt/ddnfs/data_users/xllian/Simulate_Radio/Gadget3_Simulation/cool_feedbak_init_mag_bh_fof_1677/outputs/groups_023
-PROJECTION_MODE 0
-OUT_PIC_DATA 0
+FilePrefix ./test_g3_snapshot_044
+NumFiles 1
+PicSize 800
+GroupDir ./test
+UnitLength_in_cm              3.085678e21
+UnitMass_in_g                 1.989e43
+UnitVelocity_in_cm_per_s      1e5

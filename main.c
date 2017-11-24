@@ -1,273 +1,116 @@
 #include "allvars.h"
 
-void end_run( int ierr ) {
-if ( this_task == 0 )
+void endrun( int ierr ) {
     fprintf( stderr, "EXIT CODE: %i\n", ierr );
-    MPI_Abort( MPI_COMM_WORLD, ierr );
     exit( ierr );
 }
 
-void read_para() {
+void read_para( char *fn ) {
+#define MAXTAGS 300
+#define REAL 1
+#define STRING 2
+#define INT 3
     FILE *fd;
-    int i;
-    char *s;
-    char line[ MAX_PARA_FILE_LINE_LEN ],
-         name[ MAX_PARA_FILE_LINE_LEN ],
-         data[ MAX_PARA_FILE_LINE_LEN ];
-if ( this_task == 0 )
+    void *addr[MAXTAGS];
+    char tag[MAXTAGS][50], buf[200], buf1[200], buf2[200], buf3[200];
+    int id[MAXTAGS], nt, i, j, errflag=0;;
     fputs( sep_str, stdout );
-if ( this_task == 0 )
-    fprintf( stdout, "read Parameter... \n" );
-    fd = fopen( para_file, "r" );
+    fprintf( stdout, "Read Parameter... \n" );
+    fd = fopen( fn, "r" );
     if ( NULL == fd ) {
-if ( this_task == 0 )
-        fprintf( stderr, "Faile to Open Parameter file %s\n", para_file );
-        end_run( 1 );
+        fprintf( stderr, "Faile to Open Parameter file %s\n", fn );
+        endrun( 1 );
     }
-    fgets( line, MAX_PARA_FILE_LINE_LEN, fd );
-    slice_index_num = -1;
+
+    nt = 0;
+    strcpy( tag[nt], "FilePrefix" );
+    addr[nt] = FilePrefix;
+    id[nt++] = STRING;
+
+    strcpy( tag[nt], "GroupDir" );
+    addr[nt] = GroupDir;
+    id[nt++] = STRING;
+
+    strcpy( tag[nt], "NumFiles" );
+    addr[nt] = &NumFiles;
+    id[nt++] = INT;
+
+    strcpy( tag[nt], "PicSize" );
+    addr[nt] = &PicSize;
+    id[nt++] = INT;
+
+    strcpy( tag[nt], "UnitMass_in_g" );
+    addr[nt] = &UnitMass_in_g;
+    id[nt++] = REAL;
+
+    strcpy( tag[nt], "UnitLength_in_cm" );
+    addr[nt] = &UnitLength_in_cm;
+    id[nt++] = REAL;
+
+    strcpy( tag[nt], "UnitVelocity_in_cm_per_s" );
+    addr[nt] = &UnitVelocity_in_cm_per_s;
+    id[nt++] = REAL;
+
     while( !feof( fd ) ) {
-        if ( ( line[0] != '#' ) && ( line[0] != '\n' ) ) {
-            sscanf( line, "%s %s", name, data );
-            if ( !strcmp( "FILE_PREFIX", name ) ) {
-                strcpy( file_prefix, data );
-if ( this_task == 0 )
-                fprintf( stdout, "file_prefix: %s\n",  file_prefix );
+        *buf = 0;
+        fgets( buf, 200, fd );
+        if ( sscanf( buf, "%s%s%s", buf1, buf2, buf3 ) < 2 )
+            continue;
+        if ( buf1[0] == '%' )
+            continue;
+        for ( i=0, j=-1; i<nt; i++ )
+            if ( strcmp( buf1, tag[i] ) == 0 ) {
+                j = i;
+                tag[i][0] = 0;
+                break;
             }
-            if ( !strcmp( "GROUP_DIR", name ) ) {
-                strcpy( group_dir, data );
-                if ( group_dir[strlen(group_dir)-1] != '/' )
-                    strcat( group_dir, "/" );
-if ( this_task == 0 )
-                fprintf( stdout, "group_dir: %s\n",  group_dir );
-            }
-            if ( !strcmp( "OUT_FILE", name ) ) {
-                strcpy( out_file, data );
-if ( this_task == 0 )
-                fprintf( stdout, "out_file: %s\n",  out_file );
-            }
-            if ( !strcmp( "OUT_PICTURE_PREFIX", name ) ) {
-                strcpy( out_picture_prefix, data );
-if ( this_task == 0 )
-                fprintf( stdout, "out_picture_prefix: %s\n",  out_picture_prefix );
-            }
-            if ( !strcmp( "FLAG_ARROW", name ) ) {
-                flag_arrow = atoi( data );
-if ( this_task == 0 )
-                fprintf( stdout, "flag_arrow: %i\n",  flag_arrow );
-            }
-            if ( !strcmp( "ARROW_X", name ) ) {
-                arrow_x = atoi( data );
-if ( this_task == 0 )
-                fprintf( stdout, "arrow_x: %i\n",  arrow_x );
-            }
-            if ( !strcmp( "ARROW_Y", name ) ) {
-                arrow_y = atoi( data );
-if ( this_task == 0 )
-                fprintf( stdout, "arrow_y: %i\n",  arrow_y );
-            }
-            if ( !strcmp( "NUM_FILES", name ) ) {
-                Num_files = atoi( data );
-if ( this_task == 0 )
-                fprintf( stdout, "Num_files: %i\n",  Num_files );
-            }
-            if ( !strcmp( "PROJECTION_MODE", name ) ) {
-                proj_mode = atoi( data );
-if ( this_task == 0 )
-                fprintf( stdout, "projection mode: %i\n",  proj_mode );
-            }
-            if ( !strcmp( "OUT_PIC_DATA", name ) ) {
-                out_pic_data = atoi( data );
-if ( this_task == 0 )
-                fprintf( stdout, "out_pic_data: %i\n",  out_pic_data );
-            }
-            if ( !strcmp( "PIC_XSIZE", name ) ) {
-                pic_xsize = atoi( data );
-if ( this_task == 0 )
-                fprintf( stdout, "pic_xsize: %i\n",  pic_xsize );
-            }
-            if ( !strcmp( "PIC_YSIZE", name ) ) {
-                pic_ysize = atoi( data );
-if ( this_task == 0 )
-                fprintf( stdout, "pic_ysize: %i\n",  pic_ysize );
-            }
-            if ( !strcmp( "SLICE_NUM", name ) ) {
-                slice_num = atoi( data );
-if ( this_task == 0 )
-                fprintf( stdout, "slice_num: %i\n", slice_num );
-            }
-            if ( !strcmp( "REDSHIFT", name ) ) {
-                redshift = atof( data );
-if ( this_task == 0 )
-                fprintf( stdout, "reshift: %.2f\n", redshift );
-            }
-            if ( !strcmp( "SCALAR_UNIT", name ) ) {
-                scalar_unit = atof( data );
-if ( this_task == 0 )
-                fprintf( stdout, "scalar_unit: %e\n", scalar_unit );
-            }
-            if ( !strcmp( "3D_BOX", name ) ) {
-                s = strtok( line, " " );
-if ( this_task == 0 )
-                fprintf( stdout, "box: " );
-                for ( i=0; i<3; i++ ) {
-                    if ( NULL == s ){
-if ( this_task == 0 )
-                        fprintf( stdout, "too few parameters for box\n" );
-                        end_run( 2 );
-                    }
-                    s = strtok( NULL, " " );
-                    box[i] = atoi( s );
-if ( this_task == 0 )
-                    fprintf( stdout, "%i ", box[i] );
-                }
-if ( this_task == 0 )
-                fprintf( stdout, "\n" );
-            }
-            if ( !strcmp( "3D_AL", name ) ) {
-                s = strtok( line, " " );
-if ( this_task == 0 )
-                fprintf( stdout, "al: " );
-                for ( i=0; i<3; i++ ) {
-                    if ( NULL == s ){
-if ( this_task == 0 )
-                        fprintf( stdout, "too few parameters for al\n" );
-                        end_run( 2 );
-                    }
-                    s = strtok( NULL, " " );
-                    al[i] = atof( s );
-if ( this_task == 0 )
-                    fprintf( stdout, "%.2f ", al[i] );
-                }
-if ( this_task == 0 )
-                fprintf( stdout, "\n" );
-            }
-            if ( !strcmp( "3D_AZ", name ) ) {
-                s = strtok( line, " " );
-if ( this_task == 0 )
-                fprintf( stdout, "az: " );
-                for ( i=0; i<3; i++ ) {
-                    if ( NULL == s ){
-if ( this_task == 0 )
-                        fprintf( stdout, "too few parameters for az\n" );
-                        end_run( 2 );
-                    }
-                    s = strtok( NULL, " " );
-                    az[i] = atof( s );
-if ( this_task == 0 )
-                    fprintf( stdout, "%.2f ", az[i] );
-                }
-if ( this_task == 0 )
-                fprintf( stdout, "\n" );
-            }
-            if ( !strcmp( "SLICE_CORNER1", name ) ) {
-                s = strtok( line, " " );
-if ( this_task == 0 )
-                fprintf( stdout, "slice_corner1: " );
-                for ( i=0; i<2; i++ ) {
-                    if ( NULL == s ){
-if ( this_task == 0 )
-                        fprintf( stdout, "too few parameters for slice_corner1\n" );
-                        end_run( 2 );
-                    }
-                    s = strtok( NULL, " " );
-                    slice_corner1[i] = atof( s );
-if ( this_task == 0 )
-                    fprintf( stdout, "%.2f ", slice_corner1[i] );
-                }
-if ( this_task == 0 )
-                fprintf( stdout, "\n" );
-            }
-            if ( !strcmp( "SLICE_CORNER2", name ) ) {
-                s = strtok( line, " " );
-if ( this_task == 0 )
-                fprintf( stdout, "sclie_corner2: " );
-                for ( i=0; i<2; i++ ) {
-                    if ( NULL == s ){
-if ( this_task == 0 )
-                        fprintf( stdout, "too few parameters for slice_corner2\n" );
-                        end_run( 2 );
-                    }
-                    s = strtok( NULL, " " );
-                    slice_corner2[i] = atof( s );
-if ( this_task == 0 )
-                    fprintf( stdout, "%.2f ", slice_corner2[i] );
-                }
-if ( this_task == 0 )
-                fprintf( stdout, "\n" );
-            }
-            if ( !strcmp( "3D_CORNER1", name ) ) {
-                s = strtok( line, " " );
-if ( this_task == 0 )
-                fprintf( stdout, "corner1: " );
-                for ( i=0; i<3; i++ ) {
-                    if ( NULL == s ){
-if ( this_task == 0 )
-                        fprintf( stdout, "too few parameters for corner1\n" );
-                        end_run( 2 );
-                    }
-                    s = strtok( NULL, " " );
-                    corner1[i] = atof( s );
-if ( this_task == 0 )
-                    fprintf( stdout, "%.2f ", corner1[i] );
-                }
-if ( this_task == 0 )
-                fprintf( stdout, "\n" );
-            }
-            if ( !strcmp( "3D_CORNER2", name ) ) {
-                s = strtok( line, " " );
-if ( this_task == 0 )
-                fprintf( stdout, "corner2: " );
-                for ( i=0; i<3; i++ ) {
-                    if ( NULL == s ){
-if ( this_task == 0 )
-                        fprintf( stdout, "too few parameters for corner2\n" );
-                        end_run( 2 );
-                    }
-                    s = strtok( NULL, " " );
-                    corner2[i] = atof( s );
-if ( this_task == 0 )
-                    fprintf( stdout, "%.2f ", corner2[i] );
-                }
-if ( this_task == 0 )
-                fprintf( stdout, "\n" );
-            }
-            if ( !strcmp( "SLICE_INDEX_NUM", name ) ) {
-                slice_index_num = atoi( data );
-if ( this_task == 0 )
-                fprintf( stdout, "slice_index_num: %i\n", slice_index_num );
-                if ( slice_index_num !=0 ) {
-                    slice_index = ( int* ) malloc( sizeof( int ) * slice_index_num );
-                    memset( slice_index, -1, sizeof( int ) * slice_index_num );
-                }
-            }
-            if ( !strcmp( "SLICE_INDEX", name ) ) {
-                if ( -1 == slice_index_num ) {
-if ( this_task == 0 )
-                    fprintf( stderr, "SLICE_INDEX_NUM must appear before SLICE_INDEX!\n" );
-                    end_run( 2 );
-                }
-                if ( slice_index_num !=0 ) {
-                    s = strtok( line, " " );
-if ( this_task == 0 )
-                    fprintf( stdout, "slice_index: " );
-                    i=0;
-                    while ( s=strtok( NULL, " " ) ){
-                        slice_index[i] = atoi( s );
-if ( this_task == 0 )
-                        fprintf( stdout, "%i ", slice_index[i] );
-                        i++;
-                    }
-                }
-if ( this_task == 0 )
-                fprintf( stdout, "\n" );
+        if ( j>=0 ) {
+            switch ( id[j] ) {
+                case REAL:
+                    *( (double*)addr[j] ) = atof( buf2 );
+                    printf( "%-35s%g\n", buf1, *((double*)addr[j]) );
+                    break;
+                case INT:
+                    *( (int*)addr[j] ) = atoi( buf2 );
+                    printf( "%-35s%d\n", buf1, *((int*)addr[j]) );
+                    break;
+                case STRING:
+                    strcpy( (char*)addr[j], buf2 );
+                    printf( "%-35s%s\n", buf1, buf2 );
+                    break;
             }
         }
-        fgets( line, MAX_PARA_FILE_LINE_LEN, fd );
+        else {
+            printf( "Error in file %s:  Tag: '%s', not allowed or multiple define.\n", fn, buf1 );
+            errflag = 1;
+        }
     }
-if ( this_task == 0 )
-    fputs( sep_str, stdout );
+    for ( i=0; i<nt; i++ ) {
+        if ( *tag[i] ) {
+            printf( "Error. I miss a value for tag '%s' in parameter file '%s'.\n", tag[i], fn );
+            errflag = 1;
+        }
+    }
+    if ( errflag )
+        endrun( 0 );
     fclose( fd );
+}
+
+void set_units() {
+    fputs( sep_str, stdout );
+    fprintf( stdout, "Set Units... \n" );
+    UnitTime_in_s = UnitLength_in_cm / UnitVelocity_in_cm_per_s;
+    UnitDensity_in_cgs = UnitMass_in_g / pow( UnitLength_in_cm, 3 );
+    UnitEnergy_in_cgs = UnitMass_in_g * pow( UnitLength_in_cm,2 ) / pow( UnitTime_in_s, 2 );
+    UnitTime_in_Megayears = UnitTime_in_s / SEC_PER_MEGAYEAR;
+    printf( "UnitMass_in_g = %g\n", UnitMass_in_g );
+    printf( "UnitTime_in_s = %g\n", UnitTime_in_s );
+    printf( "UnitLength_in_cm = %g\n", UnitLength_in_cm );
+    printf( "UnitDensity_in_cgs = %g\n", UnitDensity_in_cgs );
+    printf( "UnitEnergy_in_cgs = %g\n", UnitEnergy_in_cgs );
+    printf( "UnitVelocity_in_cm_per_s = %g\n", UnitVelocity_in_cm_per_s );
+    printf( "UnitTime_in_Megayears = %g\n", UnitTime_in_Megayears );
+    fputs( sep_str, stdout );
 }
 
 void init_sep_str() {
@@ -282,74 +125,25 @@ int main( int argc, char *argv[] ){
     struct tm *tb;
     char tmp[100];
     if ( argc < 2 ) {
-if ( this_task == 0 )
         fprintf( stderr, "Parameter file is required on command line!\n " );
-        end_run( 1 );
+        endrun( 1 );
     }
-    MPI_Init( &argc, &argv );
-    MPI_Comm_rank( MPI_COMM_WORLD, &this_task );
-    MPI_Comm_size( MPI_COMM_WORLD, &task_num );
 #ifdef DEBUG
     signal( SIGSEGV, signal_hander );
 #endif
     time1 = time( NULL );
     tb = localtime( &time1 );
-    if ( this_task == 0 )
-        fprintf( stdout, "Start At: %s", asctime(tb) );
+    fprintf( stdout, "Start At: %s", asctime(tb) );
     init_sep_str();
-    strcpy( para_file, argv[1] );
-    read_para();
+    read_para( argv[1] );
+    set_units();
     read_all_data();
     //group_analysis();
-    sprintf( tmp, "%s", out_picture_prefix );
     hg_electrons_analysis();
-    /*
-    sprintf( out_picture_prefix, "%s/%s_%.2f", tmp, "mag", redshift );
-    plot_slice( 0, IO_MAG );
-    */
-    /*
-    sprintf( out_picture_prefix, "%s/%s_%.2f", tmp, "gas", redshift );
-    plot_slice( 0, IO_MASS );
-    */
-    /*
-    sprintf( out_picture_prefix, "%s/%s_%.2f", tmp, "gas", redshift );
-    plot_slice( 0, IO_MASS );
-
-    sprintf( out_picture_prefix, "%s/%s_%.2f", tmp, "hgn", redshift );
-    plot_slice( 0, IO_CRE_n0 );
-
-    sprintf( out_picture_prefix, "%s/%s_%.2f", tmp, "hge", redshift );
-    plot_slice( 0, IO_CRE_E0 );
-    */
-    /*
-    if ( header.npart[4] != 0 ) {
-        sprintf( out_picture_prefix, "%s/%s_%.2f", tmp, "star", redshift );
-        plot_slice( 4, IO_MASS );
-    }
-    */
-    /*
-    sprintf( out_picture_prefix, "%s/%s_%.2f", tmp, "mn", redshift );
-    plot_slice( 0, IO_MN );
-    */
-    //sprintf( out_picture_prefix, "%s", tmp );
-   //analysis_radio();
-    //plot_slice( 0, IO_MAG );
-    //magnetic_field_analysis();
-    //density_analysis();
-    //plot_position( 1 );
-    //plot_3d_position( 1 );
-    //plot_3d_multi( 1 );
-    //plot_3d_scalar( 0, IO_ELEC );
-    //velocity_analysis();
     free_all_memory();
-    if ( slice_index_num >0 )
-        free( slice_index );
-    MPI_Finalize();
     time2 = time( NULL );
     tb = localtime( &time2 );
-    if ( this_task == 0 ){
-        fprintf( stdout, "End At: %s", asctime(tb) );
-        fprintf( stdout, "Total Time %i\n", time2-time1 );
-    }
+    fprintf( stdout, "End At: %s", asctime(tb) );
+    fprintf( stdout, "Total Time %i\n", time2-time1 );
 }
 

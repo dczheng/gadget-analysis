@@ -1,15 +1,16 @@
 #include "allvars.h"
 
-char para_file[ FILENAME_MAX ];
-char file_prefix[ FILENAME_MAX ];
-char out_file[ FILENAME_MAX ];
-char out_picture_prefix[ FILENAME_MAX ];
+char FilePrefix[ FILENAME_MAX ];
 char sep_str[ SEP_LEN ];
-char group_dir[ FILENAME_MAX ];
-int Num_files, box[3], TotNgroups;
-float redshift, al[3], az[3], corner1[3], corner2[3], scalar_unit;
-float slice_corner1[2], slice_corner2[2];
-int this_task, task_num, proj_mode, out_pic_data, flag_arrow, arrow_x, arrow_y;
+char GroupDir[ FILENAME_MAX ];
+int NumFiles, TotNgroups, PicSize, ndims;
+double UnitTime_in_s,
+       UnitMass_in_g,
+       UnitLength_in_cm,
+       UnitDensity_in_cgs,
+       UnitEnergy_in_cgs,
+       UnitVelocity_in_cm_per_s,
+       UnitTime_in_Megayears;
 
 struct particle_struct Particle[6];
 struct io_header header;
@@ -27,4 +28,3 @@ struct group_struct *group;
 hid_t hdf5_file, hdf5_group, hdf5_dataset, hdf5_dataspace_in_file, hdf5_dataspace_in_memory, hdf5_dataspace, hdf5_type, hdf5_hdf5_type_mem, hdf5_attribute;
 herr_t herr;
 hsize_t dims[2], maxdims[2], npoints, precision;
-int ndims, slice_num, slice_index_num, *slice_index, pic_xsize, pic_ysize;

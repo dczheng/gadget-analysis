@@ -116,7 +116,6 @@ void show_header( struct io_header header ) {
 
 void write_header( char *fn, struct io_header header ) {
 
-if ( this_task == 0 )
     fprintf(  stdout, "write header To %s\n", fn  );
     hdf5_file = H5Fcreate( fn, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT );
     //hdf5_file = H5Fopen( fn, H5F_ACC_RDWR, H5P_DEFAULT );
@@ -458,9 +457,9 @@ void read_block( int pt, void *data, enum iofields blk ) {
     sprintf( buf, "PartType%i/%s", pt, buf1 );
     p = data;
     for ( i=0; i<header.num_files; i++ ) {
-        sprintf( file_name, "%s.%3i.hdf5", file_prefix, i );
+        sprintf( file_name, "%s.%3i.hdf5", FilePrefix, i );
         if ( header.num_files < 2 )
-            sprintf( file_name, "%s.hdf5", file_prefix);
+            sprintf( file_name, "%s.hdf5", FilePrefix);
         read_header( file_name );
         hdf5_file = H5Fopen( file_name , H5F_ACC_RDWR, H5P_DEFAULT );
         hdf5_dataset = H5Dopen( hdf5_file, buf );
@@ -476,27 +475,18 @@ void read_all_data() {
     int pt, blk, nbytes, dim2;
     long i;
     char file_name[FILENAME_MAX], buf[20];
-    if ( this_task == 0 ){
-if ( this_task == 0 )
-        fputs( sep_str, stdout );
-if ( this_task == 0 )
-        fputs( "read all data ...\n", stdout );
-    }
-    sprintf( file_name, "%s.%3i.hdf5", file_prefix, 0 );
-    if ( Num_files < 2 )
-        sprintf( file_name, "%s.hdf5", file_prefix );
+    fputs( sep_str, stdout );
+    fputs( "read all data ...\n", stdout );
+    sprintf( file_name, "%s.%3i.hdf5", FilePrefix, 0 );
+    if ( NumFiles < 2 )
+        sprintf( file_name, "%s.hdf5", FilePrefix );
     read_header( file_name );
-if ( this_task == 0 )
     show_header( header );
     for ( pt=0; pt<6; pt++ ) {
         Particle[pt].num = header.npartTotalHighWord[pt];
         Particle[pt].num = header.npartTotal[pt] + ( Particle[pt].num<<32 );
         //fprintf( stdout, "%li\n", Particle[pt].num );
-if ( this_task == 0 )
-        fputs( sep_str, stdout );
         if ( Particle[pt].num != 0 ){
-            if ( this_task == 0 )
-if ( this_task == 0 )
             fprintf( stdout, "Particle %i\n", pt );
             for ( blk=0; blk<IO_NBLOCKS; blk++ ){
                 switch ( blk ){
@@ -504,7 +494,6 @@ if ( this_task == 0 )
                         if ( !blockpresent( blk, pt ) ) break;
                         nbytes = get_block_nbytes( blk );
                         get_dataset_name( blk, buf );
-if ( this_task == 0 )
                         fprintf( stdout, "reading %s\n", buf);
                         Particle[pt].pos = ( float* ) malloc( nbytes * Particle[pt].num );
                         read_block( pt, (void*)(Particle[pt].pos), blk );
@@ -513,7 +502,6 @@ if ( this_task == 0 )
                         if ( !blockpresent( blk, pt ) ) break;
                         nbytes = get_block_nbytes( blk );
                         get_dataset_name( blk, buf );
-if ( this_task == 0 )
                         fprintf( stdout, "reading %s\n", buf);
                         Particle[pt].vel = ( float* ) malloc( nbytes * Particle[pt].num );
                         read_block( pt, (void*)(Particle[pt].vel), blk );
@@ -522,7 +510,6 @@ if ( this_task == 0 )
                         if ( !blockpresent( blk, pt ) ) break;
                         nbytes = get_block_nbytes( blk );
                         get_dataset_name( blk, buf );
-if ( this_task == 0 )
                         fprintf( stdout, "reading %s\n", buf);
                         Particle[pt].accel = ( float* ) malloc( nbytes * Particle[pt].num );
                         read_block( pt, (void*)(Particle[pt].accel), blk );
@@ -531,7 +518,6 @@ if ( this_task == 0 )
                         if ( !blockpresent( blk, pt ) ) break;
                         nbytes = get_block_nbytes( blk );
                         get_dataset_name( blk, buf );
-if ( this_task == 0 )
                         fprintf( stdout, "reading %s\n", buf);
                         Particle[pt].mag = ( float* ) malloc(  nbytes * Particle[pt].num );
                         read_block( pt, (void*)(Particle[pt].mag), blk );
@@ -540,7 +526,6 @@ if ( this_task == 0 )
                         if ( !blockpresent( blk, pt ) ) break;
                         nbytes = get_block_nbytes( blk );
                         get_dataset_name( blk, buf );
-if ( this_task == 0 )
                         fprintf( stdout, "reading %s\n", buf);
                         Particle[pt].c0 = ( float* ) malloc(  nbytes * Particle[pt].num );
                         read_block( pt, (void*)(Particle[pt].c0), blk );
@@ -549,7 +534,6 @@ if ( this_task == 0 )
                         if ( !blockpresent( blk, pt ) ) break;
                         nbytes = get_block_nbytes( blk );
                         get_dataset_name( blk, buf );
-if ( this_task == 0 )
                         fprintf( stdout, "reading %s\n", buf);
                         Particle[pt].q0 = ( float* ) malloc(  nbytes * Particle[pt].num );
                         read_block( pt, (void*)(Particle[pt].q0), blk );
@@ -559,14 +543,12 @@ if ( this_task == 0 )
                         if ( pt>0 ) break;
                         nbytes = get_block_nbytes( blk );
                         get_dataset_name( blk, buf );
-if ( this_task == 0 )
                         fprintf( stdout, "allocate memory for %s\n", buf);
                         Particle[pt].j = ( float* ) malloc(  nbytes * Particle[pt].num );
                         break;
                     case IO_MASS:
                         nbytes = get_block_nbytes( blk );
                         get_dataset_name( blk, buf );
-if ( this_task == 0 )
                         fprintf( stdout, "reading %s\n", buf);
                         Particle[pt].m = ( float* ) malloc( nbytes * Particle[pt].num );
                         if ( header.mass[pt] == 0 )
@@ -579,7 +561,6 @@ if ( this_task == 0 )
                         if ( !blockpresent( blk, pt ) ) break;
                         nbytes = get_block_nbytes( blk );
                         get_dataset_name( blk, buf );
-if ( this_task == 0 )
                         fprintf( stdout, "reading %s\n", buf);
                         Particle[pt].u = ( float* ) malloc( nbytes * Particle[pt].num );
                         read_block( pt, (void*)(Particle[pt].u), blk );
@@ -588,7 +569,6 @@ if ( this_task == 0 )
                         if ( !blockpresent( blk, pt ) ) break;
                         nbytes = get_block_nbytes( blk );
                         get_dataset_name( blk, buf );
-if ( this_task == 0 )
                         fprintf( stdout, "reading %s\n", buf);
                         Particle[pt].pot = ( float* ) malloc( nbytes * Particle[pt].num );
                         read_block( pt, (void*)(Particle[pt].pot), blk );
@@ -597,7 +577,6 @@ if ( this_task == 0 )
                         if ( !blockpresent( blk, pt ) ) break;
                         nbytes = get_block_nbytes( blk );
                         get_dataset_name( blk, buf );
-if ( this_task == 0 )
                         fprintf( stdout, "reading %s\n", buf);
                         Particle[pt].elec = ( float* ) malloc( nbytes * Particle[pt].num );
                         read_block( pt, (void*)(Particle[pt].elec), blk );
@@ -606,7 +585,6 @@ if ( this_task == 0 )
                         if ( !blockpresent( blk, pt ) ) break;
                         nbytes = get_block_nbytes( blk );
                         get_dataset_name( blk, buf );
-if ( this_task == 0 )
                         fprintf( stdout, "reading %s\n", buf);
                         Particle[pt].rho = ( float* ) malloc( nbytes * Particle[pt].num );
                         read_block( pt, (void*)(Particle[pt].rho), blk );
@@ -615,7 +593,6 @@ if ( this_task == 0 )
                         if ( !blockpresent( blk, pt ) ) break;
                         nbytes = get_block_nbytes( blk );
                         get_dataset_name( blk, buf );
-if ( this_task == 0 )
                         fprintf( stdout, "reading %s\n", buf);
                         Particle[pt].id = ( MyIDType* ) malloc( nbytes * Particle[pt].num );
                         read_block( pt, (void*)(Particle[pt].id), blk );
@@ -624,7 +601,6 @@ if ( this_task == 0 )
                         if ( !blockpresent( blk, pt ) ) break;
                         nbytes = get_block_nbytes( blk );
                         get_dataset_name( blk, buf );
-if ( this_task == 0 )
                         fprintf( stdout, "reading %s\n", buf);
                         Particle[pt].mn = ( float* ) malloc( nbytes * Particle[pt].num );
                         read_block( pt, (void*)(Particle[pt].mn), blk );
@@ -633,7 +609,6 @@ if ( this_task == 0 )
                         if ( !blockpresent( blk, pt ) ) break;
                         nbytes = get_block_nbytes( blk );
                         get_dataset_name( blk, buf );
-if ( this_task == 0 )
                         fprintf( stdout, "reading %s\n", buf);
                         Particle[pt].cre_c0 = ( float* ) malloc( nbytes * Particle[pt].num );
                         read_block( pt, (void*)(Particle[pt].cre_c0), blk );
@@ -642,7 +617,6 @@ if ( this_task == 0 )
                         if ( !blockpresent( blk, pt ) ) break;
                         nbytes = get_block_nbytes( blk );
                         get_dataset_name( blk, buf );
-if ( this_task == 0 )
                         fprintf( stdout, "reading %s\n", buf);
                         Particle[pt].cre_q0 = ( float* ) malloc( nbytes * Particle[pt].num );
                         read_block( pt, (void*)(Particle[pt].cre_q0), blk );
@@ -651,7 +625,6 @@ if ( this_task == 0 )
                         if ( !blockpresent( blk, pt ) ) break;
                         nbytes = get_block_nbytes( blk );
                         get_dataset_name( blk, buf );
-if ( this_task == 0 )
                         fprintf( stdout, "reading %s\n", buf);
                         Particle[pt].cre_e0 = ( float* ) malloc( nbytes * Particle[pt].num );
                         read_block( pt, (void*)(Particle[pt].cre_e0), blk );
@@ -660,7 +633,6 @@ if ( this_task == 0 )
                         if ( !blockpresent( blk, pt ) ) break;
                         nbytes = get_block_nbytes( blk );
                         get_dataset_name( blk, buf );
-if ( this_task == 0 )
                         fprintf( stdout, "reading %s\n", buf);
                         Particle[pt].cre_n0 = ( float* ) malloc( nbytes * Particle[pt].num );
                         read_block( pt, (void*)(Particle[pt].cre_n0), blk );
@@ -668,10 +640,7 @@ if ( this_task == 0 )
                 }
             }
         }
-if ( this_task == 0 )
-        fputs( sep_str, stdout );
     }
-if ( this_task == 0 )
     fputs( sep_str, stdout );
     //test();
 }
@@ -679,150 +648,124 @@ if ( this_task == 0 )
 void free_all_memory() {
     int pt, blk;
     char buf[20];
-if ( this_task == 0 )
     fputs( sep_str, stdout );
-if ( this_task == 0 )
     fputs( "free all memory ...\n", stdout );
     for ( pt=0; pt<6; pt++) {
-if ( this_task == 0 )
-        fputs( sep_str, stdout );
         if ( Particle[pt].num != 0 ){
-if ( this_task == 0 )
             fprintf( stdout, "Particle %i\n", pt );
             for ( blk=0; blk<IO_NBLOCKS; blk++ ){
                 switch ( blk ){
                     case IO_POS:
                         if ( !blockpresent( blk, pt ) ) break;
                         get_dataset_name( blk, buf );
-if ( this_task == 0 )
                         fprintf( stdout, "free memory: %s\n", buf);
                         free( Particle[pt].pos );
                         break;
                     case IO_VEL:
                         if ( !blockpresent( blk, pt ) ) break;
                         get_dataset_name( blk, buf );
-if ( this_task == 0 )
                         fprintf( stdout, "free memory: %s\n", buf);
                         free( Particle[pt].vel );
                         break;
                     case IO_ACCEL:
                         if ( !blockpresent( blk, pt ) ) break;
                         get_dataset_name( blk, buf );
-if ( this_task == 0 )
                         fprintf( stdout, "free memory: %s\n", buf);
                         free( Particle[pt].accel );
                         break;
                     case IO_MAG:
                         if ( !blockpresent( blk, pt ) ) break;
                         get_dataset_name( blk, buf );
-if ( this_task == 0 )
                         fprintf( stdout, "free memory: %s\n", buf);
                         free( Particle[pt].mag );
                         break;
                     case IO_CR_C0:
                         if ( !blockpresent( blk, pt ) ) break;
                         get_dataset_name( blk, buf );
-if ( this_task == 0 )
                         fprintf( stdout, "free memory: %s\n", buf);
                         free( Particle[pt].c0 );
                         break;
                     case IO_CR_Q0:
                         if ( !blockpresent( blk, pt ) ) break;
                         get_dataset_name( blk, buf );
-if ( this_task == 0 )
                         fprintf( stdout, "free memory: %s\n", buf);
                         free( Particle[pt].q0 );
                         break;
                     case IO_J:
                         if ( !blockpresent( blk, pt ) ) break;
                         get_dataset_name( blk, buf );
-if ( this_task == 0 )
                         fprintf( stdout, "free memory: %s\n", buf);
                         free( Particle[pt].j);
                         break;
                     case IO_MASS:
                         get_dataset_name( blk, buf );
-if ( this_task == 0 )
                         fprintf( stdout, "free memory: %s\n", buf);
                         free( Particle[pt].m );
                         break;
                     case IO_U:
                         if ( !blockpresent( blk, pt ) ) break;
                         get_dataset_name( blk, buf );
-if ( this_task == 0 )
                         fprintf( stdout, "free memory: %s\n", buf);
                         free( Particle[pt].u );
                         break;
                     case IO_POT:
                         if ( !blockpresent( blk, pt ) ) break;
                         get_dataset_name( blk, buf );
-if ( this_task == 0 )
                         fprintf( stdout, "free memory: %s\n", buf);
                         free( Particle[pt].pot );
                         break;
                     case IO_ELEC:
                         if ( !blockpresent( blk, pt ) ) break;
                         get_dataset_name( blk, buf );
-if ( this_task == 0 )
                         fprintf( stdout, "free memory: %s\n", buf);
                         free( Particle[pt].elec );
                         break;
                     case IO_RHO:
                         if ( !blockpresent( blk, pt ) ) break;
                         get_dataset_name( blk, buf );
-if ( this_task == 0 )
                         fprintf( stdout, "free memory: %s\n", buf);
                         free( Particle[pt].rho );
                         break;
                     case IO_ID:
                         if ( !blockpresent( blk, pt ) ) break;
                         get_dataset_name( blk, buf );
-if ( this_task == 0 )
                         fprintf( stdout, "free memory: %s\n", buf);
                         free( Particle[pt].id );
                         break;
                     case IO_MN:
                         if ( !blockpresent( blk, pt ) ) break;
                         get_dataset_name( blk, buf );
-if ( this_task == 0 )
                         fprintf( stdout, "free memory: %s\n", buf);
                         free( Particle[pt].mn );
                         break;
                     case IO_CRE_C0:
                         if ( !blockpresent( blk, pt ) ) break;
                         get_dataset_name( blk, buf );
-if ( this_task == 0 )
                         fprintf( stdout, "free memory: %s\n", buf);
                         free( Particle[pt].cre_c0 );
                         break;
                     case IO_CRE_Q0:
                         if ( !blockpresent( blk, pt ) ) break;
                         get_dataset_name( blk, buf );
-if ( this_task == 0 )
                         fprintf( stdout, "free memory: %s\n", buf);
                         free( Particle[pt].cre_q0 );
                         break;
                     case IO_CRE_E0:
                         if ( !blockpresent( blk, pt ) ) break;
                         get_dataset_name( blk, buf );
-if ( this_task == 0 )
                         fprintf( stdout, "free memory: %s\n", buf);
                         free( Particle[pt].cre_e0 );
                         break;
                     case IO_CRE_n0:
                         if ( !blockpresent( blk, pt ) ) break;
                         get_dataset_name( blk, buf );
-if ( this_task == 0 )
                         fprintf( stdout, "free memory: %s\n", buf);
                         free( Particle[pt].cre_n0 );
                         break;
                 }
             }
         }
-if ( this_task == 0 )
-        fputs( sep_str, stdout );
     }
-if ( this_task == 0 )
     fputs( sep_str, stdout );
 }
 
@@ -830,26 +773,20 @@ void test() {
     int pt, blk, i;
     char buf[20];
     int test_num;
-if ( this_task == 0 )
     fputs( sep_str, stdout );
-if ( this_task == 0 )
     fputs( "test ...\n", stdout );
     test_num = 3;
     for ( pt=0; pt<6; pt++) {
         if ( pt>=2 ) continue;
-if ( this_task == 0 )
         fputs( sep_str, stdout );
-if ( this_task == 0 )
         fprintf( stdout, "Particle %i\n", pt );
         if ( Particle[pt].num != 0 )
             for ( blk=0; blk<IO_NBLOCKS; blk++ ){
                 switch ( blk ){
                     case IO_POS:
                         get_dataset_name( blk, buf );
-if ( this_task == 0 )
                         fprintf( stdout, "%s\n", buf);
                         for ( i=0; i<test_num; i++ ) {
-if ( this_task == 0 )
                             fprintf( stdout, "%10.4f %10.4f %10.4f\n",
                                     Particle[pt].pos[i*3+0],
                                     Particle[pt].pos[i*3+1],
@@ -858,10 +795,8 @@ if ( this_task == 0 )
                         break;
                     case IO_VEL:
                         get_dataset_name( blk, buf );
-if ( this_task == 0 )
                         fprintf( stdout, "%s\n", buf);
                         for ( i=0; i<test_num; i++ ) {
-if ( this_task == 0 )
                             fprintf( stdout, "%10.4f %10.4f %10.4f\n",
                                     Particle[pt].vel[i*3+0],
                                     Particle[pt].vel[i*3+1],
@@ -870,10 +805,8 @@ if ( this_task == 0 )
                         break;
                     case IO_ACCEL:
                         get_dataset_name( blk, buf );
-if ( this_task == 0 )
                         fprintf( stdout, "%s\n", buf);
                         for ( i=0; i<test_num; i++ ) {
-if ( this_task == 0 )
                             fprintf( stdout, "%10.4f %10.4f %10.4f\n",
                                     Particle[pt].accel[i*3+0],
                                     Particle[pt].accel[i*3+1],
@@ -883,10 +816,8 @@ if ( this_task == 0 )
                     case IO_MAG:
                         if ( pt>0 ) break;
                         get_dataset_name( blk, buf );
-if ( this_task == 0 )
                         fprintf( stdout, "%s\n", buf);
                         for ( i=0; i<test_num; i++ ) {
-if ( this_task == 0 )
                             fprintf( stdout, "%e %e %e\n",
                                     Particle[pt].mag[i*3+0],
                                     Particle[pt].mag[i*3+1],
@@ -895,72 +826,57 @@ if ( this_task == 0 )
                         break;
                     case IO_MASS:
                         get_dataset_name( blk, buf );
-if ( this_task == 0 )
                         fprintf( stdout, "%s\n", buf);
                         for ( i=0; i<test_num; i++ ) {
-if ( this_task == 0 )
                             fprintf( stdout, "%10.4f\n", Particle[pt].m[i] );
                         }
                         break;
                     case IO_U:
                         if ( pt>0 ) break;
                         get_dataset_name( blk, buf );
-if ( this_task == 0 )
                         fprintf( stdout, "%s\n", buf);
                         for ( i=0; i<test_num; i++ ) {
-if ( this_task == 0 )
                             fprintf( stdout, "%e\n", Particle[pt].u[i] );
                         }
                         break;
                     case IO_POT:
                         get_dataset_name( blk, buf );
-if ( this_task == 0 )
                         fprintf( stdout, "%s\n", buf);
                         for ( i=0; i<test_num; i++ ) {
-if ( this_task == 0 )
                             fprintf( stdout, "%e\n", Particle[pt].pot[i] );
                         }
                         break;
                     case IO_ELEC:
                         if ( pt>0 ) break;
                         get_dataset_name( blk, buf );
-if ( this_task == 0 )
                         fprintf( stdout, "%s\n", buf);
                         for ( i=0; i<test_num; i++ ) {
-if ( this_task == 0 )
                             fprintf( stdout, "%e\n", Particle[pt].elec[i] );
                         }
                         break;
                     case IO_RHO:
                         if ( pt>0 ) break;
                         get_dataset_name( blk, buf );
-if ( this_task == 0 )
                         fprintf( stdout, "%s\n", buf);
                         for ( i=0; i<test_num; i++ ) {
-if ( this_task == 0 )
                             fprintf( stdout, "%e\n", Particle[pt].rho[i] );
                         }
                         break;
                     case IO_ID:
                         get_dataset_name( blk, buf );
-if ( this_task == 0 )
                         fprintf( stdout, "%s\n", buf);
                         for ( i=0; i<test_num; i++ ) {
 #ifdef LONGIDS
-if ( this_task == 0 )
                             fprintf( stdout, "%llu\n", Particle[pt].id[i] );
 #else
-if ( this_task == 0 )
                             fprintf( stdout, "%lu\n", Particle[pt].id[i] );
 #endif
                         }
                         break;
                 }
             }
-if ( this_task == 0 )
         fputs( sep_str, stdout );
     }
-if ( this_task == 0 )
     fputs( sep_str, stdout );
 }
 
@@ -976,14 +892,11 @@ void read_group() {
     long long TotNids;
     float *mass, *cm, *vel, *veldisp, *tensor, *rmax, *vmax, *pos;
     float *angmom;
-if ( this_task == 0 )
     fputs( sep_str, stdout );
-if ( this_task == 0 )
     fputs( "read group ...\n", stdout );
-    if ( !( dir=opendir( group_dir ) ) ){
-if ( this_task == 0 )
-        fprintf( stderr, "Failed to open group_dir %s\n", group_dir );
-        end_run( 4 );
+    if ( !( dir=opendir( GroupDir ) ) ){
+        fprintf( stderr, "Failed to open GroupDir %s\n", GroupDir );
+        endrun( 4 );
     }
     malloc_flag = 1;
     group_offset = 0;
@@ -991,15 +904,13 @@ if ( this_task == 0 )
         if ( ( strcmp( ptr->d_name, "." ) == 0 ) ||
              ( strcmp( ptr->d_name, ".." ) == 0 ) )
             continue;
-        sprintf( group_file, "%s%s", group_dir, ptr->d_name );
+        sprintf( group_file, "%s%s", GroupDir, ptr->d_name );
 #ifdef GROUP_DEBUG
-if ( this_task == 0 )
         fprintf( stdout, "%s\n", ptr->d_name );
 #endif
         if ( !( fd = fopen( group_file, "r" ) ) ) {
-if ( this_task == 0 )
             fprintf( stderr, "Failed to open group file :%s\n", group_file );
-            end_run( 5 );
+            endrun( 5 );
         }
         fread( &Ngroups, sizeof( int ), 1, fd );
         fread( &TotNgroups, sizeof( int ), 1, fd );
@@ -1014,7 +925,6 @@ if ( this_task == 0 )
         }
         if ( Ngroups ){
 #ifdef GROUP_DEBUG
-if ( this_task == 0 )
             fprintf( stdout, "Ngroups = %i, TotNgroups = %i,"
                     " Nids = %i, TotNids = %lli, Ntask = %i\n",
                     Ngroups, TotNgroups, Nids, TotNids, Ntask );
@@ -1022,13 +932,11 @@ if ( this_task == 0 )
 
             len = ( int * ) malloc( sizeof( int ) * Ngroups );
             if ( ! fread( len, sizeof( int ), Ngroups, fd ) ) {
-if ( this_task == 0 )
                 fprintf( stderr, "Failed to read Len array!\n" );
-                end_run( 6 );
+                endrun( 6 );
             }
             for ( i=0; i<Ngroups; i++ ) {
 #ifdef GROUP_DEBUG
-if ( this_task == 0 )
                 fprintf( stdout, "len[%i] = %i\n", i, len[i] );
 #endif
                 group[i+group_offset].Len = len[i];
@@ -1037,13 +945,11 @@ if ( this_task == 0 )
 
             offset = ( int * ) malloc( sizeof( int ) * Ngroups );
             if ( !fread( offset, sizeof( int ), Ngroups, fd ) ){
-if ( this_task == 0 )
                 fprintf( stderr, "Failed to read Offset array!\n" );
-                end_run( 6 );
+                endrun( 6 );
             }
             for ( i=0; i<Ngroups; i++ ) {
 #ifdef GROUP_DEBUG
-if ( this_task == 0 )
                 fprintf( stdout, "offset[%i] = %i\n", i, offset[i] );
 #endif
                 group[i+group_offset].Offset = offset[i];
@@ -1052,13 +958,11 @@ if ( this_task == 0 )
 
             mass = ( float* ) malloc( sizeof( float ) * Ngroups );
             if ( !fread( mass, sizeof( float ), Ngroups, fd ) ) {
-if ( this_task == 0 )
                 fprintf( stderr, "Failed to read Mass array!\n" );
-                end_run( 6 );
+                endrun( 6 );
             }
             for ( i=0; i<Ngroups; i++ ) {
 #ifdef GROUP_DEBUG
-if ( this_task == 0 )
                 fprintf( stdout, "mass[%i] = %f\n", i, mass[i] );
 #endif
                 group[i+group_offset].Mass = mass[i];
@@ -1067,20 +971,17 @@ if ( this_task == 0 )
 
             cm = ( float* ) malloc( sizeof( float ) * Ngroups * 3 );
             if ( !fread( cm, sizeof( float )*3, Ngroups, fd ) ){
-if ( this_task == 0 )
                 fprintf( stderr, "Failed to read CM array.\n" );
-                end_run( 6 );
+                endrun( 6 );
             }
             for ( i=0; i<Ngroups; i++ ){
                 for ( j=0; j<3; j++ ) {
 #ifdef GROUP_DEBUG
-if ( this_task == 0 )
                     fprintf( stdout, "cm[%i][%i]=%-15.7f ", i, j, cm[ i*3+j ] );
 #endif
                     group[ i+group_offset ].CM[j] = cm[ i*3+j ];
                 }
 #ifdef GROUP_DEBUG
-if ( this_task == 0 )
                 fprintf( stdout, "\n" );
 #endif
             }
@@ -1088,20 +989,17 @@ if ( this_task == 0 )
 
             vel = ( float* ) malloc( sizeof( float ) * Ngroups * 3 );
             if ( !fread( vel, sizeof( float )*3, Ngroups, fd ) ) {
-if ( this_task == 0 )
                 fprintf( stderr, "Failed to read Vel array.\n" );
-                end_run( 6 );
+                endrun( 6 );
             }
             for ( i=0; i<Ngroups; i++ ){
                 for ( j=0; j<3; j++ ) {
 #ifdef GROUP_DEBUG
-if ( this_task == 0 )
                     fprintf( stdout, "vel[%i][%i]=%-15.7f ", i, j, vel[ i*3+j ] );
 #endif
                     group[ i+group_offset ].Vel[j] = vel[ i*3+j ];
                 }
 #ifdef GROUP_DEBUG
-if ( this_task == 0 )
                 fprintf( stdout, "\n" );
 #endif
             }
@@ -1110,20 +1008,17 @@ if ( this_task == 0 )
 #ifndef FOF_EXTENDED_PROPERTIES
             lentype = ( int * ) malloc( sizeof( int ) * Ngroups * 6 );
             if ( !fread( lentype, sizeof( int )*6, Ngroups, fd ) ) {
-if ( this_task == 0 )
                 fprintf( stderr, "Failed to read LenType array.\n" );
-                end_run( 6 );
+                endrun( 6 );
             }
             for ( i=0; i<Ngroups; i++ ) {
                 for ( j=0; j<6; j++ ) {
 #ifdef GROUP_DEBUG
-if ( this_task == 0 )
                     fprintf( stdout, "lentype[%i][%i]=%i ", i, j, lentype[ i*6+j ] );
 #endif
                     group[ i+group_offset ].LenType[j] = len[ i*6+j ];
                 }
 #ifdef GROUP_DEBUG
-if ( this_task == 0 )
                 fprintf( stdout, "\n" );
 #endif
             }
@@ -1132,13 +1027,11 @@ if ( this_task == 0 )
 #ifdef FOF_EXTENDED_PROPERTIES
             veldisp = ( float* ) malloc( sizeof( float ) * Ngroups );
             if ( !fread( veldisp, sizeof( float ), Ngroups ) ) {
-if ( this_task == 0 )
                 fprintf( stderr, "Failed to read VelDisp array.\n" );
-                end_run( 6 );
+                endrun( 6 );
             }
             for ( i=0; i<Ngroups; i++ ) {
 #ifdef GROUP_DEBUG
-if ( this_task == 0 )
                 fprintf( stdout, "veldisp[i]=%f\n", i, veldisp[i] );
 #endif
                 group[ i+group_offset ].VelDisp = veldisp[i];
@@ -1147,9 +1040,8 @@ if ( this_task == 0 )
 
             tensor = ( float* ) malloc( sizeof( float ) * Ngroups * 9 );
             if( !fread( tensor, sizeof( float ) * 9, Ngroups, fd ) ) {
-if ( this_task == 0 )
                 fprintf( stderr, "Failed to read ToI array.\n" );
-                end_run( 6 );
+                endrun( 6 );
             }
             for ( i=0; i<Ngroups; i++ ) {
                 for( j=0; j<9; j++ ) {
@@ -1160,9 +1052,8 @@ if ( this_task == 0 )
 
             rmax = ( float* ) malloc( sizeof( float ) * Ngroups );
             if( !fread( rmax, sizeof( float ), Ngroups, fd) ) {
-if ( this_task == 0 )
                 fprintf( stderr, "Failed to read Rmax array.\n" );
-                end_run( 6 );
+                endrun( 6 );
             }
             for ( i=0; i<Ngroups; i++ ){
                 group[ i+group_offset ].Rmax = rmax[i];
@@ -1171,9 +1062,8 @@ if ( this_task == 0 )
 
             vmax = ( float* ) malloc( sizeof( float ) * Ngroups );
             if( !fread( vmax, sizeof( float ), Ngroups, fd) ) {
-if ( this_task == 0 )
                 fprintf( stderr, "Failed to read Vmax array.\n" );
-                end_run( 6 );
+                endrun( 6 );
             }
             for ( i=0; i<Ngroups; i++ ){
                 group[ i+group_offset ].Vmax = vmax[i];
@@ -1182,9 +1072,8 @@ if ( this_task == 0 )
 
             pos = ( float* ) malloc( sizeof( float ) * Ngroups * 3 );
             if( !fread( pos, sizeof( float )*3, Ngroups, fd) ) {
-if ( this_task == 0 )
                 fprintf( stderr, "Failed to read Pos array.\n" );
-                end_run( 6 );
+                endrun( 6 );
             }
             for ( i=0; i<Ngroups; i++ ){
                 for ( j=0; j<3; j++ ) {
@@ -1195,9 +1084,8 @@ if ( this_task == 0 )
 
             angmom = ( float* ) malloc( sizeof( float ) * Ngroups * 3 );
             if( !fread( angmom, sizeof( float )*3, Ngroups, fd) ) {
-if ( this_task == 0 )
                 fprintf( stderr, "Failed to read AngMom array.\n" );
-                end_run( 6 );
+                endrun( 6 );
             }
             for ( i=0; i<Ngroups; i++ ){
                 for ( j=0; j<3; j++ ) {
@@ -1209,13 +1097,11 @@ if ( this_task == 0 )
 #ifdef SFR
             mass = ( float* ) malloc( sizeof( float ) * Ngroups );
             if( !fread( mass, sizeof( float ), Ngroups, fd ) ) {
-if ( this_task == 0 )
                 fprintf( stderr, "Failed to read Sfr array.\n" );
-                end_run( 6 );
+                endrun( 6 );
             }
             for ( i=0; i<Ngroups; i++ ) {
 #ifdef GROUP_DEBUG
-if ( this_task == 0 )
                 fprintf( stdout, "sfr_mass[%i]=%f\n", i, mass[i] );
 #endif
                 group[ i+group_offset ].Sfr = mass[i];
@@ -1225,13 +1111,11 @@ if ( this_task == 0 )
 #ifdef BLACK_HOLES
             mass = ( float* ) malloc( sizeof( float ) * Ngroups );
             if( !fread( mass, sizeof( float ), Ngroups, fd ) ) {
-if ( this_task == 0 )
                 fprintf( stderr, "Failed to read BH_Mass array.\n" );
-                end_run( 6 );
+                endrun( 6 );
             }
             for ( i=0; i<Ngroups; i++ ) {
 #ifdef GROUP_DEBUG
-if ( this_task == 0 )
                 fprintf( stdout, "bh_mass[%i]=%f\n", i, mass[i] );
 #endif
                 group[ i+group_offset ].BH_Mass = mass[i];
@@ -1240,13 +1124,11 @@ if ( this_task == 0 )
 
             mass = ( float* ) malloc( sizeof( float ) * Ngroups );
             if ( !fread( mass, sizeof( float ), Ngroups, fd ) ) {
-if ( this_task == 0 )
                 fprintf( stderr, "Failed to read BH_Mdot array.\n" );
-                end_run( 6 );
+                endrun( 6 );
             }
             for ( i=0; i<Ngroups; i++ ) {
 #ifdef GROUP_DEBUG
-if ( this_task == 0 )
                 fprintf( stdout, "bh_mdot_mass[%i]\n", i, mass[i] );
 #endif
                 group[ i+group_offset ].BH_Mdot = mass[i];
@@ -1258,7 +1140,6 @@ if ( this_task == 0 )
         fclose( fd );
     }
     closedir( dir );
-if ( this_task == 0 )
     fputs( sep_str, stdout );
 }
 
