@@ -9,8 +9,7 @@ double UnitTime_in_s,
        UnitLength_in_cm,
        UnitDensity_in_cgs,
        UnitEnergy_in_cgs,
-       UnitVelocity_in_cm_per_s,
-       UnitTime_in_Megayears;
+       UnitVelocity_in_cm_per_s;
 
 struct particle_struct Particle[6];
 struct io_header header;

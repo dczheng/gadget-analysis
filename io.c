@@ -15,6 +15,7 @@ int blockpresent( enum iofields blk, double pt ) {
         case IO_CRE_Q0:
         case IO_CRE_E0:
         case IO_CRE_n0:
+        case IO_MN:
             if ( pt>0 )
                 return 0;
             else
@@ -24,7 +25,6 @@ int blockpresent( enum iofields blk, double pt ) {
         case IO_ID:
         case IO_U:
         case IO_ELEC:
-        case IO_MN:
         case IO_J:
         case IO_ACCEL:
         case IO_POT:
@@ -70,8 +70,44 @@ void read_header( char *fn ) {
     H5Aread(hdf5_attribute, H5T_NATIVE_INT, &header.flag_ic_info);
     H5Aclose(hdf5_attribute);
 
+    hdf5_attribute = H5Aopen_name(hdf5_group, "Flag_Sfr");
+    H5Aread(hdf5_attribute, H5T_NATIVE_INT, &header.flag_sfr);
+    H5Aclose(hdf5_attribute);
+
+    hdf5_attribute = H5Aopen_name(hdf5_group, "Flag_Cooling");
+    H5Aread(hdf5_attribute, H5T_NATIVE_INT, &header.flag_cooling);
+    H5Aclose(hdf5_attribute);
+
+    hdf5_attribute = H5Aopen_name(hdf5_group, "Flag_StellarAge");
+    H5Aread(hdf5_attribute, H5T_NATIVE_INT, &header.flag_stellarage);
+    H5Aclose(hdf5_attribute);
+
+    hdf5_attribute = H5Aopen_name(hdf5_group, "Flag_Metals");
+    H5Aread(hdf5_attribute, H5T_NATIVE_INT, &header.flag_metals);
+    H5Aclose(hdf5_attribute);
+
+    hdf5_attribute = H5Aopen_name(hdf5_group, "Flag_Feedback");
+    H5Aread(hdf5_attribute, H5T_NATIVE_INT, &header.flag_feedback);
+    H5Aclose(hdf5_attribute);
+
     hdf5_attribute = H5Aopen_name(hdf5_group, "Flag_DoublePrecision");
     H5Aread(hdf5_attribute, H5T_NATIVE_INT, &header.flag_doubleprecision);
+    H5Aclose(hdf5_attribute);
+
+    hdf5_attribute = H5Aopen_name(hdf5_group, "HubbleParam");
+    H5Aread(hdf5_attribute, H5T_NATIVE_DOUBLE, &header.HubbleParam);
+    H5Aclose(hdf5_attribute);
+
+    hdf5_attribute = H5Aopen_name(hdf5_group, "Omega0");
+    H5Aread(hdf5_attribute, H5T_NATIVE_DOUBLE, &header.Omega0);
+    H5Aclose(hdf5_attribute);
+
+    hdf5_attribute = H5Aopen_name(hdf5_group, "OmegaLambda");
+    H5Aread(hdf5_attribute, H5T_NATIVE_DOUBLE, &header.OmegaLambda);
+    H5Aclose(hdf5_attribute);
+
+    hdf5_attribute = H5Aopen_name(hdf5_group, "Redshift");
+    H5Aread(hdf5_attribute, H5T_NATIVE_DOUBLE, &header.redshift);
     H5Aclose(hdf5_attribute);
 
     H5Gclose(hdf5_group);
@@ -475,7 +511,6 @@ void read_all_data() {
     int pt, blk, nbytes, dim2;
     long i;
     char file_name[FILENAME_MAX], buf[20];
-    fputs( sep_str, stdout );
     fputs( "read all data ...\n", stdout );
     sprintf( file_name, "%s.%3i.hdf5", FilePrefix, 0 );
     if ( NumFiles < 2 )
@@ -648,8 +683,8 @@ void read_all_data() {
 void free_all_memory() {
     int pt, blk;
     char buf[20];
-    fputs( sep_str, stdout );
     fputs( "free all memory ...\n", stdout );
+    fputs( sep_str, stdout );
     for ( pt=0; pt<6; pt++) {
         if ( Particle[pt].num != 0 ){
             fprintf( stdout, "Particle %i\n", pt );

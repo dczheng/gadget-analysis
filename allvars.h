@@ -202,8 +202,7 @@ extern double UnitTime_in_s,
               UnitLength_in_cm,
               UnitDensity_in_cgs,
               UnitEnergy_in_cgs,
-              UnitVelocity_in_cm_per_s,
-              UnitTime_in_Megayears;
+              UnitVelocity_in_cm_per_s;
 
 #ifdef DEBUG
     extern float debug_f;
@@ -226,8 +225,8 @@ void free_all_memory();
 void write_file( char *fn, struct io_header header, struct particle_struct *Particle);
 void get_dataset_name( enum iofields blk, char *buf );
 void magnetic_field_analysis();
-void density_analysis();
-void hg_electrons_analysis();
+void gas_analysis();
+void dm_analysis();
 void group_analysis();
 void read_group();
 void free_group();

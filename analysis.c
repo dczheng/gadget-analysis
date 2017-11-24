@@ -1,5 +1,26 @@
 #include "allvars.h"
 
+#define PROTONMASS   1.6726e-24
+#define ELECTRONMASS 9.10953e-28
+#define ELECTRONCHARGE  4.8032e-10
+#define BOLTZMANN      1.38066e-16
+#define cm ( header.HubbleParam / UnitLength_in_cm )
+#define g  ( header.HubbleParam / UnitMass_in_g )
+#define s  ( header.HubbleParam / UnitTime_in_s )
+#define erg (g*cm*cm/(s*s))
+#define keV (1.602e-9*erg)
+#define deg 1.0
+#define m_p (PROTONMASS * g)
+#define m_e (ELECTRONMASS * g)
+#define k_B (BOLTZMANN * erg / deg)
+#define LightSpeed (2.9979e10*cm/s)
+#define HBAR ( 1.05457e-27 * cm * cm * g / s )
+#define e2  ( HBAR * LightSpeed / 137.04 )
+#define statcoul sqrt( erg * cm )
+#define mpc2 ( m_p * LightSpeed * LightSpeed )
+#define mec2 ( m_e * LightSpeed * LightSpeed )
+#define c2   ( LightSpeed * LightSpeed )
+
 void magnetic_field_analysis() {
      long i, index;
      double sum, b, bmax, min, max;
@@ -36,42 +57,6 @@ void magnetic_field_analysis() {
             Particle[0].mag[index*3+1],
             Particle[0].mag[index*3+2], sqrt( bmax ) );
      fprintf( stdout, "Total Magnetic Field: %e\n", sqrt( sum / Particle[0].num ) );
-}
-
-void density_analysis() {
-     long i, index;
-     double sum, min, max, rho;
-     fputs( sep_str, stdout );
-     fputs( "analyze density ...\n", stdout );
-     sum = 0;
-     index = 0;
-     /*
-     for ( i=0; i<Particle[0].num; i++ ) {
-         rho = Particle[0].rho[i] * 1.989 * 1e43 / pow( 3.08e21,3 ); //* 150000 * 3.085e21;
-         fprintf( stdout, "%e\n", rho );
-         if ( i==10 ) break;
-     }
-     max = -1;
-     min = 1000;
-     for ( i=0; i<Particle[0].num; i++ ) {
-        min = ( Particle[0].m[i]<min ) ? Particle[0].m[i] : min;
-        max = ( Particle[0].m[i]>max ) ? Particle[0].m[i] : max;
-     }
-     fprintf( stdout, "min = %lf, max = %lf\n", min, max );
-     min = 1e10;
-     max = -1;
-     for ( i=0; i<Particle[0].num; i++ ) {
-        min = ( Particle[0].rho[i]<min ) ? Particle[0].rho[i] : min;
-        max = ( Particle[0].rho[i]>max ) ? Particle[0].rho[i] : max;
-     }
-     fprintf( stdout, "min = %e, max = %e\n", min, max );
-     */
-    sum = 0;
-     for ( i=0; i<Particle[0].num; i++ ) {
-         sum += Particle[0].m[i];
-     }
-     fprintf( stdout, "m=%e\n", sum );
-     fputs( sep_str, stdout );
 }
 
 int compare_for_sort_group_by_mass( const void *a, const void *b ) {
@@ -202,15 +187,14 @@ void analysis_radio() {
     */
 }
 
-
 void hg_electrons_analysis() {
-    double *img, pos_max[3], pos_min[3], x, y, z, dx, dy;
+    double *rho_n, pos_max[3], pos_min[3], x, y, dx, dy;
     int i,j, pt, xi, yi, zi;
     FILE *fd;
     printf( "high energy electrons analysis...\n" );
     pt = 0;
-    img = ( double* ) malloc( sizeof(double) * PicSize * PicSize );
-    memset( img, 0, sizeof( double ) * PicSize * PicSize );
+    rho_n = ( double* ) malloc( sizeof(double) * PicSize * PicSize );
+    memset( rho_n, 0, sizeof( double ) * PicSize * PicSize );
     printf( "Particle Number: %ld\n", Particle[pt].num );
     pos_max[0] = pos_max[1] = pos_max[2] = -1e10;
     pos_min[0] = pos_min[1] = pos_min[2] = 1e10;
@@ -237,21 +221,111 @@ void hg_electrons_analysis() {
     for ( i=0; i<Particle[pt].num; i++ ) {
         x = Particle[pt].pos[i*3+0];
         y = Particle[pt].pos[i*3+1];
-        z = Particle[pt].pos[i*3+2];
         xi = x / dx;
         yi = y / dy;
-        img[xi*PicSize+yi] += Particle[pt].cre_n0[i] * Particle[pt].rho[i];
-        //printf( "xi: %d, yi: %d, %g\n", xi, yi, img[xi*PicSize+yi] );
+        rho_n[xi*PicSize+yi] += Particle[pt].cre_n0[i] * Particle[pt].rho[i] * m_e / ( g/(cm*cm*cm) );
+        //printf( "xi: %d, yi: %d, %g\n", xi, yi, rho_n[xi*PicSize+yi] );
     }
     fd = fopen( "./hge_n0.txt", "w" );
     for ( i=0; i<PicSize; i++ ){
         for ( j=0; j<PicSize; j++ ) {
-            fprintf( fd, "%g ", img[i*PicSize+j] );
+            fprintf( fd, "%g ", rho_n[i*PicSize+j] );
         }
         fprintf( fd, "\n" );
     }
     fclose( fd );
 
-    free( img );
+    free( rho_n );
     printf( "high energy electrons analysis...done.\n" );
+}
+
+
+void density_analysis( int pt, char *str ){
+    FILE *fd;
+    int i,j, xi, yi;
+    double *rho, x, y, dx, dy, rho_max, rho_min;
+    char buf[200];
+    printf( "%s density analysis ...\n", str );
+    rho = ( double* ) malloc( sizeof(double) * PicSize * PicSize );
+    memset( rho, 0, sizeof( double ) * PicSize * PicSize );
+    dx = dy = header.BoxSize / PicSize;
+    rho_max = -1e-10;
+    rho_min = 1e10;
+    printf( "particle number: %d\n", Particle[pt].num );
+    for ( i=0; i<Particle[pt].num; i++ ) {
+        x = Particle[pt].pos[i*3+0];
+        y = Particle[pt].pos[i*3+1];
+        xi = x / dx;
+        yi = y / dy;
+        rho[ xi*PicSize + yi ] += Particle[pt].rho[i] / ( g/(cm*cm*cm) );
+        if ( Particle[pt].rho[i] > rho_max )
+            rho_max = Particle[pt].rho[i];
+        if ( Particle[pt].rho[i] < rho_min )
+            rho_min = Particle[pt].rho[i];
+    }
+    rho_max /= ( g/(cm*cm*cm) );
+    rho_min /= ( g/(cm*cm*cm) );
+    printf( "rho_max: %g, rho_min: %g\n", rho_max, rho_min );
+    sprintf( buf, "./%s_rho.txt", str );
+    fd = fopen( buf, "w" );
+    for ( i=0; i<PicSize; i++ ) {
+        for ( j=0; j<PicSize; j++ ) {
+            fprintf( fd, "%g ", rho[ i*PicSize + j ] );
+        }
+        fprintf( fd, "\n"  );
+    }
+    fclose( fd );
+    free( rho );
+    printf( "%s density analysis ...done.\n", str );
+}
+
+void mach_analysis(){
+    FILE *fd;
+    int i,j, xi, yi, pt;
+    double *mn, x, y, dx, dy, mn_max, mn_min;
+    pt = 0;
+    printf( "mach number analysis ...\n" );
+    mn = ( double* ) malloc( sizeof(double) * PicSize * PicSize );
+    memset( mn, 0, sizeof( double ) * PicSize * PicSize );
+    dx = dy = header.BoxSize / PicSize;
+    mn_max = -1e-10;
+    mn_min = 1e10;
+    printf( "particle number: %d\n", Particle[pt].num );
+    for ( i=0; i<Particle[pt].num; i++ ) {
+        x = Particle[pt].pos[i*3+0];
+        y = Particle[pt].pos[i*3+1];
+        xi = x / dx;
+        yi = y / dy;
+        mn[ xi*PicSize + yi ] += Particle[pt].mn[i];
+        if ( Particle[pt].mn[i] > mn_max )
+            mn_max = Particle[pt].mn[i];
+        if ( Particle[pt].mn[i] < mn_min )
+            mn_min = Particle[pt].mn[i];
+    }
+    printf( "mn_max: %g, mn_min: %g\n", mn_max, mn_min );
+    fd = fopen( "./mach.txt", "w" );
+    for ( i=0; i<PicSize; i++ ) {
+        for ( j=0; j<PicSize; j++ ) {
+            fprintf( fd, "%g ", mn[ i*PicSize + j ] );
+        }
+        fprintf( fd, "\n"  );
+    }
+    fclose( fd );
+    free( mn );
+    printf( "mach number analysis ...done.\n" );
+}
+
+
+void gas_analysis(){
+    printf( "\n" );
+    density_analysis( 0, "gas" );
+    printf( "\n" );
+    hg_electrons_analysis();
+    printf( "\n" );
+    mach_analysis();
+    fputs( sep_str, stdout );
+}
+
+void dm_analysis(){
+    fputs( sep_str, stdout );
 }

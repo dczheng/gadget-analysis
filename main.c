@@ -68,15 +68,15 @@ void read_para( char *fn ) {
             switch ( id[j] ) {
                 case REAL:
                     *( (double*)addr[j] ) = atof( buf2 );
-                    printf( "%-35s%g\n", buf1, *((double*)addr[j]) );
+                    printf( "%-35s: %g\n", buf1, *((double*)addr[j]) );
                     break;
                 case INT:
                     *( (int*)addr[j] ) = atoi( buf2 );
-                    printf( "%-35s%d\n", buf1, *((int*)addr[j]) );
+                    printf( "%-35s: %d\n", buf1, *((int*)addr[j]) );
                     break;
                 case STRING:
                     strcpy( (char*)addr[j], buf2 );
-                    printf( "%-35s%s\n", buf1, buf2 );
+                    printf( "%-35s: %s\n", buf1, buf2 );
                     break;
             }
         }
@@ -102,14 +102,12 @@ void set_units() {
     UnitTime_in_s = UnitLength_in_cm / UnitVelocity_in_cm_per_s;
     UnitDensity_in_cgs = UnitMass_in_g / pow( UnitLength_in_cm, 3 );
     UnitEnergy_in_cgs = UnitMass_in_g * pow( UnitLength_in_cm,2 ) / pow( UnitTime_in_s, 2 );
-    UnitTime_in_Megayears = UnitTime_in_s / SEC_PER_MEGAYEAR;
-    printf( "UnitMass_in_g = %g\n", UnitMass_in_g );
-    printf( "UnitTime_in_s = %g\n", UnitTime_in_s );
-    printf( "UnitLength_in_cm = %g\n", UnitLength_in_cm );
-    printf( "UnitDensity_in_cgs = %g\n", UnitDensity_in_cgs );
-    printf( "UnitEnergy_in_cgs = %g\n", UnitEnergy_in_cgs );
-    printf( "UnitVelocity_in_cm_per_s = %g\n", UnitVelocity_in_cm_per_s );
-    printf( "UnitTime_in_Megayears = %g\n", UnitTime_in_Megayears );
+    printf( "%-35s: %g\n", "UnitMass_in_g", UnitMass_in_g );
+    printf( "%-35s: %g\n", "UnitTime_in_s", UnitTime_in_s );
+    printf( "%-35s: %g\n", "UnitLength_in_cm", UnitLength_in_cm );
+    printf( "%-35s: %g\n", "UnitDensity_in_cgs", UnitDensity_in_cgs );
+    printf( "%-35s: %g\n", "UnitEnergy_in_cgs", UnitEnergy_in_cgs );
+    printf( "%-35s: %g\n", "UnitVelocity_in_cm_per_s", UnitVelocity_in_cm_per_s );
     fputs( sep_str, stdout );
 }
 
@@ -139,7 +137,10 @@ int main( int argc, char *argv[] ){
     set_units();
     read_all_data();
     //group_analysis();
-    hg_electrons_analysis();
+    /******************analysis***********************/
+    gas_analysis();
+    dm_analysis();
+    /*************************************************/
     free_all_memory();
     time2 = time( NULL );
     tb = localtime( &time2 );
