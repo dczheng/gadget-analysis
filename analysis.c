@@ -201,3 +201,57 @@ void analysis_radio() {
     //plot_slice( 0, IO_J );
     */
 }
+
+
+void hg_electrons_analysis() {
+    double *img, pos_max[3], pos_min[3], x, y, z, dx, dy;
+    int i,j, pt, xi, yi, zi;
+    FILE *fd;
+    printf( "high energy electrons analysis...\n" );
+    pt = 0;
+    img = ( double* ) malloc( sizeof(double) * pic_xsize * pic_ysize );
+    memset( img, 0, sizeof( double ) * pic_xsize * pic_ysize );
+    printf( "Particle Number: %ld\n", Particle[pt].num );
+    pos_max[0] = pos_max[1] = pos_max[2] = -1e10;
+    pos_min[0] = pos_min[1] = pos_min[2] = 1e10;
+    dx = header.BoxSize / pic_xsize;
+    dy = header.BoxSize / pic_ysize;
+    for ( i=0; i<Particle[pt].num; i++ ) {
+        if ( Particle[pt].pos[i*3+0] > pos_max[0] )
+            pos_max[0] = Particle[pt].pos[i*3+0];
+        if ( Particle[pt].pos[i*3+1] > pos_max[1] )
+            pos_max[1] = Particle[pt].pos[i*3+1];
+        if ( Particle[pt].pos[i*3+2] > pos_max[2] )
+            pos_max[2] = Particle[pt].pos[i*3+2];
+        if ( Particle[pt].pos[i*3+0] < pos_min[0] )
+            pos_min[0] = Particle[pt].pos[i*3+0];
+        if ( Particle[pt].pos[i*3+1] < pos_min[1] )
+            pos_min[1] = Particle[pt].pos[i*3+1];
+        if ( Particle[pt].pos[i*3+2] < pos_min[2] )
+            pos_min[2] = Particle[pt].pos[i*3+2];
+    }
+    printf( "pos max: %10g %10g %10g\npos min: %10g %10g %10g\n",
+            pos_max[0], pos_max[1], pos_max[2],
+            pos_min[0], pos_min[1], pos_min[2] );
+
+    for ( i=0; i<Particle[pt].num; i++ ) {
+        x = Particle[pt].pos[i*3+0];
+        y = Particle[pt].pos[i*3+1];
+        z = Particle[pt].pos[i*3+2];
+        xi = x / dx;
+        yi = y / dy;
+        img[xi*pic_xsize+yi] += Particle[pt].cre_n0[i] * Particle[pt].rho[i];
+        //printf( "xi: %d, yi: %d, %g\n", xi, yi, img[xi*pic_xsize+yi] );
+    }
+    fd = fopen( "./hge_n0.txt", "w" );
+    for ( i=0; i<pic_xsize; i++ ){
+        for ( j=0; j<pic_ysize; j++ ) {
+            fprintf( fd, "%g ", img[i*pic_xsize+j] );
+        }
+        fprintf( fd, "\n" );
+    }
+    fclose( fd );
+
+    free( img );
+    printf( "high energy electrons analysis...done.\n" );
+}

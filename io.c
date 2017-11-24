@@ -3,6 +3,35 @@
 
 void test();
 
+int blockpresent( enum iofields blk, double pt ) {
+    switch( blk ) {
+        case IO_POS:
+        case IO_VEL:
+        case IO_MASS:
+            return 1;
+        case IO_MAG:
+        case IO_RHO:
+        case IO_CRE_C0:
+        case IO_CRE_Q0:
+        case IO_CRE_E0:
+        case IO_CRE_n0:
+            if ( pt>0 )
+                return 0;
+            else
+                return 1;
+        case IO_CR_C0:
+        case IO_CR_Q0:
+        case IO_ID:
+        case IO_U:
+        case IO_ELEC:
+        case IO_MN:
+        case IO_J:
+        case IO_ACCEL:
+        case IO_POT:
+            return 0;
+    }
+}
+
 void read_header( char *fn ) {
 
     //fprintf( stdout, "reading header From %s\n", file_name );
@@ -341,35 +370,6 @@ void get_block_dims( int pt, enum iofields blk, hsize_t *dims ) {
             dims[0] = header.npart[pt];
             dims[1] = 1;
             break;
-    }
-}
-
-int blockpresent( enum iofields blk, double pt ) {
-    switch( blk ) {
-        case IO_POS:
-        case IO_VEL:
-        case IO_MASS:
-            return 1;
-        case IO_MAG:
-        case IO_RHO:
-        case IO_CR_C0:
-        case IO_CR_Q0:
-        case IO_CRE_C0:
-        case IO_CRE_Q0:
-        case IO_CRE_E0:
-        case IO_CRE_n0:
-            if ( pt>0 )
-                return 0;
-            else
-                return 1;
-        case IO_ID:
-        case IO_U:
-        case IO_ELEC:
-        case IO_MN:
-        case IO_J:
-        case IO_ACCEL:
-        case IO_POT:
-            return 0;
     }
 }
 

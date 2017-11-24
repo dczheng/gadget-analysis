@@ -302,6 +302,7 @@ if ( this_task == 0 )
     read_all_data();
     //group_analysis();
     sprintf( tmp, "%s", out_picture_prefix );
+    hg_electrons_analysis();
     /*
     sprintf( out_picture_prefix, "%s/%s_%.2f", tmp, "mag", redshift );
     plot_slice( 0, IO_MAG );
@@ -311,8 +312,14 @@ if ( this_task == 0 )
     plot_slice( 0, IO_MASS );
     */
     /*
-    sprintf( out_picture_prefix, "%s/%s_%.2f", tmp, "dm", redshift );
-    plot_slice( 1, IO_MASS );
+    sprintf( out_picture_prefix, "%s/%s_%.2f", tmp, "gas", redshift );
+    plot_slice( 0, IO_MASS );
+
+    sprintf( out_picture_prefix, "%s/%s_%.2f", tmp, "hgn", redshift );
+    plot_slice( 0, IO_CRE_n0 );
+
+    sprintf( out_picture_prefix, "%s/%s_%.2f", tmp, "hge", redshift );
+    plot_slice( 0, IO_CRE_E0 );
     */
     /*
     if ( header.npart[4] != 0 ) {

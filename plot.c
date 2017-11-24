@@ -158,7 +158,7 @@ void plot_slice( int pt, enum iofields blk ){
                 fprintf( stderr, "Particle %i hasn't field: \"%s\"\n", pt, buf );
                 end_run( 3 );
             }
-            sprintf( x_buf, "log(%s)(10^10Msun/Kpc^2)", buf );
+            sprintf( x_buf, "log(%s)(10^10Msun/Mpc^2)", buf );
             log_flag = 1;
             mean_flag = 1;
             p = Particle[pt].rho;
@@ -210,6 +210,28 @@ void plot_slice( int pt, enum iofields blk ){
             log_flag = 1;
             mean_flag = 0;
             p = Particle[pt].j;
+            break;
+        case IO_CRE_n0:
+            get_dataset_name( blk, buf );
+            if ( pt != 0 ) {
+                fprintf( stderr, "Particle %i hasn't field: \"%s\"\n", pt, buf );
+                end_run( 3 );
+            }
+            sprintf( x_buf, "log(%s)", buf );
+            log_flag = 1;
+            mean_flag = 1;
+            p = Particle[pt].cre_n0;
+            break;
+        case IO_CRE_E0:
+            get_dataset_name( blk, buf );
+            if ( pt != 0 ) {
+                fprintf( stderr, "Particle %i hasn't field: \"%s\"\n", pt, buf );
+                end_run( 3 );
+            }
+            sprintf( x_buf, "log(%s)", buf );
+            log_flag = 1;
+            mean_flag = 0;
+            p = Particle[pt].cre_e0;
             break;
         case IO_ELEC:
             get_dataset_name( blk, buf );
@@ -298,7 +320,8 @@ if ( this_task == 0 ){
     }
 if ( this_task == 0 ){
     fprintf( stdout, "total point number: %li\n", N );
-    fprintf( stdout, "max mag: %e\n", max_mag );
+    if ( blk == IO_MAG )
+        fprintf( stdout, "max mag: %e\n", max_mag );
 }
     data = ( float* ) malloc( sizeof( float ) * N * 6 );
     index = 0;
@@ -378,7 +401,7 @@ if ( this_task == 0 )
         fprintf( stdout, "slice info: dz=%f\n", dz );
     g = ( slice_corner2[0] - slice_corner1[0] ) / nxy[0];
     ag = ( slice_corner2[0] - slice_corner1[0] ) / anxy[0];
-    h = 2.5;
+    h = 0.5;
     switch( blk ) {
         case IO_RHO:
             for ( i=0; i<N; i++ )
@@ -470,10 +493,10 @@ if ( this_task == 0 )
                         index_j = ( long )( (data[ k*6+1 ]-slice_corner1[1]) / g );
                         index = index_i * nxy[1] + index_j;
                         if ( (proj_mode == 1 ) &&
-                             ( (long)( ( data[ k*6+0 ]-slice_corner1[0]-h ) / g ) != index_i ||
-                             (long)( ( data[ k*6+0 ]-slice_corner1[0]+h ) / g ) != index_i ||
-                             (long)( ( data[ k*6+1 ]-slice_corner1[1]-h ) / g ) != index_j ||
-                             (long)( ( data[ k*6+1 ]-slice_corner1[1]+h ) / g ) != index_j ) ) {
+                             ((long)( ( data[ k*6+0 ]-slice_corner1[0]-h ) / g ) != index_i ||
+                              (long)( ( data[ k*6+0 ]-slice_corner1[0]+h ) / g ) != index_i ||
+                              (long)( ( data[ k*6+1 ]-slice_corner1[1]-h ) / g ) != index_j ||
+                              (long)( ( data[ k*6+1 ]-slice_corner1[1]+h ) / g ) != index_j ) ) {
                             for ( ii=0; ii<kN; ii++ )
                                 for ( jj=0; jj<kN; jj++ ) {
                                     index_i1 = (long) ( ( ( ii-kN/2 ) * h / kN + data[ k*6+0 ]-slice_corner1[0] ) / g );

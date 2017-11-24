@@ -231,6 +231,7 @@ void plot_position( int pt );
 void plot_3d_position( int pt );
 void magnetic_field_analysis();
 void density_analysis();
+void hg_electrons_analysis();
 void plot_3d_scalar( int pt, enum iofields blk );
 void group_analysis();
 void plot_3d_multi( int flag );
