@@ -1,16 +1,3 @@
-*png
-*png/
 *.o
-*.zip
-*pos*
-*test*
-*.txt
-*log
-nohup.out
-*.dat
-*.hdf5
-snapshot*
-out*
-*usedvalues
-*.bak
 bin/
+tags

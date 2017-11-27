@@ -21,44 +21,6 @@
 #define mec2 ( m_e * LightSpeed * LightSpeed )
 #define c2   ( LightSpeed * LightSpeed )
 
-void magnetic_field_analysis() {
-     long i, index;
-     double sum, b, bmax, min, max;
-     sum = 0;
-     index = 0;
-     bmax = 0;
-     for ( i=0; i<Particle[0].num; i++ ) {
-         /*
-         if( Particle[0].mag[i*3+0] != 0 ||
-             Particle[0].mag[i*3+1] != 0 ||
-             Particle[0].mag[i*3+2] != 0 )
-         fprintf( stdout, "( %.2f, %.2f, %.2f ): %e %e %e\n",
-                 Particle[0].pos[i*3+0],
-                 Particle[0].pos[i*3+1],
-                 Particle[0].pos[i*3+2],
-                 Particle[0].mag[i*3+0],
-                 Particle[0].mag[i*3+1],
-                 Particle[0].mag[i*3+2] );
-                 */
-         b = pow( Particle[0].mag[i*3+0], 2 ) +
-             pow( Particle[0].mag[i*3+1], 2 ) +
-             pow( Particle[0].mag[i*3+2], 2 );
-         if ( b>bmax ) {
-             index =i;
-             bmax = b;
-         }
-         sum += b;
-     }
-    fprintf( stdout, "max magnetic field: ( %.2f, %.2f, %.2f ): %e %e %e %e\n",
-            Particle[0].pos[index*3+0],
-            Particle[0].pos[index*3+1],
-            Particle[0].pos[index*3+2],
-            Particle[0].mag[index*3+0],
-            Particle[0].mag[index*3+1],
-            Particle[0].mag[index*3+2], sqrt( bmax ) );
-     fprintf( stdout, "Total Magnetic Field: %e\n", sqrt( sum / Particle[0].num ) );
-}
-
 int compare_for_sort_group_by_mass( const void *a, const void *b ) {
     return (( ( struct group_struct* )a )->Mass < ( ( struct group_struct* )b )->Mass ) ? 1 : -1;
 }
@@ -82,53 +44,6 @@ void group_analysis() {
     sort_group_by_mass();
     show_group_info();
     free_group();
-}
-
-void velocity_analysis() {
-    int pt;
-    long i;
-    float vmax[3], v;
-    pt = 0;
-    vmax[0] = Particle[pt].vel[0];
-    vmax[1] = Particle[pt].vel[1];
-    vmax[2] = Particle[pt].vel[2];
-    v = sqrt( pow( vmax[0], 2 ) + pow( vmax[1], 2 ) + pow( vmax[2], 2 ) );
-    for ( i=0; i<Particle[pt].num; i++ ) {
-        if ( sqrt( pow( Particle[pt].vel[ i*3+0 ], 2 ) +
-                   pow( Particle[pt].vel[ i*3+1 ], 2 ) +
-                   pow( Particle[pt].vel[ i*3+2 ], 2 ) ) > v ) {
-            vmax[0] = Particle[pt].vel[ i*3+0 ];
-            vmax[1] = Particle[pt].vel[ i*3+1 ];
-            vmax[2] = Particle[pt].vel[ i*3+2 ];
-            v = sqrt( pow( vmax[0], 2 ) +
-                    pow( vmax[1], 2 ) +
-                    pow( vmax[2], 2 ) );
-        }
-    }
-    fprintf( stdout, "Vmax: %f ( %f, %f, %f )\n", v, vmax[0],
-            vmax[1], vmax[2] );
-}
-
-double gamma_integrand( double t, void *params ) {
-    double *x;
-    x = ( double* ) params;
-    return pow( t, *x-1 ) * exp( -t );
-}
-
-double gamma( double x ) {
-    double epsabs, epsrel, abserr, result;
-    size_t subinter;
-    gsl_function F;
-    epsabs = epsrel = 1e-8;
-    subinter = 100000;
-    gsl_integration_workspace *integration_workspace =
-        gsl_integration_workspace_alloc( subinter );
-    F.function = gamma_integrand;
-    F.params = &x;
-    gsl_integration_qagiu( &F, 0, epsabs, epsrel, subinter,
-            integration_workspace, &result, &abserr );
-    gsl_integration_workspace_free( integration_workspace );
-    return result;
 }
 
 void analysis_radio() {
@@ -189,41 +104,39 @@ void analysis_radio() {
 
 void hg_electrons_analysis() {
     double *rho_n, pos_max[3], pos_min[3], x, y, dx, dy;
-    int i,j, pt, xi, yi, zi;
+    int i,j, xi, yi, zi;
     FILE *fd;
     printf( "high energy electrons analysis...\n" );
-    pt = 0;
     rho_n = ( double* ) malloc( sizeof(double) * PicSize * PicSize );
     memset( rho_n, 0, sizeof( double ) * PicSize * PicSize );
-    printf( "Particle Number: %ld\n", Particle[pt].num );
     pos_max[0] = pos_max[1] = pos_max[2] = -1e10;
     pos_min[0] = pos_min[1] = pos_min[2] = 1e10;
     dx = header.BoxSize / PicSize;
     dy = header.BoxSize / PicSize;
-    for ( i=0; i<Particle[pt].num; i++ ) {
-        if ( Particle[pt].pos[i*3+0] > pos_max[0] )
-            pos_max[0] = Particle[pt].pos[i*3+0];
-        if ( Particle[pt].pos[i*3+1] > pos_max[1] )
-            pos_max[1] = Particle[pt].pos[i*3+1];
-        if ( Particle[pt].pos[i*3+2] > pos_max[2] )
-            pos_max[2] = Particle[pt].pos[i*3+2];
-        if ( Particle[pt].pos[i*3+0] < pos_min[0] )
-            pos_min[0] = Particle[pt].pos[i*3+0];
-        if ( Particle[pt].pos[i*3+1] < pos_min[1] )
-            pos_min[1] = Particle[pt].pos[i*3+1];
-        if ( Particle[pt].pos[i*3+2] < pos_min[2] )
-            pos_min[2] = Particle[pt].pos[i*3+2];
+    for ( i=0; i<N_Gas; i++ ) {
+        if ( P[i].Pos[0] > pos_max[0] )
+            pos_max[0] = P[i].Pos[0];
+        if ( P[i].Pos[1] > pos_max[1] )
+            pos_max[1] = P[i].Pos[1];
+        if ( P[i].Pos[2] > pos_max[2] )
+            pos_max[2] = P[i].Pos[2];
+        if ( P[i].Pos[0] < pos_min[0] )
+            pos_min[0] = P[i].Pos[0];
+        if ( P[i].Pos[1] < pos_min[1] )
+            pos_min[1] = P[i].Pos[1];
+        if ( P[i].Pos[2] < pos_min[2] )
+            pos_min[2] = P[i].Pos[2];
     }
     printf( "pos max: %10g %10g %10g\npos min: %10g %10g %10g\n",
             pos_max[0], pos_max[1], pos_max[2],
             pos_min[0], pos_min[1], pos_min[2] );
 
-    for ( i=0; i<Particle[pt].num; i++ ) {
-        x = Particle[pt].pos[i*3+0];
-        y = Particle[pt].pos[i*3+1];
+    for ( i=0; i<N_Gas; i++ ) {
+        x = P[i].Pos[0];
+        y = P[i].Pos[1];
         xi = x / dx;
         yi = y / dy;
-        rho_n[xi*PicSize+yi] += Particle[pt].cre_n0[i] * Particle[pt].rho[i] * m_e / ( g/(cm*cm*cm) );
+        rho_n[xi*PicSize+yi] += SphP[i].CRE_n0 * SphP[i].Density * m_e / ( g/(cm*cm*cm) );
         //printf( "xi: %d, yi: %d, %g\n", xi, yi, rho_n[xi*PicSize+yi] );
     }
     fd = fopen( "./hge_n0.txt", "w" );
@@ -240,34 +153,32 @@ void hg_electrons_analysis() {
 }
 
 
-void density_analysis( int pt, char *str ){
+void gas_density_analysis(){
     FILE *fd;
     int i,j, xi, yi;
     double *rho, x, y, dx, dy, rho_max, rho_min;
     char buf[200];
-    printf( "%s density analysis ...\n", str );
+    printf( "gas density analysis ...\n");
     rho = ( double* ) malloc( sizeof(double) * PicSize * PicSize );
     memset( rho, 0, sizeof( double ) * PicSize * PicSize );
     dx = dy = header.BoxSize / PicSize;
     rho_max = -1e-10;
     rho_min = 1e10;
-    printf( "particle number: %d\n", Particle[pt].num );
-    for ( i=0; i<Particle[pt].num; i++ ) {
-        x = Particle[pt].pos[i*3+0];
-        y = Particle[pt].pos[i*3+1];
+    for ( i=0; i<N_Gas; i++ ) {
+        x = P[i].Pos[0];
+        y = P[i].Pos[1];
         xi = x / dx;
         yi = y / dy;
-        rho[ xi*PicSize + yi ] += Particle[pt].rho[i] / ( g/(cm*cm*cm) );
-        if ( Particle[pt].rho[i] > rho_max )
-            rho_max = Particle[pt].rho[i];
-        if ( Particle[pt].rho[i] < rho_min )
-            rho_min = Particle[pt].rho[i];
+        rho[ xi*PicSize + yi ] += SphP[i].Density / ( g/(cm*cm*cm) );
+        if ( SphP[i].Density > rho_max )
+            rho_max = SphP[i].Density;
+        if ( SphP[i].Density < rho_min )
+            rho_min = SphP[i].Density;
     }
     rho_max /= ( g/(cm*cm*cm) );
     rho_min /= ( g/(cm*cm*cm) );
     printf( "rho_max: %g, rho_min: %g\n", rho_max, rho_min );
-    sprintf( buf, "./%s_rho.txt", str );
-    fd = fopen( buf, "w" );
+    fd = fopen( "./gas_rho.txt", "w" );
     for ( i=0; i<PicSize; i++ ) {
         for ( j=0; j<PicSize; j++ ) {
             fprintf( fd, "%g ", rho[ i*PicSize + j ] );
@@ -276,7 +187,52 @@ void density_analysis( int pt, char *str ){
     }
     fclose( fd );
     free( rho );
-    printf( "%s density analysis ...done.\n", str );
+    printf( "gas density analysis ...done.\n");
+}
+
+void pos_analysis( int pt, char *str ){
+    FILE *fd;
+    int i,j, xi, yi;
+    double *pos, x, y, dx, dy, pos_max, pos_min;
+    char buf[200];
+    long num, offset;
+    printf( "%s positin analysis ...\n", str );
+    pos = ( double* ) malloc( sizeof(double) * PicSize * PicSize );
+    memset( pos, 0, sizeof( double ) * PicSize * PicSize );
+    dx = dy = header.BoxSize / PicSize;
+    pos_max = -1e-10;
+    pos_min = 1e10;
+    num = header.npartTotal[pt];
+    num += ( (long long)header.npartTotalHighWord[pt] ) << 32;
+    offset = 0;
+    for ( i=0; i<pt; i++ ) {
+        offset = header.npartTotal[i];
+        offset += ( (long long)header.npartTotalHighWord[i] ) << 32;
+    }
+    printf( "particle number: %d\n", num );
+    for ( i=0; i<num; i++ ) {
+        x = P[offset+i].Pos[0];
+        y = P[offset+i].Pos[1];
+        xi = x / dx;
+        yi = y / dy;
+        pos[ xi*PicSize + yi ] += P[offset+i].Mass / g;
+        if ( P[offset+i].Pos[0] > pos_max )
+            pos_max = P[offset+i].Pos[0];
+        if ( P[offset+i].Pos[1] < pos_min )
+            pos_min = P[offset+i].Pos[1];
+    }
+    printf( "pos_max: %g, pos_min: %g\n", pos_max, pos_min );
+    sprintf( buf, "./%s_pos.txt", str );
+    fd = fopen( buf, "w" );
+    for ( i=0; i<PicSize; i++ ) {
+        for ( j=0; j<PicSize; j++ ) {
+            fprintf( fd, "%g ", pos[ i*PicSize + j ] );
+        }
+        fprintf( fd, "\n"  );
+    }
+    fclose( fd );
+    free( pos );
+    printf( "%s position analysis ...done.\n", str );
 }
 
 void mach_analysis(){
@@ -290,17 +246,16 @@ void mach_analysis(){
     dx = dy = header.BoxSize / PicSize;
     mn_max = -1e-10;
     mn_min = 1e10;
-    printf( "particle number: %d\n", Particle[pt].num );
-    for ( i=0; i<Particle[pt].num; i++ ) {
-        x = Particle[pt].pos[i*3+0];
-        y = Particle[pt].pos[i*3+1];
+    for ( i=0; i<N_Gas; i++ ) {
+        x = P[i].Pos[0];
+        y = P[i].Pos[1];
         xi = x / dx;
         yi = y / dy;
-        mn[ xi*PicSize + yi ] += Particle[pt].mn[i];
-        if ( Particle[pt].mn[i] > mn_max )
-            mn_max = Particle[pt].mn[i];
-        if ( Particle[pt].mn[i] < mn_min )
-            mn_min = Particle[pt].mn[i];
+        mn[ xi*PicSize + yi ] += SphP[i].MachNumber;
+        if ( SphP[i].MachNumber > mn_max )
+            mn_max = SphP[i].MachNumber;
+        if ( SphP[i].MachNumber < mn_min )
+            mn_min = SphP[i].MachNumber;
     }
     printf( "mn_max: %g, mn_min: %g\n", mn_max, mn_min );
     fd = fopen( "./mach.txt", "w" );
@@ -318,7 +273,7 @@ void mach_analysis(){
 
 void gas_analysis(){
     printf( "\n" );
-    density_analysis( 0, "gas" );
+    gas_density_analysis();
     printf( "\n" );
     hg_electrons_analysis();
     printf( "\n" );
@@ -327,5 +282,7 @@ void gas_analysis(){
 }
 
 void dm_analysis(){
+    printf( "\n" );
+    pos_analysis( 0, "dm" );
     fputs( sep_str, stdout );
 }

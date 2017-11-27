@@ -26,40 +26,17 @@ typedef unsigned long long MyIDType;
 typedef unsigned int MyIDType;
 #endif
 
-#ifndef DOUBLEPRECISION     /* default is single-precision */
-typedef float  MyFloat;
-typedef float  MyDouble;
-typedef float  MyDoublePos;
-#else
-#if (DOUBLEPRECISION+0) == 2
-typedef float   MyFloat;
-typedef double  MyDouble;
-typedef double  MyDoublePos;
-#else
-#if (DOUBLEPRECISION+0) == 3
-typedef float   MyFloat;
-typedef float   MyDouble;
-typedef double  MyDoublePos;
-#else                        /* everything double-precision */
-typedef double  MyFloat;
-typedef double  MyDouble;
-typedef double  MyDoublePos;
-#endif
-#endif
-#endif
-
 #ifdef OUTPUT_IN_DOUBLEPRECISION
 typedef double MyOutputFloat;
+typedef double MyFloat;
+typedef double MyDouble;
+typedef double MyDoublePos;
 #else
 typedef float MyOutputFloat;
+typedef float MyFloat;
+typedef float MyDouble;
+typedef float MyDoublePos;
 #endif
-
-#ifdef INPUT_IN_DOUBLEPRECISION
-typedef double MyInputFloat;
-#else
-typedef float MyInputFloat;
-#endif
-
 
 struct group_struct{
   int Len;
@@ -120,28 +97,6 @@ struct group_struct{
 
 };
 
-struct particle_struct {
-    float *pos;
-    float *vel;
-    float *accel;
-    float *mag;
-    float *elec;
-    MyIDType *id;
-    long num;
-    float *pot;
-    float *m;
-    float *u;
-    float *rho;
-    float *mn;
-    float *j;
-    float *c0;
-    float *q0;
-    float *cre_c0;
-    float *cre_q0;
-    float *cre_e0;
-    float *cre_n0;
-};
-
 struct io_header{
   int npart[6];
   double mass[6];
@@ -168,18 +123,17 @@ struct io_header{
 };
 
 enum iofields {
+    IO_ID,
     IO_POS,
+    IO_MASS,
     IO_VEL,
     IO_ACCEL,
     IO_MAG,
-    IO_MASS,
+    IO_NE,
     IO_U,
     IO_RHO,
     IO_POT,
-    IO_ELEC,
-    IO_ID,
     IO_MN,
-    IO_J,
     IO_CR_C0,
     IO_CR_Q0,
     IO_CRE_C0,
@@ -189,20 +143,48 @@ enum iofields {
 };
 
 
-extern struct particle_struct Particle[6];
 extern struct io_header header;
 extern struct group_struct *group;
 
 extern char FilePrefix[ FILENAME_MAX ];
 extern char GroupDir[ FILENAME_MAX ];
 extern char sep_str[ SEP_LEN ];
-extern int NumFiles, TotNgroups, PicSize;
+extern long long NumFiles, TotNgroups, PicSize, NumPart, N_Gas, BufferSize;
+extern void *CommBuffer;
 extern double UnitTime_in_s,
               UnitMass_in_g,
               UnitLength_in_cm,
               UnitDensity_in_cgs,
               UnitEnergy_in_cgs,
               UnitVelocity_in_cm_per_s;
+extern struct particle_data {
+    MyFloat Pos[3];
+    MyFloat Mass;
+    MyFloat Vel[3];
+    MyFloat Pot;
+    MyFloat Acc[3];
+    MyIDType ID;
+    int Type;
+} *P;
+
+extern struct sph_particle_data {
+    MyFloat Entropy;
+    MyFloat Density;
+    MyFloat Hsml;
+    MyFloat NumNgb;
+    MyFloat Pressure;
+    MyFloat HydroAccel[3];
+    MyFloat MachNumber;
+    MyFloat CR_C0;
+    MyFloat CR_Q0;
+    MyFloat CRE_C0;
+    MyFloat CRE_Q0;
+    MyFloat CRE_E0;
+    MyFloat CRE_n0;
+    MyFloat B[3];
+    MyFloat elec;
+} *SphP;
+
 
 #ifdef DEBUG
     extern float debug_f;
@@ -213,16 +195,10 @@ extern double UnitTime_in_s,
 #endif
 
 
-extern hid_t hdf5_file, hdf5_group, hdf5_dataset, hdf5_dataspace, hdf5_dataspace_in_file, hdf5_dataspace_in_memory, hdf5_type, hdf5_hdf5_type_mem, hdf5_attribute, hdf5_type;
-extern herr_t herr;
-extern hsize_t dims[2], maxdims[2], npoints, precision;
-extern int ndims;
-
 void show_header( struct io_header header );
 void read_header();
-void read_all_data();
-void free_all_memory();
-void write_file( char *fn, struct io_header header, struct particle_struct *Particle);
+void read_snapshot();
+void free_memory();
 void get_dataset_name( enum iofields blk, char *buf );
 void magnetic_field_analysis();
 void gas_analysis();
@@ -232,3 +208,4 @@ void read_group();
 void free_group();
 void signal_hander( int sig );
 void endrun( int ierr );
+void read_parameters();

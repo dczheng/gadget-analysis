@@ -1,7 +1,8 @@
-FilePrefix ./test_g3_snapshot_044
+FilePrefix ./test_g3_snapshot_040
 NumFiles 1
-PicSize 800
+PicSize 256
 GroupDir ./test
 UnitLength_in_cm              3.085678e21
 UnitMass_in_g                 1.989e43
 UnitVelocity_in_cm_per_s      1e5
+BufferSize    10
