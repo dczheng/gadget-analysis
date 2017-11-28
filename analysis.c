@@ -107,33 +107,14 @@ void analysis_radio() {
 }
 
 void hg_electrons_analysis() {
-    double *rho_n, pos_max[3], pos_min[3], x, y, dx, dy;
+    double *rho_n, x, y, dx, dy, rho_n_max, rho_n_min,
+           log_rho_n_min, log_rho_n_max;
     int i,j, xi, yi, zi;
-    FILE *fd;
     printf( "high energy electrons analysis...\n" );
     rho_n = ( double* ) malloc( sizeof(double) * PicSize * PicSize );
     memset( rho_n, 0, sizeof( double ) * PicSize * PicSize );
-    pos_max[0] = pos_max[1] = pos_max[2] = -1e10;
-    pos_min[0] = pos_min[1] = pos_min[2] = 1e10;
     dx = BoxSize / PicSize;
     dy = BoxSize / PicSize;
-    for ( i=0; i<N_Gas; i++ ) {
-        if ( P[i].Pos[0] > pos_max[0] )
-            pos_max[0] = P[i].Pos[0];
-        if ( P[i].Pos[1] > pos_max[1] )
-            pos_max[1] = P[i].Pos[1];
-        if ( P[i].Pos[2] > pos_max[2] )
-            pos_max[2] = P[i].Pos[2];
-        if ( P[i].Pos[0] < pos_min[0] )
-            pos_min[0] = P[i].Pos[0];
-        if ( P[i].Pos[1] < pos_min[1] )
-            pos_min[1] = P[i].Pos[1];
-        if ( P[i].Pos[2] < pos_min[2] )
-            pos_min[2] = P[i].Pos[2];
-    }
-    printf( "pos max: %10g %10g %10g\npos min: %10g %10g %10g\n",
-            pos_max[0], pos_max[1], pos_max[2],
-            pos_min[0], pos_min[1], pos_min[2] );
 
     for ( i=0; i<N_Gas; i++ ) {
         x = P[i].Pos[0];
@@ -143,62 +124,108 @@ void hg_electrons_analysis() {
         rho_n[xi*PicSize+yi] += SphP[i].CRE_n0 * SphP[i].Density * m_e / ( g/(cm*cm*cm) );
         //printf( "xi: %d, yi: %d, %g\n", xi, yi, rho_n[xi*PicSize+yi] );
     }
-    fd = fopen( "./hge_n0.txt", "w" );
-    for ( i=0; i<PicSize; i++ ){
-        for ( j=0; j<PicSize; j++ ) {
-            fprintf( fd, "%g ", rho_n[i*PicSize+j] );
+    rho_n_max = -DBL_MAX;
+    rho_n_min = DBL_MAX;
+    for ( i=0; i<PicSize*PicSize; i++ ){
+        if ( rho_n[i] > 0 ){
+            if ( rho_n[i] < rho_n_min )
+                rho_n_min = rho_n[i];
+            if ( rho_n[i] > rho_n_max )
+                rho_n_max = rho_n[i];
         }
-        fprintf( fd, "\n" );
     }
-    fclose( fd );
+    log_rho_n_max = log10( rho_n_max );
+    log_rho_n_min = log10( rho_n_min );
+    for ( i=0; i<PicSize*PicSize; i++ ){
+        if ( rho_n[i] > 0 )
+            rho_n[i] = log10( rho_n[i] );
+        else
+            rho_n[i] = log_rho_n_min - 10;
+    }
+    printf( "rho_n_max: %g, rho_n_min: %g \n"
+             "log_rho_n_max: %g log_rho_n_min: %g\n",
+             rho_n_max, rho_n_min, log_rho_n_max, log_rho_n_min );
+
+    sprintf( cb_label, "(10^x)" );
+    giza_open_device( "/png", "rho_n.png" );
+    giza_set_environment( 0.0, PicSize, 0.0, PicSize, 1, -1 );
+    giza_set_colour_table( cp, red, green, blue, cpn, 1, 1 );
+    giza_render( PicSize, PicSize, rho_n, 0, PicSize, 0, PicSize,
+            log_rho_n_min, log_rho_n_max, 0, affine );
+    sprintf( xlabel, "%g Mpc", BoxSize / MpcFlag );
+    giza_label( xlabel, "", "high energy electron number density" );
+    giza_colour_bar( &cb_s, 1, 3, log_rho_n_min, log_rho_n_max, cb_label );
+    giza_close_device();
 
     free( rho_n );
     printf( "high energy electrons analysis...done.\n" );
 }
 
-void pos_analysis( int pt, char *str ){
+void pos_analysis( int pt ){
     FILE *fd;
     int i,j, xi, yi;
-    double *pos, x, y, dx, dy, pos_max, pos_min;
+    double *rho, x, y, dx, dy, rho_max, rho_min,
+           log_rho_max, log_rho_min;
     char buf[200];
     long num, offset;
-    printf( "%s positin analysis ...\n", str );
-    pos = ( double* ) malloc( sizeof(double) * PicSize * PicSize );
-    memset( pos, 0, sizeof( double ) * PicSize * PicSize );
+    printf( "particle %d positin analysis ...\n", pt );
+    rho = ( double* ) malloc( sizeof(double) * PicSize * PicSize );
+    memset( rho, 0, sizeof( double ) * PicSize * PicSize );
     dx = dy = BoxSize / PicSize;
-    pos_max = -1e-10;
-    pos_min = 1e10;
     num = header.npartTotal[pt];
+    rho_max = -DBL_MAX;
+    rho_min = DBL_MAX;
     num += ( (long long)header.npartTotalHighWord[pt] ) << 32;
     offset = 0;
     for ( i=0; i<pt; i++ ) {
         offset = header.npartTotal[i];
         offset += ( (long long)header.npartTotalHighWord[i] ) << 32;
     }
-    printf( "particle number: %d\n", num );
     for ( i=0; i<num; i++ ) {
         x = P[offset+i].Pos[0];
         y = P[offset+i].Pos[1];
         xi = x / dx;
         yi = y / dy;
-        pos[ xi*PicSize + yi ] += P[offset+i].Mass / g;
-        if ( P[offset+i].Pos[0] > pos_max )
-            pos_max = P[offset+i].Pos[0];
-        if ( P[offset+i].Pos[1] < pos_min )
-            pos_min = P[offset+i].Pos[1];
+        if ( header.mass[pt] == 0 )
+            rho[ xi*PicSize + yi ] += P[offset+i].Mass / (dx*dy*BoxSize) / ( g/(cm*cm*cm) );
+        else
+            rho[ xi*PicSize + yi ] += header.mass[pt] / (dx*dy*BoxSize) / ( g/(cm*cm*cm) );
     }
-    printf( "pos_max: %g, pos_min: %g\n", pos_max, pos_min );
-    sprintf( buf, "./%s_pos.txt", str );
-    fd = fopen( buf, "w" );
-    for ( i=0; i<PicSize; i++ ) {
-        for ( j=0; j<PicSize; j++ ) {
-            fprintf( fd, "%g ", pos[ i*PicSize + j ] );
+    for ( i=0; i<PicSize*PicSize; i++ ) {
+        if ( rho[i] > 0 ) {
+            if ( rho[i] > rho_max )
+                rho_max = rho[i];
+            if ( rho[i] < rho_min )
+                rho_min = rho[i];
         }
-        fprintf( fd, "\n"  );
     }
-    fclose( fd );
-    free( pos );
-    printf( "%s position analysis ...done.\n", str );
+    log_rho_max = log10( rho_max );
+    log_rho_min = log10( rho_min );
+
+    printf( "rho_max: %g, rho_min: %g\n"
+            "log_rho_max: %g, log_rho_min: %g",
+            rho_max, rho_min, log_rho_max, log_rho_min );
+    for ( i=0; i<PicSize*PicSize; i++ )
+        if ( rho[i] > 0 )
+            rho[i] = log10( rho[i] );
+        else
+            rho[i] = log_rho_min - 10 ;
+
+    sprintf( cb_label, "(10^x)   g/cm^3" );
+    sprintf( buf, "rho_%d.png", pt );
+    giza_open_device( "/png", buf );
+    giza_set_environment( 0.0, PicSize, 0.0, PicSize, 1, -1 );
+    giza_set_colour_table( cp, red, green, blue, cpn, 1, 1 );
+    giza_render( PicSize, PicSize, rho, 0, PicSize, 0, PicSize, log_rho_min, log_rho_max, 0, affine );
+    sprintf( xlabel, "%g Mpc", BoxSize / MpcFlag );
+    sprintf( title, "particle %d density", pt );
+    giza_label( xlabel, "", title );
+    giza_colour_bar( &cb_s, 1, 3, log_rho_min, log_rho_max, cb_label );
+    giza_close_device();
+
+
+    free( rho );
+    printf( "particle %d positin analysis ... done.\n", pt );
 }
 
 void mach_analysis(){
@@ -209,27 +236,33 @@ void mach_analysis(){
     mn = ( double* ) malloc( sizeof(double) * PicSize * PicSize );
     memset( mn, 0, sizeof( double ) * PicSize * PicSize );
     dx = dy = BoxSize / PicSize;
-    mn_max = -1e-10;
-    mn_min = 1e10;
+    mn_max = -DBL_MAX;
+    mn_min = DBL_MAX;
     for ( i=0; i<N_Gas; i++ ) {
         x = P[i].Pos[0];
         y = P[i].Pos[1];
         xi = x / dx;
         yi = y / dy;
         mn[ xi*PicSize + yi ] += SphP[i].MachNumber;
-        if ( SphP[i].MachNumber > mn_max )
-            mn_max = SphP[i].MachNumber;
-        if ( SphP[i].MachNumber < mn_min )
-            mn_min = SphP[i].MachNumber;
+    }
+    for ( i=0; i<PicSize*PicSize; i++ ) {
+        if ( mn[i] > 0 ){
+            if ( mn[i] > mn_max )
+                mn_max = mn[i];
+            if ( mn[i] < mn_min )
+                mn_min = mn[i];
+        }
     }
     log_mn_min = log10( mn_min );
     log_mn_max = log10( mn_max );
-    printf( "mn_max: %g, mn_min: %g\n", mn_max, mn_min );
+    printf( "mn_max: %g, mn_min: %g\n"
+            "log_mn_max: %g, log_mn_min: %g\n",
+            mn_max, mn_min, log_mn_max, log_mn_min );
     for ( i=0; i<PicSize*PicSize; i++ )
         if ( mn[i] > 0 )
             mn[i] = log10( mn[i] );
         else
-            mn[i] = log_mn_max - 10 ;
+            mn[i] = log_mn_min - 10 ;
 
     sprintf( cb_label, "(10^x)" );
     giza_open_device( "/png", "mn.png" );
@@ -254,24 +287,29 @@ void gas_density_analysis(){
     rho = ( double* ) malloc( sizeof(double) * PicSize * PicSize );
     memset( rho, 0, sizeof( double ) * PicSize * PicSize );
     dx = dy = BoxSize / PicSize;
-    rho_max = -1e-10;
-    rho_min = 1e10;
+    rho_max = -DBL_MAX;
+    rho_min = DBL_MAX;
     for ( i=0; i<N_Gas; i++ ) {
         x = P[i].Pos[0];
         y = P[i].Pos[1];
         xi = x / dx;
         yi = y / dy;
         rho[ xi*PicSize + yi ] += SphP[i].Density / ( g/(cm*cm*cm) );
-        if ( SphP[i].Density > rho_max )
-            rho_max = SphP[i].Density;
-        if ( SphP[i].Density < rho_min )
-            rho_min = SphP[i].Density;
     }
-    rho_max /= ( g/(cm*cm*cm) );
-    rho_min /= ( g/(cm*cm*cm) );
-    log_rho_max = ( rho_max > 0 ) ? ( log10( rho_max ) ) : 0;
-    log_rho_min = ( rho_min > 0 ) ? ( log10( rho_min ) ) : 0;
-    printf( "rho_max: %g, rho_min: %g\n", rho_max, rho_min );
+    for ( i=0; i<PicSize*PicSize; i++ ) {
+        if ( rho[i] > 0 ) {
+            if ( rho[i] > rho_max )
+                rho_max = rho[i];
+            if ( rho[i] < rho_min )
+                rho_min = rho[i];
+        }
+    }
+    log_rho_max = log10( rho_max );
+    log_rho_min = log10( rho_min );
+
+    printf( "rho_max: %g, rho_min: %g\n"
+            "log_rho_max: %g, log_rho_min: %g",
+            rho_max, rho_min, log_rho_max, log_rho_min );
     for ( i=0; i<PicSize*PicSize; i++ )
         if ( rho[i] > 0 )
             rho[i] = log10( rho[i] );
@@ -294,6 +332,7 @@ void gas_density_analysis(){
 
 void init_plot() {
     int i;
+    puts( "initialize plot..." );
     affine[0] = 1;
     affine[1] = 0;
     affine[2] = 0;
@@ -312,6 +351,7 @@ void init_plot() {
         green[i] =  pow( i, 3 ) / pow( cpn, 33 );
         blue[i] =    pow( i, 1 ) / pow( cpn, 1 );
     }
+    puts( sep_str );
 }
 
 void free_plot() {
@@ -330,11 +370,13 @@ void gas_analysis(){
     hg_electrons_analysis();
     printf( "\n" );
     mach_analysis();
+    printf( "\n" );
+    pos_analysis( 0 );
     fputs( sep_str, stdout );
 }
 
 void dm_analysis(){
     printf( "\n" );
-    pos_analysis( 0, "dm" );
+    pos_analysis( 1 );
     fputs( sep_str, stdout );
 }
