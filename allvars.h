@@ -10,6 +10,8 @@
 #include "mpi.h"
 #include "signal.h"
 #include "unistd.h"
+#include "giza.h"
+#include "limits.h"
 
 #define MAX_PARA_FILE_LINE_LEN 200
 #define SEP_LEN 50
@@ -150,6 +152,8 @@ extern char FilePrefix[ FILENAME_MAX ];
 extern char GroupDir[ FILENAME_MAX ];
 extern char sep_str[ SEP_LEN ];
 extern long long NumFiles, TotNgroups, PicSize, NumPart, N_Gas, BufferSize;
+extern int MpcFlag;
+extern float BoxSize, RedShift;
 extern void *CommBuffer;
 extern double UnitTime_in_s,
               UnitMass_in_g,
@@ -209,3 +213,5 @@ void free_group();
 void signal_hander( int sig );
 void endrun( int ierr );
 void read_parameters();
+void init_plot();
+void free_plot();

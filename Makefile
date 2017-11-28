@@ -1,6 +1,6 @@
 CC      = mpicc
-CFLAGS  =  `pkg-config --cflags gsl` -DH5_USE_16_API
-CLIBS   =  `pkg-config --libs  gsl ` -lhdf5 -lm
+CFLAGS  =  `pkg-config --cflags gsl ` -DH5_USE_16_API
+CLIBS   =  `pkg-config --libs  gsl giza` -lhdf5 -lm
 EXEC    = ./bin/gadget-analysis
 OBJS    = main.o read_snapshot.o  allvars.o analysis.o debug.o read_parameters.o\
 		  read_group.o
