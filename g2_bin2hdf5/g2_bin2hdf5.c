@@ -42,6 +42,23 @@ hid_t hdf5_file, hdf5_group, hdf5_dataset, hdf5_dataspace_in_file, hdf5_dataspac
 herr_t herr;
 hsize_t dims[2], maxdims[2], npoints, precision;
 
+int allocate_memory(void) {
+    printf("allocating memory...\n");
+    if(!(P = malloc(NumPart * sizeof(struct particle_data))))
+    {
+        fprintf(stderr, "failed to allocate memory.\n");
+        exit(0);
+    }
+    P--;				/* start with offset 1 */
+    if(!(Id = malloc(NumPart * sizeof(int))))
+    {
+        fprintf(stderr, "failed to allocate memory.\n");
+        exit(0);
+    }
+    Id--;				/* start with offset 1 */
+    printf("allocating memory...done\n");
+}
+
 int load_snapshot(char *fname, int files) {
     FILE *fd;
     char buf[200];
@@ -166,22 +183,6 @@ int load_snapshot(char *fname, int files) {
     }
 }
 
-int allocate_memory(void) {
-    printf("allocating memory...\n");
-    if(!(P = malloc(NumPart * sizeof(struct particle_data))))
-    {
-        fprintf(stderr, "failed to allocate memory.\n");
-        exit(0);
-    }
-    P--;				/* start with offset 1 */
-    if(!(Id = malloc(NumPart * sizeof(int))))
-    {
-        fprintf(stderr, "failed to allocate memory.\n");
-        exit(0);
-    }
-    Id--;				/* start with offset 1 */
-    printf("allocating memory...done\n");
-}
 
 void read_parameter_file(char *fname) {
 #define DOUBLE 1
