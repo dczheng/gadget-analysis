@@ -109,6 +109,7 @@ void analysis_radio() {
 void hg_electrons_analysis() {
     double *rho_n, x, y, dx, dy, rho_n_max, rho_n_min,
            log_rho_n_min, log_rho_n_max;
+    char buf[100];
     int i,j, xi, yi, zi;
     printf( "high energy electrons analysis...\n" );
     rho_n = ( double* ) malloc( sizeof(double) * PicSize * PicSize );
@@ -147,6 +148,7 @@ void hg_electrons_analysis() {
              rho_n_max, rho_n_min, log_rho_n_max, log_rho_n_min );
 
     sprintf( cb_label, "(10^x)" );
+    sprintf( buf, "rho_n_%.2f\n", RedShift );
     giza_open_device( "/png", "rho_n.png" );
     giza_set_environment( 0.0, PicSize, 0.0, PicSize, 1, -1 );
     giza_set_colour_table( cp, red, green, blue, cpn, 1, 1 );
@@ -213,7 +215,7 @@ void pos_analysis( int pt ){
             rho[i] = log_rho_min - 10 ;
 
     sprintf( cb_label, "(10^x)   g/cm^3" );
-    sprintf( buf, "rho_%d.png", pt );
+    sprintf( buf, "rho_%d_%.2f.png", pt, RedShift );
     giza_open_device( "/png", buf );
     giza_set_environment( 0.0, PicSize, 0.0, PicSize, 1, -1 );
     giza_set_colour_table( cp, red, green, blue, cpn, 1, 1 );
@@ -232,6 +234,7 @@ void pos_analysis( int pt ){
 void mach_analysis(){
     int i,j, xi, yi, pt;
     double *mn, x, y, dx, dy, mn_max, mn_min, log_mn_min, log_mn_max;
+    char buf[100];
     pt = 0;
     printf( "mach number analysis ...\n" );
     mn = ( double* ) malloc( sizeof(double) * PicSize * PicSize );
@@ -266,7 +269,8 @@ void mach_analysis(){
             mn[i] = log_mn_min - 10 ;
 
     sprintf( cb_label, "(10^x)" );
-    giza_open_device( "/png", "mn.png" );
+    sprintf( buf, "mn_%.2f.png", RedShift );
+    giza_open_device( "/png", buf );
     giza_set_environment( 0.0, PicSize, 0.0, PicSize, 1, -1 );
     giza_set_colour_table( cp, red, green, blue, cpn, 1, 1 );
     giza_render( PicSize, PicSize, mn, 0, PicSize, 0, PicSize, log_mn_min, log_mn_max, 0, affine );
@@ -319,7 +323,8 @@ void gas_density_analysis(){
             rho[i] = log_rho_min - 10 ;
 
     sprintf( cb_label, "(10^x)   g/cm^3" );
-    giza_open_device( "/png", "gas_rho.png" );
+    sprintf( buf, "gas_rho_%.2f\n", RedShift );
+    giza_open_device( "/png", buf );
     giza_set_environment( 0.0, PicSize, 0.0, PicSize, 1, -1 );
     giza_set_colour_table( cp, red, green, blue, cpn, 1, 1 );
     giza_render( PicSize, PicSize, rho, 0, PicSize, 0, PicSize, log_rho_min, log_rho_max, 0, affine );
@@ -370,7 +375,7 @@ void gas_analysis(){
     printf( "\n" );
     gas_density_analysis();
     printf( "\n" );
-    hg_electrons_analysis();
+    //hg_electrons_analysis();
     printf( "\n" );
     mach_analysis();
     printf( "\n" );

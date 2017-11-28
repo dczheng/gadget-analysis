@@ -19,10 +19,6 @@ int blockpresent( enum iofields blk, int pt ) {
                 return 1;
             else
                 return 0;
-        case IO_CRE_C0:
-        case IO_CRE_Q0:
-        case IO_CRE_E0:
-        case IO_CRE_n0:
         case IO_MN:
         case IO_MAG:
         case IO_U:
@@ -34,6 +30,10 @@ int blockpresent( enum iofields blk, int pt ) {
                 return 1;
             else
                 return 0;
+        case IO_CRE_C0:
+        case IO_CRE_Q0:
+        case IO_CRE_E0:
+        case IO_CRE_n0:
         case IO_POT:
         case IO_ACCEL:
             return 0;
