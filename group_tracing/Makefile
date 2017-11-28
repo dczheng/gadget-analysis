@@ -1,6 +1,6 @@
 CC      = gcc
 CLIBS   =  -lhdf5 -lm
-EXEC    = ../bin/group_tracing
+EXEC    = group_tracing
 OBJS    = group_tracing.o
 OPT = -DLONGIDS
 CFLAGS  =  -DH5_USE_16_API $(OPT)
