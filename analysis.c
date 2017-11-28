@@ -153,7 +153,8 @@ void hg_electrons_analysis() {
     giza_render( PicSize, PicSize, rho_n, 0, PicSize, 0, PicSize,
             log_rho_n_min, log_rho_n_max, 0, affine );
     sprintf( xlabel, "%g Mpc", BoxSize / MpcFlag );
-    giza_label( xlabel, "", "high energy electron number density" );
+    sprintf( title, "high energy electron number densit (z=%.2f)", RedShift );
+    giza_label( xlabel, "", title );
     giza_colour_bar( &cb_s, 1, 3, log_rho_n_min, log_rho_n_max, cb_label );
     giza_close_device();
 
@@ -218,7 +219,7 @@ void pos_analysis( int pt ){
     giza_set_colour_table( cp, red, green, blue, cpn, 1, 1 );
     giza_render( PicSize, PicSize, rho, 0, PicSize, 0, PicSize, log_rho_min, log_rho_max, 0, affine );
     sprintf( xlabel, "%g Mpc", BoxSize / MpcFlag );
-    sprintf( title, "particle %d density", pt );
+    sprintf( title, "particle %d density (z=%.2f)", pt, RedShift );
     giza_label( xlabel, "", title );
     giza_colour_bar( &cb_s, 1, 3, log_rho_min, log_rho_max, cb_label );
     giza_close_device();
@@ -270,7 +271,8 @@ void mach_analysis(){
     giza_set_colour_table( cp, red, green, blue, cpn, 1, 1 );
     giza_render( PicSize, PicSize, mn, 0, PicSize, 0, PicSize, log_mn_min, log_mn_max, 0, affine );
     sprintf( xlabel, "%g Mpc", BoxSize / MpcFlag );
-    giza_label( xlabel, "", "mach number" );
+    sprintf( title, "mach number (z=%.2f)", RedShift );
+    giza_label( xlabel, "", title );
     giza_colour_bar( &cb_s, 1, 3, log_mn_min, log_mn_max, cb_label );
     giza_close_device();
 
@@ -322,7 +324,8 @@ void gas_density_analysis(){
     giza_set_colour_table( cp, red, green, blue, cpn, 1, 1 );
     giza_render( PicSize, PicSize, rho, 0, PicSize, 0, PicSize, log_rho_min, log_rho_max, 0, affine );
     sprintf( xlabel, "%g Mpc", BoxSize / MpcFlag );
-    giza_label( xlabel, "", "gas density" );
+    sprintf( title, "gas density (z=%.2f)", RedShift );
+    giza_label( xlabel, "", title );
     giza_colour_bar( &cb_s, 1, 3, log_rho_min, log_rho_max, cb_label );
     giza_close_device();
 
