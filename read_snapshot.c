@@ -545,6 +545,8 @@ void read_snapshot() {
         NumPart += ((long long)header.npartTotalHighWord[i]) << 32;
     }
     N_Gas = header.npartTotal[0] + ( ( (long long)header.npartTotalHighWord[0] ) << 32 );
+    BoxSize = header.BoxSize;
+    RedShift = header.redshift;
     printf( "NumPart = %ld, N_Gas = %ld\n", NumPart, N_Gas );
     allocate_memory();
     show_header( header );

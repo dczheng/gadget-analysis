@@ -50,6 +50,10 @@ void read_parameters( char *fn ) {
     addr[nt] = &BufferSize;
     id[nt++] = INT;
 
+    strcpy( tag[nt], "MpcFlag" );
+    addr[nt] = &MpcFlag;
+    id[nt++] = INT;
+
     while( !feof( fd ) ) {
         *buf = 0;
         fgets( buf, 200, fd );

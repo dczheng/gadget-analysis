@@ -17,6 +17,9 @@ void set_units() {
     printf( "%-35s: %g\n", "UnitDensity_in_cgs", UnitDensity_in_cgs );
     printf( "%-35s: %g\n", "UnitEnergy_in_cgs", UnitEnergy_in_cgs );
     printf( "%-35s: %g\n", "UnitVelocity_in_cm_per_s", UnitVelocity_in_cm_per_s );
+    if ( MpcFlag != 1 ) {
+        MpcFlag = 1000;
+    }
     fputs( sep_str, stdout );
 }
 
@@ -45,6 +48,7 @@ int main( int argc, char *argv[] ){
     read_parameters( argv[1] );
     set_units();
     read_snapshot();
+    init_plot();
     //group_analysis();
     /******************analysis***********************/
     gas_analysis();
@@ -52,6 +56,7 @@ int main( int argc, char *argv[] ){
     /*************************************************/
     time2 = time( NULL );
     tb = localtime( &time2 );
+    free_plot();
     free_memory();
     fprintf( stdout, "End At: %s", asctime(tb) );
     fprintf( stdout, "Total Time %i\n", time2-time1 );

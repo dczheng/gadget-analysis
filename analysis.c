@@ -21,6 +21,10 @@
 #define mec2 ( m_e * LightSpeed * LightSpeed )
 #define c2   ( LightSpeed * LightSpeed )
 
+int cpn;
+double *cp, *red, *green, *blue, affine[6];
+char cb_s, cb_label[100], title[100], xlabel[100], ylabel[100];
+
 int compare_for_sort_group_by_mass( const void *a, const void *b ) {
     return (( ( struct group_struct* )a )->Mass < ( ( struct group_struct* )b )->Mass ) ? 1 : -1;
 }
@@ -111,8 +115,8 @@ void hg_electrons_analysis() {
     memset( rho_n, 0, sizeof( double ) * PicSize * PicSize );
     pos_max[0] = pos_max[1] = pos_max[2] = -1e10;
     pos_min[0] = pos_min[1] = pos_min[2] = 1e10;
-    dx = header.BoxSize / PicSize;
-    dy = header.BoxSize / PicSize;
+    dx = BoxSize / PicSize;
+    dy = BoxSize / PicSize;
     for ( i=0; i<N_Gas; i++ ) {
         if ( P[i].Pos[0] > pos_max[0] )
             pos_max[0] = P[i].Pos[0];
@@ -152,44 +156,6 @@ void hg_electrons_analysis() {
     printf( "high energy electrons analysis...done.\n" );
 }
 
-
-void gas_density_analysis(){
-    FILE *fd;
-    int i,j, xi, yi;
-    double *rho, x, y, dx, dy, rho_max, rho_min;
-    char buf[200];
-    printf( "gas density analysis ...\n");
-    rho = ( double* ) malloc( sizeof(double) * PicSize * PicSize );
-    memset( rho, 0, sizeof( double ) * PicSize * PicSize );
-    dx = dy = header.BoxSize / PicSize;
-    rho_max = -1e-10;
-    rho_min = 1e10;
-    for ( i=0; i<N_Gas; i++ ) {
-        x = P[i].Pos[0];
-        y = P[i].Pos[1];
-        xi = x / dx;
-        yi = y / dy;
-        rho[ xi*PicSize + yi ] += SphP[i].Density / ( g/(cm*cm*cm) );
-        if ( SphP[i].Density > rho_max )
-            rho_max = SphP[i].Density;
-        if ( SphP[i].Density < rho_min )
-            rho_min = SphP[i].Density;
-    }
-    rho_max /= ( g/(cm*cm*cm) );
-    rho_min /= ( g/(cm*cm*cm) );
-    printf( "rho_max: %g, rho_min: %g\n", rho_max, rho_min );
-    fd = fopen( "./gas_rho.txt", "w" );
-    for ( i=0; i<PicSize; i++ ) {
-        for ( j=0; j<PicSize; j++ ) {
-            fprintf( fd, "%g ", rho[ i*PicSize + j ] );
-        }
-        fprintf( fd, "\n"  );
-    }
-    fclose( fd );
-    free( rho );
-    printf( "gas density analysis ...done.\n");
-}
-
 void pos_analysis( int pt, char *str ){
     FILE *fd;
     int i,j, xi, yi;
@@ -199,7 +165,7 @@ void pos_analysis( int pt, char *str ){
     printf( "%s positin analysis ...\n", str );
     pos = ( double* ) malloc( sizeof(double) * PicSize * PicSize );
     memset( pos, 0, sizeof( double ) * PicSize * PicSize );
-    dx = dy = header.BoxSize / PicSize;
+    dx = dy = BoxSize / PicSize;
     pos_max = -1e-10;
     pos_min = 1e10;
     num = header.npartTotal[pt];
@@ -236,14 +202,13 @@ void pos_analysis( int pt, char *str ){
 }
 
 void mach_analysis(){
-    FILE *fd;
     int i,j, xi, yi, pt;
-    double *mn, x, y, dx, dy, mn_max, mn_min;
+    double *mn, x, y, dx, dy, mn_max, mn_min, log_mn_min, log_mn_max;
     pt = 0;
     printf( "mach number analysis ...\n" );
     mn = ( double* ) malloc( sizeof(double) * PicSize * PicSize );
     memset( mn, 0, sizeof( double ) * PicSize * PicSize );
-    dx = dy = header.BoxSize / PicSize;
+    dx = dy = BoxSize / PicSize;
     mn_max = -1e-10;
     mn_min = 1e10;
     for ( i=0; i<N_Gas; i++ ) {
@@ -257,18 +222,105 @@ void mach_analysis(){
         if ( SphP[i].MachNumber < mn_min )
             mn_min = SphP[i].MachNumber;
     }
+    log_mn_min = log10( mn_min );
+    log_mn_max = log10( mn_max );
     printf( "mn_max: %g, mn_min: %g\n", mn_max, mn_min );
-    fd = fopen( "./mach.txt", "w" );
-    for ( i=0; i<PicSize; i++ ) {
-        for ( j=0; j<PicSize; j++ ) {
-            fprintf( fd, "%g ", mn[ i*PicSize + j ] );
-        }
-        fprintf( fd, "\n"  );
-    }
-    fclose( fd );
+    for ( i=0; i<PicSize*PicSize; i++ )
+        if ( mn[i] > 0 )
+            mn[i] = log10( mn[i] );
+        else
+            mn[i] = log_mn_max - 10 ;
+
+    sprintf( cb_label, "(10^x)" );
+    giza_open_device( "/png", "mn.png" );
+    giza_set_environment( 0.0, PicSize, 0.0, PicSize, 1, -1 );
+    giza_set_colour_table( cp, red, green, blue, cpn, 1, 1 );
+    giza_render( PicSize, PicSize, mn, 0, PicSize, 0, PicSize, log_mn_min, log_mn_max, 0, affine );
+    sprintf( xlabel, "%g Mpc", BoxSize / MpcFlag );
+    giza_label( xlabel, "", "mach number" );
+    giza_colour_bar( &cb_s, 1, 3, log_mn_min, log_mn_max, cb_label );
+    giza_close_device();
+
     free( mn );
     printf( "mach number analysis ...done.\n" );
 }
+
+void gas_density_analysis(){
+    int i,j, xi, yi;
+    double *rho, x, y, dx, dy, rho_max, rho_min;
+    double log_rho_max, log_rho_min;
+    char buf[200];
+    printf( "gas density analysis ...\n");
+    rho = ( double* ) malloc( sizeof(double) * PicSize * PicSize );
+    memset( rho, 0, sizeof( double ) * PicSize * PicSize );
+    dx = dy = BoxSize / PicSize;
+    rho_max = -1e-10;
+    rho_min = 1e10;
+    for ( i=0; i<N_Gas; i++ ) {
+        x = P[i].Pos[0];
+        y = P[i].Pos[1];
+        xi = x / dx;
+        yi = y / dy;
+        rho[ xi*PicSize + yi ] += SphP[i].Density / ( g/(cm*cm*cm) );
+        if ( SphP[i].Density > rho_max )
+            rho_max = SphP[i].Density;
+        if ( SphP[i].Density < rho_min )
+            rho_min = SphP[i].Density;
+    }
+    rho_max /= ( g/(cm*cm*cm) );
+    rho_min /= ( g/(cm*cm*cm) );
+    log_rho_max = ( rho_max > 0 ) ? ( log10( rho_max ) ) : 0;
+    log_rho_min = ( rho_min > 0 ) ? ( log10( rho_min ) ) : 0;
+    printf( "rho_max: %g, rho_min: %g\n", rho_max, rho_min );
+    for ( i=0; i<PicSize*PicSize; i++ )
+        if ( rho[i] > 0 )
+            rho[i] = log10( rho[i] );
+        else
+            rho[i] = log_rho_min - 10 ;
+
+    sprintf( cb_label, "(10^x)   g/cm^3" );
+    giza_open_device( "/png", "gas_rho.png" );
+    giza_set_environment( 0.0, PicSize, 0.0, PicSize, 1, -1 );
+    giza_set_colour_table( cp, red, green, blue, cpn, 1, 1 );
+    giza_render( PicSize, PicSize, rho, 0, PicSize, 0, PicSize, log_rho_min, log_rho_max, 0, affine );
+    sprintf( xlabel, "%g Mpc", BoxSize / MpcFlag );
+    giza_label( xlabel, "", "gas density" );
+    giza_colour_bar( &cb_s, 1, 3, log_rho_min, log_rho_max, cb_label );
+    giza_close_device();
+
+    free( rho );
+    printf( "gas density analysis ...done.\n");
+}
+
+void init_plot() {
+    int i;
+    affine[0] = 1;
+    affine[1] = 0;
+    affine[2] = 0;
+    affine[3] = 1;
+    affine[4] = 0;
+    affine[5] = 0;
+    cb_s = 'R';
+    cpn = 30;
+    cp = malloc( sizeof(double) * cpn );
+    red = malloc( sizeof(double) * cpn );
+    green = malloc( sizeof(double) * cpn );
+    blue = malloc( sizeof(double) * cpn );
+    for ( i=0; i<cpn; i++ ) {
+        cp[i] = i / (double)cpn;
+        red[i] =   pow( i, 1.5 ) / pow( cpn, 1.5 );
+        green[i] =  pow( i, 3 ) / pow( cpn, 33 );
+        blue[i] =    pow( i, 1 ) / pow( cpn, 1 );
+    }
+}
+
+void free_plot() {
+    free( cp );
+    free( red );
+    free( green );
+    free( blue );
+}
+
 
 
 void gas_analysis(){
