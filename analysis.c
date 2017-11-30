@@ -14,6 +14,7 @@
 #define m_e (ELECTRONMASS * g)
 #define k_B (BOLTZMANN * erg / deg)
 #define LightSpeed (2.9979e10*cm/s)
+#define c_in_cgs 2.9979e10
 #define HBAR ( 1.05457e-27 * cm * cm * g / s )
 #define e2  ( HBAR * LightSpeed / 137.04 )
 #define statcoul sqrt( erg * cm )
@@ -21,9 +22,18 @@
 #define mec2 ( m_e * LightSpeed * LightSpeed )
 #define c2   ( LightSpeed * LightSpeed )
 
+#define GSL_INTE_WS_LEN 1000
+#define GSL_INTE_ERR_ABS 0.0
+#define GSL_INTE_ERR_REL 1e-3
+#define GSL_INTE_KEY GSL_INTEG_GAUSS15
+
+#define SQR(X) ( X*X )
+#define CUBE(X) ( X*X*X )
+
 int cpn;
 double *cp, *red, *green, *blue, affine[6];
 char cb_s, cb_label[100], title[100], xlabel[100], ylabel[100];
+static gsl_integration_workspace *inte_ws;
 
 int compare_for_sort_group_by_mass( const void *a, const void *b ) {
     return (( ( struct group_struct* )a )->Mass < ( ( struct group_struct* )b )->Mass ) ? 1 : -1;
@@ -48,62 +58,6 @@ void group_analysis() {
     sort_group_by_mass();
     show_group_info();
     free_group();
-}
-
-void analysis_radio() {
-    /*
-    double alpha_e, alpha, sigma_pp, sigma_t, me, mp, GeV, C, e;
-    double Bcmb, alpha_v, XHe, Ecmb, Ce, Ae, Bc, C_phy, Eb, v, gamma_fac, q_phy;
-    long i;
-    alpha = 2.5;
-    sigma_pp = 32 * ( 0.96 + exp( 4.4 - 2.4 * alpha ) ) * 1e-28 * 1e4; // cm^2
-    me = 9.10938356e-29; // g
-    mp = 1.672621898e-24; // g
-    sigma_t = 6.6524587158e-29 * 1e4; // cm^2;
-    C = 29979245800.0; // m/s
-    GeV = 1.602176565e-19 * 1e9 * 1e7; // erg
-    Bcmb = 3.24 * pow( 1+redshift, 2 ) * 1e-6; // G
-    alpha_e = alpha + 1;
-    alpha_v = alpha / 2.0;
-    XHe = 0.24;
-    e = 1.6021766208e-19; // C
-    Ecmb = Bcmb * Bcmb / 8.0 / M_PI;
-    v = 150000;
-    gamma_fac = gamma( (3*alpha_e-1) / 12.0 ) *
-            gamma( (3*alpha_e+7) / 12.0 ) *
-            gamma( (alpha_e+5) / 4.0 ) /
-            gamma( (alpha_e+7) / 4.0 );
-    fprintf( stdout, "alpha = %f\nalpha_e = %f\nalpha_v = %e\n"
-            "sigma_pp = %e\nsigma_t = %e\nC = %e\nGeV = %e\n"
-            "me = %e\nmp = %e\nBcmb = %e\nXHe = %f\ne = %e\n"
-            "Ecmb = %e\ngamma_fac = %e\n",
-            alpha, alpha_e, alpha_v, sigma_pp, sigma_t, C, GeV, me, mp,
-            Bcmb, XHe, e, Ecmb, gamma_fac );
-    Bc = 2.0 * M_PI * pow( me, 3 ) * pow( C, 5 ) * v / ( 3 * e * pow( GeV, 2 ) );
-    for ( i=0; i<Particle[0].num; i++ ) {
-        if ( Particle[0].c0[i] == 0 ) {
-            Particle[0].j[i] = 0;
-            continue;
-        }
-        C_phy =  Particle[0].c0[i] * pow( Particle[0].rho[i], ( alpha - 1 ) * 0.33333 ) *
-            Particle[0].rho[i] * 1.989e43 / pow( 3.085678e21, 3) / mp;
-        //q_phy = Particle[0].q0[i] * pow( Particle[0].rho[i], 0.3333333 );
-        Eb = ( pow( Particle[0].mag[i*3 + 0], 2 ) +
-             pow( Particle[0].mag[ i*3 +1 ], 2 ) +
-             pow( Particle[0].mag[ i*3 + 2 ], 2 ) ) / 8.0 / M_PI;
-        Ce = pow( 16, 2-alpha_e ) / ( alpha_e-2 ) *
-            sigma_pp * pow( me,2 ) * pow( C, 4 ) / ( sigma_t*GeV ) *
-            C_phy * Particle[0].rho[i] * 1.989e43 / pow( 3.085678e21, 3) *
-            Particle[0].elec[i] / ( 1-0.5*0.24 ) / ( Eb + Ecmb ) *
-            pow( mp*C*C/GeV, alpha-1 );
-        Ae = sqrt( 3.0 * M_PI ) / 32.0 / M_PI * Bc * pow( e, 3 ) / me / pow( C, 2 ) *
-            ( alpha_e + 7.0/3.0 ) / ( alpha_e + 1 ) * gamma_fac;
-        Particle[0].j[i] = 1e100 * Ae * Ce * pow( Eb/( pow(Bc,2) / 8.0 / M_PI ), ( alpha_v+1 ) / 2.0 );
-        fprintf( stdout, "C_phy = %e, q_phy = %e, Eb = %e, Ce = %e, Bc = %e, Ae = %e, j = %e\n",
-                C_phy, q_phy, Eb, Ce, Bc, Ae,  Particle[0].j[i] );
-    }
-    //plot_slice( 0, IO_J );
-    */
 }
 
 void hg_electrons_analysis() {
@@ -439,7 +393,72 @@ void magnetic_field_analysis() {
     puts( "magnetic field analysis ... done.");
 }
 
-void init_plot() {
+double cre_beta_inte( double x, void *params ) {
+    double *p = params;
+    return pow( x, p[0]-1.0 ) * pow( 1.0-x, p[1]-1.0 );
+}
+
+double cre_beta( double a, double b, double x ) {
+    double r, err;
+    gsl_function F;
+    double params[2];
+    if ( x<1e-20 )
+        return 0;
+    if ( b>0.0 ){
+        return gsl_sf_beta_inc( a, b, x ) * gsl_sf_beta( a, b );
+    }
+    //printf( "debug for cre_beta: a=%g, b=%g, x=%g\n", a, b, x );
+    F.function = &cre_beta_inte;
+    F.params = params;
+    params[0] = a;
+    params[1] = b;
+    gsl_integration_qag( &F, 1e-20, x,
+            GSL_INTE_ERR_ABS, GSL_INTE_ERR_REL, GSL_INTE_WS_LEN, GSL_INTE_KEY,
+            inte_ws, &r, &err );
+    return r;
+}
+
+double cre_mean_kinetic_energy( double alpha, double q ) {
+    return ( 0.5 * pow( q, alpha-1.0 ) *
+            cre_beta( (alpha-2.0)*0.5, (3.0-alpha)*0.5, 1/(1+q*q) ) +
+            sqrt( 1+q*q ) - 1.0 ) * mec2;
+}
+
+double cre_tau_synchrotron_radiation( double alpha, double q, double B ) {
+    /* B: gauss */
+    /* per unit electron mass */
+    double beta1, ccool, u_b, T;
+    //printf( "u_cmb = %g\n", u_cmb );
+    /* u_cmb = a_ard * Tcmb0^4 * (z+1)^4 = b^2 / 8 / pi -> b2 ~ (z+1)^4*/
+    u_b = SQR(B) / ( 8*M_PI ) * ( erg/CUBE(cm) );
+    //printf( "u_b = %g\n", u_b );
+    beta1 = cre_beta( ( alpha-2 ) * 0.5, ( 3-alpha ) * 0.5, 1.0 / (1.0+q*q) );
+    ccool = 4.0 / (3.0 * m_e*LightSpeed) * (0.665e-24 * cm*cm) * u_b; /* Thomson cross section: 0.665e-24 cm^2 */
+    T = cre_mean_kinetic_energy( alpha, q );
+    return T / pow( q, alpha-1 ) / mec2 / ( (alpha-1)*ccool*
+            ( pow(q,1-alpha)/( alpha-1 ) + pow(q,3-alpha)/(alpha-3) ) );
+}
+
+void radio_radiation_analysis() {
+    int i;
+    double B, dEdt, q, *P;
+    puts( "radio analysis ..." );
+    for ( i=0; i<N_Gas; i++ ) {
+        B = sqrt( pow( SphP[i].B[0], 2.0 ) +
+                pow( SphP[i].B[1],2.0 ) + pow( SphP[i].B[2], 2.0 ) );
+        q = SphP[i].CRE_Q0 * pow( SphP[i].Density, 0.3333333 );
+        //dEdt = cre_tau_synchrotron_radiation( Alpha, q, B );
+        SphP[i].P = SphP[i].CRE_E0 / dEdt;
+        SphP[i].P /= ( erg/s );
+        printf( "%g\n", SphP[i].CRE_C0 );
+        //SphP[i].vL = ELECTRONMASS * B / ( 2 * M_PI * ELECTRONCHARGE * c_in_cgs );
+        //printf( "%g\n", SphP[i].vL );
+    }
+    puts( "radio analysis ... done.");
+}
+
+
+void init_analysis() {
     int i;
     puts( "initialize plot..." );
     affine[0] = 1;
@@ -460,14 +479,17 @@ void init_plot() {
         green[i] =  pow( i, 3 ) / pow( cpn, 33 );
         blue[i] =    pow( i, 1 ) / pow( cpn, 1 );
     }
+
+    inte_ws = gsl_integration_workspace_alloc( GSL_INTE_WS_LEN );
     puts( sep_str );
 }
 
-void free_plot() {
+void free_analysis() {
     free( cp );
     free( red );
     free( green );
     free( blue );
+    gsl_integration_workspace_free( inte_ws );
 }
 
 
@@ -483,6 +505,10 @@ void gas_analysis(){
     pos_analysis( 0 );
     printf( "\n" );
     magnetic_field_analysis();
+    printf( "\n" );
+    magnetic_field_analysis();
+    printf( "\n" );
+    radio_radiation_analysis();
     fputs( sep_str, stdout );
 }
 

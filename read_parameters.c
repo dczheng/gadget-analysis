@@ -78,6 +78,10 @@ void read_parameters( char *fn ) {
     addr[nt] = &SofteningTable[5];
     id[nt++] = REAL;
 
+    strcpy( tag[nt], "Alpha" );
+    addr[nt] = &Alpha;
+    id[nt++] = REAL;
+
     while( !feof( fd ) ) {
         *buf = 0;
         fgets( buf, 200, fd );

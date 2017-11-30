@@ -48,7 +48,7 @@ int main( int argc, char *argv[] ){
     read_parameters( argv[1] );
     set_units();
     read_snapshot();
-    init_plot();
+    init_analysis();
     //group_analysis();
     /******************analysis***********************/
     gas_analysis();
@@ -56,7 +56,7 @@ int main( int argc, char *argv[] ){
     /*************************************************/
     time2 = time( NULL );
     tb = localtime( &time2 );
-    free_plot();
+    free_analysis();
     free_memory();
     fprintf( stdout, "End At: %s", asctime(tb) );
     fprintf( stdout, "Total Time %i\n", time2-time1 );

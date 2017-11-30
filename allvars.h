@@ -7,6 +7,7 @@
 #include "time.h"
 #include "dirent.h"
 #include "gsl/gsl_integration.h"
+#include "gsl/gsl_sf_gamma.h"
 #include "mpi.h"
 #include "signal.h"
 #include "unistd.h"
@@ -154,7 +155,7 @@ extern char GroupDir[ FILENAME_MAX ];
 extern char sep_str[ SEP_LEN ];
 extern long long NumFiles, TotNgroups, PicSize, NumPart, N_Gas, BufferSize;
 extern int MpcFlag;
-extern float BoxSize, RedShift, SofteningTable[6];
+extern float BoxSize, RedShift, SofteningTable[6], Alpha;
 extern void *CommBuffer;
 extern double UnitTime_in_s,
               UnitMass_in_g,
@@ -188,6 +189,8 @@ extern struct sph_particle_data {
     MyFloat CRE_n0;
     MyFloat B[3];
     MyFloat elec;
+    double vL;
+    double P;
 } *SphP;
 
 
@@ -214,5 +217,5 @@ void free_group();
 void signal_hander( int sig );
 void endrun( int ierr );
 void read_parameters();
-void init_plot();
-void free_plot();
+void init_analysis();
+void free_analysis();
