@@ -248,7 +248,15 @@ void mach_analysis(){
         xi = x / dx;
         yi = y / dy;
         mn[ xi*PicSize + yi ] += SphP[i].MachNumber;
+        if (SphP[i].MachNumber > mn_max)
+            mn_max = SphP[i].MachNumber;
+        if (SphP[i].MachNumber < mn_min)
+            mn_min = SphP[i].MachNumber;
     }
+    printf( "SphP Max MachNumber: %g\n", mn_max );
+    printf( "SphP Min MachNumber: %g\n", mn_min );
+    mn_max = -DBL_MAX;
+    mn_min = DBL_MAX;
     for ( i=0; i<PicSize*PicSize; i++ ) {
         if ( mn[i] > 0 ){
             if ( mn[i] > mn_max )
@@ -372,18 +380,20 @@ void free_plot() {
 
 
 void gas_analysis(){
+    mach_analysis();
+    printf( "\n" );
+    return;
+    printf( "\n" );
+    hg_electrons_analysis();
     printf( "\n" );
     gas_density_analysis();
-    printf( "\n" );
-    //hg_electrons_analysis();
-    printf( "\n" );
-    mach_analysis();
     printf( "\n" );
     pos_analysis( 0 );
     fputs( sep_str, stdout );
 }
 
 void dm_analysis(){
+    return;
     printf( "\n" );
     pos_analysis( 1 );
     fputs( sep_str, stdout );

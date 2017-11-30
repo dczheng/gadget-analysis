@@ -20,16 +20,16 @@ int blockpresent( enum iofields blk, int pt ) {
             else
                 return 0;
         case IO_MN:
-        case IO_MAG:
-        case IO_U:
-        case IO_CR_C0:
-        case IO_CR_Q0:
-        case IO_NE:
         case IO_RHO:
             if (( pt == 0 ) && ( header.npart[0] != 0 ))
                 return 1;
             else
                 return 0;
+        case IO_MAG:
+        case IO_U:
+        case IO_NE:
+        case IO_CR_C0:
+        case IO_CR_Q0:
         case IO_CRE_C0:
         case IO_CRE_Q0:
         case IO_CRE_E0:
