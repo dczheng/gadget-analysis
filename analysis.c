@@ -148,8 +148,8 @@ void hg_electrons_analysis() {
              rho_n_max, rho_n_min, log_rho_n_max, log_rho_n_min );
 
     sprintf( cb_label, "(10^x)" );
-    sprintf( buf, "rho_n_%.2f\n", RedShift );
-    giza_open_device( "/png", "rho_n.png" );
+    sprintf( buf, "hge_n_%.2f\n", RedShift );
+    giza_open_device( "/png", buf );
     giza_set_environment( 0.0, PicSize, 0.0, PicSize, 1, -1 );
     giza_set_colour_table( cp, red, green, blue, cpn, 1, 1 );
     giza_render( PicSize, PicSize, rho_n, 0, PicSize, 0, PicSize,
