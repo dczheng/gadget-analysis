@@ -166,6 +166,10 @@ void read_header3_no_cr( char *fn ) {
     H5Aread(hdf5_attribute, H5T_NATIVE_DOUBLE, &header3_no_cr.time);
     H5Aclose(hdf5_attribute);
 
+    hdf5_attribute = H5Aopen_name(hdf5_group, "Redshift");
+    H5Aread(hdf5_attribute, H5T_NATIVE_DOUBLE, &header3_no_cr.redshift);
+    H5Aclose(hdf5_attribute);
+
     H5Gclose(hdf5_group);
     H5Fclose(hdf5_file);
 }
@@ -247,6 +251,10 @@ void read_header3_cr( char *fn ) {
 
     hdf5_attribute = H5Aopen_name(hdf5_group, "Time");
     H5Aread(hdf5_attribute, H5T_NATIVE_DOUBLE, &header3_cr.time);
+    H5Aclose(hdf5_attribute);
+
+    hdf5_attribute = H5Aopen_name(hdf5_group, "Redshift");
+    H5Aread(hdf5_attribute, H5T_NATIVE_DOUBLE, &header3_cr.redshift);
     H5Aclose(hdf5_attribute);
 
     H5Gclose(hdf5_group);
