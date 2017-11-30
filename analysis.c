@@ -380,9 +380,8 @@ void free_plot() {
 
 
 void gas_analysis(){
-    mach_analysis();
     printf( "\n" );
-    return;
+    mach_analysis();
     printf( "\n" );
     hg_electrons_analysis();
     printf( "\n" );
@@ -393,7 +392,6 @@ void gas_analysis(){
 }
 
 void dm_analysis(){
-    return;
     printf( "\n" );
     pos_analysis( 1 );
     fputs( sep_str, stdout );

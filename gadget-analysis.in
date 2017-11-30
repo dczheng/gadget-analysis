@@ -7,3 +7,9 @@ UnitMass_in_g                 1.989e43
 UnitVelocity_in_cm_per_s      1e5
 BufferSize    100
 MpcFlag       0
+SofteningGas   1
+SofteningHalo   1
+SofteningDisk   1
+SofteningBulge   1
+SofteningStar   1
+SofteningBndry   1

@@ -54,6 +54,30 @@ void read_parameters( char *fn ) {
     addr[nt] = &MpcFlag;
     id[nt++] = INT;
 
+    strcpy( tag[nt], "SofteningGas" );
+    addr[nt] = &SofteningTable[0];
+    id[nt++] = REAL;
+
+    strcpy( tag[nt], "SofteningHalo" );
+    addr[nt] = &SofteningTable[1];
+    id[nt++] = REAL;
+
+    strcpy( tag[nt], "SofteningDisk" );
+    addr[nt] = &SofteningTable[2];
+    id[nt++] = REAL;
+
+    strcpy( tag[nt], "SofteningBulge" );
+    addr[nt] = &SofteningTable[3];
+    id[nt++] = REAL;
+
+    strcpy( tag[nt], "SofteningStar" );
+    addr[nt] = &SofteningTable[4];
+    id[nt++] = REAL;
+
+    strcpy( tag[nt], "SofteningBndry" );
+    addr[nt] = &SofteningTable[5];
+    id[nt++] = REAL;
+
     while( !feof( fd ) ) {
         *buf = 0;
         fgets( buf, 200, fd );
