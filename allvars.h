@@ -12,6 +12,7 @@
 #include "unistd.h"
 #include "giza.h"
 #include "limits.h"
+#include "sys/stat.h"
 
 #define MAX_PARA_FILE_LINE_LEN 200
 #define SEP_LEN 50

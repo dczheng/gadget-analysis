@@ -147,8 +147,15 @@ void hg_electrons_analysis() {
              "log_rho_n_max: %g log_rho_n_min: %g\n",
              rho_n_max, rho_n_min, log_rho_n_max, log_rho_n_min );
 
+    if ( access( "./hge_n/", 0 ) == -1 ){
+        printf( "create directory ./hge_n/.\n" );
+        if ( mkdir( "./hge_n/", 0755) == -1 ){
+            printf( "failed create directory ./hge_n/.\n" );
+            endrun( 20171130 );
+        }
+    }
     sprintf( cb_label, "(10^x)" );
-    sprintf( buf, "hge_n_%.2f\n", RedShift );
+    sprintf( buf, "./hge_n/hge_n_%.2f\n", RedShift );
     giza_open_device( "/png", buf );
     giza_set_environment( 0.0, PicSize, 0.0, PicSize, 1, -1 );
     giza_set_colour_table( cp, red, green, blue, cpn, 1, 1 );
@@ -169,7 +176,7 @@ void pos_analysis( int pt ){
     int i,j, xi, yi;
     double *rho, x, y, dx, dy, rho_max, rho_min,
            log_rho_max, log_rho_min;
-    char buf[200];
+    char buf[200], buf1[100];
     long num, offset;
     printf( "particle %d positin analysis ...\n", pt );
     rho = ( double* ) malloc( sizeof(double) * PicSize * PicSize );
@@ -214,8 +221,16 @@ void pos_analysis( int pt ){
         else
             rho[i] = log_rho_min - 10 ;
 
+    sprintf( buf1, "./rho_%d", pt );
+    if ( access( buf1, 0 ) == -1 ){
+        printf( "create directory %s.\n", buf1 );
+        if ( mkdir( buf1, 0755) == -1 ){
+            printf( "failed create directory %s.\n", buf1 );
+            endrun( 20171130 );
+        }
+    }
     sprintf( cb_label, "(10^x)   g/cm^3" );
-    sprintf( buf, "rho_%d_%.2f.png", pt, RedShift );
+    sprintf( buf, "%s/rho_%d_%.2f.png", buf1, pt, RedShift );
     giza_open_device( "/png", buf );
     giza_set_environment( 0.0, PicSize, 0.0, PicSize, 1, -1 );
     giza_set_colour_table( cp, red, green, blue, cpn, 1, 1 );
@@ -276,8 +291,15 @@ void mach_analysis(){
         else
             mn[i] = log_mn_min - 10 ;
 
+    if ( access( "./mn/", 0 ) == -1 ){
+        printf( "create directory ./mn.\n" );
+        if ( mkdir( "./gas_rho", 0755) == -1 ){
+            printf( "failed create directory ./mn.\n" );
+            endrun( 20171130 );
+        }
+    }
     sprintf( cb_label, "(10^x)" );
-    sprintf( buf, "mn_%.2f.png", RedShift );
+    sprintf( buf, "./mn/mn_%.2f.png", RedShift );
     giza_open_device( "/png", buf );
     giza_set_environment( 0.0, PicSize, 0.0, PicSize, 1, -1 );
     giza_set_colour_table( cp, red, green, blue, cpn, 1, 1 );
@@ -322,7 +344,7 @@ void gas_density_analysis(){
     log_rho_min = log10( rho_min );
 
     printf( "rho_max: %g, rho_min: %g\n"
-            "log_rho_max: %g, log_rho_min: %g",
+            "log_rho_max: %g, log_rho_min: %g\n",
             rho_max, rho_min, log_rho_max, log_rho_min );
     for ( i=0; i<PicSize*PicSize; i++ )
         if ( rho[i] > 0 )
@@ -330,8 +352,15 @@ void gas_density_analysis(){
         else
             rho[i] = log_rho_min - 10 ;
 
+    if ( access( "./gas_rho/", 0 ) == -1 ){
+        printf( "create directory ./gas_rho.\n" );
+        if ( mkdir( "./gas_rho", 0755) == -1 ){
+            printf( "failed create directory ./gas_rho.\n" );
+            endrun( 20171130 );
+        }
+    }
     sprintf( cb_label, "(10^x)   g/cm^3" );
-    sprintf( buf, "gas_rho_%.2f\n", RedShift );
+    sprintf( buf, "./gas_rho/gas_rho_%.2f\n", RedShift );
     giza_open_device( "/png", buf );
     giza_set_environment( 0.0, PicSize, 0.0, PicSize, 1, -1 );
     giza_set_colour_table( cp, red, green, blue, cpn, 1, 1 );
