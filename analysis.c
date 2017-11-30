@@ -293,7 +293,7 @@ void mach_analysis(){
 
     if ( access( "./mn/", 0 ) == -1 ){
         printf( "create directory ./mn.\n" );
-        if ( mkdir( "./gas_rho", 0755) == -1 ){
+        if ( mkdir( "./mn/", 0755) == -1 ){
             printf( "failed create directory ./mn.\n" );
             endrun( 20171130 );
         }
