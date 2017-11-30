@@ -213,7 +213,7 @@ void pos_analysis( int pt ){
     log_rho_min = log10( rho_min );
 
     printf( "rho_max: %g, rho_min: %g\n"
-            "log_rho_max: %g, log_rho_min: %g",
+            "log_rho_max: %g, log_rho_min: %g\n",
             rho_max, rho_min, log_rho_max, log_rho_min );
     for ( i=0; i<PicSize*PicSize; i++ )
         if ( rho[i] > 0 )
@@ -375,6 +375,70 @@ void gas_density_analysis(){
     printf( "gas density analysis ...done.\n");
 }
 
+void magnetic_field_analysis() {
+    double *mag, mag_max, mag_min, log_mag_max, log_mag_min,
+           dx, dy, x, y;
+    int i, j, xi, yi;
+    char buf[100];
+    puts( "magnetic field analysis ...");
+    mag = malloc( sizeof( double ) * PicSize * PicSize );
+    memset( mag, 0, sizeof( double ) * PicSize * PicSize );
+    dx = dy = BoxSize / PicSize;
+    mag_max = -DBL_MAX;
+    mag_min = DBL_MAX;
+    for ( i=0; i<N_Gas; i++ ){
+        x = P[i].Pos[0];
+        y = P[i].Pos[1];
+        xi = x / dx;
+        yi = y / dy;
+        mag[ xi*PicSize + yi ] += sqrt( pow( SphP[i].B[0], 2.0 ) +
+                pow( SphP[i].B[1],2.0 ) + pow( SphP[i].B[2], 2.0 ) );
+    }
+
+    for ( i=0; i<PicSize*PicSize; i++ ) {
+        if ( mag[i] > 0 ) {
+            if ( mag[i] > mag_max )
+                mag_max = mag[i];
+            if ( mag[i] < mag_min )
+                mag_min = mag[i];
+        }
+    }
+    log_mag_max = log10( mag_max );
+    log_mag_min = log10( mag_min );
+
+    printf( "mag_max: %g, mag_min: %g\n"
+            "log_mag_max: %g, log_mag_min: %g\n",
+            mag_max, mag_min,
+            log_mag_max, log_mag_min );
+
+    for ( i=0; i<PicSize*PicSize; i++ ){
+        if ( mag[i] > 0 )
+            mag[i] = log10( mag[i] );
+        else
+            mag[i] = log_mag_min - 10;
+    }
+    if ( access( "./mag/", 0 ) == -1 ){
+        printf( "create directory ./mag.\n" );
+        if ( mkdir( "./mag", 0755) == -1 ){
+            printf( "failed create directory ./mag.\n" );
+            endrun( 20171130 );
+        }
+    }
+    sprintf( cb_label, "(10^x)  Gauss" );
+    sprintf( buf, "./mag/mag_%.2f\n", RedShift );
+    giza_open_device( "/png", buf );
+    giza_set_environment( 0.0, PicSize, 0.0, PicSize, 1, -1 );
+    giza_set_colour_table( cp, red, green, blue, cpn, 1, 1 );
+    giza_render( PicSize, PicSize, mag, 0, PicSize, 0, PicSize, log_mag_min, log_mag_max, 0, affine );
+    sprintf( xlabel, "%g Mpc", BoxSize / MpcFlag );
+    sprintf( title, "magnetic field (z=%.2f)", RedShift );
+    giza_label( xlabel, "", title );
+    giza_colour_bar( &cb_s, 1, 3, log_mag_min, log_mag_max, cb_label );
+    giza_close_device();
+
+    puts( "magnetic field analysis ... done.");
+}
+
 void init_plot() {
     int i;
     puts( "initialize plot..." );
@@ -417,6 +481,8 @@ void gas_analysis(){
     gas_density_analysis();
     printf( "\n" );
     pos_analysis( 0 );
+    printf( "\n" );
+    magnetic_field_analysis();
     fputs( sep_str, stdout );
 }
 
