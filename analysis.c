@@ -444,15 +444,18 @@ void radio_radiation_analysis() {
     double B, dEdt, q, *P;
     puts( "radio analysis ..." );
     for ( i=0; i<N_Gas; i++ ) {
-        B = sqrt( pow( SphP[i].B[0], 2.0 ) +
+        if ( SphP[i].CRE_C0 != 0 ) {
+            printf( "%g %g\n", SphP[i].CRE_C0, SphP[i].CRE_Q0 );
+            B = sqrt( pow( SphP[i].B[0], 2.0 ) +
                 pow( SphP[i].B[1],2.0 ) + pow( SphP[i].B[2], 2.0 ) );
-        q = SphP[i].CRE_Q0 * pow( SphP[i].Density, 0.3333333 );
-        //dEdt = cre_tau_synchrotron_radiation( Alpha, q, B );
-        SphP[i].P = SphP[i].CRE_E0 / dEdt;
-        SphP[i].P /= ( erg/s );
-        printf( "%g\n", SphP[i].CRE_C0 );
+            q = SphP[i].CRE_Q0 * pow( SphP[i].Density, 0.3333333 );
+            //dEdt = cre_tau_synchrotron_radiation( Alpha, q, B );
+            //SphP[i].P = SphP[i].CRE_E0 / dEdt;
+            //SphP[i].P /= ( erg/s );
+            printf( "%g\n", SphP[i].CRE_C0 );
         //SphP[i].vL = ELECTRONMASS * B / ( 2 * M_PI * ELECTRONCHARGE * c_in_cgs );
         //printf( "%g\n", SphP[i].vL );
+        }
     }
     puts( "radio analysis ... done.");
 }
