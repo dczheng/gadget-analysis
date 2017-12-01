@@ -155,7 +155,7 @@ extern char GroupDir[ FILENAME_MAX ];
 extern char sep_str[ SEP_LEN ];
 extern long long NumFiles, TotNgroups, PicSize, NumPart, N_Gas, BufferSize;
 extern int MpcFlag;
-extern float BoxSize, RedShift, SofteningTable[6], Alpha;
+extern double BoxSize, RedShift, SofteningTable[6], Alpha;
 extern void *CommBuffer;
 extern double UnitTime_in_s,
               UnitMass_in_g,

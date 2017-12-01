@@ -402,12 +402,12 @@ double cre_beta( double a, double b, double x ) {
     double r, err;
     gsl_function F;
     double params[2];
+    //printf( "debug for cre_beta: a=%g, b=%g, x=%g\n", a, b, x );
     if ( x<1e-20 )
         return 0;
     if ( b>0.0 ){
         return gsl_sf_beta_inc( a, b, x ) * gsl_sf_beta( a, b );
     }
-    //printf( "debug for cre_beta: a=%g, b=%g, x=%g\n", a, b, x );
     F.function = &cre_beta_inte;
     F.params = params;
     params[0] = a;
@@ -440,24 +440,38 @@ double cre_tau_synchrotron_radiation( double alpha, double q, double B ) {
 }
 
 void radio_radiation_analysis() {
-    int i;
-    double B, dEdt, q, *P;
+    int i, j, k, xi, yi;
+    double B, dEdt, q, *p, dx, dy, p_max, p_min,
+           log_P_max, log_P_min, x, y;
     puts( "radio analysis ..." );
+    printf( "Alpha =%g\n", Alpha );
+    p = malloc( sizeof( double ) * PicSize * PicSize );
+    memset( p, 0, sizeof( double ) * PicSize * PicSize );
+    dx = dy = BoxSize / PicSize;
+    p_max = -DBL_MAX;
+    p_min =  DBL_MAX;
     for ( i=0; i<N_Gas; i++ ) {
         if ( SphP[i].CRE_C0 != 0 ) {
-            printf( "%g %g\n", SphP[i].CRE_C0, SphP[i].CRE_Q0 );
+            //printf( "%g %g\n", SphP[i].CRE_C0, SphP[i].CRE_Q0 );
             B = sqrt( pow( SphP[i].B[0], 2.0 ) +
                 pow( SphP[i].B[1],2.0 ) + pow( SphP[i].B[2], 2.0 ) );
             q = SphP[i].CRE_Q0 * pow( SphP[i].Density, 0.3333333 );
-            //dEdt = cre_tau_synchrotron_radiation( Alpha, q, B );
-            //SphP[i].P = SphP[i].CRE_E0 / dEdt;
-            //SphP[i].P /= ( erg/s );
-            printf( "%g\n", SphP[i].CRE_C0 );
+            dEdt = cre_tau_synchrotron_radiation( Alpha, q, B );
+            SphP[i].P = SphP[i].CRE_E0 / dEdt;
+            SphP[i].P /= ( erg/s );
+            x = P[i].Pos[0];
+            y = P[i].Pos[1];
+            xi = x / dx;
+            yi = y / dy;
+            p[ xi*PicSize + yi ] += sqrt( pow( SphP[i].B[0], 2.0 ) +
+                pow( SphP[i].B[1],2.0 ) + pow( SphP[i].B[2], 2.0 ) );
+            //printf( "%g\n", SphP[i].CRE_C0 );
         //SphP[i].vL = ELECTRONMASS * B / ( 2 * M_PI * ELECTRONCHARGE * c_in_cgs );
         //printf( "%g\n", SphP[i].vL );
         }
     }
     puts( "radio analysis ... done.");
+    free( p );
 }
 
 
@@ -494,8 +508,6 @@ void free_analysis() {
     free( blue );
     gsl_integration_workspace_free( inte_ws );
 }
-
-
 
 void gas_analysis(){
     printf( "\n" );

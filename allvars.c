@@ -5,7 +5,7 @@ char sep_str[ SEP_LEN ];
 char GroupDir[ FILENAME_MAX ];
 long long NumFiles, TotNgroups, PicSize, NumPart, N_Gas, BufferSize;
 int MpcFlag;
-float BoxSize, RedShift, SofteningTable[6], Alpha;
+double BoxSize, RedShift, SofteningTable[6], Alpha;
 void *CommBuffer;
 double UnitTime_in_s,
        UnitMass_in_g,

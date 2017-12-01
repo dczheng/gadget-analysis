@@ -244,7 +244,7 @@ void empty_buffer( enum iofields blk, int offset, int pt ) {
             break;
         case IO_CRE_Q0:
             for ( i=0; i<n; i++ )
-                SphP[offset+i].CRE_E0 = *fp++;
+                SphP[offset+i].CRE_Q0 = *fp++;
             break;
         case IO_CRE_n0:
             for ( i=0; i<n; i++ )
