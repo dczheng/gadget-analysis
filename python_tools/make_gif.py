@@ -26,6 +26,6 @@ for i in range( z_num ):
     pic_name[i] = pic_path + '/' + pic_name[i]
 
 png_list = png_list.join( pic_name )
-convert_cmd = 'convert -delay 50  -loop 10 ' + png_list + ' ' + gif_name
+convert_cmd = 'convert -delay 40  -loop 10 ' + png_list + ' ' + gif_name
 print( convert_cmd )
 os.system( convert_cmd )
