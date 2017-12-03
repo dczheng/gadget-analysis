@@ -253,8 +253,14 @@ void mach_analysis(){
                 mn_min = mn[i];
         }
     }
-    log_mn_min = log10( mn_min );
+    if ( mn_max == -DBL_MAX )
+        log_mn_max = -DBL_MAX;
+    else
     log_mn_max = log10( mn_max );
+    if ( mn_min == DBL_MAX )
+        log_mn_min = DBL_MAX;
+    else
+        log_mn_min = log10( mn_min );
     fprintf( LogFilefd, "mn_max: %g, mn_min: %g\n"
             "log_mn_max: %g, log_mn_min: %g\n",
             mn_max, mn_min, log_mn_max, log_mn_min );
@@ -395,8 +401,15 @@ void magnetic_field_analysis() {
                 mag_min = mag[i];
         }
     }
-    log_mag_max = log10( mag_max );
-    log_mag_min = log10( mag_min );
+    if ( mag_max == -DBL_MAX )
+        log_mag_max = -DBL_MAX;
+    else
+        log_mag_max = log10( mag_max );
+
+    if ( mag_min == DBL_MAX )
+        log_mag_min = DBL_MAX;
+    else
+        log_mag_min = log10( mag_min );
 
     fprintf( LogFilefd, "mag_max: %g, mag_min: %g\n"
             "log_mag_max: %g, log_mag_min: %g\n",
