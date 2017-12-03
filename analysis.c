@@ -34,6 +34,7 @@ int cpn;
 double *cp, *red, *green, *blue, affine[6];
 char cb_s, cb_label[100], title[100], xlabel[100], ylabel[100];
 static gsl_integration_workspace *inte_ws;
+FILE *fp_tmp;
 
 int compare_for_sort_group_by_mass( const void *a, const void *b ) {
     return (( ( struct group_struct* )a )->Mass < ( ( struct group_struct* )b )->Mass ) ? 1 : -1;
@@ -128,7 +129,10 @@ void hg_electrons_analysis() {
     sprintf( title, "high energy electron number densit (z=%.2f)", RedShift );
     giza_label( xlabel, "", title );
     giza_colour_bar( &cb_s, 1, 3, glob_log_rho_n_min, glob_log_rho_n_max, cb_label );
+    fp_tmp = stdout;
+    stdout = LogFilefd;
     giza_close_device();
+    stdout = fp_tmp;
 
     free( rho_n );
     fprintf( LogFilefd, "high energy electrons analysis...done.\n" );
@@ -211,7 +215,10 @@ void pos_analysis( int pt ){
     sprintf( title, "particle %d density (z=%.2f)", pt, RedShift );
     giza_label( xlabel, "", title );
     giza_colour_bar( &cb_s, 1, 3, glob_log_rho_min, glob_log_rho_max, cb_label );
+    fp_tmp = stdout;
+    stdout = LogFilefd;
     giza_close_device();
+    stdout = fp_tmp;
 
 
     free( rho );
@@ -296,7 +303,10 @@ void mach_analysis(){
     sprintf( title, "mach number (z=%.2f)", RedShift );
     giza_label( xlabel, "", title );
     giza_colour_bar( &cb_s, 1, 3, glob_log_mn_min, glob_log_mn_max, cb_label );
+    fp_tmp = stdout;
+    stdout = LogFilefd;
     giza_close_device();
+    stdout = fp_tmp;
 
     free( mn );
     fprintf( LogFilefd, "mach number analysis ...done.\n" );
@@ -367,7 +377,10 @@ void gas_density_analysis(){
     sprintf( title, "gas density (z=%.2f)", RedShift );
     giza_label( xlabel, "", title );
     giza_colour_bar( &cb_s, 1, 3, glob_log_rho_min, glob_log_rho_max, cb_label );
+    fp_tmp = stdout;
+    stdout = LogFilefd;
     giza_close_device();
+    stdout = fp_tmp;
 
     free( rho );
     fprintf( LogFilefd, "gas density analysis ...done.\n");
@@ -448,7 +461,10 @@ void magnetic_field_analysis() {
     sprintf( title, "magnetic field (z=%.2f)", RedShift );
     giza_label( xlabel, "", title );
     giza_colour_bar( &cb_s, 1, 3, glob_log_mag_min, glob_log_mag_max, cb_label );
+    fp_tmp = stdout;
+    stdout = LogFilefd;
     giza_close_device();
+    stdout = fp_tmp;
 
     fprintf( LogFilefd, "magnetic field analysis ... done.\n" );
 }
@@ -582,7 +598,10 @@ void radio_radiation_analysis() {
     sprintf( title, "radio radiation (z=%.2f)", RedShift );
     giza_label( xlabel, "", title );
     giza_colour_bar( &cb_s, 1, 3, glob_log_p_min, glob_log_p_max, cb_label );
+    fp_tmp = stdout;
+    stdout = LogFilefd;
     giza_close_device();
+    stdout = fp_tmp;
     fprintf( LogFilefd, "radio analysis ... done.\n" );
     free( p );
 }
