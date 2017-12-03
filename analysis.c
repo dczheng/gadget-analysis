@@ -62,7 +62,8 @@ void group_analysis() {
 
 void hg_electrons_analysis() {
     double *rho_n, x, y, dx, dy, rho_n_max, rho_n_min,
-           log_rho_n_min, log_rho_n_max;
+           log_rho_n_min, log_rho_n_max,
+           glob_log_rho_n_min, glob_log_rho_n_max;
     char buf[100];
     int i,j, xi, yi, zi;
     fprintf( LogFilefd, "high energy electrons analysis...\n" );
@@ -110,17 +111,23 @@ void hg_electrons_analysis() {
         }
     }
     MPI_Barrier( MPI_COMM_WORLD );
+    MPI_Reduce( &log_rho_n_max, &glob_log_rho_n_max, 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD );
+    MPI_Bcast( &glob_log_rho_n_max, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD );
+    MPI_Reduce( &log_rho_n_min, &glob_log_rho_n_min, 1, MPI_DOUBLE, MPI_MIN, 0, MPI_COMM_WORLD );
+    MPI_Bcast( &glob_log_rho_n_min, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD );
+    fprintf( LogFilefd, "glob_log_rho_n_max: %g, glob_log_rho_n_min: %g\n",
+            glob_log_rho_n_max, glob_log_rho_n_min );
     sprintf( cb_label, "(10^x)" );
     sprintf( buf, "./hge_n/hge_n_%.2f\n", RedShift );
     giza_open_device( "/png", buf );
     giza_set_environment( 0.0, para.PicSize, 0.0, para.PicSize, 1, -1 );
     giza_set_colour_table( cp, red, green, blue, cpn, 1, 1 );
     giza_render( para.PicSize, para.PicSize, rho_n, 0, para.PicSize, 0, para.PicSize,
-            log_rho_n_min, log_rho_n_max, 0, affine );
+            glob_log_rho_n_min, glob_log_rho_n_max, 0, affine );
     sprintf( xlabel, "%g Mpc", BoxSize / para.MpcFlag );
     sprintf( title, "high energy electron number densit (z=%.2f)", RedShift );
     giza_label( xlabel, "", title );
-    giza_colour_bar( &cb_s, 1, 3, log_rho_n_min, log_rho_n_max, cb_label );
+    giza_colour_bar( &cb_s, 1, 3, glob_log_rho_n_min, glob_log_rho_n_max, cb_label );
     giza_close_device();
 
     free( rho_n );
@@ -131,7 +138,8 @@ void pos_analysis( int pt ){
     FILE *fd;
     int i,j, xi, yi;
     double *rho, x, y, dx, dy, rho_max, rho_min,
-           log_rho_max, log_rho_min;
+           log_rho_max, log_rho_min,
+           glob_log_rho_max, glob_log_rho_min;
     char buf[200], buf1[100];
     long num, offset;
     fprintf( LogFilefd, "particle %d positin analysis ...\n", pt );
@@ -187,16 +195,22 @@ void pos_analysis( int pt ){
         }
     }
     MPI_Barrier( MPI_COMM_WORLD );
+    MPI_Reduce( &log_rho_max, &glob_log_rho_max, 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD );
+    MPI_Bcast( &glob_log_rho_max, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD );
+    MPI_Reduce( &log_rho_min, &glob_log_rho_min, 1, MPI_DOUBLE, MPI_MIN, 0, MPI_COMM_WORLD );
+    MPI_Bcast( &glob_log_rho_min, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD );
+    fprintf( LogFilefd, "glob_log_rho_max: %g, glob_log_rho_min: %g\n",
+            glob_log_rho_max, glob_log_rho_min );
     sprintf( cb_label, "(10^x)   g/cm^3" );
     sprintf( buf, "%s/rho_%d_%.2f.png", buf1, pt, RedShift );
     giza_open_device( "/png", buf );
     giza_set_environment( 0.0, para.PicSize, 0.0, para.PicSize, 1, -1 );
     giza_set_colour_table( cp, red, green, blue, cpn, 1, 1 );
-    giza_render( para.PicSize, para.PicSize, rho, 0, para.PicSize, 0, para.PicSize, log_rho_min, log_rho_max, 0, affine );
+    giza_render( para.PicSize, para.PicSize, rho, 0, para.PicSize, 0, para.PicSize, glob_log_rho_min, glob_log_rho_max, 0, affine );
     sprintf( xlabel, "%g Mpc", BoxSize / para.MpcFlag );
     sprintf( title, "particle %d density (z=%.2f)", pt, RedShift );
     giza_label( xlabel, "", title );
-    giza_colour_bar( &cb_s, 1, 3, log_rho_min, log_rho_max, cb_label );
+    giza_colour_bar( &cb_s, 1, 3, glob_log_rho_min, glob_log_rho_max, cb_label );
     giza_close_device();
 
 
@@ -206,7 +220,8 @@ void pos_analysis( int pt ){
 
 void mach_analysis(){
     int i,j, xi, yi, pt;
-    double *mn, x, y, dx, dy, mn_max, mn_min, log_mn_min, log_mn_max;
+    double *mn, x, y, dx, dy, mn_max, mn_min, log_mn_min, log_mn_max,
+           glob_log_mn_min, glob_log_mn_max;
     char buf[100];
     pt = 0;
     fprintf( LogFilefd, "mach number analysis ...\n" );
@@ -258,16 +273,23 @@ void mach_analysis(){
         }
     }
     MPI_Barrier( MPI_COMM_WORLD );
+    MPI_Reduce( &log_mn_max, &glob_log_mn_max, 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD );
+    MPI_Bcast( &glob_log_mn_max, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD );
+    MPI_Reduce( &log_mn_min, &glob_log_mn_min, 1, MPI_DOUBLE, MPI_MIN, 0, MPI_COMM_WORLD );
+    MPI_Bcast( &glob_log_mn_min, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD );
+    fprintf( LogFilefd, "glob_log_mn_max: %g, glob_log_mn_min: %g\n",
+            glob_log_mn_max, glob_log_mn_min );
     sprintf( cb_label, "(10^x)" );
     sprintf( buf, "./mn/mn_%.2f.png", RedShift );
     giza_open_device( "/png", buf );
     giza_set_environment( 0.0, para.PicSize, 0.0, para.PicSize, 1, -1 );
     giza_set_colour_table( cp, red, green, blue, cpn, 1, 1 );
-    giza_render( para.PicSize, para.PicSize, mn, 0, para.PicSize, 0, para.PicSize, log_mn_min, log_mn_max, 0, affine );
+    giza_render( para.PicSize, para.PicSize, mn, 0, para.PicSize, 0, para.PicSize,
+            glob_log_mn_min, glob_log_mn_max, 0, affine );
     sprintf( xlabel, "%g Mpc", BoxSize / para.MpcFlag );
     sprintf( title, "mach number (z=%.2f)", RedShift );
     giza_label( xlabel, "", title );
-    giza_colour_bar( &cb_s, 1, 3, log_mn_min, log_mn_max, cb_label );
+    giza_colour_bar( &cb_s, 1, 3, glob_log_mn_min, glob_log_mn_max, cb_label );
     giza_close_device();
 
     free( mn );
@@ -278,6 +300,7 @@ void gas_density_analysis(){
     int i,j, xi, yi;
     double *rho, x, y, dx, dy, rho_max, rho_min;
     double log_rho_max, log_rho_min;
+    double glob_log_rho_min, glob_log_rho_max;
     char buf[200];
     fprintf( LogFilefd, "gas density analysis ...\n");
     rho = ( double* ) malloc( sizeof(double) * para.PicSize * para.PicSize );
@@ -321,16 +344,23 @@ void gas_density_analysis(){
         }
     }
     MPI_Barrier( MPI_COMM_WORLD );
+    MPI_Reduce( &log_rho_max, &glob_log_rho_max, 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD );
+    MPI_Bcast( &glob_log_rho_max, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD );
+    MPI_Reduce( &log_rho_min, &glob_log_rho_min, 1, MPI_DOUBLE, MPI_MIN, 0, MPI_COMM_WORLD );
+    MPI_Bcast( &glob_log_rho_min, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD );
+    fprintf( LogFilefd, "glob_log_rho_max: %g, glob_log_rho_min: %g\n",
+            glob_log_rho_max, glob_log_rho_min );
     sprintf( cb_label, "(10^x)   g/cm^3" );
     sprintf( buf, "./gas_rho/gas_rho_%.2f\n", RedShift );
     giza_open_device( "/png", buf );
     giza_set_environment( 0.0, para.PicSize, 0.0, para.PicSize, 1, -1 );
     giza_set_colour_table( cp, red, green, blue, cpn, 1, 1 );
-    giza_render( para.PicSize, para.PicSize, rho, 0, para.PicSize, 0, para.PicSize, log_rho_min, log_rho_max, 0, affine );
+    giza_render( para.PicSize, para.PicSize, rho, 0, para.PicSize, 0, para.PicSize,
+            glob_log_rho_min, glob_log_rho_max, 0, affine );
     sprintf( xlabel, "%g Mpc", BoxSize / para.MpcFlag );
     sprintf( title, "gas density (z=%.2f)", RedShift );
     giza_label( xlabel, "", title );
-    giza_colour_bar( &cb_s, 1, 3, log_rho_min, log_rho_max, cb_label );
+    giza_colour_bar( &cb_s, 1, 3, glob_log_rho_min, glob_log_rho_max, cb_label );
     giza_close_device();
 
     free( rho );
@@ -339,7 +369,7 @@ void gas_density_analysis(){
 
 void magnetic_field_analysis() {
     double *mag, mag_max, mag_min, log_mag_max, log_mag_min,
-           dx, dy, x, y;
+           dx, dy, x, y, glob_log_mag_max, glob_log_mag_min;
     int i, j, xi, yi;
     char buf[100];
     fprintf( LogFilefd, "magnetic field analysis ...\n" );
@@ -388,16 +418,23 @@ void magnetic_field_analysis() {
         }
     }
     MPI_Barrier( MPI_COMM_WORLD );
+    MPI_Reduce( &log_mag_max, &glob_log_mag_max, 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD );
+    MPI_Bcast( &glob_log_mag_max, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD );
+    MPI_Reduce( &log_mag_min, &glob_log_mag_min, 1, MPI_DOUBLE, MPI_MIN, 0, MPI_COMM_WORLD );
+    MPI_Bcast( &glob_log_mag_min, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD );
+    fprintf( LogFilefd, "glob_log_mag_max: %g, glob_log_mag_min: %g\n",
+            glob_log_mag_max, glob_log_mag_min );
     sprintf( cb_label, "(10^x)  Gauss" );
     sprintf( buf, "./mag/mag_%.2f\n", RedShift );
     giza_open_device( "/png", buf );
     giza_set_environment( 0.0, para.PicSize, 0.0, para.PicSize, 1, -1 );
     giza_set_colour_table( cp, red, green, blue, cpn, 1, 1 );
-    giza_render( para.PicSize, para.PicSize, mag, 0, para.PicSize, 0, para.PicSize, log_mag_min, log_mag_max, 0, affine );
+    giza_render( para.PicSize, para.PicSize, mag, 0, para.PicSize, 0, para.PicSize,
+            glob_log_mag_min, glob_log_mag_max, 0, affine );
     sprintf( xlabel, "%g Mpc", BoxSize / para.MpcFlag );
     sprintf( title, "magnetic field (z=%.2f)", RedShift );
     giza_label( xlabel, "", title );
-    giza_colour_bar( &cb_s, 1, 3, log_mag_min, log_mag_max, cb_label );
+    giza_colour_bar( &cb_s, 1, 3, glob_log_mag_min, glob_log_mag_max, cb_label );
     giza_close_device();
 
     fprintf( LogFilefd, "magnetic field analysis ... done.\n" );
@@ -455,7 +492,8 @@ double cre_tau_synchrotron_radiation( double alpha, double q, double B ) {
 void radio_radiation_analysis() {
     int i, j, xi, yi;
     double B, dEdt, q, *p, dx, dy, p_max, p_min,
-           log_p_max, log_p_min, x, y;
+           log_p_max, log_p_min, x, y,
+           glob_log_p_max, glob_log_p_min;
     char buf[100];
     fprintf( LogFilefd, "radio analysis ...\n" );
     fprintf( LogFilefd, "Alpha =%g\n", para.Alpha );
@@ -514,17 +552,23 @@ void radio_radiation_analysis() {
         }
     }
     MPI_Barrier( MPI_COMM_WORLD );
+    MPI_Reduce( &log_p_max, &glob_log_p_max, 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD );
+    MPI_Bcast( &glob_log_p_max, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD );
+    MPI_Reduce( &log_p_min, &glob_log_p_min, 1, MPI_DOUBLE, MPI_MIN, 0, MPI_COMM_WORLD );
+    MPI_Bcast( &glob_log_p_min, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD );
+    fprintf( LogFilefd, "glob_log_p_max: %g, glob_log_p_min: %g\n",
+            glob_log_p_max, glob_log_p_min );
     sprintf( cb_label, "(10^x)" );
     sprintf( buf, "./rad/rad_%.2f\n", RedShift );
     giza_open_device( "/png", buf );
     giza_set_environment( 0.0, para.PicSize, 0.0, para.PicSize, 1, -1 );
     giza_set_colour_table( cp, red, green, blue, cpn, 1, 1 );
     giza_render( para.PicSize, para.PicSize, p, 0, para.PicSize, 0, para.PicSize,
-            log_p_min, log_p_max, 0, affine );
+            glob_log_p_min, glob_log_p_max, 0, affine );
     sprintf( xlabel, "%g Mpc", BoxSize / para.MpcFlag );
     sprintf( title, "radio radiation (z=%.2f)", RedShift );
     giza_label( xlabel, "", title );
-    giza_colour_bar( &cb_s, 1, 3, log_p_min, log_p_max, cb_label );
+    giza_colour_bar( &cb_s, 1, 3, glob_log_p_min, glob_log_p_max, cb_label );
     giza_close_device();
     fprintf( LogFilefd, "radio analysis ... done.\n" );
     free( p );
