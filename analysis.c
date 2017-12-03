@@ -92,12 +92,6 @@ void hg_electrons_analysis() {
     }
     log_rho_n_max = log10( rho_n_max );
     log_rho_n_min = log10( rho_n_min );
-    for ( i=0; i<para.PicSize*para.PicSize; i++ ){
-        if ( rho_n[i] > 0 )
-            rho_n[i] = log10( rho_n[i] );
-        else
-            rho_n[i] = log_rho_n_min - 10;
-    }
     fprintf( LogFilefd, "rho_n_max: %g, rho_n_min: %g \n"
              "log_rho_n_max: %g log_rho_n_min: %g\n",
              rho_n_max, rho_n_min, log_rho_n_max, log_rho_n_min );
@@ -117,6 +111,12 @@ void hg_electrons_analysis() {
     MPI_Bcast( &glob_log_rho_n_min, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD );
     fprintf( LogFilefd, "glob_log_rho_n_max: %g, glob_log_rho_n_min: %g\n",
             glob_log_rho_n_max, glob_log_rho_n_min );
+    for ( i=0; i<para.PicSize*para.PicSize; i++ ){
+        if ( rho_n[i] > 0 )
+            rho_n[i] = log10( rho_n[i] );
+        else
+            rho_n[i] = glob_log_rho_n_min;
+    }
     sprintf( cb_label, "(10^x)" );
     sprintf( buf, "./hge_n/hge_n_%.2f\n", RedShift );
     giza_open_device( "/png", buf );
@@ -179,12 +179,6 @@ void pos_analysis( int pt ){
     fprintf( LogFilefd, "rho_max: %g, rho_min: %g\n"
             "log_rho_max: %g, log_rho_min: %g\n",
             rho_max, rho_min, log_rho_max, log_rho_min );
-    for ( i=0; i<para.PicSize*para.PicSize; i++ )
-        if ( rho[i] > 0 )
-            rho[i] = log10( rho[i] );
-        else
-            rho[i] = log_rho_min - 10 ;
-
     sprintf( buf1, "./rho_%d", pt );
     if ( ThisTask == 0 )
     if ( access( buf1, 0 ) == -1 ){
@@ -201,6 +195,12 @@ void pos_analysis( int pt ){
     MPI_Bcast( &glob_log_rho_min, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD );
     fprintf( LogFilefd, "glob_log_rho_max: %g, glob_log_rho_min: %g\n",
             glob_log_rho_max, glob_log_rho_min );
+    for ( i=0; i<para.PicSize*para.PicSize; i++ )
+        if ( rho[i] > 0 )
+            rho[i] = log10( rho[i] );
+        else
+            rho[i] = glob_log_rho_min;
+
     sprintf( cb_label, "(10^x)   g/cm^3" );
     sprintf( buf, "%s/rho_%d_%.2f.png", buf1, pt, RedShift );
     giza_open_device( "/png", buf );
@@ -264,11 +264,6 @@ void mach_analysis(){
     fprintf( LogFilefd, "mn_max: %g, mn_min: %g\n"
             "log_mn_max: %g, log_mn_min: %g\n",
             mn_max, mn_min, log_mn_max, log_mn_min );
-    for ( i=0; i<para.PicSize*para.PicSize; i++ )
-        if ( mn[i] > 0 )
-            mn[i] = log10( mn[i] );
-        else
-            mn[i] = log_mn_min - 10 ;
 
     if ( ThisTask == 0 )
     if ( access( "./mn/", 0 ) == -1 ){
@@ -283,6 +278,11 @@ void mach_analysis(){
     MPI_Bcast( &glob_log_mn_max, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD );
     MPI_Reduce( &log_mn_min, &glob_log_mn_min, 1, MPI_DOUBLE, MPI_MIN, 0, MPI_COMM_WORLD );
     MPI_Bcast( &glob_log_mn_min, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD );
+    for ( i=0; i<para.PicSize*para.PicSize; i++ )
+        if ( mn[i] > 0 )
+            mn[i] = log10( mn[i] );
+        else
+            mn[i] = glob_log_mn_min;
     fprintf( LogFilefd, "glob_log_mn_max: %g, glob_log_mn_min: %g\n",
             glob_log_mn_max, glob_log_mn_min );
     sprintf( cb_label, "(10^x)" );
@@ -335,12 +335,6 @@ void gas_density_analysis(){
     fprintf( LogFilefd, "rho_max: %g, rho_min: %g\n"
             "log_rho_max: %g, log_rho_min: %g\n",
             rho_max, rho_min, log_rho_max, log_rho_min );
-    for ( i=0; i<para.PicSize*para.PicSize; i++ )
-        if ( rho[i] > 0 )
-            rho[i] = log10( rho[i] );
-        else
-            rho[i] = log_rho_min - 10 ;
-
     if ( ThisTask == 0 )
     if ( access( "./gas_rho/", 0 ) == -1 ){
         printf( "create directory ./gas_rho by task %d\n", ThisTask );
@@ -356,6 +350,12 @@ void gas_density_analysis(){
     MPI_Bcast( &glob_log_rho_min, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD );
     fprintf( LogFilefd, "glob_log_rho_max: %g, glob_log_rho_min: %g\n",
             glob_log_rho_max, glob_log_rho_min );
+    for ( i=0; i<para.PicSize*para.PicSize; i++ )
+        if ( rho[i] > 0 )
+            rho[i] = log10( rho[i] );
+        else
+            rho[i] = glob_log_rho_min;
+
     sprintf( cb_label, "(10^x)   g/cm^3" );
     sprintf( buf, "./gas_rho/gas_rho_%.2f\n", RedShift );
     giza_open_device( "/png", buf );
@@ -416,12 +416,6 @@ void magnetic_field_analysis() {
             mag_max, mag_min,
             log_mag_max, log_mag_min );
 
-    for ( i=0; i<para.PicSize*para.PicSize; i++ ){
-        if ( mag[i] > 0 )
-            mag[i] = log10( mag[i] );
-        else
-            mag[i] = log_mag_min - 10;
-    }
     if ( ThisTask == 0 )
     if ( access( "./mag/", 0 ) == -1 ){
         printf( "create directory ./mag by task %d\n", ThisTask);
@@ -437,6 +431,12 @@ void magnetic_field_analysis() {
     MPI_Bcast( &glob_log_mag_min, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD );
     fprintf( LogFilefd, "glob_log_mag_max: %g, glob_log_mag_min: %g\n",
             glob_log_mag_max, glob_log_mag_min );
+    for ( i=0; i<para.PicSize*para.PicSize; i++ ){
+        if ( mag[i] > 0 )
+            mag[i] = log10( mag[i] );
+        else
+            mag[i] = glob_log_mag_min;
+    }
     sprintf( cb_label, "(10^x)  Gauss" );
     sprintf( buf, "./mag/mag_%.2f\n", RedShift );
     giza_open_device( "/png", buf );
@@ -550,12 +550,6 @@ void radio_radiation_analysis() {
             "log_p_max: %g, log_p_min: %g\n",
             p_max, p_min,
             log_p_max, log_p_min );
-    for ( i=0; i<para.PicSize*para.PicSize; i++ ){
-        if ( p[i] > 0 )
-            p[i] = log10( p[i] );
-        else
-            p[i] = log_p_min - 10;
-    }
     if ( ThisTask == 0 )
     if ( access( "./rad/", 0 ) == -1 ){
         printf( "create directory ./rad by task %d\n", ThisTask );
@@ -571,6 +565,12 @@ void radio_radiation_analysis() {
     MPI_Bcast( &glob_log_p_min, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD );
     fprintf( LogFilefd, "glob_log_p_max: %g, glob_log_p_min: %g\n",
             glob_log_p_max, glob_log_p_min );
+    for ( i=0; i<para.PicSize*para.PicSize; i++ ){
+        if ( p[i] > 0 )
+            p[i] = log10( p[i] );
+        else
+            p[i] = glob_log_p_min;
+    }
     sprintf( cb_label, "(10^x)" );
     sprintf( buf, "./rad/rad_%.2f\n", RedShift );
     giza_open_device( "/png", buf );
