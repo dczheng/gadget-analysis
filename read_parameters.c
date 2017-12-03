@@ -10,7 +10,7 @@ void read_parameters( char *fn ) {
     char tag[MAXTAGS][50], buf[200], buf1[200], buf2[200], buf3[200];
     int id[MAXTAGS], nt, i, j, errflag=0;;
     fputs( sep_str, stdout );
-    fprintf( stdout, "Read Parameter... \n" );
+    fprintf( LogFilefd, "Read Parameter... \n" );
     fd = fopen( fn, "r" );
     if ( NULL == fd ) {
         fprintf( stderr, "Faile to Open Parameter file %s\n", fn );
@@ -82,6 +82,10 @@ void read_parameters( char *fn ) {
     addr[nt] = &Alpha;
     id[nt++] = REAL;
 
+    strcpy( tag[nt], "StartSnapIndex" );
+    addr[nt] = &StartSnapIndex;
+    id[nt++] = INT;
+
     while( !feof( fd ) ) {
         *buf = 0;
         fgets( buf, 200, fd );
@@ -99,15 +103,15 @@ void read_parameters( char *fn ) {
             switch ( id[j] ) {
                 case REAL:
                     *( (double*)addr[j] ) = atof( buf2 );
-                    printf( "%-35s: %g\n", buf1, *((double*)addr[j]) );
+                    fprintf( LogFilefd, "%-35s: %g\n", buf1, *((double*)addr[j]) );
                     break;
                 case INT:
                     *( (int*)addr[j] ) = atoi( buf2 );
-                    printf( "%-35s: %d\n", buf1, *((int*)addr[j]) );
+                    fprintf( LogFilefd, "%-35s: %d\n", buf1, *((int*)addr[j]) );
                     break;
                 case STRING:
                     strcpy( (char*)addr[j], buf2 );
-                    printf( "%-35s: %s\n", buf1, buf2 );
+                    fprintf( LogFilefd, "%-35s: %s\n", buf1, buf2 );
                     break;
             }
         }

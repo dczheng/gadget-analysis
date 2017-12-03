@@ -65,7 +65,7 @@ void hg_electrons_analysis() {
            log_rho_n_min, log_rho_n_max;
     char buf[100];
     int i,j, xi, yi, zi;
-    printf( "high energy electrons analysis...\n" );
+    fprintf( LogFilefd, "high energy electrons analysis...\n" );
     rho_n = ( double* ) malloc( sizeof(double) * PicSize * PicSize );
     memset( rho_n, 0, sizeof( double ) * PicSize * PicSize );
     dx = BoxSize / PicSize;
@@ -97,12 +97,12 @@ void hg_electrons_analysis() {
         else
             rho_n[i] = log_rho_n_min - 10;
     }
-    printf( "rho_n_max: %g, rho_n_min: %g \n"
+    fprintf( LogFilefd, "rho_n_max: %g, rho_n_min: %g \n"
              "log_rho_n_max: %g log_rho_n_min: %g\n",
              rho_n_max, rho_n_min, log_rho_n_max, log_rho_n_min );
 
     if ( access( "./hge_n/", 0 ) == -1 ){
-        printf( "create directory ./hge_n/.\n" );
+        printf( "create directory ./hge_n/ by task %d\n", ThisTask );
         if ( mkdir( "./hge_n/", 0755) == -1 ){
             printf( "failed create directory ./hge_n/.\n" );
             endrun( 20171130 );
@@ -122,7 +122,7 @@ void hg_electrons_analysis() {
     giza_close_device();
 
     free( rho_n );
-    printf( "high energy electrons analysis...done.\n" );
+    fprintf( LogFilefd, "high energy electrons analysis...done.\n" );
 }
 
 void pos_analysis( int pt ){
@@ -132,7 +132,7 @@ void pos_analysis( int pt ){
            log_rho_max, log_rho_min;
     char buf[200], buf1[100];
     long num, offset;
-    printf( "particle %d positin analysis ...\n", pt );
+    fprintf( LogFilefd, "particle %d positin analysis ...\n", pt );
     rho = ( double* ) malloc( sizeof(double) * PicSize * PicSize );
     memset( rho, 0, sizeof( double ) * PicSize * PicSize );
     dx = dy = BoxSize / PicSize;
@@ -166,7 +166,7 @@ void pos_analysis( int pt ){
     log_rho_max = log10( rho_max );
     log_rho_min = log10( rho_min );
 
-    printf( "rho_max: %g, rho_min: %g\n"
+    fprintf( LogFilefd, "rho_max: %g, rho_min: %g\n"
             "log_rho_max: %g, log_rho_min: %g\n",
             rho_max, rho_min, log_rho_max, log_rho_min );
     for ( i=0; i<PicSize*PicSize; i++ )
@@ -177,7 +177,7 @@ void pos_analysis( int pt ){
 
     sprintf( buf1, "./rho_%d", pt );
     if ( access( buf1, 0 ) == -1 ){
-        printf( "create directory %s.\n", buf1 );
+        printf( "create directory %s by task %d\n", buf1, ThisTask );
         if ( mkdir( buf1, 0755) == -1 ){
             printf( "failed create directory %s.\n", buf1 );
             endrun( 20171130 );
@@ -197,7 +197,7 @@ void pos_analysis( int pt ){
 
 
     free( rho );
-    printf( "particle %d positin analysis ... done.\n", pt );
+    fprintf( LogFilefd, "particle %d positin analysis ... done.\n", pt );
 }
 
 void mach_analysis(){
@@ -205,7 +205,7 @@ void mach_analysis(){
     double *mn, x, y, dx, dy, mn_max, mn_min, log_mn_min, log_mn_max;
     char buf[100];
     pt = 0;
-    printf( "mach number analysis ...\n" );
+    fprintf( LogFilefd, "mach number analysis ...\n" );
     mn = ( double* ) malloc( sizeof(double) * PicSize * PicSize );
     memset( mn, 0, sizeof( double ) * PicSize * PicSize );
     dx = dy = BoxSize / PicSize;
@@ -222,8 +222,8 @@ void mach_analysis(){
         if (SphP[i].MachNumber < mn_min)
             mn_min = SphP[i].MachNumber;
     }
-    printf( "SphP Max MachNumber: %g\n", mn_max );
-    printf( "SphP Min MachNumber: %g\n", mn_min );
+    fprintf( LogFilefd, "SphP Max MachNumber: %g\n", mn_max );
+    fprintf( LogFilefd, "SphP Min MachNumber: %g\n", mn_min );
     mn_max = -DBL_MAX;
     mn_min = DBL_MAX;
     for ( i=0; i<PicSize*PicSize; i++ ) {
@@ -236,7 +236,7 @@ void mach_analysis(){
     }
     log_mn_min = log10( mn_min );
     log_mn_max = log10( mn_max );
-    printf( "mn_max: %g, mn_min: %g\n"
+    fprintf( LogFilefd, "mn_max: %g, mn_min: %g\n"
             "log_mn_max: %g, log_mn_min: %g\n",
             mn_max, mn_min, log_mn_max, log_mn_min );
     for ( i=0; i<PicSize*PicSize; i++ )
@@ -246,7 +246,7 @@ void mach_analysis(){
             mn[i] = log_mn_min - 10 ;
 
     if ( access( "./mn/", 0 ) == -1 ){
-        printf( "create directory ./mn.\n" );
+        printf( "create directory ./mn by task %d\n", ThisTask );
         if ( mkdir( "./mn/", 0755) == -1 ){
             printf( "failed create directory ./mn.\n" );
             endrun( 20171130 );
@@ -265,7 +265,7 @@ void mach_analysis(){
     giza_close_device();
 
     free( mn );
-    printf( "mach number analysis ...done.\n" );
+    fprintf( LogFilefd, "mach number analysis ...done.\n" );
 }
 
 void gas_density_analysis(){
@@ -273,7 +273,7 @@ void gas_density_analysis(){
     double *rho, x, y, dx, dy, rho_max, rho_min;
     double log_rho_max, log_rho_min;
     char buf[200];
-    printf( "gas density analysis ...\n");
+    fprintf( LogFilefd, "gas density analysis ...\n");
     rho = ( double* ) malloc( sizeof(double) * PicSize * PicSize );
     memset( rho, 0, sizeof( double ) * PicSize * PicSize );
     dx = dy = BoxSize / PicSize;
@@ -297,7 +297,7 @@ void gas_density_analysis(){
     log_rho_max = log10( rho_max );
     log_rho_min = log10( rho_min );
 
-    printf( "rho_max: %g, rho_min: %g\n"
+    fprintf( LogFilefd, "rho_max: %g, rho_min: %g\n"
             "log_rho_max: %g, log_rho_min: %g\n",
             rho_max, rho_min, log_rho_max, log_rho_min );
     for ( i=0; i<PicSize*PicSize; i++ )
@@ -307,7 +307,7 @@ void gas_density_analysis(){
             rho[i] = log_rho_min - 10 ;
 
     if ( access( "./gas_rho/", 0 ) == -1 ){
-        printf( "create directory ./gas_rho.\n" );
+        printf( "create directory ./gas_rho by task %d\n", ThisTask );
         if ( mkdir( "./gas_rho", 0755) == -1 ){
             printf( "failed create directory ./gas_rho.\n" );
             endrun( 20171130 );
@@ -326,7 +326,7 @@ void gas_density_analysis(){
     giza_close_device();
 
     free( rho );
-    printf( "gas density analysis ...done.\n");
+    fprintf( LogFilefd, "gas density analysis ...done.\n");
 }
 
 void magnetic_field_analysis() {
@@ -334,7 +334,7 @@ void magnetic_field_analysis() {
            dx, dy, x, y;
     int i, j, xi, yi;
     char buf[100];
-    puts( "magnetic field analysis ...");
+    fprintf( LogFilefd, "magnetic field analysis ...\n" );
     mag = malloc( sizeof( double ) * PicSize * PicSize );
     memset( mag, 0, sizeof( double ) * PicSize * PicSize );
     dx = dy = BoxSize / PicSize;
@@ -360,7 +360,7 @@ void magnetic_field_analysis() {
     log_mag_max = log10( mag_max );
     log_mag_min = log10( mag_min );
 
-    printf( "mag_max: %g, mag_min: %g\n"
+    fprintf( LogFilefd, "mag_max: %g, mag_min: %g\n"
             "log_mag_max: %g, log_mag_min: %g\n",
             mag_max, mag_min,
             log_mag_max, log_mag_min );
@@ -372,7 +372,7 @@ void magnetic_field_analysis() {
             mag[i] = log_mag_min - 10;
     }
     if ( access( "./mag/", 0 ) == -1 ){
-        printf( "create directory ./mag.\n" );
+        printf( "create directory ./mag by task %d\n", ThisTask);
         if ( mkdir( "./mag", 0755) == -1 ){
             printf( "failed create directory ./mag.\n" );
             endrun( 20171130 );
@@ -390,7 +390,7 @@ void magnetic_field_analysis() {
     giza_colour_bar( &cb_s, 1, 3, log_mag_min, log_mag_max, cb_label );
     giza_close_device();
 
-    puts( "magnetic field analysis ... done.");
+    fprintf( LogFilefd, "magnetic field analysis ... done.\n" );
 }
 
 double cre_beta_inte( double x, void *params ) {
@@ -447,8 +447,8 @@ void radio_radiation_analysis() {
     double B, dEdt, q, *p, dx, dy, p_max, p_min,
            log_p_max, log_p_min, x, y;
     char buf[100];
-    puts( "radio analysis ..." );
-    printf( "Alpha =%g\n", Alpha );
+    fprintf( LogFilefd, "radio analysis ...\n" );
+    fprintf( LogFilefd, "Alpha =%g\n", Alpha );
     p = malloc( sizeof( double ) * PicSize * PicSize );
     memset( p, 0, sizeof( double ) * PicSize * PicSize );
     dx = dy = BoxSize / PicSize;
@@ -485,7 +485,7 @@ void radio_radiation_analysis() {
     }
     log_p_max = log10( p_max );
     log_p_min = log10( p_min );
-    printf( "p_max: %g, p_min: %g\n",
+    fprintf( LogFilefd, "p_max: %g, p_min: %g\n",
             "log_p_max: %g, log_p_min: %g\n",
             p_max, p_min,
             log_p_max, log_p_min );
@@ -496,7 +496,7 @@ void radio_radiation_analysis() {
             p[i] = log_p_min - 10;
     }
     if ( access( "./rad/", 0 ) == -1 ){
-        printf( "create directory ./rad.\n" );
+        printf( "create directory ./rad by task %d\n", ThisTask );
         if ( mkdir( "./rad", 0755) == -1 ){
             printf( "failed create directory ./rad.\n" );
             endrun( 20171130 );
@@ -514,14 +514,13 @@ void radio_radiation_analysis() {
     giza_label( xlabel, "", title );
     giza_colour_bar( &cb_s, 1, 3, log_p_min, log_p_max, cb_label );
     giza_close_device();
-    puts( "radio analysis ... done.");
+    fprintf( LogFilefd, "radio analysis ... done.\n" );
     free( p );
 }
 
-
 void init_analysis() {
     int i;
-    puts( "initialize plot..." );
+    fprintf( LogFilefd, "initialize plot...\n" );
     affine[0] = 1;
     affine[1] = 0;
     affine[2] = 0;
@@ -542,7 +541,7 @@ void init_analysis() {
     }
 
     inte_ws = gsl_integration_workspace_alloc( GSL_INTE_WS_LEN );
-    puts( sep_str );
+    fprintf( LogFilefd, "%s\n", sep_str );
 }
 
 void free_analysis() {
@@ -554,23 +553,23 @@ void free_analysis() {
 }
 
 void gas_analysis(){
-    printf( "\n" );
+    fprintf( LogFilefd, "\n" );
     mach_analysis();
-    printf( "\n" );
+    fprintf( LogFilefd, "\n" );
     hg_electrons_analysis();
-    printf( "\n" );
+    fprintf( LogFilefd, "\n" );
     gas_density_analysis();
-    printf( "\n" );
+    fprintf( LogFilefd, "\n" );
     pos_analysis( 0 );
-    printf( "\n" );
+    fprintf( LogFilefd, "\n" );
     magnetic_field_analysis();
-    printf( "\n" );
+    fprintf( LogFilefd, "\n" );
     radio_radiation_analysis();
-    fputs( sep_str, stdout );
+    fputs( sep_str, LogFilefd );
 }
 
 void dm_analysis(){
-    printf( "\n" );
+    fprintf( LogFilefd, "\n" );
     pos_analysis( 1 );
-    fputs( sep_str, stdout );
+    fputs( sep_str, LogFilefd );
 }

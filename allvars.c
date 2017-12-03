@@ -1,11 +1,12 @@
 #include "allvars.h"
 
 char FilePrefix[ FILENAME_MAX ], LogFile[ FILENAME_MAX ];
+FILE *LogFilefd;
 char sep_str[ SEP_LEN ];
 char GroupDir[ FILENAME_MAX ];
 long long NumFiles, TotNgroups, PicSize, NumPart, N_Gas, BufferSize;
 int MpcFlag;
-int ThisTask, NumTask;
+int ThisTask, NumTask, StartSnapIndex;
 double BoxSize, RedShift, SofteningTable[6], Alpha;
 void *CommBuffer;
 double UnitTime_in_s,

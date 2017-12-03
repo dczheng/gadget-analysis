@@ -13,4 +13,5 @@ SofteningBulge                1
 SofteningStar                 1
 SofteningBndry                1
 Alpha                         3.2
+StarSnapIndex                 0
 FilePrefix ./snapshot_040
