@@ -209,7 +209,7 @@ void mach_analysis(){
     double *mn, x, y, dx, dy, mn_max, mn_min, log_mn_min, log_mn_max;
     char buf[100];
     pt = 0;
-    fprintf( LogFilefd, "mach number analysis ..." );
+    fprintf( LogFilefd, "mach number analysis ...\n" );
     mn = ( double* ) malloc( sizeof(double) * para.PicSize * para.PicSize );
     memset( mn, 0, sizeof( double ) * para.PicSize * para.PicSize );
     dx = dy = BoxSize / para.PicSize;
@@ -553,7 +553,7 @@ void init_analysis() {
     }
 
     inte_ws = gsl_integration_workspace_alloc( GSL_INTE_WS_LEN );
-    fprintf( LogFilefd, "%s\n", sep_str );
+    fprintf( LogFilefd, sep_str );
 }
 
 void free_analysis() {
@@ -576,7 +576,7 @@ void gas_analysis(){
     magnetic_field_analysis();
     fprintf( LogFilefd, "\n" );
     radio_radiation_analysis();
-    fputs( sep_str, LogFilefd );
+    fprintf( LogFilefd, sep_str );;
 }
 
 void dm_analysis(){

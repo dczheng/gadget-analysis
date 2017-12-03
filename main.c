@@ -43,17 +43,21 @@ int main( int argc, char *argv[] ){
     }
     MPI_Barrier( MPI_COMM_WORLD );
     sprintf( LogFile, "./gadget-analysis.log/gadget-analysis-%03d.log", ThisTask );
-    if ( ThisTask == 0 )
-    printf( "open log file\n" );
     LogFilefd = fopen( LogFile, "w" );
     init_sep_str();
     read_parameters( argv[1] );
+    if ( ThisTask == 0 ){
+        printf( sep_str );
+        printf( "open log file\n" );
+        printf( sep_str );
+    }
     set_units();
     read_snapshot();
     MPI_Barrier( MPI_COMM_WORLD );
     if ( ThisTask == 0 ) {
-        printf( "Read data completed on all task.\n",
-                "Start analysis ...\n" );
+        printf( "Read data completed on all task.\n" );
+        printf( sep_str );
+        printf( "Start analysis ...\n" );
     }
     init_analysis();
     //group_analysis();
@@ -63,8 +67,9 @@ int main( int argc, char *argv[] ){
     /*************************************************/
     MPI_Barrier( MPI_COMM_WORLD );
     if ( ThisTask == 0 ) {
-        printf( "analysis completed on all task.\n",
-                "Star free memory ...\n" );
+        printf( "analysis completed on all task.\n" );
+        printf( sep_str );
+        printf(  "Star free memory ...\n" );
     }
     free_analysis();
     free_memory();
@@ -73,6 +78,7 @@ int main( int argc, char *argv[] ){
         printf( "free memory completed. \n" );
         time2 = time( NULL );
         tb = localtime( &time2 );
+        printf( sep_str );
         fprintf( stdout, "End At: %s", asctime(tb) );
         fprintf( stdout, "Total Time %i\n", time2-time1 );
     }
