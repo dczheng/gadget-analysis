@@ -9,7 +9,7 @@ void read_parameters( char *fn ) {
     void *addr[MAXTAGS];
     char tag[MAXTAGS][50], buf[200], buf1[200], buf2[200], buf3[200];
     int id[MAXTAGS], nt, i, j, errflag=0;;
-    fputs( sep_str, stdout );
+    fputs( sep_str, LogFilefd );
     fprintf( LogFilefd, "Read Parameter... \n" );
     fd = fopen( fn, "r" );
     if ( NULL == fd ) {
@@ -120,6 +120,8 @@ void read_parameters( char *fn ) {
             errflag = 1;
         }
     }
+    MPI_Barrier( MPI_COMM_WORLD );
+    if ( ThisTask == 0 )
     for ( i=0; i<nt; i++ ) {
         if ( *tag[i] ) {
             printf( "Error. I miss a value for tag '%s' in parameter file '%s'.\n", tag[i], fn );

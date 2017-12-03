@@ -101,6 +101,7 @@ void hg_electrons_analysis() {
              "log_rho_n_max: %g log_rho_n_min: %g\n",
              rho_n_max, rho_n_min, log_rho_n_max, log_rho_n_min );
 
+    if ( ThisTask == 0 )
     if ( access( "./hge_n/", 0 ) == -1 ){
         printf( "create directory ./hge_n/ by task %d\n", ThisTask );
         if ( mkdir( "./hge_n/", 0755) == -1 ){
@@ -108,6 +109,7 @@ void hg_electrons_analysis() {
             endrun( 20171130 );
         }
     }
+    MPI_Barrier( MPI_COMM_WORLD );
     sprintf( cb_label, "(10^x)" );
     sprintf( buf, "./hge_n/hge_n_%.2f\n", RedShift );
     giza_open_device( "/png", buf );
@@ -176,6 +178,7 @@ void pos_analysis( int pt ){
             rho[i] = log_rho_min - 10 ;
 
     sprintf( buf1, "./rho_%d", pt );
+    if ( ThisTask == 0 )
     if ( access( buf1, 0 ) == -1 ){
         printf( "create directory %s by task %d\n", buf1, ThisTask );
         if ( mkdir( buf1, 0755) == -1 ){
@@ -183,6 +186,7 @@ void pos_analysis( int pt ){
             endrun( 20171130 );
         }
     }
+    MPI_Barrier( MPI_COMM_WORLD );
     sprintf( cb_label, "(10^x)   g/cm^3" );
     sprintf( buf, "%s/rho_%d_%.2f.png", buf1, pt, RedShift );
     giza_open_device( "/png", buf );
@@ -205,7 +209,7 @@ void mach_analysis(){
     double *mn, x, y, dx, dy, mn_max, mn_min, log_mn_min, log_mn_max;
     char buf[100];
     pt = 0;
-    fprintf( LogFilefd, "mach number analysis ...\n" );
+    fprintf( LogFilefd, "mach number analysis ..." );
     mn = ( double* ) malloc( sizeof(double) * PicSize * PicSize );
     memset( mn, 0, sizeof( double ) * PicSize * PicSize );
     dx = dy = BoxSize / PicSize;
@@ -245,6 +249,7 @@ void mach_analysis(){
         else
             mn[i] = log_mn_min - 10 ;
 
+    if ( ThisTask == 0 )
     if ( access( "./mn/", 0 ) == -1 ){
         printf( "create directory ./mn by task %d\n", ThisTask );
         if ( mkdir( "./mn/", 0755) == -1 ){
@@ -252,6 +257,7 @@ void mach_analysis(){
             endrun( 20171130 );
         }
     }
+    MPI_Barrier( MPI_COMM_WORLD );
     sprintf( cb_label, "(10^x)" );
     sprintf( buf, "./mn/mn_%.2f.png", RedShift );
     giza_open_device( "/png", buf );
@@ -306,6 +312,7 @@ void gas_density_analysis(){
         else
             rho[i] = log_rho_min - 10 ;
 
+    if ( ThisTask == 0 )
     if ( access( "./gas_rho/", 0 ) == -1 ){
         printf( "create directory ./gas_rho by task %d\n", ThisTask );
         if ( mkdir( "./gas_rho", 0755) == -1 ){
@@ -313,6 +320,7 @@ void gas_density_analysis(){
             endrun( 20171130 );
         }
     }
+    MPI_Barrier( MPI_COMM_WORLD );
     sprintf( cb_label, "(10^x)   g/cm^3" );
     sprintf( buf, "./gas_rho/gas_rho_%.2f\n", RedShift );
     giza_open_device( "/png", buf );
@@ -371,6 +379,7 @@ void magnetic_field_analysis() {
         else
             mag[i] = log_mag_min - 10;
     }
+    if ( ThisTask == 0 )
     if ( access( "./mag/", 0 ) == -1 ){
         printf( "create directory ./mag by task %d\n", ThisTask);
         if ( mkdir( "./mag", 0755) == -1 ){
@@ -378,6 +387,7 @@ void magnetic_field_analysis() {
             endrun( 20171130 );
         }
     }
+    MPI_Barrier( MPI_COMM_WORLD );
     sprintf( cb_label, "(10^x)  Gauss" );
     sprintf( buf, "./mag/mag_%.2f\n", RedShift );
     giza_open_device( "/png", buf );
@@ -495,6 +505,7 @@ void radio_radiation_analysis() {
         else
             p[i] = log_p_min - 10;
     }
+    if ( ThisTask == 0 )
     if ( access( "./rad/", 0 ) == -1 ){
         printf( "create directory ./rad by task %d\n", ThisTask );
         if ( mkdir( "./rad", 0755) == -1 ){
@@ -502,6 +513,7 @@ void radio_radiation_analysis() {
             endrun( 20171130 );
         }
     }
+    MPI_Barrier( MPI_COMM_WORLD );
     sprintf( cb_label, "(10^x)" );
     sprintf( buf, "./rad/rad_%.2f\n", RedShift );
     giza_open_device( "/png", buf );
@@ -553,7 +565,6 @@ void free_analysis() {
 }
 
 void gas_analysis(){
-    fprintf( LogFilefd, "\n" );
     mach_analysis();
     fprintf( LogFilefd, "\n" );
     hg_electrons_analysis();

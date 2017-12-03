@@ -7,21 +7,21 @@ void endrun( int ierr ) {
 }
 
 void set_units() {
-    fputs( sep_str, stdout );
-    fprintf( stdout, "Set Units... \n" );
+    fputs( sep_str, LogFilefd );
+    fprintf( LogFilefd, "Set Units... \n" );
     UnitTime_in_s = UnitLength_in_cm / UnitVelocity_in_cm_per_s;
     UnitDensity_in_cgs = UnitMass_in_g / pow( UnitLength_in_cm, 3 );
     UnitEnergy_in_cgs = UnitMass_in_g * pow( UnitLength_in_cm,2 ) / pow( UnitTime_in_s, 2 );
-    printf( "%-35s: %g\n", "UnitMass_in_g", UnitMass_in_g );
-    printf( "%-35s: %g\n", "UnitTime_in_s", UnitTime_in_s );
-    printf( "%-35s: %g\n", "UnitLength_in_cm", UnitLength_in_cm );
-    printf( "%-35s: %g\n", "UnitDensity_in_cgs", UnitDensity_in_cgs );
-    printf( "%-35s: %g\n", "UnitEnergy_in_cgs", UnitEnergy_in_cgs );
-    printf( "%-35s: %g\n", "UnitVelocity_in_cm_per_s", UnitVelocity_in_cm_per_s );
+    fprintf( LogFilefd,  "%-35s: %g\n", "UnitMass_in_g", UnitMass_in_g );
+    fprintf( LogFilefd,  "%-35s: %g\n", "UnitTime_in_s", UnitTime_in_s );
+    fprintf( LogFilefd,  "%-35s: %g\n", "UnitLength_in_cm", UnitLength_in_cm );
+    fprintf( LogFilefd,  "%-35s: %g\n", "UnitDensity_in_cgs", UnitDensity_in_cgs );
+    fprintf( LogFilefd,  "%-35s: %g\n", "UnitEnergy_in_cgs", UnitEnergy_in_cgs );
+    fprintf( LogFilefd,  "%-35s: %g\n", "UnitVelocity_in_cm_per_s", UnitVelocity_in_cm_per_s );
     if ( MpcFlag != 1 ) {
         MpcFlag = 1000;
     }
-    fputs( sep_str, stdout );
+    fputs( sep_str, LogFilefd );
 }
 
 void init_sep_str() {
@@ -51,6 +51,7 @@ int main( int argc, char *argv[] ){
         fprintf( stdout, "Start At: %s", asctime(tb) );
     }
 
+    if ( ThisTask == 0 )
     if ( access( "./gadget-analysis.log/", 0 ) == -1 ) {
         printf( "create directory ./gadget-analysis.log/ by task %d\n", ThisTask );
         if ( mkdir( "./gadget-analysis.log/", 0755 ) == -1 ) {
@@ -58,15 +59,18 @@ int main( int argc, char *argv[] ){
             endrun( 20171203 );
         }
     }
+    MPI_Barrier( MPI_COMM_WORLD );
     sprintf( LogFile, "./gadget-analysis.log/gadget-analysis-%03d.log", ThisTask );
-    LogFilefd = fopen( LogFile, "r" );
+    if ( ThisTask == 0 )
+    printf( "open log file\n" );
+    LogFilefd = fopen( LogFile, "w" );
     init_sep_str();
     read_parameters( argv[1] );
     set_units();
     read_snapshot();
     MPI_Barrier( MPI_COMM_WORLD );
     if ( ThisTask == 0 ) {
-        printf( "Read data conpleted on all task.\n",
+        printf( "Read data completed on all task.\n",
                 "Start analysis ...\n" );
     }
     init_analysis();
