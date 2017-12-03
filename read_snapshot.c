@@ -512,7 +512,7 @@ void allocate_memory() {
     bytes_tot += bytes;
     fprintf( LogFilefd, "Allocated %g MB for SphP.\n", bytes / 1024.0 / 1024.0 );
 
-    if ( !( CommBuffer = malloc( bytes = BufferSize * 1024 * 1024  ) ) ) {
+    if ( !( CommBuffer = malloc( bytes = para.BufferSize * 1024 * 1024  ) ) ) {
         printf( "failed to allocate memory for CommBuffer ( %g Mb ).\n", bytes / 1024.0 / 1024.0 );
         endrun( 0 );
     }
@@ -535,9 +535,9 @@ void read_snapshot() {
     long i, file, pc, offset;
     char file_name[FILENAME_MAX], buf[200], buf1[200];
     fputs( "read data ...\n", LogFilefd );
-    sprintf( file_name, "%s_%03d.%3i.hdf5", FilePrefix, StartSnapIndex + ThisTask, 0 );
-    if ( NumFiles < 2 )
-        sprintf( file_name, "%s_%03d.hdf5", FilePrefix, StartSnapIndex + ThisTask );
+    sprintf( file_name, "%s_%03d.%3i.hdf5", para.FilePrefix, para.StartSnapIndex + ThisTask, 0 );
+    if ( para.NumFiles < 2 )
+        sprintf( file_name, "%s_%03d.hdf5", para.FilePrefix, para.StartSnapIndex + ThisTask );
     N_Gas = NumPart = 0;
     read_header( file_name );
     for ( i=0; i<6; i++ ){
@@ -554,16 +554,16 @@ void read_snapshot() {
     show_header( header );
     for ( blk=0; blk<IO_NBLOCKS; blk++ ) {
         for ( pt=0, offset=0; pt<6; pt++ ) {
-            for (file=0; file<NumFiles; file++) {
-                if ( NumFiles < 2 )
-                    sprintf( file_name, "%s_%03d.hdf5", FilePrefix, StartSnapIndex + ThisTask );
+            for (file=0; file<para.NumFiles; file++) {
+                if ( para.NumFiles < 2 )
+                    sprintf( file_name, "%s_%03d.hdf5", para.FilePrefix, para.StartSnapIndex + ThisTask );
                 else
                     sprintf( file_name, "%s_%03d.%3i.hdf5",
-                            FilePrefix, StartSnapIndex + ThisTask, file );
+                            para.FilePrefix, para.StartSnapIndex + ThisTask, file );
                     read_header( file_name );
                     if ( blockpresent( blk, pt ) ) {
                         nbytes = get_block_nbytes( blk );
-                        if ( BufferSize * 1024 * 1024 < nbytes * header.npart[pt] ){
+                        if ( para.BufferSize * 1024 * 1024 < nbytes * header.npart[pt] ){
                             printf( "BufferSize is too small.\n" );
                             endrun( 1 );
                         }

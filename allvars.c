@@ -1,20 +1,13 @@
 #include "allvars.h"
 
-char FilePrefix[ FILENAME_MAX ], LogFile[ FILENAME_MAX ];
-FILE *LogFilefd;
 char sep_str[ SEP_LEN ];
-char GroupDir[ FILENAME_MAX ];
-long long NumFiles, TotNgroups, PicSize, NumPart, N_Gas, BufferSize;
-int MpcFlag;
-int ThisTask, NumTask, StartSnapIndex;
-double BoxSize, RedShift, SofteningTable[6], Alpha;
+long long TotNgroups, NumPart, N_Gas;
+int ThisTask, NumTask;
+double BoxSize, RedShift;
 void *CommBuffer;
-double UnitTime_in_s,
-       UnitMass_in_g,
-       UnitLength_in_cm,
-       UnitDensity_in_cgs,
-       UnitEnergy_in_cgs,
-       UnitVelocity_in_cm_per_s;
+char LogFile[ FILENAME_MAX ];
+FILE *LogFilefd;
+struct para_struct para;
 struct particle_data *P;
 struct sph_particle_data *SphP;
 

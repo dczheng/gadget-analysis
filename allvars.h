@@ -150,21 +150,26 @@ enum iofields {
 extern struct io_header header;
 extern struct group_struct *group;
 
-extern char FilePrefix[ FILENAME_MAX ], LogFile[ FILENAME_MAX ];
-extern FILE *LogFilefd;
-extern char GroupDir[ FILENAME_MAX ];
 extern char sep_str[ SEP_LEN ];
-extern long long NumFiles, TotNgroups, PicSize, NumPart, N_Gas, BufferSize;
-extern int MpcFlag;
-extern int ThisTask, NumTask, StartSnapIndex;
-extern double BoxSize, RedShift, SofteningTable[6], Alpha;
+extern int ThisTask, NumTask;
+extern double BoxSize, RedShift;
 extern void *CommBuffer;
-extern double UnitTime_in_s,
-              UnitMass_in_g,
-              UnitLength_in_cm,
-              UnitDensity_in_cgs,
-              UnitEnergy_in_cgs,
-              UnitVelocity_in_cm_per_s;
+extern long long NumPart, N_Gas, TotNgroups;
+extern char LogFile[ FILENAME_MAX ];
+extern FILE *LogFilefd;
+extern struct para_struct {
+    char FilePrefix[ FILENAME_MAX ], GroupDir[ FILENAME_MAX ];
+    FILE *LogFilefd;
+    long long PicSize, BufferSize, NumFiles;
+    int StartSnapIndex, MpcFlag;
+    double SofteningTable[6], Alpha;
+    double UnitTime_in_s,
+         UnitMass_in_g,
+         UnitLength_in_cm,
+         UnitDensity_in_cgs,
+         UnitEnergy_in_cgs,
+         UnitVelocity_in_cm_per_s;
+}para;
 extern struct particle_data {
     MyFloat Pos[3];
     MyFloat Mass;
@@ -221,3 +226,4 @@ void endrun( int ierr );
 void read_parameters();
 void init_analysis();
 void free_analysis();
+void set_units();

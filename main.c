@@ -6,24 +6,6 @@ void endrun( int ierr ) {
     exit( ierr );
 }
 
-void set_units() {
-    fputs( sep_str, LogFilefd );
-    fprintf( LogFilefd, "Set Units... \n" );
-    UnitTime_in_s = UnitLength_in_cm / UnitVelocity_in_cm_per_s;
-    UnitDensity_in_cgs = UnitMass_in_g / pow( UnitLength_in_cm, 3 );
-    UnitEnergy_in_cgs = UnitMass_in_g * pow( UnitLength_in_cm,2 ) / pow( UnitTime_in_s, 2 );
-    fprintf( LogFilefd,  "%-35s: %g\n", "UnitMass_in_g", UnitMass_in_g );
-    fprintf( LogFilefd,  "%-35s: %g\n", "UnitTime_in_s", UnitTime_in_s );
-    fprintf( LogFilefd,  "%-35s: %g\n", "UnitLength_in_cm", UnitLength_in_cm );
-    fprintf( LogFilefd,  "%-35s: %g\n", "UnitDensity_in_cgs", UnitDensity_in_cgs );
-    fprintf( LogFilefd,  "%-35s: %g\n", "UnitEnergy_in_cgs", UnitEnergy_in_cgs );
-    fprintf( LogFilefd,  "%-35s: %g\n", "UnitVelocity_in_cm_per_s", UnitVelocity_in_cm_per_s );
-    if ( MpcFlag != 1 ) {
-        MpcFlag = 1000;
-    }
-    fputs( sep_str, LogFilefd );
-}
-
 void init_sep_str() {
     memset( sep_str, '-', SEP_LEN-1 );
     sep_str[ SEP_LEN-2 ] = '\n';

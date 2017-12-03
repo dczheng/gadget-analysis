@@ -4,9 +4,9 @@
 #define ELECTRONMASS 9.10953e-28
 #define ELECTRONCHARGE  4.8032e-10
 #define BOLTZMANN      1.38066e-16
-#define cm ( header.HubbleParam / UnitLength_in_cm )
-#define g  ( header.HubbleParam / UnitMass_in_g )
-#define s  ( header.HubbleParam / UnitTime_in_s )
+#define cm ( header.HubbleParam / para.UnitLength_in_cm )
+#define g  ( header.HubbleParam / para.UnitMass_in_g )
+#define s  ( header.HubbleParam / para.UnitTime_in_s )
 #define erg (g*cm*cm/(s*s))
 #define keV (1.602e-9*erg)
 #define deg 1.0
@@ -66,22 +66,22 @@ void hg_electrons_analysis() {
     char buf[100];
     int i,j, xi, yi, zi;
     fprintf( LogFilefd, "high energy electrons analysis...\n" );
-    rho_n = ( double* ) malloc( sizeof(double) * PicSize * PicSize );
-    memset( rho_n, 0, sizeof( double ) * PicSize * PicSize );
-    dx = BoxSize / PicSize;
-    dy = BoxSize / PicSize;
+    rho_n = ( double* ) malloc( sizeof(double) * para.PicSize * para.PicSize );
+    memset( rho_n, 0, sizeof( double ) * para.PicSize * para.PicSize );
+    dx = BoxSize / para.PicSize;
+    dy = BoxSize / para.PicSize;
 
     for ( i=0; i<N_Gas; i++ ) {
         x = P[i].Pos[0];
         y = P[i].Pos[1];
         xi = x / dx;
         yi = y / dy;
-        rho_n[xi*PicSize+yi] += SphP[i].CRE_n0 * SphP[i].Density * m_e / ( g/(cm*cm*cm) );
-        //printf( "xi: %d, yi: %d, %g\n", xi, yi, rho_n[xi*PicSize+yi] );
+        rho_n[xi*para.PicSize+yi] += SphP[i].CRE_n0 * SphP[i].Density * m_e / ( g/(cm*cm*cm) );
+        //printf( "xi: %d, yi: %d, %g\n", xi, yi, rho_n[xi*para.PicSize+yi] );
     }
     rho_n_max = -DBL_MAX;
     rho_n_min = DBL_MAX;
-    for ( i=0; i<PicSize*PicSize; i++ ){
+    for ( i=0; i<para.PicSize*para.PicSize; i++ ){
         if ( rho_n[i] > 0 ){
             if ( rho_n[i] < rho_n_min )
                 rho_n_min = rho_n[i];
@@ -91,7 +91,7 @@ void hg_electrons_analysis() {
     }
     log_rho_n_max = log10( rho_n_max );
     log_rho_n_min = log10( rho_n_min );
-    for ( i=0; i<PicSize*PicSize; i++ ){
+    for ( i=0; i<para.PicSize*para.PicSize; i++ ){
         if ( rho_n[i] > 0 )
             rho_n[i] = log10( rho_n[i] );
         else
@@ -113,11 +113,11 @@ void hg_electrons_analysis() {
     sprintf( cb_label, "(10^x)" );
     sprintf( buf, "./hge_n/hge_n_%.2f\n", RedShift );
     giza_open_device( "/png", buf );
-    giza_set_environment( 0.0, PicSize, 0.0, PicSize, 1, -1 );
+    giza_set_environment( 0.0, para.PicSize, 0.0, para.PicSize, 1, -1 );
     giza_set_colour_table( cp, red, green, blue, cpn, 1, 1 );
-    giza_render( PicSize, PicSize, rho_n, 0, PicSize, 0, PicSize,
+    giza_render( para.PicSize, para.PicSize, rho_n, 0, para.PicSize, 0, para.PicSize,
             log_rho_n_min, log_rho_n_max, 0, affine );
-    sprintf( xlabel, "%g Mpc", BoxSize / MpcFlag );
+    sprintf( xlabel, "%g Mpc", BoxSize / para.MpcFlag );
     sprintf( title, "high energy electron number densit (z=%.2f)", RedShift );
     giza_label( xlabel, "", title );
     giza_colour_bar( &cb_s, 1, 3, log_rho_n_min, log_rho_n_max, cb_label );
@@ -135,9 +135,9 @@ void pos_analysis( int pt ){
     char buf[200], buf1[100];
     long num, offset;
     fprintf( LogFilefd, "particle %d positin analysis ...\n", pt );
-    rho = ( double* ) malloc( sizeof(double) * PicSize * PicSize );
-    memset( rho, 0, sizeof( double ) * PicSize * PicSize );
-    dx = dy = BoxSize / PicSize;
+    rho = ( double* ) malloc( sizeof(double) * para.PicSize * para.PicSize );
+    memset( rho, 0, sizeof( double ) * para.PicSize * para.PicSize );
+    dx = dy = BoxSize / para.PicSize;
     num = header.npartTotal[pt];
     rho_max = -DBL_MAX;
     rho_min = DBL_MAX;
@@ -153,11 +153,11 @@ void pos_analysis( int pt ){
         xi = x / dx;
         yi = y / dy;
         if ( header.mass[pt] == 0 )
-            rho[ xi*PicSize + yi ] += P[offset+i].Mass / (dx*dy*BoxSize) / ( g/(cm*cm*cm) );
+            rho[ xi*para.PicSize + yi ] += P[offset+i].Mass / (dx*dy*BoxSize) / ( g/(cm*cm*cm) );
         else
-            rho[ xi*PicSize + yi ] += header.mass[pt] / (dx*dy*BoxSize) / ( g/(cm*cm*cm) );
+            rho[ xi*para.PicSize + yi ] += header.mass[pt] / (dx*dy*BoxSize) / ( g/(cm*cm*cm) );
     }
-    for ( i=0; i<PicSize*PicSize; i++ ) {
+    for ( i=0; i<para.PicSize*para.PicSize; i++ ) {
         if ( rho[i] > 0 ) {
             if ( rho[i] > rho_max )
                 rho_max = rho[i];
@@ -171,7 +171,7 @@ void pos_analysis( int pt ){
     fprintf( LogFilefd, "rho_max: %g, rho_min: %g\n"
             "log_rho_max: %g, log_rho_min: %g\n",
             rho_max, rho_min, log_rho_max, log_rho_min );
-    for ( i=0; i<PicSize*PicSize; i++ )
+    for ( i=0; i<para.PicSize*para.PicSize; i++ )
         if ( rho[i] > 0 )
             rho[i] = log10( rho[i] );
         else
@@ -190,10 +190,10 @@ void pos_analysis( int pt ){
     sprintf( cb_label, "(10^x)   g/cm^3" );
     sprintf( buf, "%s/rho_%d_%.2f.png", buf1, pt, RedShift );
     giza_open_device( "/png", buf );
-    giza_set_environment( 0.0, PicSize, 0.0, PicSize, 1, -1 );
+    giza_set_environment( 0.0, para.PicSize, 0.0, para.PicSize, 1, -1 );
     giza_set_colour_table( cp, red, green, blue, cpn, 1, 1 );
-    giza_render( PicSize, PicSize, rho, 0, PicSize, 0, PicSize, log_rho_min, log_rho_max, 0, affine );
-    sprintf( xlabel, "%g Mpc", BoxSize / MpcFlag );
+    giza_render( para.PicSize, para.PicSize, rho, 0, para.PicSize, 0, para.PicSize, log_rho_min, log_rho_max, 0, affine );
+    sprintf( xlabel, "%g Mpc", BoxSize / para.MpcFlag );
     sprintf( title, "particle %d density (z=%.2f)", pt, RedShift );
     giza_label( xlabel, "", title );
     giza_colour_bar( &cb_s, 1, 3, log_rho_min, log_rho_max, cb_label );
@@ -210,9 +210,9 @@ void mach_analysis(){
     char buf[100];
     pt = 0;
     fprintf( LogFilefd, "mach number analysis ..." );
-    mn = ( double* ) malloc( sizeof(double) * PicSize * PicSize );
-    memset( mn, 0, sizeof( double ) * PicSize * PicSize );
-    dx = dy = BoxSize / PicSize;
+    mn = ( double* ) malloc( sizeof(double) * para.PicSize * para.PicSize );
+    memset( mn, 0, sizeof( double ) * para.PicSize * para.PicSize );
+    dx = dy = BoxSize / para.PicSize;
     mn_max = -DBL_MAX;
     mn_min = DBL_MAX;
     for ( i=0; i<N_Gas; i++ ) {
@@ -220,7 +220,7 @@ void mach_analysis(){
         y = P[i].Pos[1];
         xi = x / dx;
         yi = y / dy;
-        mn[ xi*PicSize + yi ] += SphP[i].MachNumber;
+        mn[ xi*para.PicSize + yi ] += SphP[i].MachNumber;
         if (SphP[i].MachNumber > mn_max)
             mn_max = SphP[i].MachNumber;
         if (SphP[i].MachNumber < mn_min)
@@ -230,7 +230,7 @@ void mach_analysis(){
     fprintf( LogFilefd, "SphP Min MachNumber: %g\n", mn_min );
     mn_max = -DBL_MAX;
     mn_min = DBL_MAX;
-    for ( i=0; i<PicSize*PicSize; i++ ) {
+    for ( i=0; i<para.PicSize*para.PicSize; i++ ) {
         if ( mn[i] > 0 ){
             if ( mn[i] > mn_max )
                 mn_max = mn[i];
@@ -243,7 +243,7 @@ void mach_analysis(){
     fprintf( LogFilefd, "mn_max: %g, mn_min: %g\n"
             "log_mn_max: %g, log_mn_min: %g\n",
             mn_max, mn_min, log_mn_max, log_mn_min );
-    for ( i=0; i<PicSize*PicSize; i++ )
+    for ( i=0; i<para.PicSize*para.PicSize; i++ )
         if ( mn[i] > 0 )
             mn[i] = log10( mn[i] );
         else
@@ -261,10 +261,10 @@ void mach_analysis(){
     sprintf( cb_label, "(10^x)" );
     sprintf( buf, "./mn/mn_%.2f.png", RedShift );
     giza_open_device( "/png", buf );
-    giza_set_environment( 0.0, PicSize, 0.0, PicSize, 1, -1 );
+    giza_set_environment( 0.0, para.PicSize, 0.0, para.PicSize, 1, -1 );
     giza_set_colour_table( cp, red, green, blue, cpn, 1, 1 );
-    giza_render( PicSize, PicSize, mn, 0, PicSize, 0, PicSize, log_mn_min, log_mn_max, 0, affine );
-    sprintf( xlabel, "%g Mpc", BoxSize / MpcFlag );
+    giza_render( para.PicSize, para.PicSize, mn, 0, para.PicSize, 0, para.PicSize, log_mn_min, log_mn_max, 0, affine );
+    sprintf( xlabel, "%g Mpc", BoxSize / para.MpcFlag );
     sprintf( title, "mach number (z=%.2f)", RedShift );
     giza_label( xlabel, "", title );
     giza_colour_bar( &cb_s, 1, 3, log_mn_min, log_mn_max, cb_label );
@@ -280,9 +280,9 @@ void gas_density_analysis(){
     double log_rho_max, log_rho_min;
     char buf[200];
     fprintf( LogFilefd, "gas density analysis ...\n");
-    rho = ( double* ) malloc( sizeof(double) * PicSize * PicSize );
-    memset( rho, 0, sizeof( double ) * PicSize * PicSize );
-    dx = dy = BoxSize / PicSize;
+    rho = ( double* ) malloc( sizeof(double) * para.PicSize * para.PicSize );
+    memset( rho, 0, sizeof( double ) * para.PicSize * para.PicSize );
+    dx = dy = BoxSize / para.PicSize;
     rho_max = -DBL_MAX;
     rho_min = DBL_MAX;
     for ( i=0; i<N_Gas; i++ ) {
@@ -290,9 +290,9 @@ void gas_density_analysis(){
         y = P[i].Pos[1];
         xi = x / dx;
         yi = y / dy;
-        rho[ xi*PicSize + yi ] += SphP[i].Density / ( g/(cm*cm*cm) );
+        rho[ xi*para.PicSize + yi ] += SphP[i].Density / ( g/(cm*cm*cm) );
     }
-    for ( i=0; i<PicSize*PicSize; i++ ) {
+    for ( i=0; i<para.PicSize*para.PicSize; i++ ) {
         if ( rho[i] > 0 ) {
             if ( rho[i] > rho_max )
                 rho_max = rho[i];
@@ -306,7 +306,7 @@ void gas_density_analysis(){
     fprintf( LogFilefd, "rho_max: %g, rho_min: %g\n"
             "log_rho_max: %g, log_rho_min: %g\n",
             rho_max, rho_min, log_rho_max, log_rho_min );
-    for ( i=0; i<PicSize*PicSize; i++ )
+    for ( i=0; i<para.PicSize*para.PicSize; i++ )
         if ( rho[i] > 0 )
             rho[i] = log10( rho[i] );
         else
@@ -324,10 +324,10 @@ void gas_density_analysis(){
     sprintf( cb_label, "(10^x)   g/cm^3" );
     sprintf( buf, "./gas_rho/gas_rho_%.2f\n", RedShift );
     giza_open_device( "/png", buf );
-    giza_set_environment( 0.0, PicSize, 0.0, PicSize, 1, -1 );
+    giza_set_environment( 0.0, para.PicSize, 0.0, para.PicSize, 1, -1 );
     giza_set_colour_table( cp, red, green, blue, cpn, 1, 1 );
-    giza_render( PicSize, PicSize, rho, 0, PicSize, 0, PicSize, log_rho_min, log_rho_max, 0, affine );
-    sprintf( xlabel, "%g Mpc", BoxSize / MpcFlag );
+    giza_render( para.PicSize, para.PicSize, rho, 0, para.PicSize, 0, para.PicSize, log_rho_min, log_rho_max, 0, affine );
+    sprintf( xlabel, "%g Mpc", BoxSize / para.MpcFlag );
     sprintf( title, "gas density (z=%.2f)", RedShift );
     giza_label( xlabel, "", title );
     giza_colour_bar( &cb_s, 1, 3, log_rho_min, log_rho_max, cb_label );
@@ -343,9 +343,9 @@ void magnetic_field_analysis() {
     int i, j, xi, yi;
     char buf[100];
     fprintf( LogFilefd, "magnetic field analysis ...\n" );
-    mag = malloc( sizeof( double ) * PicSize * PicSize );
-    memset( mag, 0, sizeof( double ) * PicSize * PicSize );
-    dx = dy = BoxSize / PicSize;
+    mag = malloc( sizeof( double ) * para.PicSize * para.PicSize );
+    memset( mag, 0, sizeof( double ) * para.PicSize * para.PicSize );
+    dx = dy = BoxSize / para.PicSize;
     mag_max = -DBL_MAX;
     mag_min = DBL_MAX;
     for ( i=0; i<N_Gas; i++ ){
@@ -353,11 +353,11 @@ void magnetic_field_analysis() {
         y = P[i].Pos[1];
         xi = x / dx;
         yi = y / dy;
-        mag[ xi*PicSize + yi ] += sqrt( pow( SphP[i].B[0], 2.0 ) +
+        mag[ xi*para.PicSize + yi ] += sqrt( pow( SphP[i].B[0], 2.0 ) +
                 pow( SphP[i].B[1],2.0 ) + pow( SphP[i].B[2], 2.0 ) );
     }
 
-    for ( i=0; i<PicSize*PicSize; i++ ) {
+    for ( i=0; i<para.PicSize*para.PicSize; i++ ) {
         if ( mag[i] > 0 ) {
             if ( mag[i] > mag_max )
                 mag_max = mag[i];
@@ -373,7 +373,7 @@ void magnetic_field_analysis() {
             mag_max, mag_min,
             log_mag_max, log_mag_min );
 
-    for ( i=0; i<PicSize*PicSize; i++ ){
+    for ( i=0; i<para.PicSize*para.PicSize; i++ ){
         if ( mag[i] > 0 )
             mag[i] = log10( mag[i] );
         else
@@ -391,10 +391,10 @@ void magnetic_field_analysis() {
     sprintf( cb_label, "(10^x)  Gauss" );
     sprintf( buf, "./mag/mag_%.2f\n", RedShift );
     giza_open_device( "/png", buf );
-    giza_set_environment( 0.0, PicSize, 0.0, PicSize, 1, -1 );
+    giza_set_environment( 0.0, para.PicSize, 0.0, para.PicSize, 1, -1 );
     giza_set_colour_table( cp, red, green, blue, cpn, 1, 1 );
-    giza_render( PicSize, PicSize, mag, 0, PicSize, 0, PicSize, log_mag_min, log_mag_max, 0, affine );
-    sprintf( xlabel, "%g Mpc", BoxSize / MpcFlag );
+    giza_render( para.PicSize, para.PicSize, mag, 0, para.PicSize, 0, para.PicSize, log_mag_min, log_mag_max, 0, affine );
+    sprintf( xlabel, "%g Mpc", BoxSize / para.MpcFlag );
     sprintf( title, "magnetic field (z=%.2f)", RedShift );
     giza_label( xlabel, "", title );
     giza_colour_bar( &cb_s, 1, 3, log_mag_min, log_mag_max, cb_label );
@@ -458,10 +458,10 @@ void radio_radiation_analysis() {
            log_p_max, log_p_min, x, y;
     char buf[100];
     fprintf( LogFilefd, "radio analysis ...\n" );
-    fprintf( LogFilefd, "Alpha =%g\n", Alpha );
-    p = malloc( sizeof( double ) * PicSize * PicSize );
-    memset( p, 0, sizeof( double ) * PicSize * PicSize );
-    dx = dy = BoxSize / PicSize;
+    fprintf( LogFilefd, "Alpha =%g\n", para.Alpha );
+    p = malloc( sizeof( double ) * para.PicSize * para.PicSize );
+    memset( p, 0, sizeof( double ) * para.PicSize * para.PicSize );
+    dx = dy = BoxSize / para.PicSize;
     p_max = -DBL_MAX;
     p_min =  DBL_MAX;
     for ( i=0; i<N_Gas; i++ ) {
@@ -471,21 +471,21 @@ void radio_radiation_analysis() {
                 pow( SphP[i].B[1],2.0 ) + pow( SphP[i].B[2], 2.0 ) );
             q = SphP[i].CRE_Q0 * pow( SphP[i].Density, 0.3333333 );
             //printf( "q=%g, B=%g\n", q, B );
-            dEdt = cre_tau_synchrotron_radiation( Alpha, q, B );
+            dEdt = cre_tau_synchrotron_radiation( para.Alpha, q, B );
             SphP[i].P = SphP[i].CRE_E0 / dEdt;
             SphP[i].P /= ( erg/s );
             x = P[i].Pos[0];
             y = P[i].Pos[1];
             xi = x / dx;
             yi = y / dy;
-            p[ xi*PicSize + yi ] += sqrt( pow( SphP[i].B[0], 2.0 ) +
+            p[ xi*para.PicSize + yi ] += sqrt( pow( SphP[i].B[0], 2.0 ) +
                 pow( SphP[i].B[1],2.0 ) + pow( SphP[i].B[2], 2.0 ) );
             //printf( "%g\n", SphP[i].CRE_C0 );
         //SphP[i].vL = ELECTRONMASS * B / ( 2 * M_PI * ELECTRONCHARGE * c_in_cgs );
         //printf( "%g\n", SphP[i].vL );
         }
     }
-    for ( i=0; i<PicSize*PicSize; i++ ){
+    for ( i=0; i<para.PicSize*para.PicSize; i++ ){
         if ( p[i] > 0 ) {
             if ( p[i] > p_max )
                 p_max = p[i];
@@ -499,7 +499,7 @@ void radio_radiation_analysis() {
             "log_p_max: %g, log_p_min: %g\n",
             p_max, p_min,
             log_p_max, log_p_min );
-    for ( i=0; i<PicSize*PicSize; i++ ){
+    for ( i=0; i<para.PicSize*para.PicSize; i++ ){
         if ( p[i] > 0 )
             p[i] = log10( p[i] );
         else
@@ -517,11 +517,11 @@ void radio_radiation_analysis() {
     sprintf( cb_label, "(10^x)" );
     sprintf( buf, "./rad/rad_%.2f\n", RedShift );
     giza_open_device( "/png", buf );
-    giza_set_environment( 0.0, PicSize, 0.0, PicSize, 1, -1 );
+    giza_set_environment( 0.0, para.PicSize, 0.0, para.PicSize, 1, -1 );
     giza_set_colour_table( cp, red, green, blue, cpn, 1, 1 );
-    giza_render( PicSize, PicSize, p, 0, PicSize, 0, PicSize,
+    giza_render( para.PicSize, para.PicSize, p, 0, para.PicSize, 0, para.PicSize,
             log_p_min, log_p_max, 0, affine );
-    sprintf( xlabel, "%g Mpc", BoxSize / MpcFlag );
+    sprintf( xlabel, "%g Mpc", BoxSize / para.MpcFlag );
     sprintf( title, "radio radiation (z=%.2f)", RedShift );
     giza_label( xlabel, "", title );
     giza_colour_bar( &cb_s, 1, 3, log_p_min, log_p_max, cb_label );
