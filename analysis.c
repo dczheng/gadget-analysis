@@ -395,6 +395,7 @@ void magnetic_field_analysis() {
 
 double cre_beta_inte( double x, void *params ) {
     double *p = params;
+    //printf( "%g %g\n", p[0], p[1] );
     return pow( x, p[0]-1.0 ) * pow( 1.0-x, p[1]-1.0 );
 }
 
@@ -412,7 +413,9 @@ double cre_beta( double a, double b, double x ) {
     F.params = params;
     params[0] = a;
     params[1] = b;
-    gsl_integration_qag( &F, 1e-20, x,
+    if ( 1.0 - x < 1e-10 )
+        x = 1 - 1e-10;
+    gsl_integration_qag( &F, 1e-10, x,
             GSL_INTE_ERR_ABS, GSL_INTE_ERR_REL, GSL_INTE_WS_LEN, GSL_INTE_KEY,
             inte_ws, &r, &err );
     return r;
@@ -440,9 +443,10 @@ double cre_tau_synchrotron_radiation( double alpha, double q, double B ) {
 }
 
 void radio_radiation_analysis() {
-    int i, j, k, xi, yi;
+    int i, j, xi, yi;
     double B, dEdt, q, *p, dx, dy, p_max, p_min,
-           log_P_max, log_P_min, x, y;
+           log_p_max, log_p_min, x, y;
+    char buf[100];
     puts( "radio analysis ..." );
     printf( "Alpha =%g\n", Alpha );
     p = malloc( sizeof( double ) * PicSize * PicSize );
@@ -456,6 +460,7 @@ void radio_radiation_analysis() {
             B = sqrt( pow( SphP[i].B[0], 2.0 ) +
                 pow( SphP[i].B[1],2.0 ) + pow( SphP[i].B[2], 2.0 ) );
             q = SphP[i].CRE_Q0 * pow( SphP[i].Density, 0.3333333 );
+            //printf( "q=%g, B=%g\n", q, B );
             dEdt = cre_tau_synchrotron_radiation( Alpha, q, B );
             SphP[i].P = SphP[i].CRE_E0 / dEdt;
             SphP[i].P /= ( erg/s );
@@ -470,6 +475,45 @@ void radio_radiation_analysis() {
         //printf( "%g\n", SphP[i].vL );
         }
     }
+    for ( i=0; i<PicSize*PicSize; i++ ){
+        if ( p[i] > 0 ) {
+            if ( p[i] > p_max )
+                p_max = p[i];
+            if ( p[i] < p_min )
+                p_min = p[i];
+        }
+    }
+    log_p_max = log10( p_max );
+    log_p_min = log10( p_min );
+    printf( "p_max: %g, p_min: %g\n",
+            "log_p_max: %g, log_p_min: %g\n",
+            p_max, p_min,
+            log_p_max, log_p_min );
+    for ( i=0; i<PicSize*PicSize; i++ ){
+        if ( p[i] > 0 )
+            p[i] = log10( p[i] );
+        else
+            p[i] = log_p_min - 10;
+    }
+    if ( access( "./rad/", 0 ) == -1 ){
+        printf( "create directory ./rad.\n" );
+        if ( mkdir( "./rad", 0755) == -1 ){
+            printf( "failed create directory ./rad.\n" );
+            endrun( 20171130 );
+        }
+    }
+    sprintf( cb_label, "(10^x)" );
+    sprintf( buf, "./rad/rad_%.2f\n", RedShift );
+    giza_open_device( "/png", buf );
+    giza_set_environment( 0.0, PicSize, 0.0, PicSize, 1, -1 );
+    giza_set_colour_table( cp, red, green, blue, cpn, 1, 1 );
+    giza_render( PicSize, PicSize, p, 0, PicSize, 0, PicSize,
+            log_p_min, log_p_max, 0, affine );
+    sprintf( xlabel, "%g Mpc", BoxSize / MpcFlag );
+    sprintf( title, "radio radiation (z=%.2f)", RedShift );
+    giza_label( xlabel, "", title );
+    giza_colour_bar( &cb_s, 1, 3, log_p_min, log_p_max, cb_label );
+    giza_close_device();
     puts( "radio analysis ... done.");
     free( p );
 }
@@ -518,8 +562,6 @@ void gas_analysis(){
     gas_density_analysis();
     printf( "\n" );
     pos_analysis( 0 );
-    printf( "\n" );
-    magnetic_field_analysis();
     printf( "\n" );
     magnetic_field_analysis();
     printf( "\n" );

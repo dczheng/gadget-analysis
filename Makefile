@@ -1,4 +1,4 @@
-CC      = gcc
+CC      = mpicc
 CFLAGS  =  `pkg-config --cflags gsl ` -DH5_USE_16_API
 CLIBS   =  `pkg-config --libs  gsl giza` -lhdf5 -lm
 EXEC    = ./gadget-analysis

@@ -2,6 +2,7 @@
 
 void endrun( int ierr ) {
     fprintf( stderr, "EXIT CODE: %i\n", ierr );
+    MPI_Abort( MPI_COMM_WORLD, ierr );
     exit( ierr );
 }
 
