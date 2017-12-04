@@ -469,6 +469,88 @@ void magnetic_field_analysis() {
     fprintf( LogFilefd, "magnetic field analysis ... done.\n" );
 }
 
+void divB_analysis() {
+    double *divB, divB_max, divB_min, log_divB_max, log_divB_min,
+           dx, dy, x, y, glob_log_divB_max, glob_log_divB_min;
+    int i, j, xi, yi;
+    char buf[100];
+    fprintf( LogFilefd, "divergence of magnetic field analysis ...\n" );
+    divB = malloc( sizeof( double ) * para.PicSize * para.PicSize );
+    memset( divB, 0, sizeof( double ) * para.PicSize * para.PicSize );
+    dx = dy = BoxSize / para.PicSize;
+    divB_max = -DBL_MAX;
+    divB_min = DBL_MAX;
+    for ( i=0; i<N_Gas; i++ ){
+        x = P[i].Pos[0];
+        y = P[i].Pos[1];
+        xi = x / dx;
+        yi = y / dy;
+        divB[ xi*para.PicSize + yi ] += SphP[i].divB;
+    }
+
+    for ( i=0; i<para.PicSize*para.PicSize; i++ ) {
+        if ( divB[i] > 0 ) {
+            if ( divB[i] > divB_max )
+                divB_max = divB[i];
+            if ( divB[i] < divB_min )
+                divB_min = divB[i];
+        }
+    }
+    if ( divB_max == -DBL_MAX )
+        log_divB_max = -DBL_MAX;
+    else
+        log_divB_max = log10( divB_max );
+
+    if ( divB_min == DBL_MAX )
+        log_divB_min = DBL_MAX;
+    else
+        log_divB_min = log10( divB_min );
+
+    fprintf( LogFilefd, "divB_max: %g, divB_min: %g\n"
+            "log_divB_max: %g, log_divB_min: %g\n",
+            divB_max, divB_min,
+            log_divB_max, log_divB_min );
+
+    if ( ThisTask == 0 )
+    if ( access( "./divB/", 0 ) == -1 ){
+        printf( "create directory ./divB by task %d\n", ThisTask);
+        if ( mkdir( "./divB", 0755) == -1 ){
+            printf( "failed create directory ./divB.\n" );
+            endrun( 20171130 );
+        }
+    }
+    MPI_Barrier( MPI_COMM_WORLD );
+    MPI_Reduce( &log_divB_max, &glob_log_divB_max, 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD );
+    MPI_Bcast( &glob_log_divB_max, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD );
+    MPI_Reduce( &log_divB_min, &glob_log_divB_min, 1, MPI_DOUBLE, MPI_MIN, 0, MPI_COMM_WORLD );
+    MPI_Bcast( &glob_log_divB_min, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD );
+    fprintf( LogFilefd, "glob_log_divB_max: %g, glob_log_divB_min: %g\n",
+            glob_log_divB_max, glob_log_divB_min );
+    for ( i=0; i<para.PicSize*para.PicSize; i++ ){
+        if ( divB[i] > 0 )
+            divB[i] = log10( divB[i] );
+        else
+            divB[i] = glob_log_divB_min;
+    }
+    sprintf( cb_label, "(10^x)" );
+    sprintf( buf, "./divB/divB_%.2f\n", RedShift );
+    giza_open_device( "/png", buf );
+    giza_set_environment( 0.0, para.PicSize, 0.0, para.PicSize, 1, -1 );
+    giza_set_colour_table( cp, red, green, blue, cpn, 1, 1 );
+    giza_render( para.PicSize, para.PicSize, divB, 0, para.PicSize, 0, para.PicSize,
+            glob_log_divB_min, glob_log_divB_max, 0, affine );
+    sprintf( xlabel, "%g Mpc", BoxSize / para.MpcFlag );
+    sprintf( title, "divB (z=%.2f)", RedShift );
+    giza_label( xlabel, "", title );
+    giza_colour_bar( &cb_s, 1, 3, glob_log_divB_min, glob_log_divB_max, cb_label );
+    fp_tmp = stdout;
+    stdout = LogFilefd;
+    giza_close_device();
+    stdout = fp_tmp;
+
+    fprintf( LogFilefd, "divergence of magnetic field analysis ... done.\n" );
+}
+
 double cre_beta_inte( double x, void *params ) {
     double *p = params;
     //printf( "%g %g\n", p[0], p[1] );
@@ -642,8 +724,8 @@ void free_analysis() {
 
 void gas_analysis(){
     mach_analysis();
-    fprintf( LogFilefd, "\n" );
-    hg_electrons_analysis();
+    //fprintf( LogFilefd, "\n" );
+    //hg_electrons_analysis();
     fprintf( LogFilefd, "\n" );
     gas_density_analysis();
     fprintf( LogFilefd, "\n" );
@@ -651,7 +733,9 @@ void gas_analysis(){
     fprintf( LogFilefd, "\n" );
     magnetic_field_analysis();
     fprintf( LogFilefd, "\n" );
-    radio_radiation_analysis();
+    divB_analysis();
+    //fprintf( LogFilefd, "\n" );
+    //radio_radiation_analysis();
     fprintf( LogFilefd, sep_str );;
 }
 
