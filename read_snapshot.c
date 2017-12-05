@@ -23,6 +23,7 @@ int blockpresent( enum iofields blk, int pt ) {
         case IO_RHO:
         case IO_MAG:
         case IO_DIVB:
+        case IO_DBDT:
             if (( pt == 0 ) && ( header.npart[0] != 0 ))
                 return 1;
             else
@@ -53,6 +54,7 @@ int get_block_nbytes( enum iofields blk ) {
             block_nbytes = 3 * sizeof( float );
             break;
         case IO_DIVB:
+        case IO_DBDT:
         case IO_MASS:
         case IO_U:
         case IO_RHO:
@@ -84,6 +86,7 @@ void get_block_dims( int pt, enum iofields blk, hsize_t (*dims)[2] ) {
             (*dims)[1] = 3;
             break;
         case IO_DIVB:
+        case IO_DBDT:
         case IO_MASS:
         case IO_U:
         case IO_RHO:
@@ -119,6 +122,9 @@ void get_dataset_name( enum iofields blk, char *buf ) {
             break;
         case IO_DIVB:
             strcpy( buf, "DivergenceOfMagneticField" );
+            break;
+        case IO_DBDT:
+            strcpy( buf, "RateOfChangeOfMagneticField" );
             break;
         case IO_MASS:
             strcpy( buf, "Masses" );
@@ -231,6 +237,10 @@ void empty_buffer( enum iofields blk, int offset, int pt ) {
         case IO_DIVB:
             for ( i=0; i<n; i++ )
                 SphP[offset+i].divB = *fp++;
+            break;
+        case IO_DBDT:
+            for ( i=0; i<n; i++ )
+                SphP[offset+i].dBdt = *fp++;
             break;
         case IO_U:
             for ( i=0; i<n; i++ )

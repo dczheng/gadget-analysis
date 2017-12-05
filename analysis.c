@@ -551,6 +551,88 @@ void divB_analysis() {
     fprintf( LogFilefd, "divergence of magnetic field analysis ... done.\n" );
 }
 
+void dBdt_analysis() {
+    double *dBdt, dBdt_max, dBdt_min, log_dBdt_max, log_dBdt_min,
+           dx, dy, x, y, glob_log_dBdt_max, glob_log_dBdt_min;
+    int i, j, xi, yi;
+    char buf[100];
+    fprintf( LogFilefd, "rate of change magnetic field analysis ...\n" );
+    dBdt = malloc( sizeof( double ) * para.PicSize * para.PicSize );
+    memset( dBdt, 0, sizeof( double ) * para.PicSize * para.PicSize );
+    dx = dy = BoxSize / para.PicSize;
+    dBdt_max = -DBL_MAX;
+    dBdt_min = DBL_MAX;
+    for ( i=0; i<N_Gas; i++ ){
+        x = P[i].Pos[0];
+        y = P[i].Pos[1];
+        xi = x / dx;
+        yi = y / dy;
+        dBdt[ xi*para.PicSize + yi ] += SphP[i].dBdt;
+    }
+
+    for ( i=0; i<para.PicSize*para.PicSize; i++ ) {
+        if ( dBdt[i] > 0 ) {
+            if ( dBdt[i] > dBdt_max )
+                dBdt_max = dBdt[i];
+            if ( dBdt[i] < dBdt_min )
+                dBdt_min = dBdt[i];
+        }
+    }
+    if ( dBdt_max == -DBL_MAX )
+        log_dBdt_max = -DBL_MAX;
+    else
+        log_dBdt_max = log10( dBdt_max );
+
+    if ( dBdt_min == DBL_MAX )
+        log_dBdt_min = DBL_MAX;
+    else
+        log_dBdt_min = log10( dBdt_min );
+
+    fprintf( LogFilefd, "dBdt_max: %g, dBdt_min: %g\n"
+            "log_dBdt_max: %g, log_dBdt_min: %g\n",
+            dBdt_max, dBdt_min,
+            log_dBdt_max, log_dBdt_min );
+
+    if ( ThisTask == 0 )
+    if ( access( "./dBdt/", 0 ) == -1 ){
+        printf( "create directory ./dBdt by task %d\n", ThisTask);
+        if ( mkdir( "./dBdt", 0755) == -1 ){
+            printf( "failed create directory ./dBdt.\n" );
+            endrun( 20171130 );
+        }
+    }
+    MPI_Barrier( MPI_COMM_WORLD );
+    MPI_Reduce( &log_dBdt_max, &glob_log_dBdt_max, 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD );
+    MPI_Bcast( &glob_log_dBdt_max, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD );
+    MPI_Reduce( &log_dBdt_min, &glob_log_dBdt_min, 1, MPI_DOUBLE, MPI_MIN, 0, MPI_COMM_WORLD );
+    MPI_Bcast( &glob_log_dBdt_min, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD );
+    fprintf( LogFilefd, "glob_log_dBdt_max: %g, glob_log_dBdt_min: %g\n",
+            glob_log_dBdt_max, glob_log_dBdt_min );
+    for ( i=0; i<para.PicSize*para.PicSize; i++ ){
+        if ( dBdt[i] > 0 )
+            dBdt[i] = log10( dBdt[i] );
+        else
+            dBdt[i] = glob_log_dBdt_min;
+    }
+    sprintf( cb_label, "(10^x)" );
+    sprintf( buf, "./dBdt/dBdt_%.2f\n", RedShift );
+    giza_open_device( "/png", buf );
+    giza_set_environment( 0.0, para.PicSize, 0.0, para.PicSize, 1, -1 );
+    giza_set_colour_table( cp, red, green, blue, cpn, 1, 1 );
+    giza_render( para.PicSize, para.PicSize, dBdt, 0, para.PicSize, 0, para.PicSize,
+            glob_log_dBdt_min, glob_log_dBdt_max, 0, affine );
+    sprintf( xlabel, "%g Mpc", BoxSize / para.MpcFlag );
+    sprintf( title, "dBdt (z=%.2f)", RedShift );
+    giza_label( xlabel, "", title );
+    giza_colour_bar( &cb_s, 1, 3, glob_log_dBdt_min, glob_log_dBdt_max, cb_label );
+    fp_tmp = stdout;
+    stdout = LogFilefd;
+    giza_close_device();
+    stdout = fp_tmp;
+
+    fprintf( LogFilefd, "rate of change of magnetic field analysis ... done.\n" );
+}
+
 double cre_beta_inte( double x, void *params ) {
     double *p = params;
     //printf( "%g %g\n", p[0], p[1] );
@@ -734,6 +816,8 @@ void gas_analysis(){
     magnetic_field_analysis();
     fprintf( LogFilefd, "\n" );
     divB_analysis();
+    fprintf( LogFilefd, "\n" );
+    dBdt_analysis();
     //fprintf( LogFilefd, "\n" );
     //radio_radiation_analysis();
     fprintf( LogFilefd, sep_str );;

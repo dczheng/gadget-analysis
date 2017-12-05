@@ -144,7 +144,8 @@ enum iofields {
     IO_CRE_Q0,
     IO_CRE_E0,
     IO_CRE_n0,
-    IO_DIVB
+    IO_DIVB,
+    IO_DBDT
 };
 
 
@@ -197,6 +198,7 @@ extern struct sph_particle_data {
     MyFloat CRE_n0;
     MyFloat B[3];
     MyFloat divB;
+    MyFloat dBdt;
     MyFloat elec;
     double vL;
     double P;
