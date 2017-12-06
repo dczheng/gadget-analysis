@@ -787,9 +787,9 @@ void init_analysis() {
     blue = malloc( sizeof(double) * cpn );
     for ( i=0; i<cpn; i++ ) {
         cp[i] = i / (double)cpn;
-        red[i] =   pow( i, 1.5 ) / pow( cpn, 1.5 );
-        green[i] =  pow( i, 3 ) / pow( cpn, 33 );
-        blue[i] =    pow( i, 1 ) / pow( cpn, 1 );
+        red[i] =   pow( i, 0.9 ) / pow( cpn, 0.9 );
+        green[i] =  pow( i, 2 ) / pow( cpn, 2 );
+        blue[i] =    pow( i, 0.5 ) / pow( cpn, 0.5 );
     }
 
     inte_ws = gsl_integration_workspace_alloc( GSL_INTE_WS_LEN );
