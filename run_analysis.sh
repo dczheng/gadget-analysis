@@ -2,7 +2,7 @@
 out_prefix="test_snapshot"
 sed -i '1s/.*/FilePrefix  '"$out_prefix"'/' gadget-analysis.in
 num=`ls ./$out_prefix* | wc -l`
-echo $num
+echo "snapshot number: " $num
 rm gadget-analysis.log -rf
 mpirun -np $num ./gadget-analysis ./gadget-analysis.in
 
