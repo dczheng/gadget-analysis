@@ -1,4 +1,4 @@
-FilePrefix                    ./snapshot_040
+FilePrefix                    ./snapshot
 NumFiles                      1
 PicSize                       300
 GroupDir                      ./test
@@ -15,3 +15,10 @@ SofteningStar                 1
 SofteningBndry                1
 Alpha                         3.2
 StartSnapIndex                0
+StartX                        0
+EndX                          0
+StartY                        0
+EndY                          0
+StartZ                        0
+EndZ                          0
+ProjectDirection              3

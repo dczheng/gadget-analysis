@@ -8,7 +8,6 @@ void endrun( int ierr ) {
 
 void init_sep_str() {
     memset( sep_str, '-', SEP_LEN-1 );
-    sep_str[ SEP_LEN-2 ] = '\n';
     sep_str[ SEP_LEN-1 ] = '\0';
 }
 
@@ -27,11 +26,8 @@ int main( int argc, char *argv[] ){
 #ifdef DEBUG
     signal( SIGSEGV, signal_hander );
 #endif
-    if ( ThisTask == 0 ){
-        time1 = time( NULL );
-        tb = localtime( &time1 );
-        fprintf( stdout, "Start At: %s", asctime(tb) );
-    }
+    time1 = time( NULL );
+    tb = localtime( &time1 );
 
     if ( ThisTask == 0 )
     if ( access( "./gadget-analysis.log/", 0 ) == -1 ) {
@@ -41,47 +37,44 @@ int main( int argc, char *argv[] ){
             endrun( 20171203 );
         }
     }
+    init_sep_str();
+
     MPI_Barrier( MPI_COMM_WORLD );
     sprintf( LogFile, "./gadget-analysis.log/gadget-analysis-%03d.log", ThisTask );
     LogFilefd = fopen( LogFile, "w" );
-    init_sep_str();
+
+    print_log( sep_str );
+    sprintf( LogBuf, "Start At: %s", asctime(tb) );
+    LogBuf[strlen( LogBuf )-1] = '\0';
+    print_log( LogBuf );
+    print_log( "open log file" );
+
     read_parameters( argv[1] );
-    if ( ThisTask == 0 ){
-        printf( sep_str );
-        printf( "open log file\n" );
-        printf( sep_str );
-    }
-    set_units();
     read_snapshot();
-    MPI_Barrier( MPI_COMM_WORLD );
-    if ( ThisTask == 0 ) {
-        printf( "Read data completed on all task.\n" );
-        printf( sep_str );
-        printf( "Start analysis ...\n" );
-    }
-    init_analysis();
+
+    set_units();
     //group_analysis();
     /******************analysis***********************/
-    gas_analysis();
-    dm_analysis();
-    /*************************************************/
+    slice();
+    analysis();
     MPI_Barrier( MPI_COMM_WORLD );
-    if ( ThisTask == 0 ) {
-        printf( "analysis completed on all task.\n" );
-        printf( sep_str );
-        printf(  "Star free memory ...\n" );
-    }
-    free_analysis();
+    /*************************************************/
+
     free_memory();
     MPI_Barrier( MPI_COMM_WORLD );
-    if ( ThisTask == 0 ) {
-        printf( "free memory completed. \n" );
-        time2 = time( NULL );
-        tb = localtime( &time2 );
-        printf( sep_str );
-        fprintf( stdout, "End At: %s", asctime(tb) );
-        fprintf( stdout, "Total Time %i\n", time2-time1 );
-    }
+
+    time2 = time( NULL );
+    tb = localtime( &time2 );
+
+    print_log( sep_str );
+    sprintf( LogBuf, "End At: %s", asctime(tb) );
+    LogBuf[strlen( LogBuf )-1] = '\0';
+    print_log( LogBuf );
+
+    sprintf( LogBuf, "Total Time %i", time2-time1 );
+    print_log( LogBuf );
+    print_log( sep_str );
+
     fclose( LogFilefd );
     MPI_Finalize();
 }

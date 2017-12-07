@@ -9,13 +9,18 @@ void read_parameters( char *fn ) {
     void *addr[MAXTAGS];
     char tag[MAXTAGS][50], buf[200], buf1[200], buf2[200], buf3[200];
         int id[MAXTAGS], nt, i, j, errflag=0;;
+        print_log( sep_str );
+        print_log( "read parameter..." );
     if ( ThisTask == 0 ) {
-        fputs( sep_str, stdout );
-        fprintf( stdout, "Read Parameter... \n" );
         fd = fopen( fn, "r" );
         if ( NULL == fd ) {
             fprintf( stderr, "Faile to Open Parameter file %s\n", fn );
             endrun( 1 );
+        }
+
+        if ( sizeof( long long ) != 8 ) {
+            printf( "Type `long long` is no 64 bit on this platform. Stopping. \n" );
+            endrun( 20171207 );
         }
 
         nt = 0;
@@ -87,6 +92,34 @@ void read_parameters( char *fn ) {
         addr[nt] = &para.StartSnapIndex;
         id[nt++] = INT;
 
+        strcpy( tag[nt], "ProjectDirection" );
+        addr[nt] = &para.ProjectDirection;
+        id[nt++] = INT;
+
+        strcpy( tag[nt], "StartX" );
+        addr[nt] = &para.StartX;
+        id[nt++] = REAL;
+
+        strcpy( tag[nt], "EndX" );
+        addr[nt] = &para.EndX;
+        id[nt++] = REAL;
+
+        strcpy( tag[nt], "StartY" );
+        addr[nt] = &para.StartY;
+        id[nt++] = REAL;
+
+        strcpy( tag[nt], "EndY" );
+        addr[nt] = &para.EndY;
+        id[nt++] = REAL;
+
+        strcpy( tag[nt], "StartZ" );
+        addr[nt] = &para.StartZ;
+        id[nt++] = REAL;
+
+        strcpy( tag[nt], "EndZ" );
+        addr[nt] = &para.EndZ;
+        id[nt++] = REAL;
+
         while( !feof( fd ) ) {
             *buf = 0;
             fgets( buf, 200, fd );
@@ -104,15 +137,18 @@ void read_parameters( char *fn ) {
                 switch ( id[j] ) {
                     case REAL:
                         *( (double*)addr[j] ) = atof( buf2 );
-                        fprintf( stdout, "%-35s: %g\n", buf1, *((double*)addr[j]) );
+                        sprintf( LogBuf, "%-35s: %g", buf1, *((double*)addr[j]) );
+                        print_log( LogBuf );
                         break;
                     case INT:
                         *( (int*)addr[j] ) = atoi( buf2 );
-                        fprintf( stdout, "%-35s: %d\n", buf1, *((int*)addr[j]) );
+                        sprintf( LogBuf, "%-35s: %d", buf1, *((int*)addr[j]) );
+                        print_log( LogBuf );
                         break;
                     case STRING:
                         strcpy( (char*)addr[j], buf2 );
-                        fprintf( stdout, "%-35s: %s\n", buf1, buf2 );
+                        sprintf( LogBuf, "%-35s: %s", buf1, buf2 );
+                        print_log( LogBuf );
                         break;
                 }
             }
@@ -133,5 +169,6 @@ void read_parameters( char *fn ) {
     }
     MPI_Barrier( MPI_COMM_WORLD );
     MPI_Bcast( &para, sizeof( struct para_struct ), MPI_BYTE, 0, MPI_COMM_WORLD );
+    print_log( sep_str );
 }
 

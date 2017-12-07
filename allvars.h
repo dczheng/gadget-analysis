@@ -15,6 +15,8 @@
 #include "limits.h"
 #include "sys/stat.h"
 
+#define DEBUG
+
 #define MAX_PARA_FILE_LINE_LEN 200
 #define SEP_LEN 50
 #define IO_NBLOCKS 100
@@ -22,7 +24,37 @@
 #define SFR
 #define BLACK_HOLES
 #define SEC_PER_MEGAYEAR 3.155e13
-#define DEBUG
+
+#define PROTONMASS   1.6726e-24
+#define ELECTRONMASS 9.10953e-28
+#define ELECTRONCHARGE  4.8032e-10
+#define BOLTZMANN      1.38066e-16
+
+#define cgs_cm ( header.HubbleParam / para.UnitLength_in_cm )
+#define cgs_g  ( header.HubbleParam / para.UnitMass_in_g )
+#define cgs_s  ( header.HubbleParam / para.UnitTime_in_s )
+#define cgs_erg ( cgs_g*cgs_cm*cgs_cm/(cgs_s*cgs_s))
+#define cgs_keV (1.602e-9*cgs_erg)
+#define deg 1.0
+#define cgs_mp (PROTONMASS * cgs_g)
+#define cgs_me (ELECTRONMASS * cgs_g)
+#define k_B (BOLTZMANN * cgs_erg / deg)
+#define cgs_c (2.9979e10*cgs_cm/cgs_s)
+#define c 2.9979e10
+#define HBAR ( 1.05457e-27 * cgs_cm * cgs_cm * cgs_g / cgs_s )
+#define e2  ( HBAR * c / 137.04 )
+#define statcoul sqrt( cgs_erg * cgs_cm )
+#define cgs_mpc2 ( cgs_mp * cgs_c * cgs_c )
+#define cgs_mec2 ( cgs_me * cgs_c * cgs_c )
+#define cgs_c2   ( c * c )
+
+#define GSL_INTE_WS_LEN 1000
+#define GSL_INTE_ERR_ABS 0.0
+#define GSL_INTE_ERR_REL 1e-3
+#define GSL_INTE_KEY GSL_INTEG_GAUSS15
+
+#define SQR(X) ( X*X )
+#define CUBE(X) ( X*X*X )
 
 #ifdef LONGIDS
 typedef unsigned long long MyIDType;
@@ -152,26 +184,6 @@ enum iofields {
 extern struct io_header header;
 extern struct group_struct *group;
 
-extern char sep_str[ SEP_LEN ];
-extern int ThisTask, NumTask;
-extern double BoxSize, RedShift;
-extern void *CommBuffer;
-extern long long NumPart, N_Gas, TotNgroups;
-extern char LogFile[ FILENAME_MAX ];
-extern FILE *LogFilefd;
-extern struct para_struct {
-    char FilePrefix[ FILENAME_MAX ], GroupDir[ FILENAME_MAX ];
-    FILE *LogFilefd;
-    long long PicSize, BufferSize, NumFiles;
-    int StartSnapIndex, MpcFlag;
-    double SofteningTable[6], Alpha;
-    double UnitTime_in_s,
-         UnitMass_in_g,
-         UnitLength_in_cm,
-         UnitDensity_in_cgs,
-         UnitEnergy_in_cgs,
-         UnitVelocity_in_cm_per_s;
-}para;
 extern struct particle_data {
     MyFloat Pos[3];
     MyFloat Mass;
@@ -204,6 +216,34 @@ extern struct sph_particle_data {
     double P;
 } *SphP;
 
+extern char sep_str[ SEP_LEN ];
+extern int ThisTask, NumTask;
+extern double BoxSize, RedShift;
+extern void *CommBuffer;
+extern long long NumPart, N_Gas, TotNgroups, SliceStart[6], SliceEnd[6];
+extern char LogFile[ FILENAME_MAX ], LogBuf[200];
+extern FILE *LogFilefd;
+extern struct para_struct {
+    char FilePrefix[ FILENAME_MAX ], GroupDir[ FILENAME_MAX ];
+    FILE *LogFilefd;
+    long long PicSize, BufferSize, NumFiles;
+    int StartSnapIndex, MpcFlag, ProjectDirection;
+    double SofteningTable[6], Alpha;
+    double UnitTime_in_s,
+         UnitMass_in_g,
+         UnitLength_in_cm,
+         UnitDensity_in_cgs,
+         UnitEnergy_in_cgs,
+         UnitVelocity_in_cm_per_s;
+    double StartX, EndX, StartY, EndY, StartZ, EndZ;
+}para;
+
+extern int cpn;
+extern double *cp, *red, *green, *blue, affine[6];
+extern char cb_s, cb_label[100], title[100], xlabel[100], ylabel[100];
+extern gsl_integration_workspace *inte_ws;
+extern FILE *fp_tmp;
+
 
 #ifdef DEBUG
     extern float debug_f;
@@ -220,14 +260,22 @@ void read_snapshot();
 void free_memory();
 void get_dataset_name( enum iofields blk, char *buf );
 void magnetic_field_analysis();
-void gas_analysis();
-void dm_analysis();
 void group_analysis();
 void read_group();
 void free_group();
 void signal_hander( int sig );
 void endrun( int ierr );
 void read_parameters();
-void init_analysis();
-void free_analysis();
 void set_units();
+void slice();
+void print_log( char *log );
+void get_projection_index( int *i, int *j );
+
+void analysis();
+void pos_analysis();
+void mach_analysis();
+void gas_density_analysis();
+void hge_electrons_analysis();
+void cosmic_rays_analysis();
+void magnetic_field_analysis();
+void radio_radiation_analysis();

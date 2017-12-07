@@ -277,7 +277,6 @@ void empty_buffer( enum iofields blk, int offset, int pt ) {
 }
 
 void read_header( char *fn ) {
-    //fprintf( stdout, "reading header From %s\n", file_name );
     hdf5_file = H5Fopen( fn, H5F_ACC_RDONLY, H5P_DEFAULT);
     hdf5_group = H5Gopen(hdf5_file, "/Header");
 
@@ -359,43 +358,62 @@ void read_header( char *fn ) {
 
 void show_header( struct io_header header ) {
     int i;
-    fputs( sep_str, LogFilefd );
-    fputs( "header Info: \n", LogFilefd );
-    fprintf( LogFilefd, "%-25s: ", "npart" );
+    print_log( sep_str );
+    print_log( "header Info:" );
+
+    sprintf( LogBuf, "%-25s: ", "npart" );
     for ( i=0; i<6; i++ )
-        fprintf( LogFilefd, "%li ", header.npart[i] );
-    fprintf( LogFilefd, "\n" );
-    fprintf( LogFilefd, "%-25s: ", "mass" );
+        sprintf( LogBuf, "%s%li ", LogBuf, header.npart[i] );
+    print_log( LogBuf );
+
+    sprintf( LogBuf, "%-25s: ", "mass" );
     for ( i=0; i<6; i++ )
-        fprintf( LogFilefd, "%lf ", header.mass[i] );
-    fprintf( LogFilefd, "\n" );
-    fprintf( LogFilefd, "%-25s: ", "npartTotal" );
+        sprintf( LogBuf, "%s%lf ", LogBuf, header.mass[i] );
+    print_log( LogBuf );
+
+    sprintf( LogBuf, "%-25s: ", "npartTotal" );
     for ( i=0; i<6; i++ )
-        fprintf( LogFilefd, "%i ", header.npartTotal[i] );
-    fprintf( LogFilefd, "\n" );
-    fprintf( LogFilefd, "%-25s: ", "npartTotalHighWord" );
+        sprintf( LogBuf, "%s%i ", LogBuf, header.npartTotal[i] );
+    print_log( LogBuf );
+
+    sprintf( LogBuf, "%-25s: ", "npartTotalHighWord" );
     for ( i=0; i<6; i++ )
-        fprintf( LogFilefd, "%i ", header.npartTotalHighWord[i] );
-    fprintf( LogFilefd, "\n" );
-    fprintf( LogFilefd, "%-25s: %lf\n", "readshift",             header.redshift );
-    fprintf( LogFilefd, "%-25s: %i\n", "flag_sfr",               header.flag_sfr );
-    fprintf( LogFilefd, "%-25s: %i\n", "flag_feedback",          header.flag_feedback );
-    fprintf( LogFilefd, "%-25s: %i\n", "num_files",              header.num_files );
-    fprintf( LogFilefd, "%-25s: %lf\n", "BoxSize",               header.BoxSize );
-    fprintf( LogFilefd, "%-25s: %lf\n", "Omega0",                header.Omega0 );
-    fprintf( LogFilefd, "%-25s: %lf\n", "OmegaLambda",           header.OmegaLambda );
-    fprintf( LogFilefd, "%-25s: %i\n", "flag_stellarge",         header.flag_stellarage );
-    fprintf( LogFilefd, "%-25s: %i\n", "flag_metals",            header.flag_metals );
-    fprintf( LogFilefd, "%-25s: %i\n", "flag_entropy_instead_u", header.flag_entropy_instead_u );
-    fprintf( LogFilefd, "%-25s: %i\n", "flag_doubleprecision",   header.flag_doubleprecision );
-    fprintf( LogFilefd, "%-25s: %i\n", "flag_ic_info",           header.flag_ic_info );
-    fprintf( LogFilefd, "%-25s: %f\n", "lpt_scalingfactor",      header.lpt_scalingfactor );
-    fputs( sep_str, LogFilefd );
+        sprintf( LogBuf, "%s%i ", LogBuf, header.npartTotalHighWord[i] );
+    print_log( LogBuf );
+
+    sprintf( LogBuf, "%-25s: %lf", "readshift",             header.redshift );
+    print_log( LogBuf );
+    sprintf( LogBuf, "%-25s: %i", "flag_sfr",               header.flag_sfr );
+    print_log( LogBuf );
+    sprintf( LogBuf, "%-25s: %i", "flag_feedback",          header.flag_feedback );
+    print_log( LogBuf );
+    sprintf( LogBuf, "%-25s: %i", "num_files",              header.num_files );
+    print_log( LogBuf );
+    sprintf( LogBuf, "%-25s: %lf", "BoxSize",               header.BoxSize );
+    print_log( LogBuf );
+    sprintf( LogBuf, "%-25s: %lf", "Omega0",                header.Omega0 );
+    print_log( LogBuf );
+    sprintf( LogBuf, "%-25s: %lf", "OmegaLambda",           header.OmegaLambda );
+    print_log( LogBuf );
+    sprintf( LogBuf, "%-25s: %i", "flag_stellarge",         header.flag_stellarage );
+    print_log( LogBuf );
+    sprintf( LogBuf, "%-25s: %i", "flag_metals",            header.flag_metals );
+    print_log( LogBuf );
+    sprintf( LogBuf, "%-25s: %i", "flag_entropy_instead_u", header.flag_entropy_instead_u );
+    print_log( LogBuf );
+    sprintf( LogBuf, "%-25s: %i", "flag_doubleprecision",   header.flag_doubleprecision );
+    print_log( LogBuf );
+    sprintf( LogBuf, "%-25s: %i", "flag_ic_info",           header.flag_ic_info );
+    print_log( LogBuf );
+    sprintf( LogBuf, "%-25s: %f", "lpt_scalingfactor",      header.lpt_scalingfactor );
+    print_log( LogBuf );
+    print_log( sep_str );
 }
 
 void write_header( char *fn, struct io_header header ) {
 
-    fprintf(  LogFilefd, "write header To %s\n", fn  );
+    sprintf(  LogBuf, "write header To %s", fn  );
+    print_log( LogBuf );
     hdf5_file = H5Fcreate( fn, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT );
     //hdf5_file = H5Fopen( fn, H5F_ACC_RDWR, H5P_DEFAULT );
     hdf5_group = H5Gcreate( hdf5_file, "/Header", 0 );
@@ -524,26 +542,31 @@ void allocate_memory() {
         endrun( 0 );
     }
     bytes_tot += bytes;
-    fprintf( LogFilefd, "Allocated %g MB for P.\n", bytes / 1024.0 / 1024.0 );
+    sprintf( LogBuf, "Allocated %g MB for P.", bytes / 1024.0 / 1024.0 );
+    print_log( LogBuf );
+
     if ( !( SphP = malloc( bytes = N_Gas * sizeof( struct sph_particle_data ) ) ) ) {
         printf( "failed to allocate memory for SphP ( %g Mb ).\n", bytes / 1024.0 / 1024.0 );
         endrun( 0 );
     }
     bytes_tot += bytes;
-    fprintf( LogFilefd, "Allocated %g MB for SphP.\n", bytes / 1024.0 / 1024.0 );
+    sprintf( LogBuf, "Allocated %g MB for SphP.", bytes / 1024.0 / 1024.0 );
+    print_log( LogBuf );
 
     if ( !( CommBuffer = malloc( bytes = para.BufferSize * 1024 * 1024  ) ) ) {
         printf( "failed to allocate memory for CommBuffer ( %g Mb ).\n", bytes / 1024.0 / 1024.0 );
         endrun( 0 );
     }
     bytes_tot += bytes;
-    fprintf( LogFilefd, "Allocated %g MB for CommBuffer.\n", bytes / 1024.0 / 1024.0 );
+    sprintf( LogBuf, "Allocated %g MB for CommBuffer.", bytes / 1024.0 / 1024.0 );
+    print_log( LogBuf );
 
-    fprintf( LogFilefd, "Allocate total %g MB.\n", bytes_tot / 1024.0 / 1024.0 );
+    sprintf( LogBuf, "Allocate total %g MB.", bytes_tot / 1024.0 / 1024.0 );
+    print_log( LogBuf );
 }
 
 void free_memory() {
-    fprintf( LogFilefd, "free memory ...\n" );
+    print_log( "free memory ..." );
     free( P );
     free( SphP );
     free( CommBuffer );
@@ -555,6 +578,7 @@ void read_snapshot() {
     long i, file, pc, offset;
     char file_name[FILENAME_MAX], buf[200], buf1[200];
     fputs( "read data ...\n", LogFilefd );
+    print_log( "read_data ..." );
     sprintf( file_name, "%s_%03d.%3i.hdf5", para.FilePrefix, para.StartSnapIndex + ThisTask, 0 );
     if ( para.NumFiles < 2 )
         sprintf( file_name, "%s_%03d.hdf5", para.FilePrefix, para.StartSnapIndex + ThisTask );
@@ -567,9 +591,8 @@ void read_snapshot() {
     N_Gas = header.npartTotal[0] + ( ( (long long)header.npartTotalHighWord[0] ) << 32 );
     BoxSize = header.BoxSize;
     RedShift = header.redshift;
-    fprintf( LogFilefd, "NumPart = %ld, N_Gas = %ld\n", NumPart, N_Gas );
-    if ( ThisTask == 0 )
-        printf( "NumPart = %ld, N_Gas = %ld\n", NumPart, N_Gas );
+    sprintf( LogBuf, "NumPart = %ld, N_Gas = %ld", NumPart, N_Gas );
+    print_log( LogBuf );
     allocate_memory();
     show_header( header );
     for ( blk=0; blk<IO_NBLOCKS; blk++ ) {
@@ -590,7 +613,8 @@ void read_snapshot() {
                         hdf5_file = H5Fopen( file_name, H5F_ACC_RDWR, H5P_DEFAULT );
                         get_dataset_name( blk, buf );
                         get_hdf5_native_type( blk, &hdf5_type );
-                        fprintf( LogFilefd, "[%i] reading %s ...\n", pt, buf );
+                        sprintf( LogBuf, "[%i] reading %s ...", pt, buf );
+                        print_log( LogBuf );
                         sprintf( buf1, "PartType%i/%s", pt, buf );
                         hdf5_dataset = H5Dopen( hdf5_file, buf1 );
                         herr = H5Dread( hdf5_dataset, hdf5_type, H5S_ALL, H5S_ALL, H5P_DEFAULT, CommBuffer );
@@ -603,6 +627,7 @@ void read_snapshot() {
             }
         }
     }
-    fputs( sep_str, LogFilefd );
+    print_log( "read data ... done. " );
+    print_log( sep_str );
     //test();
 }
