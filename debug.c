@@ -10,12 +10,12 @@ void print_vars() {
 }
 
 void signal_hander( int sig ) {
-    fputs( sep_str, stderr );
+    print_log( sep_str );
     switch ( sig ) {
         case SIGSEGV:
             fprintf( stderr, "Get a signal: SIGSEGV on process %d.\n", ThisTask);
             print_vars();
-            fputs( sep_str, stderr );
+            print_log( sep_str );
             endrun( 3 );
             break;
     }

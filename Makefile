@@ -17,7 +17,7 @@ OBJS    = main.o read_snapshot.o  allvars.o analysis.o debug.o read_parameters.o
 
 $(EXEC): $(OBJS)
 	$(CC) $(OBJS) $(CLIBS) -o $(EXEC)
-	#rm -f  $(OBJS)
+	rm -f  $(OBJS)
 %.o: %.c
 	$(CC)  $(CFLAGS) -c  $<
 clean: 
