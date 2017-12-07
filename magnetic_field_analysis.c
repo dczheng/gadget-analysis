@@ -165,11 +165,6 @@ void divB_analysis() {
     for ( i=0; i<SliceEnd[0]; i++ ){
         x = P[i].Pos[proj_i];
         y = P[i].Pos[proj_j];
-        //if ( bmag < 1e-5 ) continue;
-        if ( bmag > divB_max )
-            divB_max = bmag;
-        if ( bmag < divB_min )
-            divB_min = bmag;
         xi = x / dx;
         yi = y / dy;
         i1 = (int)(( x-h ) / dx);
@@ -190,6 +185,10 @@ void divB_analysis() {
         }
         else
             divB[ xi * PicSize + yi ] += SphP[i].divB / ( dx * dy );
+        if ( SphP[i].divB > divB_max )
+            divB_max = SphP[i].divB;
+        if ( SphP[i].divB < divB_min )
+            divB_min = SphP[i].divB;
     }
 
     if ( divB_max == -DBL_MAX )
@@ -291,7 +290,7 @@ void dBdt_analysis() {
     int i, j, xi, yi, N, Nhalf, i1, i2, j1, j2, li, lj, PicSize;
     char buf[100];
     PicSize = para.PicSize;
-    print_log( "div B analysis ..." );
+    print_log( "dBdt analysis ..." );
     dBdt = malloc( sizeof( double ) * PicSize * PicSize );
     memset( dBdt, 0, sizeof( double ) * PicSize * PicSize );
     dx = dy = proj_size / PicSize;
@@ -306,11 +305,6 @@ void dBdt_analysis() {
     for ( i=0; i<SliceEnd[0]; i++ ){
         x = P[i].Pos[proj_i];
         y = P[i].Pos[proj_j];
-        //if ( bmag < 1e-5 ) continue;
-        if ( bmag > dBdt_max )
-            dBdt_max = bmag;
-        if ( bmag < dBdt_min )
-            dBdt_min = bmag;
         xi = x / dx;
         yi = y / dy;
         i1 = (int)(( x-h ) / dx);
@@ -331,6 +325,10 @@ void dBdt_analysis() {
         }
         else
             dBdt[ xi * PicSize + yi ] += SphP[i].dBdt / ( dx * dy );
+        if ( SphP[i].dBdt > dBdt_max )
+            dBdt_max = SphP[i].dBdt;
+        if ( SphP[i].dBdt < dBdt_min )
+            dBdt_min = SphP[i].dBdt;
     }
 
     if ( dBdt_max == -DBL_MAX )
@@ -420,7 +418,7 @@ void dBdt_analysis() {
     stdout = fp_tmp;
 
     free( dBdt );
-    print_log( "div B analysis ... done." );
+    print_log( "dBdt analysis ... done." );
     print_log( sep_str );
 }
 
