@@ -29,33 +29,33 @@ int main( int argc, char *argv[] ){
     time1 = time( NULL );
     tb = localtime( &time1 );
 
-    if ( ThisTask == 0 )
-    if ( access( "./gadget-analysis.log/", 0 ) == -1 ) {
-        printf( "create directory ./gadget-analysis.log/ by task %d\n", ThisTask );
-        if ( mkdir( "./gadget-analysis.log/", 0755 ) == -1 ) {
-            printf( "failed create directory ./gadget-analysis.log/\n" );
-            endrun( 20171203 );
+    init_sep_str();
+    if ( ThisTask == 0 ) {
+        printf( "%s\n", sep_str );
+        if ( access( "./gadget-analysis.log/", 0 ) == -1 ) {
+            printf( "create directory ./gadget-analysis.log/ by task 0\n" );
+            if ( mkdir( "./gadget-analysis.log/", 0755 ) == -1 ) {
+                printf( "failed create directory ./gadget-analysis.log/\n" );
+                endrun( 20171203 );
+            }
         }
     }
-    init_sep_str();
-
     MPI_Barrier( MPI_COMM_WORLD );
     sprintf( LogFile, "./gadget-analysis.log/gadget-analysis-%03d.log", ThisTask );
     LogFilefd = fopen( LogFile, "w" );
 
-    print_log( sep_str );
+    print_log( "open log file" );
     sprintf( LogBuf, "Start At: %s", asctime(tb) );
     LogBuf[strlen( LogBuf )-1] = '\0';
     print_log( LogBuf );
-    print_log( "open log file" );
 
+    print_log( sep_str );
     read_parameters( argv[1] );
     read_snapshot();
 
     set_units();
     //group_analysis();
     /******************analysis***********************/
-    slice();
     analysis();
     MPI_Barrier( MPI_COMM_WORLD );
     /*************************************************/
@@ -66,7 +66,6 @@ int main( int argc, char *argv[] ){
     time2 = time( NULL );
     tb = localtime( &time2 );
 
-    print_log( sep_str );
     sprintf( LogBuf, "End At: %s", asctime(tb) );
     LogBuf[strlen( LogBuf )-1] = '\0';
     print_log( LogBuf );

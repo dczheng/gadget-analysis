@@ -8,13 +8,6 @@ void slice() {
     struct sph_particle_data sphp_tmp;
     print_log( "determine slice info ..." );
 
-    if ( !( para.ProjectDirection == 1 ||
-            para.ProjectDirection == 2 ||
-            para.ProjectDirection == 3 ) ) {
-        printf( "project direction must be 1, 2 or 3 !\n" );
-        endrun( 20171207 );
-    }
-
     if ( para.EndX == 0 ){
         para.StartX = 0;
         para.EndX = BoxSize;
@@ -64,7 +57,7 @@ void slice() {
             }
         }
         SliceStart[pt] = offset;
-        SliceEnd[pt] = offset + index - 1;
+        SliceEnd[pt] = offset + index;
         offset += num;
     }
     sprintf( LogBuf, "Slice Start: " );
@@ -81,22 +74,5 @@ void slice() {
 
     print_log( "determine slice info ... done." );
     print_log( sep_str );
-}
-
-void get_projection_index( int *i, int *j ) {
-    switch( para.ProjectDirection ) {
-        case 1:
-            *i = 2;
-            *j = 3;
-            break;
-        case 2:
-            *i = 1;
-            *j = 3;
-            break;
-        case 3:
-            *i = 1;
-            *j = 2;
-            break;
-    }
 }
 

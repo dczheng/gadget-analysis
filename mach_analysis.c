@@ -6,7 +6,7 @@ void mach_analysis(){
            glob_log_mn_min, glob_log_mn_max;
     char buf[100];
     pt = 0;
-    fprintf( LogFilefd, "mach number analysis ...\n" );
+    print_log( "mach number analysis ..." );
     mn = ( double* ) malloc( sizeof(double) * para.PicSize * para.PicSize );
     memset( mn, 0, sizeof( double ) * para.PicSize * para.PicSize );
     dx = dy = BoxSize / para.PicSize;
@@ -23,8 +23,10 @@ void mach_analysis(){
         if (SphP[i].MachNumber < mn_min)
             mn_min = SphP[i].MachNumber;
     }
-    fprintf( LogFilefd, "SphP Max MachNumber: %g\n", mn_max );
-    fprintf( LogFilefd, "SphP Min MachNumber: %g\n", mn_min );
+    sprintf( LogBuf, "SphP Max MachNumber: %g", mn_max );
+    print_log( LogBuf );
+    sprintf( LogBuf, "SphP Min MachNumber: %g", mn_min );
+    print_log( LogBuf );
     mn_max = -DBL_MAX;
     mn_min = DBL_MAX;
     for ( i=0; i<para.PicSize*para.PicSize; i++ ) {
@@ -43,13 +45,14 @@ void mach_analysis(){
         log_mn_min = DBL_MAX;
     else
         log_mn_min = log10( mn_min );
-    fprintf( LogFilefd, "mn_max: %g, mn_min: %g\n"
-            "log_mn_max: %g, log_mn_min: %g\n",
+    sprintf( LogBuf, "mn_max: %g, mn_min: %g\n"
+            "log_mn_max: %g, log_mn_min: %g",
             mn_max, mn_min, log_mn_max, log_mn_min );
+    print_log( LogBuf );
 
     if ( ThisTask == 0 )
     if ( access( "./mn/", 0 ) == -1 ){
-        printf( "create directory ./mn by task %d\n", ThisTask );
+        print_log( "create directory `./mn` by task 0" );
         if ( mkdir( "./mn/", 0755) == -1 ){
             printf( "failed create directory ./mn.\n" );
             endrun( 20171130 );
@@ -65,8 +68,9 @@ void mach_analysis(){
             mn[i] = log10( mn[i] );
         else
             mn[i] = glob_log_mn_min;
-    fprintf( LogFilefd, "glob_log_mn_max: %g, glob_log_mn_min: %g\n",
+    sprintf( LogBuf, "glob_log_mn_max: %g, glob_log_mn_min: %g",
             glob_log_mn_max, glob_log_mn_min );
+    print_log( LogBuf );
     sprintf( cb_label, "(10^x)" );
     sprintf( buf, "./mn/mn_%.2f.png", RedShift );
     giza_open_device( "/png", buf );
@@ -84,6 +88,7 @@ void mach_analysis(){
     stdout = fp_tmp;
 
     free( mn );
-    fprintf( LogFilefd, "mach number analysis ...done.\n" );
+    print_log( "mach number analysis ... done." );
+    print_log( sep_str );
 }
 

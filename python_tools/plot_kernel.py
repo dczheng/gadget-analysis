@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import numpy as np
 import matplotlib.pyplot as plt
+from scipy.integrate import quad
 
 def k1( q ):
     if 0 <= q <= 0.5:
@@ -33,5 +34,8 @@ for i in range( N ):
 k_2d=ax_k1_2d.imshow( img )
 ax_k1_2d.set_title( 'k1_2d' )
 plt.colorbar( k_2d )
-
 plt.show()
+'''
+f = lambda x: k1(x) * x * x
+print( quad( f, 0, 1 )[0] * np.pi * 4 )
+'''

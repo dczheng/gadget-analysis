@@ -1,252 +1,154 @@
 #include "allvars.h"
 
-void B_analysis(){
-    double *mag, mag_max, mag_min, log_mag_max, log_mag_min,
-           dx, dy, x, y, glob_log_mag_max, glob_log_mag_min;
-    int i, j, xi, yi;
+void B_analysis() {
+    double *B, B_max, B_min, log_B_max, log_B_min,
+           dx, dy, x, y, glob_log_B_max, glob_log_B_min,
+           h, dh, lx, ly, bmag, pic_B_max, pic_B_min, log_pic_B_max,
+           log_pic_B_min, glob_log_pic_B_max, glob_log_pic_B_min ;
+    int i, j, xi, yi, N, Nhalf, i1, i2, j1, j2, li, lj, PicSize;
     char buf[100];
-    fprintf( LogFilefd, "magnetic field analysis ...\n" );
-    mag = malloc( sizeof( double ) * para.PicSize * para.PicSize );
-    memset( mag, 0, sizeof( double ) * para.PicSize * para.PicSize );
-    dx = dy = BoxSize / para.PicSize;
-    mag_max = -DBL_MAX;
-    mag_min = DBL_MAX;
-    for ( i=0; i<N_Gas; i++ ){
-        x = P[i].Pos[0];
-        y = P[i].Pos[1];
+    PicSize = para.PicSize;
+    print_log( "magnetic field analysis ..." );
+    B = malloc( sizeof( double ) * PicSize * PicSize );
+    memset( B, 0, sizeof( double ) * PicSize * PicSize );
+    dx = dy = proj_size / PicSize;
+    B_max = -DBL_MAX;
+    B_min = DBL_MAX;
+    pic_B_max = -DBL_MAX;
+    pic_B_min = DBL_MAX;
+    N = para.KernelN;
+    Nhalf = N / 2;
+    h = para.SofteningTable[0];
+    dh = h / Nhalf;
+    for ( i=0; i<SliceEnd[0]; i++ ){
+        x = P[i].Pos[proj_i];
+        y = P[i].Pos[proj_j];
+        bmag = sqrt( pow(SphP[i].B[0], 2) + pow(SphP[i].B[1], 2) + pow(SphP[i].B[2], 2.0) );
+        //if ( bmag < 1e-5 ) continue;
+        if ( bmag > B_max )
+            B_max = bmag;
+        if ( bmag < B_min )
+            B_min = bmag;
         xi = x / dx;
         yi = y / dy;
-        mag[ xi*para.PicSize + yi ] += sqrt( pow( SphP[i].B[0], 2.0 ) +
-                pow( SphP[i].B[1],2.0 ) + pow( SphP[i].B[2], 2.0 ) );
-    }
-
-    for ( i=0; i<para.PicSize*para.PicSize; i++ ) {
-        if ( mag[i] > 0 ) {
-            if ( mag[i] > mag_max )
-                mag_max = mag[i];
-            if ( mag[i] < mag_min )
-                mag_min = mag[i];
+        i1 = (int)(( x-h ) / dx);
+        i2 = (int)(( x+h ) / dx);
+        j1 = (int)(( y-h ) / dy);
+        j2 = (int)(( y+h ) / dy);
+        if ( i1 != xi || i2 != xi || j1 != yi || j2 != yi ) {
+            for ( li=0; li<N; li++ )
+                for ( lj=0; lj<N; lj++ ){
+                        lx = x + ( li-Nhalf ) * dh;
+                        ly = y + ( lj-Nhalf ) * dh;
+                        i1 = lx / dx;
+                        j1 = ly / dy;
+                        if ( i1 < 0 || i1 >= PicSize ||
+                                j1 < 0 || j1 >= PicSize ) continue;
+                        B[ i1 * PicSize + j1 ] += bmag * KernelMat2D[0][ li*N + lj ] / ( dx * dy );
+                }
         }
+        else
+            B[ xi * PicSize + yi ] += bmag / ( dx * dy );
     }
-    if ( mag_max == -DBL_MAX )
-        log_mag_max = -DBL_MAX;
-    else
-        log_mag_max = log10( mag_max );
 
-    if ( mag_min == DBL_MAX )
-        log_mag_min = DBL_MAX;
+    if ( B_max == -DBL_MAX )
+        log_B_max = -DBL_MAX;
     else
-        log_mag_min = log10( mag_min );
+        log_B_max = log10( B_max );
 
-    fprintf( LogFilefd, "mag_max: %g, mag_min: %g\n"
-            "log_mag_max: %g, log_mag_min: %g\n",
-            mag_max, mag_min,
-            log_mag_max, log_mag_min );
+    if ( B_min == DBL_MAX )
+        log_B_min = DBL_MAX;
+    else
+        log_B_min = log10( B_min );
+
+    sprintf( LogBuf, "Particle: B_max: %g, B_min: %g\n"
+            "log_B_max: %g, log_B_min: %g",
+            B_max, B_min,
+            log_B_max, log_B_min );
+    print_log( LogBuf );
+
+    for ( i=0; i<PicSize*PicSize; i++ ) {
+        if ( B[i] < pic_B_min && B[i] > 0 )
+            pic_B_min = B[i];
+        if ( B[i] > pic_B_max )
+            pic_B_max = B[i];
+    }
+
+    if ( pic_B_max == -DBL_MAX )
+        log_pic_B_max = -DBL_MAX;
+    else
+        log_pic_B_max = log10( pic_B_max );
+
+    if ( pic_B_min == DBL_MAX )
+        log_pic_B_min = DBL_MAX;
+    else
+        log_pic_B_min = log10( pic_B_min );
+
+    sprintf( LogBuf, "Picture: B_max: %g, B_min: %g\n"
+            "log_B_max: %g, log_B_min: %g",
+            pic_B_max, pic_B_min,
+            log_pic_B_max, log_pic_B_min );
+    print_log( LogBuf );
+
 
     if ( ThisTask == 0 )
-    if ( access( "./mag/", 0 ) == -1 ){
-        printf( "create directory ./mag by task %d\n", ThisTask);
-        if ( mkdir( "./mag", 0755) == -1 ){
-            printf( "failed create directory ./mag.\n" );
+    if ( access( "./B/", 0 ) == -1 ){
+        print_log( "create directory `./B` by task 0" );
+        if ( mkdir( "./B", 0755) == -1 ){
+            printf( "failed create directory ./B.\n" );
             endrun( 20171130 );
         }
     }
     MPI_Barrier( MPI_COMM_WORLD );
-    MPI_Reduce( &log_mag_max, &glob_log_mag_max, 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD );
-    MPI_Bcast( &glob_log_mag_max, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD );
-    MPI_Reduce( &log_mag_min, &glob_log_mag_min, 1, MPI_DOUBLE, MPI_MIN, 0, MPI_COMM_WORLD );
-    MPI_Bcast( &glob_log_mag_min, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD );
-    fprintf( LogFilefd, "glob_log_mag_max: %g, glob_log_mag_min: %g\n",
-            glob_log_mag_max, glob_log_mag_min );
-    for ( i=0; i<para.PicSize*para.PicSize; i++ ){
-        if ( mag[i] > 0 )
-            mag[i] = log10( mag[i] );
+    MPI_Reduce( &log_B_max, &glob_log_B_max, 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD );
+    MPI_Bcast( &glob_log_B_max, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD );
+    MPI_Reduce( &log_B_min, &glob_log_B_min, 1, MPI_DOUBLE, MPI_MIN, 0, MPI_COMM_WORLD );
+    MPI_Bcast( &glob_log_B_min, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD );
+    sprintf( LogBuf, "Particle: glob_log_B_max: %g, glob_log_B_min: %g",
+            glob_log_B_max, glob_log_B_min );
+    print_log( LogBuf );
+    MPI_Reduce( &log_pic_B_max, &glob_log_pic_B_max, 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD );
+    MPI_Bcast( &glob_log_pic_B_max, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD );
+    MPI_Reduce( &log_pic_B_min, &glob_log_pic_B_min, 1, MPI_DOUBLE, MPI_MIN, 0, MPI_COMM_WORLD );
+    MPI_Bcast( &glob_log_pic_B_min, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD );
+    sprintf( LogBuf, "Picture: glob_log_B_max: %g, glob_log_B_min: %g",
+            glob_log_pic_B_max, glob_log_pic_B_min );
+    print_log( LogBuf );
+
+    for ( i=0; i<PicSize*PicSize; i++ ){
+        if ( B[i] > 0 )
+            B[i] = log10( B[i] );
         else
-            mag[i] = glob_log_mag_min;
+            B[i] = glob_log_pic_B_min;
     }
-    sprintf( cb_label, "(10^x)  Gauss" );
-    sprintf( buf, "./mag/mag_%.2f\n", RedShift );
+    sprintf( cb_label, "(10^x) G/Kpc^2" );
+    sprintf( buf, "./B/B_%.2f\n", RedShift );
     giza_open_device( "/png", buf );
-    giza_set_environment( 0.0, para.PicSize, 0.0, para.PicSize, 1, -1 );
+    giza_set_environment( 0.0, PicSize, 0.0, PicSize, 1, -1 );
     giza_set_colour_table( cp, red, green, blue, cpn, 1, 1 );
-    giza_render( para.PicSize, para.PicSize, mag, 0, para.PicSize, 0, para.PicSize,
-            glob_log_mag_min, glob_log_mag_max, 0, affine );
+    giza_render( PicSize, PicSize, B, 0, PicSize, 0, PicSize,
+            glob_log_pic_B_min, glob_log_pic_B_max, 0, affine );
     sprintf( xlabel, "%g Mpc", BoxSize / para.MpcFlag );
-    sprintf( title, "magnetic field (z=%.2f)", RedShift );
+    sprintf( title, "B (z=%.2f)", RedShift );
     giza_label( xlabel, "", title );
-    giza_colour_bar( &cb_s, 1, 3, glob_log_mag_min, glob_log_mag_max, cb_label );
+    giza_colour_bar( &cb_s, 1, 3, glob_log_pic_B_min, glob_log_pic_B_max, cb_label );
     fp_tmp = stdout;
     stdout = LogFilefd;
     giza_close_device();
     stdout = fp_tmp;
 
-    fprintf( LogFilefd, "magnetic field analysis ... done.\n" );
+    free( B );
+    print_log( "magnetic field analysis ... done." );
+    print_log( sep_str );
 }
 
 void divB_analysis() {
-    double *divB, divB_max, divB_min, log_divB_max, log_divB_min,
-           dx, dy, x, y, glob_log_divB_max, glob_log_divB_min;
-    int i, j, xi, yi;
-    char buf[100];
-    fprintf( LogFilefd, "divergence of magnetic field analysis ...\n" );
-    divB = malloc( sizeof( double ) * para.PicSize * para.PicSize );
-    memset( divB, 0, sizeof( double ) * para.PicSize * para.PicSize );
-    dx = dy = BoxSize / para.PicSize;
-    divB_max = -DBL_MAX;
-    divB_min = DBL_MAX;
-    for ( i=0; i<N_Gas; i++ ){
-        x = P[i].Pos[0];
-        y = P[i].Pos[1];
-        xi = x / dx;
-        yi = y / dy;
-        divB[ xi*para.PicSize + yi ] += SphP[i].divB;
-    }
 
-    for ( i=0; i<para.PicSize*para.PicSize; i++ ) {
-        if ( divB[i] > 0 ) {
-            if ( divB[i] > divB_max )
-                divB_max = divB[i];
-            if ( divB[i] < divB_min )
-                divB_min = divB[i];
-        }
-    }
-    if ( divB_max == -DBL_MAX )
-        log_divB_max = -DBL_MAX;
-    else
-        log_divB_max = log10( divB_max );
-
-    if ( divB_min == DBL_MAX )
-        log_divB_min = DBL_MAX;
-    else
-        log_divB_min = log10( divB_min );
-
-    fprintf( LogFilefd, "divB_max: %g, divB_min: %g\n"
-            "log_divB_max: %g, log_divB_min: %g\n",
-            divB_max, divB_min,
-            log_divB_max, log_divB_min );
-
-    if ( ThisTask == 0 )
-    if ( access( "./divB/", 0 ) == -1 ){
-        printf( "create directory ./divB by task %d\n", ThisTask);
-        if ( mkdir( "./divB", 0755) == -1 ){
-            printf( "failed create directory ./divB.\n" );
-            endrun( 20171130 );
-        }
-    }
-    MPI_Barrier( MPI_COMM_WORLD );
-    MPI_Reduce( &log_divB_max, &glob_log_divB_max, 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD );
-    MPI_Bcast( &glob_log_divB_max, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD );
-    MPI_Reduce( &log_divB_min, &glob_log_divB_min, 1, MPI_DOUBLE, MPI_MIN, 0, MPI_COMM_WORLD );
-    MPI_Bcast( &glob_log_divB_min, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD );
-    fprintf( LogFilefd, "glob_log_divB_max: %g, glob_log_divB_min: %g\n",
-            glob_log_divB_max, glob_log_divB_min );
-    for ( i=0; i<para.PicSize*para.PicSize; i++ ){
-        if ( divB[i] > 0 )
-            divB[i] = log10( divB[i] );
-        else
-            divB[i] = glob_log_divB_min;
-    }
-    sprintf( cb_label, "(10^x)" );
-    sprintf( buf, "./divB/divB_%.2f\n", RedShift );
-    giza_open_device( "/png", buf );
-    giza_set_environment( 0.0, para.PicSize, 0.0, para.PicSize, 1, -1 );
-    giza_set_colour_table( cp, red, green, blue, cpn, 1, 1 );
-    giza_render( para.PicSize, para.PicSize, divB, 0, para.PicSize, 0, para.PicSize,
-            glob_log_divB_min, glob_log_divB_max, 0, affine );
-    sprintf( xlabel, "%g Mpc", BoxSize / para.MpcFlag );
-    sprintf( title, "divB (z=%.2f)", RedShift );
-    giza_label( xlabel, "", title );
-    giza_colour_bar( &cb_s, 1, 3, glob_log_divB_min, glob_log_divB_max, cb_label );
-    fp_tmp = stdout;
-    stdout = LogFilefd;
-    giza_close_device();
-    stdout = fp_tmp;
-
-    fprintf( LogFilefd, "divergence of magnetic field analysis ... done.\n" );
 }
 
 void dBdt_analysis() {
-    double *dBdt, dBdt_max, dBdt_min, log_dBdt_max, log_dBdt_min,
-           dx, dy, x, y, glob_log_dBdt_max, glob_log_dBdt_min;
-    int i, j, xi, yi;
-    char buf[100];
-    fprintf( LogFilefd, "rate of change magnetic field analysis ...\n" );
-    dBdt = malloc( sizeof( double ) * para.PicSize * para.PicSize );
-    memset( dBdt, 0, sizeof( double ) * para.PicSize * para.PicSize );
-    dx = dy = BoxSize / para.PicSize;
-    dBdt_max = -DBL_MAX;
-    dBdt_min = DBL_MAX;
-    for ( i=0; i<N_Gas; i++ ){
-        x = P[i].Pos[0];
-        y = P[i].Pos[1];
-        xi = x / dx;
-        yi = y / dy;
-        dBdt[ xi*para.PicSize + yi ] += SphP[i].dBdt;
-    }
 
-    for ( i=0; i<para.PicSize*para.PicSize; i++ ) {
-        if ( dBdt[i] > 0 ) {
-            if ( dBdt[i] > dBdt_max )
-                dBdt_max = dBdt[i];
-            if ( dBdt[i] < dBdt_min )
-                dBdt_min = dBdt[i];
-        }
-    }
-    if ( dBdt_max == -DBL_MAX )
-        log_dBdt_max = -DBL_MAX;
-    else
-        log_dBdt_max = log10( dBdt_max );
-
-    if ( dBdt_min == DBL_MAX )
-        log_dBdt_min = DBL_MAX;
-    else
-        log_dBdt_min = log10( dBdt_min );
-
-    fprintf( LogFilefd, "dBdt_max: %g, dBdt_min: %g\n"
-            "log_dBdt_max: %g, log_dBdt_min: %g\n",
-            dBdt_max, dBdt_min,
-            log_dBdt_max, log_dBdt_min );
-
-    if ( ThisTask == 0 )
-    if ( access( "./dBdt/", 0 ) == -1 ){
-        printf( "create directory ./dBdt by task %d\n", ThisTask);
-        if ( mkdir( "./dBdt", 0755) == -1 ){
-            printf( "failed create directory ./dBdt.\n" );
-            endrun( 20171130 );
-        }
-    }
-    MPI_Barrier( MPI_COMM_WORLD );
-    MPI_Reduce( &log_dBdt_max, &glob_log_dBdt_max, 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD );
-    MPI_Bcast( &glob_log_dBdt_max, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD );
-    MPI_Reduce( &log_dBdt_min, &glob_log_dBdt_min, 1, MPI_DOUBLE, MPI_MIN, 0, MPI_COMM_WORLD );
-    MPI_Bcast( &glob_log_dBdt_min, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD );
-    fprintf( LogFilefd, "glob_log_dBdt_max: %g, glob_log_dBdt_min: %g\n",
-            glob_log_dBdt_max, glob_log_dBdt_min );
-    for ( i=0; i<para.PicSize*para.PicSize; i++ ){
-        if ( dBdt[i] > 0 )
-            dBdt[i] = log10( dBdt[i] );
-        else
-            dBdt[i] = glob_log_dBdt_min;
-    }
-    sprintf( cb_label, "(10^x)" );
-    sprintf( buf, "./dBdt/dBdt_%.2f\n", RedShift );
-    giza_open_device( "/png", buf );
-    giza_set_environment( 0.0, para.PicSize, 0.0, para.PicSize, 1, -1 );
-    giza_set_colour_table( cp, red, green, blue, cpn, 1, 1 );
-    giza_render( para.PicSize, para.PicSize, dBdt, 0, para.PicSize, 0, para.PicSize,
-            glob_log_dBdt_min, glob_log_dBdt_max, 0, affine );
-    sprintf( xlabel, "%g Mpc", BoxSize / para.MpcFlag );
-    sprintf( title, "dBdt (z=%.2f)", RedShift );
-    giza_label( xlabel, "", title );
-    giza_colour_bar( &cb_s, 1, 3, glob_log_dBdt_min, glob_log_dBdt_max, cb_label );
-    fp_tmp = stdout;
-    stdout = LogFilefd;
-    giza_close_device();
-    stdout = fp_tmp;
-
-    fprintf( LogFilefd, "rate of change of magnetic field analysis ... done.\n" );
 }
-
 
 
 void magnetic_field_analysis() {

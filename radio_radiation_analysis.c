@@ -55,7 +55,7 @@ void radio_radiation_analysis() {
            log_p_max, log_p_min, x, y,
            glob_log_p_max, glob_log_p_min;
     char buf[100];
-    fprintf( LogFilefd, "radio analysis ...\n" );
+    print_log( "radio analysis ..." );
     fprintf( LogFilefd, "Alpha =%g\n", para.Alpha );
     p = malloc( sizeof( double ) * para.PicSize * para.PicSize );
     memset( p, 0, sizeof( double ) * para.PicSize * para.PicSize );
@@ -93,13 +93,14 @@ void radio_radiation_analysis() {
     }
     log_p_max = log10( p_max );
     log_p_min = log10( p_min );
-    fprintf( LogFilefd, "p_max: %g, p_min: %g\n",
-            "log_p_max: %g, log_p_min: %g\n",
+    sprintf( LogBuf, "p_max: %g, p_min: %g\n",
+            "log_p_max: %g, log_p_min: %g",
             p_max, p_min,
             log_p_max, log_p_min );
+    print_log( LogBuf );
     if ( ThisTask == 0 )
     if ( access( "./rad/", 0 ) == -1 ){
-        printf( "create directory ./rad by task %d\n", ThisTask );
+        print_log( "create directory `./rad` by task 0" );
         if ( mkdir( "./rad", 0755) == -1 ){
             printf( "failed create directory ./rad.\n" );
             endrun( 20171130 );
@@ -110,8 +111,9 @@ void radio_radiation_analysis() {
     MPI_Bcast( &glob_log_p_max, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD );
     MPI_Reduce( &log_p_min, &glob_log_p_min, 1, MPI_DOUBLE, MPI_MIN, 0, MPI_COMM_WORLD );
     MPI_Bcast( &glob_log_p_min, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD );
-    fprintf( LogFilefd, "glob_log_p_max: %g, glob_log_p_min: %g\n",
+    sprintf( LogBuf, "glob_log_p_max: %g, glob_log_p_min: %g",
             glob_log_p_max, glob_log_p_min );
+    print_log( LogBuf );
     for ( i=0; i<para.PicSize*para.PicSize; i++ ){
         if ( p[i] > 0 )
             p[i] = log10( p[i] );
@@ -133,7 +135,8 @@ void radio_radiation_analysis() {
     stdout = LogFilefd;
     giza_close_device();
     stdout = fp_tmp;
-    fprintf( LogFilefd, "radio analysis ... done.\n" );
     free( p );
+    print_log( "radio analysis ... done." );
+    print_log( sep_str );
 }
 

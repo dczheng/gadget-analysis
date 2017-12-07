@@ -18,7 +18,7 @@
 #define DEBUG
 
 #define MAX_PARA_FILE_LINE_LEN 200
-#define SEP_LEN 50
+#define SEP_LEN 80
 #define IO_NBLOCKS 100
 #define LONGIDS
 #define SFR
@@ -218,7 +218,7 @@ extern struct sph_particle_data {
 
 extern char sep_str[ SEP_LEN ];
 extern int ThisTask, NumTask;
-extern double BoxSize, RedShift;
+extern double BoxSize, RedShift, *KernelMat2D[6], *KernelMat3D[6];
 extern void *CommBuffer;
 extern long long NumPart, N_Gas, TotNgroups, SliceStart[6], SliceEnd[6];
 extern char LogFile[ FILENAME_MAX ], LogBuf[200];
@@ -226,8 +226,8 @@ extern FILE *LogFilefd;
 extern struct para_struct {
     char FilePrefix[ FILENAME_MAX ], GroupDir[ FILENAME_MAX ];
     FILE *LogFilefd;
-    long long PicSize, BufferSize, NumFiles;
-    int StartSnapIndex, MpcFlag, ProjectDirection;
+    int StartSnapIndex, MpcFlag, ProjectDirection, KernelN,
+        PicSize, BufferSize, NumFiles;
     double SofteningTable[6], Alpha;
     double UnitTime_in_s,
          UnitMass_in_g,
@@ -243,6 +243,8 @@ extern double *cp, *red, *green, *blue, affine[6];
 extern char cb_s, cb_label[100], title[100], xlabel[100], ylabel[100];
 extern gsl_integration_workspace *inte_ws;
 extern FILE *fp_tmp;
+extern int proj_i, proj_j;
+extern double proj_x, proj_y, proj_size;
 
 
 #ifdef DEBUG
@@ -268,8 +270,8 @@ void endrun( int ierr );
 void read_parameters();
 void set_units();
 void slice();
+void init_projection();
 void print_log( char *log );
-void get_projection_index( int *i, int *j );
 
 void analysis();
 void pos_analysis();
@@ -279,3 +281,6 @@ void hge_electrons_analysis();
 void cosmic_rays_analysis();
 void magnetic_field_analysis();
 void radio_radiation_analysis();
+double kernel( double q );
+void init_kernel_matrix();
+void free_kernel_matrix();

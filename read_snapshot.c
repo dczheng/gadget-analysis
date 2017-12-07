@@ -570,14 +570,14 @@ void free_memory() {
     free( P );
     free( SphP );
     free( CommBuffer );
-    fputs( sep_str, LogFilefd );
+    print_log( "free memory ... done." );
+    print_log( sep_str );
 }
 
 void read_snapshot() {
     int pt, blk, nbytes, rank;
-    long i, file, pc, offset;
+    long i, file, pc, offset, num;
     char file_name[FILENAME_MAX], buf[200], buf1[200];
-    fputs( "read data ...\n", LogFilefd );
     print_log( "read_data ..." );
     sprintf( file_name, "%s_%03d.%3i.hdf5", para.FilePrefix, para.StartSnapIndex + ThisTask, 0 );
     if ( para.NumFiles < 2 )
@@ -626,6 +626,16 @@ void read_snapshot() {
                 }
             }
         }
+    }
+    for ( pt=0, offset=0; pt<6; pt++ ) {
+        num = header.npartTotal[pt] + ( ( ( long long )header.npartTotalHighWord[pt] ) << 32 );
+        if ( num != 0 && header.mass[pt] != 0 ){
+            sprintf( LogBuf, "copy particle %d mass from header to paritcle data", pt );
+            print_log( LogBuf );
+            for ( i=offset; i<offset+num; i++ )
+                P[i].Mass = header.mass[pt];
+        }
+        offset += num;
     }
     print_log( "read data ... done. " );
     print_log( sep_str );

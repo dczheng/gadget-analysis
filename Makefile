@@ -11,11 +11,13 @@ OBJS    = main.o read_snapshot.o  allvars.o analysis.o debug.o read_parameters.o
 		  magnetic_field_analysis.o\
 		  cosmic_ray_analysis.o\
 		  hge_electrons_analysis.o\
-		  radio_radiation_analysis.o
+		  radio_radiation_analysis.o\
+		  projection.o\
+		  kernel.o
 
 $(EXEC): $(OBJS)
 	$(CC) $(OBJS) $(CLIBS) -o $(EXEC)
-	rm -f  $(OBJS)
+	#rm -f  $(OBJS)
 %.o: %.c
 	$(CC)  $(CFLAGS) -c  $<
 clean: 

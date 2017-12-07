@@ -9,7 +9,6 @@ void read_parameters( char *fn ) {
     void *addr[MAXTAGS];
     char tag[MAXTAGS][50], buf[200], buf1[200], buf2[200], buf3[200];
         int id[MAXTAGS], nt, i, j, errflag=0;;
-        print_log( sep_str );
         print_log( "read parameter..." );
     if ( ThisTask == 0 ) {
         fd = fopen( fn, "r" );
@@ -94,6 +93,10 @@ void read_parameters( char *fn ) {
 
         strcpy( tag[nt], "ProjectDirection" );
         addr[nt] = &para.ProjectDirection;
+        id[nt++] = INT;
+
+        strcpy( tag[nt], "KernelN" );
+        addr[nt] = &para.KernelN;
         id[nt++] = INT;
 
         strcpy( tag[nt], "StartX" );

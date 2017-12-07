@@ -6,7 +6,7 @@ void hg_electrons_analysis() {
            glob_log_rho_n_min, glob_log_rho_n_max;
     char buf[100];
     int i,j, xi, yi, zi;
-    fprintf( LogFilefd, "high energy electrons analysis...\n" );
+    print_log( "high energy electrons analysis..." );
     rho_n = ( double* ) malloc( sizeof(double) * para.PicSize * para.PicSize );
     memset( rho_n, 0, sizeof( double ) * para.PicSize * para.PicSize );
     dx = BoxSize / para.PicSize;
@@ -32,13 +32,14 @@ void hg_electrons_analysis() {
     }
     log_rho_n_max = log10( rho_n_max );
     log_rho_n_min = log10( rho_n_min );
-    fprintf( LogFilefd, "rho_n_max: %g, rho_n_min: %g \n"
-             "log_rho_n_max: %g log_rho_n_min: %g\n",
+    sprintf( LogBuf, "rho_n_max: %g, rho_n_min: %g \n"
+             "log_rho_n_max: %g log_rho_n_min: %g",
              rho_n_max, rho_n_min, log_rho_n_max, log_rho_n_min );
+    print_log( LogBuf );
 
     if ( ThisTask == 0 )
     if ( access( "./hge_n/", 0 ) == -1 ){
-        printf( "create directory ./hge_n/ by task %d\n", ThisTask );
+        print_log( "create directory `./hge_n` by task 0" );
         if ( mkdir( "./hge_n/", 0755) == -1 ){
             printf( "failed create directory ./hge_n/.\n" );
             endrun( 20171130 );
@@ -49,8 +50,9 @@ void hg_electrons_analysis() {
     MPI_Bcast( &glob_log_rho_n_max, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD );
     MPI_Reduce( &log_rho_n_min, &glob_log_rho_n_min, 1, MPI_DOUBLE, MPI_MIN, 0, MPI_COMM_WORLD );
     MPI_Bcast( &glob_log_rho_n_min, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD );
-    fprintf( LogFilefd, "glob_log_rho_n_max: %g, glob_log_rho_n_min: %g\n",
+    sprintf( LogBuf, "glob_log_rho_n_max: %g, glob_log_rho_n_min: %g",
             glob_log_rho_n_max, glob_log_rho_n_min );
+    print_log( LogBuf );
     for ( i=0; i<para.PicSize*para.PicSize; i++ ){
         if ( rho_n[i] > 0 )
             rho_n[i] = log10( rho_n[i] );
@@ -74,6 +76,6 @@ void hg_electrons_analysis() {
     stdout = fp_tmp;
 
     free( rho_n );
-    fprintf( LogFilefd, "high energy electrons analysis...done.\n" );
+    print_log( "high energy electrons analysis... done." );
 }
 

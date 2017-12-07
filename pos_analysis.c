@@ -8,7 +8,8 @@ void pos_analysis( int pt ){
            glob_log_rho_max, glob_log_rho_min;
     char buf[200], buf1[100];
     long num, offset;
-    fprintf( LogFilefd, "particle %d positin analysis ...\n", pt );
+    sprintf( LogBuf, "particle %d positin analysis ...", pt );
+    print_log( LogBuf );
     rho = ( double* ) malloc( sizeof(double) * para.PicSize * para.PicSize );
     memset( rho, 0, sizeof( double ) * para.PicSize * para.PicSize );
     dx = dy = BoxSize / para.PicSize;
@@ -42,13 +43,15 @@ void pos_analysis( int pt ){
     log_rho_max = log10( rho_max );
     log_rho_min = log10( rho_min );
 
-    fprintf( LogFilefd, "rho_max: %g, rho_min: %g\n"
-            "log_rho_max: %g, log_rho_min: %g\n",
+    sprintf( LogBuf, "rho_max: %g, rho_min: %g\n"
+            "log_rho_max: %g, log_rho_min: %g",
             rho_max, rho_min, log_rho_max, log_rho_min );
+    print_log( LogBuf );
     sprintf( buf1, "./rho_%d", pt );
     if ( ThisTask == 0 )
     if ( access( buf1, 0 ) == -1 ){
-        printf( "create directory %s by task %d\n", buf1, ThisTask );
+        sprintf( LogBuf, "create directory `%s` by task %d", buf1, ThisTask );
+        print_log( LogBuf );
         if ( mkdir( buf1, 0755) == -1 ){
             printf( "failed create directory %s.\n", buf1 );
             endrun( 20171130 );
@@ -59,8 +62,9 @@ void pos_analysis( int pt ){
     MPI_Bcast( &glob_log_rho_max, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD );
     MPI_Reduce( &log_rho_min, &glob_log_rho_min, 1, MPI_DOUBLE, MPI_MIN, 0, MPI_COMM_WORLD );
     MPI_Bcast( &glob_log_rho_min, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD );
-    fprintf( LogFilefd, "glob_log_rho_max: %g, glob_log_rho_min: %g\n",
+    sprintf( LogBuf, "glob_log_rho_max: %g, glob_log_rho_min: %g",
             glob_log_rho_max, glob_log_rho_min );
+    print_log( LogBuf );
     for ( i=0; i<para.PicSize*para.PicSize; i++ )
         if ( rho[i] > 0 )
             rho[i] = log10( rho[i] );
@@ -84,6 +88,8 @@ void pos_analysis( int pt ){
 
 
     free( rho );
-    fprintf( LogFilefd, "particle %d positin analysis ... done.\n", pt );
+    sprintf( LogBuf, "particle %d positin analysis ... done.", pt );
+    print_log( LogBuf );
+    print_log( sep_str );
 }
 

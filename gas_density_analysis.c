@@ -5,7 +5,7 @@ void gas_density_analysis(){
     double log_rho_max, log_rho_min;
     double glob_log_rho_min, glob_log_rho_max;
     char buf[200];
-    fprintf( LogFilefd, "gas density analysis ...\n");
+    print_log( "gas density analysis ...");
     rho = ( double* ) malloc( sizeof(double) * para.PicSize * para.PicSize );
     memset( rho, 0, sizeof( double ) * para.PicSize * para.PicSize );
     dx = dy = BoxSize / para.PicSize;
@@ -29,12 +29,13 @@ void gas_density_analysis(){
     log_rho_max = log10( rho_max );
     log_rho_min = log10( rho_min );
 
-    fprintf( LogFilefd, "rho_max: %g, rho_min: %g\n"
-            "log_rho_max: %g, log_rho_min: %g\n",
+    sprintf( LogBuf, "rho_max: %g, rho_min: %g\n"
+            "log_rho_max: %g, log_rho_min: %g",
             rho_max, rho_min, log_rho_max, log_rho_min );
+    print_log( LogBuf );
     if ( ThisTask == 0 )
     if ( access( "./gas_rho/", 0 ) == -1 ){
-        printf( "create directory ./gas_rho by task %d\n", ThisTask );
+        print_log( "create directory `./gas_rho` by task 0" );
         if ( mkdir( "./gas_rho", 0755) == -1 ){
             printf( "failed create directory ./gas_rho.\n" );
             endrun( 20171130 );
@@ -45,8 +46,9 @@ void gas_density_analysis(){
     MPI_Bcast( &glob_log_rho_max, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD );
     MPI_Reduce( &log_rho_min, &glob_log_rho_min, 1, MPI_DOUBLE, MPI_MIN, 0, MPI_COMM_WORLD );
     MPI_Bcast( &glob_log_rho_min, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD );
-    fprintf( LogFilefd, "glob_log_rho_max: %g, glob_log_rho_min: %g\n",
+    sprintf( LogBuf, "glob_log_rho_max: %g, glob_log_rho_min: %g",
             glob_log_rho_max, glob_log_rho_min );
+    print_log( LogBuf );
     for ( i=0; i<para.PicSize*para.PicSize; i++ )
         if ( rho[i] > 0 )
             rho[i] = log10( rho[i] );
@@ -70,6 +72,7 @@ void gas_density_analysis(){
     stdout = fp_tmp;
 
     free( rho );
-    fprintf( LogFilefd, "gas density analysis ...done.\n");
+    print_log( "gas density analysis ... done.");
+    print_log( sep_str );
 }
 

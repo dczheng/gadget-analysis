@@ -3,7 +3,7 @@
 char sep_str[ SEP_LEN ];
 long long TotNgroups, NumPart, N_Gas, SliceStart[6], SliceEnd[6];
 int ThisTask, NumTask;
-double BoxSize, RedShift;
+double BoxSize, RedShift, *KernelMat2D[6], *KernelMat3D[6];
 void *CommBuffer;
 char LogFile[ FILENAME_MAX ], LogBuf[200];
 FILE *LogFilefd;
@@ -27,4 +27,7 @@ double *cp, *red, *green, *blue, affine[6];
 char cb_s, cb_label[100], title[100], xlabel[100], ylabel[100];
 gsl_integration_workspace *inte_ws;
 FILE *fp_tmp;
+
+int proj_i, proj_j;
+double proj_x, proj_y, proj_size;
 

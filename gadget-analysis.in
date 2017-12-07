@@ -1,4 +1,4 @@
-FilePrefix                    ./snapshot
+FilePrefix  test_snapshot
 NumFiles                      1
 PicSize                       300
 GroupDir                      ./test
@@ -22,3 +22,4 @@ EndY                          0
 StartZ                        0
 EndZ                          0
 ProjectDirection              3
+KernelN                       10
