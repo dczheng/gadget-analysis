@@ -70,7 +70,7 @@ void B_analysis() {
     for ( i=0; i<PicSize*PicSize; i++ ) {
         if ( B[i] < pic_B_min && B[i] > 0 )
             pic_B_min = B[i];
-        if ( B[i] > pic_B_max )
+        if ( B[i] > pic_B_max && B[i] > 0 )
             pic_B_max = B[i];
     }
 
@@ -210,7 +210,7 @@ void divB_analysis() {
     for ( i=0; i<PicSize*PicSize; i++ ) {
         if ( divB[i] < pic_divB_min && divB[i] > 0 )
             pic_divB_min = divB[i];
-        if ( divB[i] > pic_divB_max )
+        if ( divB[i] > pic_divB_max && divB[i] > 0 )
             pic_divB_max = divB[i];
     }
 
@@ -350,7 +350,7 @@ void dBdt_analysis() {
     for ( i=0; i<PicSize*PicSize; i++ ) {
         if ( dBdt[i] < pic_dBdt_min && dBdt[i] > 0 )
             pic_dBdt_min = dBdt[i];
-        if ( dBdt[i] > pic_dBdt_max )
+        if ( dBdt[i] > pic_dBdt_max && dBdt[i] > 0 )
             pic_dBdt_max = dBdt[i];
     }
 
