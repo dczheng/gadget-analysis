@@ -329,7 +329,7 @@ void gas_density_analysis(){
         y = P[i].Pos[1];
         xi = x / dx;
         yi = y / dy;
-        rho[ xi*para.PicSize + yi ] += SphP[i].Density / ( g/(cm*cm*cm) );
+        rho[ xi*para.PicSize + yi ] += SphP[i].Density; // ( g/(cm*cm*cm) );
     }
     for ( i=0; i<para.PicSize*para.PicSize; i++ ) {
         if ( rho[i] > 0 ) {
