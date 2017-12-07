@@ -27,7 +27,7 @@ void B_analysis() {
         //if ( bmag < 1e-5 ) continue;
         if ( bmag > B_max )
             B_max = bmag;
-        if ( bmag < B_min )
+        if ( bmag < B_min && bmag > 0 )
             B_min = bmag;
         xi = x / dx;
         yi = y / dy;
@@ -187,7 +187,7 @@ void divB_analysis() {
             divB[ xi * PicSize + yi ] += SphP[i].divB / ( dx * dy );
         if ( SphP[i].divB > divB_max )
             divB_max = SphP[i].divB;
-        if ( SphP[i].divB < divB_min )
+        if ( SphP[i].divB < divB_min && SphP[i].divB > 0 )
             divB_min = SphP[i].divB;
     }
 
@@ -327,7 +327,7 @@ void dBdt_analysis() {
             dBdt[ xi * PicSize + yi ] += SphP[i].dBdt / ( dx * dy );
         if ( SphP[i].dBdt > dBdt_max )
             dBdt_max = SphP[i].dBdt;
-        if ( SphP[i].dBdt < dBdt_min )
+        if ( SphP[i].dBdt < dBdt_min && SphP[i].dBdt > 0 )
             dBdt_min = SphP[i].dBdt;
     }
 
