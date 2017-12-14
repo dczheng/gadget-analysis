@@ -68,7 +68,7 @@ void mach_slice() {
     num = SliceEnd[0] - SliceStart[0];
 
     plot_info.h = para.SofteningTable[0];
-    plot_info.log_flag = 0;
+    plot_info.log_flag = 1;
     sprintf( plot_info.data_name, "mn" );
     sprintf( plot_info.xlabel, "%g Mpc", proj_size / para.MpcFlag );
     sprintf( plot_info.ylabel, "" );
