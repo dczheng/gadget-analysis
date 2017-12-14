@@ -63,6 +63,27 @@ void gas_rho_slice() {
     free( plot_info.data );
 }
 
+void mach_slice() {
+    int num, i;
+    num = SliceEnd[0] - SliceStart[0];
+
+    plot_info.h = para.SofteningTable[0];
+    plot_info.log_flag = 0;
+    sprintf( plot_info.data_name, "mn" );
+    sprintf( plot_info.xlabel, "%g Mpc", proj_size / para.MpcFlag );
+    sprintf( plot_info.ylabel, "" );
+    sprintf( plot_info.title, "" );
+    sprintf( plot_info.cb_label, "(10^x)");
+    plot_info.data = malloc( sizeof(double) * num );
+    memset( plot_info.data, 0, sizeof(double) * num );
+    plot_info.istart = SliceStart[0];
+    plot_info.iend = SliceEnd[0];
+    for ( i=SliceStart[0]; i<SliceEnd[0]; i++ )
+        plot_info.data[i-SliceStart[0]] = SphP[i].MachNumber;
+    plot_slice();
+    free( plot_info.data );
+}
+
 void divB_slice() {
     int num, i;
     num = SliceEnd[0] - SliceStart[0];
@@ -113,5 +134,6 @@ void analysis(){
     gas_rho_slice();
     divB_slice();
     gas_vel_slice();
+    mach_slice();
     free_analysis();
 }

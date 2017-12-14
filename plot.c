@@ -199,8 +199,8 @@ void plot_slice() {
     }
     else{
         giza_render( PicSize, PicSize, img, 0, PicSize, 0, PicSize,
-            glob_log_data_min, glob_log_data_max, 0, affine );
-        giza_colour_bar( &cb_s, 1, 3, glob_log_data_min, glob_log_data_max, plot_info.cb_label );
+            glob_img_min, glob_img_max, 0, affine );
+        giza_colour_bar( &cb_s, 1, 3, glob_img_min, glob_img_max, plot_info.cb_label );
     }
     if ( strcmp( plot_info.title, "" ) == 0 ){
         sprintf( plot_info.title, "%s (z=%.2f)", plot_info.data_name, RedShift );
