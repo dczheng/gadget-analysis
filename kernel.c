@@ -54,7 +54,6 @@ void init_kernel_matrix() {
     print_log( sep_str );
 }
 
-
 void free_kernel_matrix() {
     long long num;
     int pt;
@@ -66,6 +65,4 @@ void free_kernel_matrix() {
             free( KernelMat3D[pt] );
         }
     }
-    print_log( "free kernel maxtrix ... done." );
-    print_log( sep_str );
 }

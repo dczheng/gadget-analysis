@@ -238,11 +238,13 @@ extern struct para_struct {
     double StartX, EndX, StartY, EndY, StartZ, EndZ;
 }para;
 
-extern int cpn;
-extern double *cp, *red, *green, *blue, affine[6];
-extern char cb_s, cb_label[100], title[100], xlabel[100], ylabel[100];
+extern struct plot_struct{
+    int log_flag, istart, iend;
+    char data_name[100],cb_label[100], xlabel[100], ylabel[100], title[100];
+    double *data, h;
+}plot_info;
+
 extern gsl_integration_workspace *inte_ws;
-extern FILE *fp_tmp;
 extern int proj_i, proj_j;
 extern double proj_x, proj_y, proj_size;
 
@@ -252,7 +254,7 @@ extern double proj_x, proj_y, proj_size;
     extern int debug_i;
     extern long debug_l;
     extern double debug_d;
-    extern char debug_s[200];
+    extern char *debug_s;
 #endif
 
 
@@ -272,15 +274,10 @@ void set_units();
 void slice();
 void init_projection();
 void print_log( char *log );
-
+void init_plot();
+void free_plot();
+void plot_slice();
 void analysis();
-void pos_analysis();
-void mach_analysis();
-void gas_density_analysis();
-void hg_electrons_analysis();
-void cosmic_rays_analysis();
-void magnetic_field_analysis();
-void radio_radiation_analysis();
 double kernel( double q );
 void init_kernel_matrix();
 void free_kernel_matrix();

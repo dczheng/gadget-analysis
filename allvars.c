@@ -13,20 +13,17 @@ struct sph_particle_data *SphP;
 
 struct io_header header;
 struct group_struct *group;
+struct plot_struct plot_info;
 
 #ifdef DEBUG
     float debug_f;
     int debug_i;
     long debug_l;
     double debug_d;
-    char debug_s[200];
+    char *debug_s;
 #endif
 
-int cpn;
-double *cp, *red, *green, *blue, affine[6];
-char cb_s, cb_label[100], title[100], xlabel[100], ylabel[100];
 gsl_integration_workspace *inte_ws;
-FILE *fp_tmp;
 
 int proj_i, proj_j;
 double proj_x, proj_y, proj_size;
