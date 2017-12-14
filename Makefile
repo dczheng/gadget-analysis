@@ -10,7 +10,7 @@ OBJS    = main.o read_snapshot.o  allvars.o analysis.o debug.o read_parameters.o
 		  pos_analysis.o\
 		  magnetic_field_analysis.o\
 		  cosmic_ray_analysis.o\
-		  hge_electrons_analysis.o\
+		  hge_analysis.o\
 		  radio_radiation_analysis.o\
 		  projection.o\
 		  kernel.o
