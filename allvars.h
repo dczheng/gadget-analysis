@@ -277,7 +277,7 @@ void analysis();
 void pos_analysis();
 void mach_analysis();
 void gas_density_analysis();
-void hge_electrons_analysis();
+void hg_electrons_analysis();
 void cosmic_rays_analysis();
 void magnetic_field_analysis();
 void radio_radiation_analysis();
