@@ -44,9 +44,9 @@ void mach_analysis() {
         }
         else
             mn[ xi * PicSize + yi ] += SphP[i].MachNumber / ( dx * dy );
-        if ( SphP[i].MachNumber > mn_max )
+        if ( SphP[i].MachNumber > mn_max && SphP[i].MachNumber > 0 )
             mn_max = SphP[i].MachNumber;
-        if ( SphP[i].MachNumber < mn_min )
+        if ( SphP[i].MachNumber < mn_min && SphP[i].MachNumber > 0 )
             mn_min = SphP[i].MachNumber;
     }
 

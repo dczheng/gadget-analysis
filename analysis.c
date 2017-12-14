@@ -46,7 +46,7 @@ void analysis(){
     magnetic_field_analysis();
     mach_analysis();
     //fprintf( LogFilefd, "\n" );
-    //hg_electrons_analysis();
+    hg_electrons_analysis();
     //fprintf( LogFilefd, "\n" );
     gas_density_analysis();
     pos_analysis( 0 );

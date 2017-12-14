@@ -24,8 +24,9 @@ void B_analysis() {
         x = P[i].Pos[proj_i];
         y = P[i].Pos[proj_j];
         bmag = sqrt( pow(SphP[i].B[0], 2) + pow(SphP[i].B[1], 2) + pow(SphP[i].B[2], 2.0) );
+        //bmag /= SphP[i].Density;
         //if ( bmag < 1e-5 ) continue;
-        if ( bmag > B_max )
+        if ( bmag > B_max && bmag > 0 )
             B_max = bmag;
         if ( bmag < B_min && bmag > 0 )
             B_min = bmag;
@@ -185,7 +186,7 @@ void divB_analysis() {
         }
         else
             divB[ xi * PicSize + yi ] += SphP[i].divB / ( dx * dy );
-        if ( SphP[i].divB > divB_max )
+        if ( SphP[i].divB > divB_max && SphP[i].divB > 0 )
             divB_max = SphP[i].divB;
         if ( SphP[i].divB < divB_min && SphP[i].divB > 0 )
             divB_min = SphP[i].divB;
@@ -325,7 +326,7 @@ void dBdt_analysis() {
         }
         else
             dBdt[ xi * PicSize + yi ] += SphP[i].dBdt / ( dx * dy );
-        if ( SphP[i].dBdt > dBdt_max )
+        if ( SphP[i].dBdt > dBdt_max && SphP[i].dBdt > 0 )
             dBdt_max = SphP[i].dBdt;
         if ( SphP[i].dBdt < dBdt_min && SphP[i].dBdt > 0 )
             dBdt_min = SphP[i].dBdt;
