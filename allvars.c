@@ -5,7 +5,7 @@ long long TotNgroups, NumPart, N_Gas, SliceStart[6], SliceEnd[6];
 int ThisTask, NumTask;
 double BoxSize, RedShift, *KernelMat2D[6], *KernelMat3D[6];
 void *CommBuffer;
-char LogFile[ FILENAME_MAX ], LogBuf[200];
+char LogFile[ FILENAME_MAX ], LogBuf[500];
 FILE *LogFilefd;
 struct para_struct para;
 struct particle_data *P;

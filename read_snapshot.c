@@ -38,6 +38,8 @@ int blockpresent( enum iofields blk, int pt ) {
                 return 0;
         case IO_CR_Q0:
         case IO_CR_C0:
+        case IO_CR_E0:
+        case IO_CR_n0:
             if (( pt == 0 ) && ( header.npart[0] != 0 ) && para.CrFlag == 1)
                 return 1;
             else
@@ -71,6 +73,8 @@ int get_block_nbytes( enum iofields blk ) {
         case IO_MN:
         case IO_CR_C0:
         case IO_CR_Q0:
+        case IO_CR_E0:
+        case IO_CR_n0:
         case IO_CRE_C0:
         case IO_CRE_Q0:
         case IO_CRE_E0:
@@ -104,6 +108,8 @@ void get_block_dims( int pt, enum iofields blk, hsize_t (*dims)[2] ) {
         case IO_MN:
         case IO_CR_C0:
         case IO_CR_Q0:
+        case IO_CR_E0:
+        case IO_CR_n0:
         case IO_CRE_C0:
         case IO_CRE_Q0:
         case IO_CRE_E0:
@@ -160,6 +166,12 @@ void get_dataset_name( enum iofields blk, char *buf ) {
             break;
         case IO_CR_Q0:
             strcpy( buf, "CR_q0" );
+            break;
+        case IO_CR_E0:
+            strcpy( buf, "CR_E0" );
+            break;
+        case IO_CR_n0:
+            strcpy( buf, "CR_n0" );
             break;
         case IO_CRE_C0:
             strcpy( buf, "CRE_C0" );
@@ -266,6 +278,14 @@ void empty_buffer( enum iofields blk, int offset, int pt ) {
             for ( i=0; i<n; i++ )
                 SphP[offset+i].CR_Q0 = *fp++;
             break;
+        case IO_CR_E0:
+            for ( i=0; i<n; i++ )
+                SphP[offset+i].CR_E0 = *fp++;
+            break;
+        case IO_CR_n0:
+            for ( i=0; i<n; i++ )
+                SphP[offset+i].CR_n0 = *fp++;
+            break;
         case IO_CRE_C0:
             for ( i=0; i<n; i++ )
                 SphP[offset+i].CRE_C0 = *fp++;
@@ -273,6 +293,10 @@ void empty_buffer( enum iofields blk, int offset, int pt ) {
         case IO_CRE_Q0:
             for ( i=0; i<n; i++ )
                 SphP[offset+i].CRE_Q0 = *fp++;
+            break;
+        case IO_CRE_E0:
+            for ( i=0; i<n; i++ )
+                SphP[offset+i].CRE_E0 = *fp++;
             break;
         case IO_CRE_n0:
             for ( i=0; i<n; i++ )

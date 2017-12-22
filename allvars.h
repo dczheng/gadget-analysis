@@ -172,6 +172,8 @@ enum iofields {
     IO_MN,
     IO_CR_C0,
     IO_CR_Q0,
+    IO_CR_E0,
+    IO_CR_n0,
     IO_CRE_C0,
     IO_CRE_Q0,
     IO_CRE_E0,
@@ -204,6 +206,8 @@ extern struct sph_particle_data {
     MyFloat MachNumber;
     MyFloat CR_C0;
     MyFloat CR_Q0;
+    MyFloat CR_n0;
+    MyFloat CR_E0;
     MyFloat CRE_C0;
     MyFloat CRE_Q0;
     MyFloat CRE_E0;
@@ -221,7 +225,7 @@ extern int ThisTask, NumTask;
 extern double BoxSize, RedShift, *KernelMat2D[6], *KernelMat3D[6];
 extern void *CommBuffer;
 extern long long NumPart, N_Gas, TotNgroups, SliceStart[6], SliceEnd[6];
-extern char LogFile[ FILENAME_MAX ], LogBuf[200];
+extern char LogFile[ FILENAME_MAX ], LogBuf[500];
 extern FILE *LogFilefd;
 extern struct para_struct {
     char FilePrefix[ FILENAME_MAX ], GroupDir[ FILENAME_MAX ];
@@ -239,7 +243,7 @@ extern struct para_struct {
 }para;
 
 extern struct plot_struct{
-    int log_flag, istart, iend;
+    int log_flag, istart, iend, global_colorbar_flag;
     char data_name[100],cb_label[100], xlabel[100], ylabel[100], title[100];
     double *data, h;
 }plot_info;
