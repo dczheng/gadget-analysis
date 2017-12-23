@@ -131,6 +131,10 @@ void read_parameters( char *fn ) {
         addr[nt] = &para.CrFlag;
         id[nt++] = INT;
 
+        strcpy( tag[nt], "BFlag" );
+        addr[nt] = &para.BFlag;
+        id[nt++] = INT;
+
         while( !feof( fd ) ) {
             *buf = 0;
             fgets( buf, 200, fd );

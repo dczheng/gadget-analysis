@@ -21,10 +21,14 @@ int blockpresent( enum iofields blk, int pt ) {
                 return 0;
         case IO_MN:
         case IO_RHO:
+            if (( pt == 0 ) && ( header.npart[0] != 0 ))
+                return 1;
+            else
+                return 0;
         case IO_MAG:
         case IO_DIVB:
         case IO_DBDT:
-            if (( pt == 0 ) && ( header.npart[0] != 0 ))
+            if (( pt == 0 ) && ( header.npart[0] != 0 ) && para.BFlag == 1)
                 return 1;
             else
                 return 0;

@@ -231,7 +231,7 @@ extern struct para_struct {
     char FilePrefix[ FILENAME_MAX ], GroupDir[ FILENAME_MAX ];
     FILE *LogFilefd;
     int StartSnapIndex, MpcFlag, ProjectDirection, KernelN,
-        PicSize, BufferSize, NumFiles, HgeFlag, CrFlag;
+        PicSize, BufferSize, NumFiles, HgeFlag, CrFlag, BFlag;
     double SofteningTable[6], Alpha;
     double UnitTime_in_s,
          UnitMass_in_g,

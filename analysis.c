@@ -216,7 +216,6 @@ void hge_e_slice() {
     free( plot_info.data );
 }
 
-
 int compare_gas_rho( const void *a, const void *b ){
     return ((((struct sph_particle_data* )a)->Density) < (((struct sph_particle_data*)b)->Density)) ? 1: -1;
 }
@@ -254,15 +253,15 @@ void vel_value() {
 
 void analysis(){
     init_analysis();
-    magnetic_field_slice();
+    //magnetic_field_slice();
     gas_rho_slice();
-    divB_slice();
+    //divB_slice();
     //gas_vel_slice();
-    mach_slice();
-    hge_n_slice();
-    cr_n_slice();
-    hge_e_slice();
-    cr_e_slice();
+    //mach_slice();
+    //hge_n_slice();
+    //cr_n_slice();
+    //hge_e_slice();
+    //cr_e_slice();
     //vel_value();
     //sort_gas_rho();
     free_analysis();
