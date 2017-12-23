@@ -68,7 +68,7 @@ void mach_slice() {
     num = SliceEnd[0] - SliceStart[0];
 
     plot_info.h = para.SofteningTable[0];
-    plot_info.log_flag = 0;
+    plot_info.log_flag = 1;
     sprintf( plot_info.data_name, "mn" );
     sprintf( plot_info.xlabel, "%g Mpc", proj_size / para.MpcFlag );
     sprintf( plot_info.ylabel, "" );
@@ -128,12 +128,142 @@ void gas_vel_slice() {
     free( plot_info.data );
 }
 
+void hge_n_slice() {
+    int num, i;
+    num = SliceEnd[0] - SliceStart[0];
+
+    plot_info.h = para.SofteningTable[0];
+    plot_info.log_flag = 1;
+    plot_info.global_colorbar_flag = 1;
+    sprintf( plot_info.data_name, "hge_n" );
+    sprintf( plot_info.xlabel, "%g Mpc", proj_size / para.MpcFlag );
+    sprintf( plot_info.ylabel, "" );
+    sprintf( plot_info.title, "" );
+    sprintf( plot_info.cb_label, "(10^x)");
+    plot_info.data = malloc( sizeof(double) * num );
+    memset( plot_info.data, 0, sizeof(double) * num );
+    plot_info.istart = SliceStart[0];
+    plot_info.iend = SliceEnd[0];
+    for ( i=SliceStart[0]; i<SliceEnd[0]; i++ )
+        plot_info.data[i-SliceStart[0]] = SphP[i].CRE_n0 * SphP[i].Density / cgs_mp * CUBE(cgs_cm);
+    plot_slice();
+    free( plot_info.data );
+}
+
+void cr_n_slice() {
+    int num, i;
+    num = SliceEnd[0] - SliceStart[0];
+
+    plot_info.h = para.SofteningTable[0];
+    plot_info.log_flag = 1;
+    plot_info.global_colorbar_flag = 1;
+    sprintf( plot_info.data_name, "cr_n" );
+    sprintf( plot_info.xlabel, "%g Mpc", proj_size / para.MpcFlag );
+    sprintf( plot_info.ylabel, "" );
+    sprintf( plot_info.title, "" );
+    sprintf( plot_info.cb_label, "(10^x)");
+    plot_info.data = malloc( sizeof(double) * num );
+    memset( plot_info.data, 0, sizeof(double) * num );
+    plot_info.istart = SliceStart[0];
+    plot_info.iend = SliceEnd[0];
+    for ( i=SliceStart[0]; i<SliceEnd[0]; i++ )
+        plot_info.data[i-SliceStart[0]] = SphP[i].CR_n0 * SphP[i].Density  / cgs_me * CUBE(cgs_cm);
+    plot_slice();
+    free( plot_info.data );
+}
+
+void cr_e_slice() {
+    int num, i;
+    num = SliceEnd[0] - SliceStart[0];
+
+    plot_info.h = para.SofteningTable[0];
+    plot_info.log_flag = 1;
+    plot_info.global_colorbar_flag = 0;
+    sprintf( plot_info.data_name, "cr_e" );
+    sprintf( plot_info.xlabel, "%g Mpc", proj_size / para.MpcFlag );
+    sprintf( plot_info.ylabel, "" );
+    sprintf( plot_info.title, "" );
+    sprintf( plot_info.cb_label, "(10^x)");
+    plot_info.data = malloc( sizeof(double) * num );
+    memset( plot_info.data, 0, sizeof(double) * num );
+    plot_info.istart = SliceStart[0];
+    plot_info.iend = SliceEnd[0];
+    for ( i=SliceStart[0]; i<SliceEnd[0]; i++ )
+        plot_info.data[i-SliceStart[0]] = SphP[i].CR_E0 * SphP[i].Density / cgs_erg * CUBE(cgs_cm);
+    plot_slice();
+    free( plot_info.data );
+}
+
+void hge_e_slice() {
+    int num, i;
+    num = SliceEnd[0] - SliceStart[0];
+
+    plot_info.h = para.SofteningTable[0];
+    plot_info.log_flag = 1;
+    plot_info.global_colorbar_flag = 0;
+    sprintf( plot_info.data_name, "hge_e" );
+    sprintf( plot_info.xlabel, "%g Mpc", proj_size / para.MpcFlag );
+    sprintf( plot_info.ylabel, "" );
+    sprintf( plot_info.title, "" );
+    sprintf( plot_info.cb_label, "(10^x)");
+    plot_info.data = malloc( sizeof(double) * num );
+    memset( plot_info.data, 0, sizeof(double) * num );
+    plot_info.istart = SliceStart[0];
+    plot_info.iend = SliceEnd[0];
+    for ( i=SliceStart[0]; i<SliceEnd[0]; i++ )
+        plot_info.data[i-SliceStart[0]] = SphP[i].CRE_E0 * SphP[i].Density / cgs_erg * CUBE(cgs_cm);
+    plot_slice();
+    free( plot_info.data );
+}
+
+
+int compare_gas_rho( const void *a, const void *b ){
+    return ((((struct sph_particle_data* )a)->Density) < (((struct sph_particle_data*)b)->Density)) ? 1: -1;
+}
+
+void sort_gas_rho(){
+    int i;
+    qsort( (void*)SphP, N_Gas, sizeof( struct sph_particle_data ), &compare_gas_rho );
+    for ( i=0; i<10; i++ ) {
+        printf( "%g\n", SphP[i].Density / ( cgs_g / CUBE(cgs_cm) ) );
+    }
+    printf( "\n" );
+    for ( i=0; i<10; i++ ) {
+        printf( "%g\n", SphP[N_Gas-10+i].Density / ( cgs_g / CUBE(cgs_cm) ) );
+    }
+}
+
+void vel_value() {
+    print_log( "velocities value analysis ..." );
+    FILE *fd;
+    char buf[20];
+    int i;
+    double v;
+    sprintf( buf, "vel_%i.txt", ThisTask );
+    fd = fopen( buf, "w" );
+    for ( i=0; i<N_Gas; i++ ) {
+        v = sqrt( pow( P[i].Vel[0], 2 ) + pow( P[i].Vel[1], 2 ) + pow( P[i].Vel[2], 2 ) );
+        if ( v > 1000 ) {
+            fprintf( fd, "%i %g\n", P[i].ID, v );
+        }
+    }
+    fclose( fd );
+    print_log( "velocities value analysis ... done" );
+    print_log( sep_str );
+}
+
 void analysis(){
     init_analysis();
     magnetic_field_slice();
     gas_rho_slice();
     divB_slice();
-    gas_vel_slice();
+    //gas_vel_slice();
     mach_slice();
+    hge_n_slice();
+    cr_n_slice();
+    hge_e_slice();
+    cr_e_slice();
+    //vel_value();
+    //sort_gas_rho();
     free_analysis();
 }

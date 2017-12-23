@@ -23,3 +23,5 @@ StartZ                        0
 EndZ                          0
 ProjectDirection              3
 KernelN                       10
+HgeFlag                       1
+CrFlag                        1

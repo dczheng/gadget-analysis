@@ -6,16 +6,18 @@ char cb_s;
 FILE *fp_tmp;
 
 void show_plot_info() {
-    sprintf( LogBuf, "plot info:\n%-15s: %i\n"
-                                 "%-15s: %i\n"
-                                 "%-15s: %i\n"
-                                 "%-15s: %s\n"
-                                 "%-15s: %s\n"
-                                 "%-15s: %s\n"
-                                 "%-15s: %s\n"
-                                 "%-15s: %s\n"
-                                 "%-15s: %g",
+    sprintf( LogBuf, "plot info:\n%-25s: %i\n"
+                                 "%-25s: %i\n"
+                                 "%-25s: %i\n"
+                                 "%-25s: %i\n"
+                                 "%-25s: %s\n"
+                                 "%-25s: %s\n"
+                                 "%-25s: %s\n"
+                                 "%-25s: %s\n"
+                                 "%-25s: %s\n"
+                                 "%-25s: %g",
                                  "log_flag", plot_info.log_flag,
+                                 "global_colorbar_flag", plot_info.global_colorbar_flag,
                                  "istart", plot_info.istart,
                                  "iend", plot_info.iend,
                                  "data_name", plot_info.data_name,
@@ -51,6 +53,7 @@ void init_plot() {
     }
 
     plot_info.log_flag = 1;
+    plot_info.global_colorbar_flag = 1;
     plot_info.istart = 0;
     plot_info.iend = 0;
     plot_info.h = 0;
@@ -69,7 +72,8 @@ void plot_slice() {
            glob_data_max, glob_data_min, glob_log_data_max, glob_log_data_min,
            img_max, img_min, log_img_max, log_img_min,
            glob_img_max, glob_img_min, glob_log_img_max, glob_log_img_min,
-           dx, dy, x, y, h, dh, lx, ly, v;
+           dx, dy, x, y, h, dh, lx, ly, v,
+           cb_max, cb_log_max, cb_min, cb_log_min;
     int i, j, xi, yi, N, Nhalf, i1, i2, j1, j2, li, lj, PicSize;
     char buf[100];
     PicSize = para.PicSize;
@@ -192,15 +196,27 @@ void plot_slice() {
     giza_open_device( "/png", buf );
     giza_set_environment( 0.0, PicSize, 0.0, PicSize, 1, -1 );
     giza_set_colour_table( cp, red, green, blue, cpn, 1, 1 );
+    if ( plot_info.global_colorbar_flag == 1 ){
+        cb_max = glob_img_max;
+        cb_min = glob_img_min;
+        cb_log_max = glob_log_img_max;
+        cb_log_min = glob_log_img_min;
+    }
+    else{
+        cb_max = img_max;
+        cb_min = img_min;
+        cb_log_max = log_img_max;
+        cb_log_min = log_img_min;
+    }
     if ( plot_info.log_flag == 1 ){
         giza_render( PicSize, PicSize, img, 0, PicSize, 0, PicSize,
             glob_log_img_min, glob_log_img_max, 0, affine );
-        giza_colour_bar( &cb_s, 1, 3, glob_log_img_min, glob_log_img_max, plot_info.cb_label );
+        giza_colour_bar( &cb_s, 1, 3, cb_log_min, cb_log_max, plot_info.cb_label );
     }
     else{
         giza_render( PicSize, PicSize, img, 0, PicSize, 0, PicSize,
             glob_img_min, glob_img_max, 0, affine );
-        giza_colour_bar( &cb_s, 1, 3, glob_img_min, glob_img_max, plot_info.cb_label );
+        giza_colour_bar( &cb_s, 1, 3, cb_min, cb_max, plot_info.cb_label );
     }
     if ( strcmp( plot_info.title, "" ) == 0 ){
         sprintf( plot_info.title, "%s (z=%.2f)", plot_info.data_name, RedShift );

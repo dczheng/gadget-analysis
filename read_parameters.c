@@ -123,6 +123,14 @@ void read_parameters( char *fn ) {
         addr[nt] = &para.EndZ;
         id[nt++] = REAL;
 
+        strcpy( tag[nt], "HgeFlag" );
+        addr[nt] = &para.HgeFlag;
+        id[nt++] = INT;
+
+        strcpy( tag[nt], "CrFlag" );
+        addr[nt] = &para.CrFlag;
+        id[nt++] = INT;
+
         while( !feof( fd ) ) {
             *buf = 0;
             fgets( buf, 200, fd );
