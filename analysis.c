@@ -275,16 +275,16 @@ void test_id() {
 
 void analysis(){
     init_analysis();
-    //magnetic_field_slice();
-    //gas_rho_slice();
+    magnetic_field_slice();
+    gas_rho_slice();
     //test_id();
-    //divB_slice();
+    divB_slice();
     //gas_vel_slice();
-    //mach_slice();
-    //hge_n_slice();
-    //cr_n_slice();
-    //hge_e_slice();
-    //cr_e_slice();
+    mach_slice();
+    hge_n_slice();
+    cr_n_slice();
+    hge_e_slice();
+    cr_e_slice();
     //vel_value();
     //sort_gas_rho();
     free_analysis();

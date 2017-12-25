@@ -1,4 +1,4 @@
-FilePrefix  test_snapshot
+FilePrefix  snapshot
 NumFiles                      1
 PicSize                       300
 GroupDir                      ./test
@@ -25,3 +25,4 @@ ProjectDirection              2
 KernelN                       10
 HgeFlag                       1
 CrFlag                        1
+BFlag                         1
