@@ -33,13 +33,14 @@
 #define ELECTRON_MASS            9.10953e-28
 #define ELECTRON_CHARGE          4.8032e-10
 #define BOLTZMANN                1.38066e-16
-#define LIGHTSPEED               2.9979e10
+#define LIGHT_SPEED               2.9979e10
 #define THOMSON_CROSS_SECTION    6.65246e-25
 
 #define GSL_INTE_WS_LEN 1000
 #define GSL_INTE_ERR_ABS 0.0
 #define GSL_INTE_ERR_REL 1e-3
-#define GSL_INTE_KEY GSL_INTEG_GAUSS15
+#define GSL_INTE_KEY GSL_INTEG_GAUSS61
+extern gsl_integration_workspace *inte_ws;
 
 #define SQR(X) ( X*X )
 #define CUBE(X) ( X*X*X )
@@ -248,7 +249,6 @@ extern struct gadget_2_cgs_unit{
     double cm, g, s, erg;
 }g2c;
 
-extern gsl_integration_workspace *inte_ws;
 extern int proj_i, proj_j;
 extern double proj_x, proj_y, proj_size;
 

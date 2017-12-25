@@ -419,6 +419,8 @@ void show_header( struct io_header header ) {
 
     sprintf( LogBuf, "%-25s: %lf", "readshift",             header.redshift );
     print_log( LogBuf );
+    sprintf( LogBuf, "%-25s: %lf", "HubbleParam",           header.HubbleParam );
+    print_log( LogBuf );
     sprintf( LogBuf, "%-25s: %i", "flag_sfr",               header.flag_sfr );
     print_log( LogBuf );
     sprintf( LogBuf, "%-25s: %i", "flag_feedback",          header.flag_feedback );

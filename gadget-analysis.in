@@ -1,4 +1,4 @@
-FilePrefix  snapshot
+FilePrefix  test_snapshot
 NumFiles                      1
 PicSize                       300
 GroupDir                      ./test

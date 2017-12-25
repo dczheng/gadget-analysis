@@ -22,3 +22,9 @@ long get_particle_num( int pt );
 
 void tree_build( int pt );
 void tree_free();
+
+
+double H_a( double a );
+double comoving_distance( double a );
+double angular_distance( double a );
+double luminosity_distance( double a );

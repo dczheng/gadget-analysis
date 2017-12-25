@@ -273,27 +273,89 @@ void test_id() {
     printf( "Star MAX ID: %li, MIN ID: %li\n", id_max, id_min );
 }
 
-void calc_syn() {
+void calc_vl() {
     long i;
-    double n0;
+    double B;
+    for ( i=0; i<N_Gas; i++ ) {
+        B = sqrt( pow( SphP[i].B[0], 2 ) + pow( SphP[i].B[1], 2 ) + pow( SphP[i].B[2], 2 ) );
+        SphP[i].vL = ELECTRON_CHARGE * B / ( 2 * M_PI * ELECTRON_MASS * LIGHT_SPEED );
+    }
+}
+
+void vl_slice() {
+    int num, i;
+    num = SliceEnd[0] - SliceStart[0];
+
+    plot_info.h = All.SofteningTable[0];
+    plot_info.log_flag = 1;
+    plot_info.global_colorbar_flag = 0;
+    sprintf( plot_info.data_name, "vl" );
+    sprintf( plot_info.xlabel, "%g Mpc", proj_size / All.MpcFlag );
+    sprintf( plot_info.ylabel, "" );
+    sprintf( plot_info.title, "" );
+    sprintf( plot_info.cb_label, "(10^x)(MHz)");
+    plot_info.data = malloc( sizeof(double) * num );
+    memset( plot_info.data, 0, sizeof(double) * num );
+    plot_info.istart = SliceStart[0];
+    plot_info.iend = SliceEnd[0];
+    for ( i=SliceStart[0]; i<SliceEnd[0]; i++ )
+        plot_info.data[i-SliceStart[0]] = SphP[i].vL / 1e6;
+    plot_slice();
+    free( plot_info.data );
+}
+
+void calc_syn( double v ) {
+    long i;
+    double B, Ub, n0, vl;
     for ( i=0; i<N_Gas; i++ ) {
         n0 = SphP[i].CRE_n0 * SphP[i].Density * ( g2c.g / CUBE(g2c.cm) );
+        B = sqrt( pow( SphP[i].B[0], 2 ) + pow( SphP[i].B[1], 2 ) + pow( SphP[i].B[2], 2 ) );
+        Ub = B * B / ( 8 * M_PI );
+        vl = SphP[i].vL;
+        SphP[i].P = 2.0 / 3.0 * LIGHT_SPEED * Ub * THOMSON_CROSS_SECTION *
+            pow( v / vl, -(All.Alpha-1) / 2 ) / vl;
     }
+}
+
+void syn_slice() {
+    int num, i;
+    num = SliceEnd[0] - SliceStart[0];
+
+    plot_info.h = All.SofteningTable[0];
+    plot_info.log_flag = 1;
+    plot_info.global_colorbar_flag = 0;
+    sprintf( plot_info.data_name, "syn" );
+    sprintf( plot_info.xlabel, "%g Mpc", proj_size / All.MpcFlag );
+    sprintf( plot_info.ylabel, "" );
+    sprintf( plot_info.title, "" );
+    sprintf( plot_info.cb_label, "(10^x)(erg s^{-1})");
+    plot_info.data = malloc( sizeof(double) * num );
+    memset( plot_info.data, 0, sizeof(double) * num );
+    plot_info.istart = SliceStart[0];
+    plot_info.iend = SliceEnd[0];
+    for ( i=SliceStart[0]; i<SliceEnd[0]; i++ )
+        plot_info.data[i-SliceStart[0]] = SphP[i].P;
+    plot_slice();
+    free( plot_info.data );
 }
 
 void analysis(){
     init_analysis();
     //tree_build( 1 );
     //tree_free();
-    magnetic_field_slice();
-    gas_rho_slice();
+    //calc_vl();
+    //magnetic_field_slice();
+    //gas_rho_slice();
+    //vl_slice();
+    //calc_syn( 1.4e9 );
+    //syn_slice();
     //test_id();
     //divB_slice();
     //gas_vel_slice();
     //mach_slice();
-    hge_n_slice();
+    //hge_n_slice();
     //cr_n_slice();
-    hge_e_slice();
+    //hge_e_slice();
     //cr_e_slice();
     //vel_value();
     //sort_gas_rho();
