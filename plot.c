@@ -93,9 +93,14 @@ void plot_slice() {
     for ( i=plot_info.istart; i<plot_info.iend; i++ ){
         x = P[i].Pos[proj_i];
         y = P[i].Pos[proj_j];
+        x -= para.Start[proj_i];
+        y -= para.Start[proj_j];
+        //printf( "%g %g %g\n", x, y, proj_size );
         v = plot_info.data[ i-plot_info.istart ];
         xi = x / dx;
         yi = y / dy;
+        xi = ( xi >= PicSize-1 ) ? PicSize-1 : xi;
+        yi = ( yi >= PicSize-1 ) ? PicSize-1 : yi;
         i1 = (int)(( x-h ) / dx);
         i2 = (int)(( x+h ) / dx);
         j1 = (int)(( y-h ) / dy);
@@ -113,7 +118,7 @@ void plot_slice() {
                 }
         }
         else
-            img[ xi * PicSize + yi ] += plot_info.data[i-plot_info.istart]/ ( dx * dy );
+            img[ xi * PicSize + yi ] += v / ( dx * dy );
 
         if ( plot_info.data[i-plot_info.istart] > 0 ){
             data_max = ( v > data_max ) ? v : data_max;

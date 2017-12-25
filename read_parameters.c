@@ -100,27 +100,27 @@ void read_parameters( char *fn ) {
         id[nt++] = INT;
 
         strcpy( tag[nt], "StartX" );
-        addr[nt] = &para.StartX;
+        addr[nt] = &para.Start[0];
         id[nt++] = REAL;
 
         strcpy( tag[nt], "EndX" );
-        addr[nt] = &para.EndX;
+        addr[nt] = &para.End[0];
         id[nt++] = REAL;
 
         strcpy( tag[nt], "StartY" );
-        addr[nt] = &para.StartY;
+        addr[nt] = &para.Start[1];
         id[nt++] = REAL;
 
         strcpy( tag[nt], "EndY" );
-        addr[nt] = &para.EndY;
+        addr[nt] = &para.End[1];
         id[nt++] = REAL;
 
         strcpy( tag[nt], "StartZ" );
-        addr[nt] = &para.StartZ;
+        addr[nt] = &para.Start[2];
         id[nt++] = REAL;
 
         strcpy( tag[nt], "EndZ" );
-        addr[nt] = &para.EndZ;
+        addr[nt] = &para.End[2];
         id[nt++] = REAL;
 
         strcpy( tag[nt], "HgeFlag" );

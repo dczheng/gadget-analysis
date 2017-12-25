@@ -8,26 +8,26 @@ void slice() {
     struct sph_particle_data sphp_tmp;
     print_log( "determine slice info ..." );
 
-    if ( para.EndX == 0 ){
-        para.StartX = 0;
-        para.EndX = BoxSize;
+    if ( para.End[0] == 0 ){
+        para.Start[0] = 0;
+        para.End[0] = BoxSize;
     }
 
-    if ( para.EndY == 0 ){
-        para.StartY = 0;
-        para.EndY = BoxSize;
+    if ( para.End[1] == 0 ){
+        para.Start[1] = 0;
+        para.End[1] = BoxSize;
     }
 
-    if ( para.EndZ == 0 ){
-        para.StartZ = 0;
-        para.EndZ = BoxSize;
+    if ( para.End[2] == 0 ){
+        para.Start[2] = 0;
+        para.End[2] = BoxSize;
     }
     sprintf( LogBuf, "StartX: %g, EndX: %g\n"
             "StartY: %g, EndY: %g\n"
             "StartZ: %g, EndZ: %g",
-            para.StartX, para.EndX,
-            para.StartY, para.EndY,
-            para.StartZ, para.EndZ );
+            para.Start[0], para.End[0],
+            para.Start[1], para.End[1],
+            para.Start[2], para.End[2] );
     print_log( LogBuf );
 
     for ( pt=0,offset=0; pt<6; pt++ ) {
@@ -39,12 +39,12 @@ void slice() {
             continue;
         }
         for ( i=offset; i<offset+num; i++ ) {
-            if ( P[i].Pos[0] > para.StartX &&
-                 P[i].Pos[0] < para.EndX &&
-                 P[i].Pos[1] > para.StartY &&
-                 P[i].Pos[1] < para.EndY &&
-                 P[i].Pos[2] > para.StartZ &&
-                 P[i].Pos[2] < para.EndZ ) {
+            if ( P[i].Pos[0] >= para.Start[0] &&
+                 P[i].Pos[0] <= para.End[0] &&
+                 P[i].Pos[1] >= para.Start[1] &&
+                 P[i].Pos[1] <= para.End[1] &&
+                 P[i].Pos[2] >= para.Start[2] &&
+                 P[i].Pos[2] <= para.End[2] ) {
                 p_tmp = P[index];
                 P[index] = P[i];
                 P[i] = P[index];
@@ -57,7 +57,7 @@ void slice() {
             }
         }
         SliceStart[pt] = offset;
-        SliceEnd[pt] = offset + index;
+        SliceEnd[pt] = index;
         offset += num;
     }
     sprintf( LogBuf, "Slice Start: " );

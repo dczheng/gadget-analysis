@@ -20,7 +20,7 @@ struct plot_struct plot_info;
     int debug_i;
     long debug_l;
     double debug_d;
-    char *debug_s;
+    char debug_s[500];
 #endif
 
 gsl_integration_workspace *inte_ws;

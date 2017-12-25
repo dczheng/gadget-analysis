@@ -52,13 +52,13 @@ void gas_rho_slice() {
     sprintf( plot_info.xlabel, "%g Mpc", proj_size / para.MpcFlag );
     sprintf( plot_info.ylabel, "" );
     sprintf( plot_info.title, "" );
-    sprintf( plot_info.cb_label, "(10^x) Msun/Kpc^2");
+    sprintf( plot_info.cb_label, "(10^x) gcm^{-3}Kpc^{-2}");
     plot_info.data = malloc( sizeof(double) * num );
     memset( plot_info.data, 0, sizeof(double) * num );
     plot_info.istart = SliceStart[0];
     plot_info.iend = SliceEnd[0];
     for ( i=SliceStart[0]; i<SliceEnd[0]; i++ )
-        plot_info.data[i-SliceStart[0]] = SphP[i].Density * 10e10;
+        plot_info.data[i-SliceStart[0]] = SphP[i].Density / ( cgs_g / CUBE(cgs_cm) );
     plot_slice();
     free( plot_info.data );
 }

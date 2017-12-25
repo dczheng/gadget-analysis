@@ -239,7 +239,7 @@ extern struct para_struct {
          UnitDensity_in_cgs,
          UnitEnergy_in_cgs,
          UnitVelocity_in_cm_per_s;
-    double StartX, EndX, StartY, EndY, StartZ, EndZ;
+    double Start[3], End[3];
 }para;
 
 extern struct plot_struct{
@@ -258,7 +258,7 @@ extern double proj_x, proj_y, proj_size;
     extern int debug_i;
     extern long debug_l;
     extern double debug_d;
-    extern char *debug_s;
+    extern char debug_s[500];
 #endif
 
 

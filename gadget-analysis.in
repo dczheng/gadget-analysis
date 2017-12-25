@@ -21,7 +21,7 @@ StartY                        0
 EndY                          0
 StartZ                        0
 EndZ                          0
-ProjectDirection              3
+ProjectDirection              2
 KernelN                       10
 HgeFlag                       1
 CrFlag                        1
