@@ -29,28 +29,12 @@
 #define BLACK_HOLES
 #define SEC_PER_MEGAYEAR 3.155e13
 
-#define PROTONMASS   1.6726e-24
-#define ELECTRONMASS 9.10953e-28
-#define ELECTRONCHARGE  4.8032e-10
-#define BOLTZMANN      1.38066e-16
-
-#define cgs_cm ( header.HubbleParam / All.UnitLength_in_cm )
-#define cgs_g  ( header.HubbleParam / All.UnitMass_in_g )
-#define cgs_s  ( header.HubbleParam / All.UnitTime_in_s )
-#define cgs_erg ( cgs_g*cgs_cm*cgs_cm/(cgs_s*cgs_s))
-#define cgs_keV (1.602e-9*cgs_erg)
-#define deg 1.0
-#define cgs_mp (PROTONMASS * cgs_g)
-#define cgs_me (ELECTRONMASS * cgs_g)
-#define k_B (BOLTZMANN * cgs_erg / deg)
-#define cgs_c (2.9979e10*cgs_cm/cgs_s)
-#define c 2.9979e10
-#define HBAR ( 1.05457e-27 * cgs_cm * cgs_cm * cgs_g / cgs_s )
-#define e2  ( HBAR * c / 137.04 )
-#define statcoul sqrt( cgs_erg * cgs_cm )
-#define cgs_mpc2 ( cgs_mp * cgs_c * cgs_c )
-#define cgs_mec2 ( cgs_me * cgs_c * cgs_c )
-#define cgs_c2   ( c * c )
+#define PROTONMASS               1.6726e-24
+#define ELECTRON_MASS            9.10953e-28
+#define ELECTRON_CHARGE          4.8032e-10
+#define BOLTZMANN                1.38066e-16
+#define LIGHTSPEED               2.9979e10
+#define THOMSON_CROSS_SECTION    6.65246e-25
 
 #define GSL_INTE_WS_LEN 1000
 #define GSL_INTE_ERR_ABS 0.0
@@ -259,6 +243,10 @@ extern struct NODE {
     long suns[8], father, sibling;
 } *Nodes, *Nodes_Base;
 extern long MaxNodes;
+
+extern struct gadget_2_cgs_unit{
+    double cm, g, s, erg;
+}g2c;
 
 extern gsl_integration_workspace *inte_ws;
 extern int proj_i, proj_j;

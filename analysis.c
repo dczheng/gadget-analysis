@@ -58,7 +58,7 @@ void gas_rho_slice() {
     plot_info.istart = SliceStart[0];
     plot_info.iend = SliceEnd[0];
     for ( i=SliceStart[0]; i<SliceEnd[0]; i++ )
-        plot_info.data[i-SliceStart[0]] = SphP[i].Density / ( cgs_g / CUBE(cgs_cm) );
+        plot_info.data[i-SliceStart[0]] = SphP[i].Density  *  (g2c.g / CUBE(g2c.cm) );
     plot_slice();
     free( plot_info.data );
 }
@@ -145,7 +145,7 @@ void hge_n_slice() {
     plot_info.istart = SliceStart[0];
     plot_info.iend = SliceEnd[0];
     for ( i=SliceStart[0]; i<SliceEnd[0]; i++ )
-        plot_info.data[i-SliceStart[0]] = SphP[i].CRE_n0 * SphP[i].Density / cgs_mp * CUBE(cgs_cm);
+        plot_info.data[i-SliceStart[0]] = SphP[i].CRE_n0 * SphP[i].Density * ( g2c.g / CUBE(g2c.cm) ) / ELECTRON_MASS;
     plot_slice();
     free( plot_info.data );
 }
@@ -167,7 +167,7 @@ void cr_n_slice() {
     plot_info.istart = SliceStart[0];
     plot_info.iend = SliceEnd[0];
     for ( i=SliceStart[0]; i<SliceEnd[0]; i++ )
-        plot_info.data[i-SliceStart[0]] = SphP[i].CR_n0 * SphP[i].Density  / cgs_me * CUBE(cgs_cm);
+        plot_info.data[i-SliceStart[0]] = SphP[i].CR_n0 * SphP[i].Density * ( g2c.g / CUBE(g2c.cm) ) / PROTONMASS;
     plot_slice();
     free( plot_info.data );
 }
@@ -189,7 +189,7 @@ void cr_e_slice() {
     plot_info.istart = SliceStart[0];
     plot_info.iend = SliceEnd[0];
     for ( i=SliceStart[0]; i<SliceEnd[0]; i++ )
-        plot_info.data[i-SliceStart[0]] = SphP[i].CR_E0 * SphP[i].Density / cgs_erg * CUBE(cgs_cm);
+        plot_info.data[i-SliceStart[0]] = SphP[i].CR_E0 * SphP[i].Density  * (g2c.erg / CUBE(g2c.cm));
     plot_slice();
     free( plot_info.data );
 }
@@ -211,7 +211,7 @@ void hge_e_slice() {
     plot_info.istart = SliceStart[0];
     plot_info.iend = SliceEnd[0];
     for ( i=SliceStart[0]; i<SliceEnd[0]; i++ )
-        plot_info.data[i-SliceStart[0]] = SphP[i].CRE_E0 * SphP[i].Density / cgs_erg * CUBE(cgs_cm);
+        plot_info.data[i-SliceStart[0]] = SphP[i].CRE_E0 * SphP[i].Density * (g2c.erg / CUBE(g2c.cm) );
     plot_slice();
     free( plot_info.data );
 }
@@ -224,11 +224,11 @@ void sort_gas_rho(){
     int i;
     qsort( (void*)SphP, N_Gas, sizeof( struct sph_particle_data ), &compare_gas_rho );
     for ( i=0; i<10; i++ ) {
-        printf( "%g\n", SphP[i].Density / ( cgs_g / CUBE(cgs_cm) ) );
+        printf( "%g\n", SphP[i].Density * ( g2c.g / CUBE(g2c.cm) ) );
     }
     printf( "\n" );
     for ( i=0; i<10; i++ ) {
-        printf( "%g\n", SphP[N_Gas-10+i].Density / ( cgs_g / CUBE(cgs_cm) ) );
+        printf( "%g\n", SphP[N_Gas-10+i].Density * ( g2c.g / CUBE(g2c.cm) ) );
     }
 }
 
@@ -273,19 +273,27 @@ void test_id() {
     printf( "Star MAX ID: %li, MIN ID: %li\n", id_max, id_min );
 }
 
+void calc_syn() {
+    long i;
+    double n0;
+    for ( i=0; i<N_Gas; i++ ) {
+        n0 = SphP[i].CRE_n0 * SphP[i].Density * ( g2c.g / CUBE(g2c.cm) );
+    }
+}
+
 void analysis(){
     init_analysis();
-    tree_build( 1 );
-    tree_free();
-    //magnetic_field_slice();
-    //gas_rho_slice();
+    //tree_build( 1 );
+    //tree_free();
+    magnetic_field_slice();
+    gas_rho_slice();
     //test_id();
     //divB_slice();
     //gas_vel_slice();
     //mach_slice();
-    //hge_n_slice();
+    hge_n_slice();
     //cr_n_slice();
-    //hge_e_slice();
+    hge_e_slice();
     //cr_e_slice();
     //vel_value();
     //sort_gas_rho();

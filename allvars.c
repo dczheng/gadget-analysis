@@ -28,3 +28,5 @@ double proj_x, proj_y, proj_size;
 
 struct NODE *Nodes, *Nodes_Base;
 long MaxNodes;
+
+struct gadget_2_cgs_unit g2c;

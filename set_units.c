@@ -21,6 +21,10 @@ void set_units() {
     if ( All.MpcFlag != 1 ) {
         All.MpcFlag = 1000;
     }
+    g2c.cm       = All.UnitLength_in_cm / header.HubbleParam;
+    g2c.g        = All.UnitMass_in_g / header.HubbleParam;
+    g2c.s        = All.UnitTime_in_s / header.HubbleParam;
+    g2c.erg      = g2c.g * SQR(g2c.cm) / SQR( g2c.s );
     print_log( sep_str );
 }
 
