@@ -30,14 +30,18 @@ void slice() {
             para.Start[2], para.End[2] );
     print_log( LogBuf );
 
-    for ( pt=0,offset=0; pt<6; pt++ ) {
+    for ( pt=0; pt<6; pt++ ) {
+        offset = find_particle_offset( pt );
+        num = find_particle_num( pt );
         index = offset;
-        num = header.npartTotal[pt] + ( ( (long long)header.npartTotalHighWord[pt] ) << 32 );
         if ( num == 0 ) {
             SliceStart[pt] = -1;
             SliceEnd[pt] = -1;
             continue;
         }
+        sprintf( LogBuf, "particle %i: offset=%li, num=%li",
+                pt, offset, num );
+        print_log( LogBuf );
         for ( i=offset; i<offset+num; i++ ) {
             if ( P[i].Pos[0] >= para.Start[0] &&
                  P[i].Pos[0] <= para.End[0] &&
@@ -58,7 +62,6 @@ void slice() {
         }
         SliceStart[pt] = offset;
         SliceEnd[pt] = index;
-        offset += num;
     }
     sprintf( LogBuf, "Slice Start: " );
     for ( pt=0; pt<6; pt++ ) {

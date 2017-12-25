@@ -610,6 +610,34 @@ void free_memory() {
     print_log( sep_str );
 }
 
+void find_id() {
+    int bits;
+    long i, num, offset;
+    print_log( "find id ..." );
+
+    for ( bits=0; GENERATIONS > (1<<bits); bits++ );
+    sprintf( LogBuf, "bits = %i", bits );
+    print_log( LogBuf );
+    print_log( "find gas id ..." );
+    for ( i=0; i<N_Gas; i++ ){
+        P[i].ID <<= bits;
+        P[i].ID >>= bits;
+    }
+    num = find_particle_num( 4 );
+    offset = find_particle_offset( 4 );
+    sprintf( LogBuf, "Start Particle offset %li", offset );
+    print_log( LogBuf );
+    if ( num != 0 ) {
+        print_log( "find gas id ..." );
+        for ( i=0; i<num; i++ ) {
+            P[offset+i].ID <<= bits;
+            P[offset+i].ID >>= bits;
+        }
+    }
+    print_log( "find id ... done." );
+    print_log( sep_str );
+}
+
 void read_snapshot() {
     int pt, blk, nbytes, rank;
     long i, file, pc, offset, num;
@@ -675,5 +703,6 @@ void read_snapshot() {
     }
     print_log( "read data ... done. " );
     print_log( sep_str );
-    //test();
+    find_id();
 }
+

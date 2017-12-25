@@ -251,10 +251,33 @@ void vel_value() {
     print_log( sep_str );
 }
 
+void test_id() {
+    long id_max, id_min, i, num, offset;
+    id_min = INT_MAX;
+    id_max = INT_MIN;
+    for ( i=0; i<N_Gas; i++ ) {
+        id_max = ( P[i].ID > id_max ) ? P[i].ID : id_max;
+        id_min = ( P[i].ID < id_min ) ? P[i].ID : id_min;
+    }
+    printf( "Gas MAX ID: %li, MIN ID: %li\n", id_max, id_min );
+    offset = find_particle_offset( 4 );
+    num = find_particle_offset( 4 );
+    printf( "start offset: %li, num: %li\n", offset, num );
+    if ( num == 0 ) return;
+    id_min = INT_MAX;
+    id_max = INT_MIN;
+    for ( i=offset; i<offset+num; i++ ) {
+        id_max = ( P[i].ID > id_max ) ? P[i].ID : id_max;
+        id_min = ( P[i].ID < id_min ) ? P[i].ID : id_min;
+    }
+    printf( "Star MAX ID: %li, MIN ID: %li\n", id_max, id_min );
+}
+
 void analysis(){
     init_analysis();
     //magnetic_field_slice();
-    gas_rho_slice();
+    //gas_rho_slice();
+    //test_id();
     //divB_slice();
     //gas_vel_slice();
     //mach_slice();

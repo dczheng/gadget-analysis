@@ -82,9 +82,9 @@ void plot_slice() {
     img = malloc( sizeof( double ) * PicSize * PicSize );
     memset( img, 0, sizeof( double ) * PicSize * PicSize );
     dx = dy = proj_size / PicSize;
-    data_max = -DBL_MAX;
+    data_max = DBL_MIN;
     data_min = DBL_MAX;
-    img_max = -DBL_MAX;
+    img_max = DBL_MIN;
     img_min = DBL_MAX;
     N = para.KernelN;
     Nhalf = N / 2;

@@ -20,7 +20,10 @@
 #define MAX_PARA_FILE_LINE_LEN 200
 #define SEP_LEN 80
 #define IO_NBLOCKS 100
-#define LONGIDS
+//#define LONGIDS
+
+#define GENERATIONS 8
+
 #define SFR
 #define BLACK_HOLES
 #define SEC_PER_MEGAYEAR 3.155e13
@@ -285,3 +288,5 @@ void analysis();
 double kernel( double q );
 void init_kernel_matrix();
 void free_kernel_matrix();
+long find_particle_offset( int pt );
+long find_particle_num( int pt );
