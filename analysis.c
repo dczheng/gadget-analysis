@@ -319,8 +319,11 @@ void calc_syn( double v ) {
 
 void syn_slice() {
     int num, i;
+    double com_dis;
     num = SliceEnd[0] - SliceStart[0];
 
+    com_dis = comoving_distance( header.time );
+    com_dis *= 1e6 * PARSEC;
     plot_info.h = All.SofteningTable[0];
     plot_info.log_flag = 1;
     plot_info.global_colorbar_flag = 0;
@@ -328,13 +331,14 @@ void syn_slice() {
     sprintf( plot_info.xlabel, "%g Mpc", proj_size / All.MpcFlag );
     sprintf( plot_info.ylabel, "" );
     sprintf( plot_info.title, "" );
-    sprintf( plot_info.cb_label, "(10^x)(erg s^{-1})");
+    sprintf( plot_info.cb_label, "(10^x)(mJy)");
     plot_info.data = malloc( sizeof(double) * num );
     memset( plot_info.data, 0, sizeof(double) * num );
     plot_info.istart = SliceStart[0];
     plot_info.iend = SliceEnd[0];
     for ( i=SliceStart[0]; i<SliceEnd[0]; i++ )
-        plot_info.data[i-SliceStart[0]] = SphP[i].P;
+        plot_info.data[i-SliceStart[0]] = SphP[i].P / ( 4*M_PI * SQR(com_dis) ) * 1e23;
+            //* 3.0/4.0 * M_PI * pow(All.SofteningTable[0]*PARSEC, 3 ) * 1000;
     plot_slice();
     free( plot_info.data );
 }
@@ -343,19 +347,19 @@ void analysis(){
     init_analysis();
     //tree_build( 1 );
     //tree_free();
-    //calc_vl();
-    //magnetic_field_slice();
-    //gas_rho_slice();
-    //vl_slice();
-    //calc_syn( 1.4e9 );
-    //syn_slice();
+    calc_vl();
+    magnetic_field_slice();
+    gas_rho_slice();
+    vl_slice();
+    calc_syn( 1.4e9 );
+    syn_slice();
     //test_id();
     //divB_slice();
     //gas_vel_slice();
     //mach_slice();
-    //hge_n_slice();
+    hge_n_slice();
     //cr_n_slice();
-    //hge_e_slice();
+    hge_e_slice();
     //cr_e_slice();
     //vel_value();
     //sort_gas_rho();

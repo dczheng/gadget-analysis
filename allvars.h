@@ -33,8 +33,9 @@
 #define ELECTRON_MASS            9.10953e-28
 #define ELECTRON_CHARGE          4.8032e-10
 #define BOLTZMANN                1.38066e-16
-#define LIGHT_SPEED               2.9979e10
+#define LIGHT_SPEED              2.9979e10
 #define THOMSON_CROSS_SECTION    6.65246e-25
+#define PARSEC                   3.0857e18
 
 #define GSL_INTE_WS_LEN 1000
 #define GSL_INTE_ERR_ABS 0.0

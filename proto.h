@@ -13,6 +13,7 @@ void print_log( char *log );
 void init_plot();
 void free_plot();
 void plot_slice();
+void plot_syn_slice();
 void analysis();
 double kernel( double q );
 void init_kernel_matrix();
