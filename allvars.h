@@ -14,6 +14,7 @@
 #include "giza.h"
 #include "limits.h"
 #include "sys/stat.h"
+#include "proto.h"
 
 #define DEBUG
 
@@ -33,9 +34,9 @@
 #define ELECTRONCHARGE  4.8032e-10
 #define BOLTZMANN      1.38066e-16
 
-#define cgs_cm ( header.HubbleParam / para.UnitLength_in_cm )
-#define cgs_g  ( header.HubbleParam / para.UnitMass_in_g )
-#define cgs_s  ( header.HubbleParam / para.UnitTime_in_s )
+#define cgs_cm ( header.HubbleParam / All.UnitLength_in_cm )
+#define cgs_g  ( header.HubbleParam / All.UnitMass_in_g )
+#define cgs_s  ( header.HubbleParam / All.UnitTime_in_s )
 #define cgs_erg ( cgs_g*cgs_cm*cgs_cm/(cgs_s*cgs_s))
 #define cgs_keV (1.602e-9*cgs_erg)
 #define deg 1.0
@@ -230,7 +231,7 @@ extern void *CommBuffer;
 extern long long NumPart, N_Gas, TotNgroups, SliceStart[6], SliceEnd[6];
 extern char LogFile[ FILENAME_MAX ], LogBuf[500];
 extern FILE *LogFilefd;
-extern struct para_struct {
+extern struct global_parameters_struct {
     char FilePrefix[ FILENAME_MAX ], GroupDir[ FILENAME_MAX ];
     FILE *LogFilefd;
     int StartSnapIndex, MpcFlag, ProjectDirection, KernelN,
@@ -243,7 +244,8 @@ extern struct para_struct {
          UnitEnergy_in_cgs,
          UnitVelocity_in_cm_per_s;
     double Start[3], End[3];
-}para;
+    double TreeAllocFactor;
+}All;
 
 extern struct plot_struct{
     int log_flag, istart, iend, global_colorbar_flag;
@@ -251,42 +253,22 @@ extern struct plot_struct{
     double *data, h;
 }plot_info;
 
+extern struct NODE {
+    double center[3];
+    double len;
+    long suns[8], father, sibling;
+} *Nodes, *Nodes_Base;
+extern long MaxNodes;
+
 extern gsl_integration_workspace *inte_ws;
 extern int proj_i, proj_j;
 extern double proj_x, proj_y, proj_size;
 
 
 #ifdef DEBUG
-    extern float debug_f;
-    extern int debug_i;
-    extern long debug_l;
-    extern double debug_d;
+#define DEBUG_ARR_LEN 6
+    extern long debug_l[DEBUG_ARR_LEN];
+    extern double debug_d[DEBUG_ARR_LEN];
     extern char debug_s[500];
 #endif
 
-
-void show_header( struct io_header header );
-void read_header();
-void read_snapshot();
-void free_memory();
-void get_dataset_name( enum iofields blk, char *buf );
-void magnetic_field_analysis();
-void group_analysis();
-void read_group();
-void free_group();
-void signal_hander( int sig );
-void endrun( int ierr );
-void read_parameters();
-void set_units();
-void slice();
-void init_projection();
-void print_log( char *log );
-void init_plot();
-void free_plot();
-void plot_slice();
-void analysis();
-double kernel( double q );
-void init_kernel_matrix();
-void free_kernel_matrix();
-long find_particle_offset( int pt );
-long find_particle_num( int pt );

@@ -13,7 +13,7 @@ void init_kernel_matrix() {
     long long num;
     double dh, q, h;
     print_log( "initialize kernel maxtrix ..." );
-    N = para.KernelN;
+    N = All.KernelN;
     Nhalf = N / 2;
     for( pt=0; pt<6; pt++ ) {
         num = header.npartTotal[pt] + ( ( ( long long )header.npartTotalHighWord[pt] ) << 32 );
@@ -22,11 +22,11 @@ void init_kernel_matrix() {
             KernelMat3D[pt] = malloc( sizeof( double ) * N * N * N );
             memset( KernelMat2D[pt], 0, sizeof( double ) * N * N );
             memset( KernelMat3D[pt], 0, sizeof( double ) * N * N * N );
-            if ( para.SofteningTable[pt] == 0 ) {
+            if ( All.SofteningTable[pt] == 0 ) {
                 printf( "SofteningTable[%d] is zeros !!!\n", pt );
                 endrun( 20171207 );
             }
-            h = para.SofteningTable[pt];
+            h = All.SofteningTable[pt];
             dh = h / Nhalf;
             for ( i=0; i<N; i++ )
                 for ( j=0; j<N; j++ )

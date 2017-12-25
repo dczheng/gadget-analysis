@@ -28,7 +28,7 @@ int blockpresent( enum iofields blk, int pt ) {
         case IO_MAG:
         case IO_DIVB:
         case IO_DBDT:
-            if (( pt == 0 ) && ( header.npart[0] != 0 ) && para.BFlag == 1)
+            if (( pt == 0 ) && ( header.npart[0] != 0 ) && All.BFlag == 1)
                 return 1;
             else
                 return 0;
@@ -36,7 +36,7 @@ int blockpresent( enum iofields blk, int pt ) {
         case IO_CRE_Q0:
         case IO_CRE_E0:
         case IO_CRE_n0:
-            if (( pt == 0 ) && ( header.npart[0] != 0 ) && para.HgeFlag == 1)
+            if (( pt == 0 ) && ( header.npart[0] != 0 ) && All.HgeFlag == 1)
                 return 1;
             else
                 return 0;
@@ -44,7 +44,7 @@ int blockpresent( enum iofields blk, int pt ) {
         case IO_CR_C0:
         case IO_CR_E0:
         case IO_CR_n0:
-            if (( pt == 0 ) && ( header.npart[0] != 0 ) && para.CrFlag == 1)
+            if (( pt == 0 ) && ( header.npart[0] != 0 ) && All.CrFlag == 1)
                 return 1;
             else
                 return 0;
@@ -589,7 +589,7 @@ void allocate_memory() {
     sprintf( LogBuf, "Allocated %g MB for SphP.", bytes / 1024.0 / 1024.0 );
     print_log( LogBuf );
 
-    if ( !( CommBuffer = malloc( bytes = para.BufferSize * 1024 * 1024  ) ) ) {
+    if ( !( CommBuffer = malloc( bytes = All.BufferSize * 1024 * 1024  ) ) ) {
         printf( "failed to allocate memory for CommBuffer ( %g Mb ).\n", bytes / 1024.0 / 1024.0 );
         endrun( 0 );
     }
@@ -623,8 +623,8 @@ void find_id() {
         P[i].ID <<= bits;
         P[i].ID >>= bits;
     }
-    num = find_particle_num( 4 );
-    offset = find_particle_offset( 4 );
+    num = get_particle_num( 4 );
+    offset = get_particle_offset( 4 );
     sprintf( LogBuf, "Start Particle offset %li", offset );
     print_log( LogBuf );
     if ( num != 0 ) {
@@ -643,14 +643,13 @@ void read_snapshot() {
     long i, file, pc, offset, num;
     char file_name[FILENAME_MAX], buf[200], buf1[200];
     print_log( "read_data ..." );
-    sprintf( file_name, "%s_%03d.%3i.hdf5", para.FilePrefix, para.StartSnapIndex + ThisTask, 0 );
-    if ( para.NumFiles < 2 )
-        sprintf( file_name, "%s_%03d.hdf5", para.FilePrefix, para.StartSnapIndex + ThisTask );
+    sprintf( file_name, "%s_%03d.%3i.hdf5", All.FilePrefix, All.StartSnapIndex + ThisTask, 0 );
+    if ( All.NumFiles < 2 )
+        sprintf( file_name, "%s_%03d.hdf5", All.FilePrefix, All.StartSnapIndex + ThisTask );
     N_Gas = NumPart = 0;
     read_header( file_name );
     for ( i=0; i<6; i++ ){
-        NumPart += header.npartTotal[i];
-        NumPart += ((long long)header.npartTotalHighWord[i]) << 32;
+        NumPart += get_particle_num( i );
     }
     N_Gas = header.npartTotal[0] + ( ( (long long)header.npartTotalHighWord[0] ) << 32 );
     BoxSize = header.BoxSize;
@@ -661,16 +660,16 @@ void read_snapshot() {
     show_header( header );
     for ( blk=0; blk<IO_NBLOCKS; blk++ ) {
         for ( pt=0, offset=0; pt<6; pt++ ) {
-            for (file=0; file<para.NumFiles; file++) {
-                if ( para.NumFiles < 2 )
-                    sprintf( file_name, "%s_%03d.hdf5", para.FilePrefix, para.StartSnapIndex + ThisTask );
+            for (file=0; file<All.NumFiles; file++) {
+                if ( All.NumFiles < 2 )
+                    sprintf( file_name, "%s_%03d.hdf5", All.FilePrefix, All.StartSnapIndex + ThisTask );
                 else
                     sprintf( file_name, "%s_%03d.%3i.hdf5",
-                            para.FilePrefix, para.StartSnapIndex + ThisTask, file );
+                            All.FilePrefix, All.StartSnapIndex + ThisTask, file );
                     read_header( file_name );
                     if ( blockpresent( blk, pt ) ) {
                         nbytes = get_block_nbytes( blk );
-                        if ( para.BufferSize * 1024 * 1024 < nbytes * header.npart[pt] ){
+                        if ( All.BufferSize * 1024 * 1024 < nbytes * header.npart[pt] ){
                             printf( "BufferSize is too small.\n" );
                             endrun( 1 );
                         }

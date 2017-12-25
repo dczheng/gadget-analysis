@@ -26,3 +26,4 @@ KernelN                       10
 HgeFlag                       1
 CrFlag                        1
 BFlag                         1
+TreeAllocFactor               1

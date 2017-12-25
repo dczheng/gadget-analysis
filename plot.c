@@ -76,7 +76,7 @@ void plot_slice() {
            cb_max, cb_log_max, cb_min, cb_log_min;
     int i, j, xi, yi, N, Nhalf, i1, i2, j1, j2, li, lj, PicSize;
     char buf[100];
-    PicSize = para.PicSize;
+    PicSize = All.PicSize;
     sprintf( LogBuf, "plot %s slice ...", plot_info.data_name );
     print_log( LogBuf );
     img = malloc( sizeof( double ) * PicSize * PicSize );
@@ -86,15 +86,15 @@ void plot_slice() {
     data_min = DBL_MAX;
     img_max = DBL_MIN;
     img_min = DBL_MAX;
-    N = para.KernelN;
+    N = All.KernelN;
     Nhalf = N / 2;
     h = plot_info.h;
     dh = h / Nhalf;
     for ( i=plot_info.istart; i<plot_info.iend; i++ ){
         x = P[i].Pos[proj_i];
         y = P[i].Pos[proj_j];
-        x -= para.Start[proj_i];
-        y -= para.Start[proj_j];
+        x -= All.Start[proj_i];
+        y -= All.Start[proj_j];
         //printf( "%g %g %g\n", x, y, proj_size );
         v = plot_info.data[ i-plot_info.istart ];
         xi = x / dx;

@@ -13,8 +13,8 @@ void read_group() {
     float *angmom;
     fputs( sep_str, stdout );
     fputs( "read group ...\n", stdout );
-    if ( !( dir=opendir( para.GroupDir ) ) ){
-        fprintf( stderr, "Failed to open GroupDir %s\n", para.GroupDir );
+    if ( !( dir=opendir( All.GroupDir ) ) ){
+        fprintf( stderr, "Failed to open GroupDir %s\n", All.GroupDir );
         endrun( 4 );
     }
     malloc_flag = 1;
@@ -23,7 +23,7 @@ void read_group() {
         if ( ( strcmp( ptr->d_name, "." ) == 0 ) ||
              ( strcmp( ptr->d_name, ".." ) == 0 ) )
             continue;
-        sprintf( group_file, "%s%s", para.GroupDir, ptr->d_name );
+        sprintf( group_file, "%s%s", All.GroupDir, ptr->d_name );
 #ifdef GROUP_DEBUG
         fprintf( stdout, "%s\n", ptr->d_name );
 #endif

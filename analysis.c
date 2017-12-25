@@ -23,10 +23,10 @@ void free_analysis() {
 void magnetic_field_slice() {
     int num, i;
     num = SliceEnd[0] - SliceStart[0];
-    plot_info.h = para.SofteningTable[0];
+    plot_info.h = All.SofteningTable[0];
     plot_info.log_flag = 1;
     sprintf( plot_info.data_name, "B" );
-    sprintf( plot_info.xlabel, "%g Mpc", proj_size / para.MpcFlag );
+    sprintf( plot_info.xlabel, "%g Mpc", proj_size / All.MpcFlag );
     sprintf( plot_info.ylabel, "" );
     sprintf( plot_info.cb_label, "(10^x) G/Kpc^2");
     sprintf( plot_info.title, "" );
@@ -46,10 +46,10 @@ void gas_rho_slice() {
     int num, i;
     num = SliceEnd[0] - SliceStart[0];
 
-    plot_info.h = para.SofteningTable[0];
+    plot_info.h = All.SofteningTable[0];
     plot_info.log_flag = 1;
     sprintf( plot_info.data_name, "rho" );
-    sprintf( plot_info.xlabel, "%g Mpc", proj_size / para.MpcFlag );
+    sprintf( plot_info.xlabel, "%g Mpc", proj_size / All.MpcFlag );
     sprintf( plot_info.ylabel, "" );
     sprintf( plot_info.title, "" );
     sprintf( plot_info.cb_label, "(10^x) gcm^{-3}Kpc^{-2}");
@@ -67,10 +67,10 @@ void mach_slice() {
     int num, i;
     num = SliceEnd[0] - SliceStart[0];
 
-    plot_info.h = para.SofteningTable[0];
+    plot_info.h = All.SofteningTable[0];
     plot_info.log_flag = 1;
     sprintf( plot_info.data_name, "mn" );
-    sprintf( plot_info.xlabel, "%g Mpc", proj_size / para.MpcFlag );
+    sprintf( plot_info.xlabel, "%g Mpc", proj_size / All.MpcFlag );
     sprintf( plot_info.ylabel, "" );
     sprintf( plot_info.title, "" );
     sprintf( plot_info.cb_label, "(10^x)");
@@ -88,10 +88,10 @@ void divB_slice() {
     int num, i;
     num = SliceEnd[0] - SliceStart[0];
 
-    plot_info.h = para.SofteningTable[0];
+    plot_info.h = All.SofteningTable[0];
     plot_info.log_flag = 1;
     sprintf( plot_info.data_name, "divB" );
-    sprintf( plot_info.xlabel, "%g Mpc", proj_size / para.MpcFlag );
+    sprintf( plot_info.xlabel, "%g Mpc", proj_size / All.MpcFlag );
     sprintf( plot_info.ylabel, "" );
     sprintf( plot_info.title, "" );
     sprintf( plot_info.cb_label, "(10^x)");
@@ -109,10 +109,10 @@ void gas_vel_slice() {
     int num, i;
     num = SliceEnd[0] - SliceStart[0];
 
-    plot_info.h = para.SofteningTable[0];
+    plot_info.h = All.SofteningTable[0];
     plot_info.log_flag = 1;
     sprintf( plot_info.data_name, "vel" );
-    sprintf( plot_info.xlabel, "%g Mpc", proj_size / para.MpcFlag );
+    sprintf( plot_info.xlabel, "%g Mpc", proj_size / All.MpcFlag );
     sprintf( plot_info.ylabel, "" );
     sprintf( plot_info.title, "" );
     sprintf( plot_info.cb_label, "(10^x)");
@@ -132,11 +132,11 @@ void hge_n_slice() {
     int num, i;
     num = SliceEnd[0] - SliceStart[0];
 
-    plot_info.h = para.SofteningTable[0];
+    plot_info.h = All.SofteningTable[0];
     plot_info.log_flag = 1;
     plot_info.global_colorbar_flag = 1;
     sprintf( plot_info.data_name, "hge_n" );
-    sprintf( plot_info.xlabel, "%g Mpc", proj_size / para.MpcFlag );
+    sprintf( plot_info.xlabel, "%g Mpc", proj_size / All.MpcFlag );
     sprintf( plot_info.ylabel, "" );
     sprintf( plot_info.title, "" );
     sprintf( plot_info.cb_label, "(10^x)");
@@ -154,11 +154,11 @@ void cr_n_slice() {
     int num, i;
     num = SliceEnd[0] - SliceStart[0];
 
-    plot_info.h = para.SofteningTable[0];
+    plot_info.h = All.SofteningTable[0];
     plot_info.log_flag = 1;
     plot_info.global_colorbar_flag = 1;
     sprintf( plot_info.data_name, "cr_n" );
-    sprintf( plot_info.xlabel, "%g Mpc", proj_size / para.MpcFlag );
+    sprintf( plot_info.xlabel, "%g Mpc", proj_size / All.MpcFlag );
     sprintf( plot_info.ylabel, "" );
     sprintf( plot_info.title, "" );
     sprintf( plot_info.cb_label, "(10^x)");
@@ -176,11 +176,11 @@ void cr_e_slice() {
     int num, i;
     num = SliceEnd[0] - SliceStart[0];
 
-    plot_info.h = para.SofteningTable[0];
+    plot_info.h = All.SofteningTable[0];
     plot_info.log_flag = 1;
     plot_info.global_colorbar_flag = 0;
     sprintf( plot_info.data_name, "cr_e" );
-    sprintf( plot_info.xlabel, "%g Mpc", proj_size / para.MpcFlag );
+    sprintf( plot_info.xlabel, "%g Mpc", proj_size / All.MpcFlag );
     sprintf( plot_info.ylabel, "" );
     sprintf( plot_info.title, "" );
     sprintf( plot_info.cb_label, "(10^x)");
@@ -198,11 +198,11 @@ void hge_e_slice() {
     int num, i;
     num = SliceEnd[0] - SliceStart[0];
 
-    plot_info.h = para.SofteningTable[0];
+    plot_info.h = All.SofteningTable[0];
     plot_info.log_flag = 1;
     plot_info.global_colorbar_flag = 0;
     sprintf( plot_info.data_name, "hge_e" );
-    sprintf( plot_info.xlabel, "%g Mpc", proj_size / para.MpcFlag );
+    sprintf( plot_info.xlabel, "%g Mpc", proj_size / All.MpcFlag );
     sprintf( plot_info.ylabel, "" );
     sprintf( plot_info.title, "" );
     sprintf( plot_info.cb_label, "(10^x)");
@@ -260,8 +260,8 @@ void test_id() {
         id_min = ( P[i].ID < id_min ) ? P[i].ID : id_min;
     }
     printf( "Gas MAX ID: %li, MIN ID: %li\n", id_max, id_min );
-    offset = find_particle_offset( 4 );
-    num = find_particle_offset( 4 );
+    offset = get_particle_offset( 4 );
+    num = get_particle_offset( 4 );
     printf( "start offset: %li, num: %li\n", offset, num );
     if ( num == 0 ) return;
     id_min = INT_MAX;
@@ -275,16 +275,18 @@ void test_id() {
 
 void analysis(){
     init_analysis();
-    magnetic_field_slice();
-    gas_rho_slice();
+    tree_build( 1 );
+    tree_free();
+    //magnetic_field_slice();
+    //gas_rho_slice();
     //test_id();
-    divB_slice();
+    //divB_slice();
     //gas_vel_slice();
-    mach_slice();
-    hge_n_slice();
-    cr_n_slice();
-    hge_e_slice();
-    cr_e_slice();
+    //mach_slice();
+    //hge_n_slice();
+    //cr_n_slice();
+    //hge_e_slice();
+    //cr_e_slice();
     //vel_value();
     //sort_gas_rho();
     free_analysis();

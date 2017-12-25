@@ -24,116 +24,120 @@ void read_parameters( char *fn ) {
 
         nt = 0;
         strcpy( tag[nt], "FilePrefix" );
-        addr[nt] = para.FilePrefix;
+        addr[nt] = All.FilePrefix;
         id[nt++] = STRING;
 
         strcpy( tag[nt], "GroupDir" );
-        addr[nt] = para.GroupDir;
+        addr[nt] = All.GroupDir;
         id[nt++] = STRING;
 
         strcpy( tag[nt], "NumFiles" );
-        addr[nt] = &para.NumFiles;
+        addr[nt] = &All.NumFiles;
         id[nt++] = INT;
 
         strcpy( tag[nt], "PicSize" );
-        addr[nt] = &para.PicSize;
+        addr[nt] = &All.PicSize;
         id[nt++] = INT;
 
         strcpy( tag[nt], "UnitMass_in_g" );
-        addr[nt] = &para.UnitMass_in_g;
+        addr[nt] = &All.UnitMass_in_g;
         id[nt++] = REAL;
 
         strcpy( tag[nt], "UnitLength_in_cm" );
-        addr[nt] = &para.UnitLength_in_cm;
+        addr[nt] = &All.UnitLength_in_cm;
         id[nt++] = REAL;
 
         strcpy( tag[nt], "UnitVelocity_in_cm_per_s" );
-        addr[nt] = &para.UnitVelocity_in_cm_per_s;
+        addr[nt] = &All.UnitVelocity_in_cm_per_s;
         id[nt++] = REAL;
 
         strcpy( tag[nt], "BufferSize" );
-        addr[nt] = &para.BufferSize;
+        addr[nt] = &All.BufferSize;
         id[nt++] = INT;
 
         strcpy( tag[nt], "MpcFlag" );
-        addr[nt] = &para.MpcFlag;
+        addr[nt] = &All.MpcFlag;
         id[nt++] = INT;
 
         strcpy( tag[nt], "SofteningGas" );
-        addr[nt] = &para.SofteningTable[0];
+        addr[nt] = &All.SofteningTable[0];
         id[nt++] = REAL;
 
         strcpy( tag[nt], "SofteningHalo" );
-        addr[nt] = &para.SofteningTable[1];
+        addr[nt] = &All.SofteningTable[1];
         id[nt++] = REAL;
 
         strcpy( tag[nt], "SofteningDisk" );
-        addr[nt] = &para.SofteningTable[2];
+        addr[nt] = &All.SofteningTable[2];
         id[nt++] = REAL;
 
         strcpy( tag[nt], "SofteningBulge" );
-        addr[nt] = &para.SofteningTable[3];
+        addr[nt] = &All.SofteningTable[3];
         id[nt++] = REAL;
 
         strcpy( tag[nt], "SofteningStar" );
-        addr[nt] = &para.SofteningTable[4];
+        addr[nt] = &All.SofteningTable[4];
         id[nt++] = REAL;
 
         strcpy( tag[nt], "SofteningBndry" );
-        addr[nt] = &para.SofteningTable[5];
+        addr[nt] = &All.SofteningTable[5];
         id[nt++] = REAL;
 
         strcpy( tag[nt], "Alpha" );
-        addr[nt] = &para.Alpha;
+        addr[nt] = &All.Alpha;
         id[nt++] = REAL;
 
         strcpy( tag[nt], "StartSnapIndex" );
-        addr[nt] = &para.StartSnapIndex;
+        addr[nt] = &All.StartSnapIndex;
         id[nt++] = INT;
 
         strcpy( tag[nt], "ProjectDirection" );
-        addr[nt] = &para.ProjectDirection;
+        addr[nt] = &All.ProjectDirection;
         id[nt++] = INT;
 
         strcpy( tag[nt], "KernelN" );
-        addr[nt] = &para.KernelN;
+        addr[nt] = &All.KernelN;
         id[nt++] = INT;
 
         strcpy( tag[nt], "StartX" );
-        addr[nt] = &para.Start[0];
+        addr[nt] = &All.Start[0];
         id[nt++] = REAL;
 
         strcpy( tag[nt], "EndX" );
-        addr[nt] = &para.End[0];
+        addr[nt] = &All.End[0];
         id[nt++] = REAL;
 
         strcpy( tag[nt], "StartY" );
-        addr[nt] = &para.Start[1];
+        addr[nt] = &All.Start[1];
         id[nt++] = REAL;
 
         strcpy( tag[nt], "EndY" );
-        addr[nt] = &para.End[1];
+        addr[nt] = &All.End[1];
         id[nt++] = REAL;
 
         strcpy( tag[nt], "StartZ" );
-        addr[nt] = &para.Start[2];
+        addr[nt] = &All.Start[2];
         id[nt++] = REAL;
 
         strcpy( tag[nt], "EndZ" );
-        addr[nt] = &para.End[2];
+        addr[nt] = &All.End[2];
         id[nt++] = REAL;
 
         strcpy( tag[nt], "HgeFlag" );
-        addr[nt] = &para.HgeFlag;
+        addr[nt] = &All.HgeFlag;
         id[nt++] = INT;
 
         strcpy( tag[nt], "CrFlag" );
-        addr[nt] = &para.CrFlag;
+        addr[nt] = &All.CrFlag;
         id[nt++] = INT;
 
         strcpy( tag[nt], "BFlag" );
-        addr[nt] = &para.BFlag;
+        addr[nt] = &All.BFlag;
         id[nt++] = INT;
+
+        strcpy( tag[nt], "TreeAllocFactor" );
+        addr[nt] = &All.TreeAllocFactor;
+        id[nt++] = REAL;
 
         while( !feof( fd ) ) {
             *buf = 0;
@@ -183,7 +187,7 @@ void read_parameters( char *fn ) {
         fclose( fd );
     }
     MPI_Barrier( MPI_COMM_WORLD );
-    MPI_Bcast( &para, sizeof( struct para_struct ), MPI_BYTE, 0, MPI_COMM_WORLD );
+    MPI_Bcast( &All, sizeof( struct global_parameters_struct ), MPI_BYTE, 0, MPI_COMM_WORLD );
     print_log( sep_str );
 }
 
