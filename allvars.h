@@ -184,6 +184,7 @@ extern struct particle_data {
     MyFloat Acc[3];
     MyIDType ID;
     int Type;
+    int Flag;
 } *P;
 
 extern struct sph_particle_data {
@@ -242,9 +243,11 @@ extern struct plot_struct{
 extern struct NODE {
     double center[3];
     double len;
-    long suns[8], father, sibling;
+    long suns[8];
+    long nextnode;
 } *Nodes, *Nodes_Base;
 extern long MaxNodes;
+extern long *NextNode;
 
 extern struct gadget_2_cgs_unit{
     double cm, g, s, erg;

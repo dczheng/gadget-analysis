@@ -345,21 +345,23 @@ void syn_slice() {
 
 void analysis(){
     init_analysis();
-    //tree_build( 1 );
-    //tree_free();
+    tree_build( 1 );
+    tree_free();
+    /*
     calc_vl();
     magnetic_field_slice();
     gas_rho_slice();
     vl_slice();
     calc_syn( 1.4e9 );
     syn_slice();
+    */
     //test_id();
     //divB_slice();
     //gas_vel_slice();
     //mach_slice();
-    hge_n_slice();
+    //hge_n_slice();
     //cr_n_slice();
-    hge_e_slice();
+    //hge_e_slice();
     //cr_e_slice();
     //vel_value();
     //sort_gas_rho();

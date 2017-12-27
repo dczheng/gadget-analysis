@@ -640,6 +640,16 @@ void find_id() {
     print_log( sep_str );
 }
 
+void init_particle_flag() {
+    long i;
+    print_log( "initialize particle tree flag ..." );
+    for ( i=0; i<NumPart; i++ ) {
+        P[i].Flag = 1;
+    }
+    print_log( "initialize particle tree flag ... done." );
+    print_log( sep_str );
+}
+
 void read_snapshot() {
     int pt, blk, nbytes, rank;
     long i, file, pc, offset, num;
@@ -705,5 +715,6 @@ void read_snapshot() {
     print_log( "read data ... done. " );
     print_log( sep_str );
     find_id();
+    init_particle_flag();
 }
 

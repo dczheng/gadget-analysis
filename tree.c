@@ -1,20 +1,28 @@
 #include "allvars.h"
 
-void tree_allocate( int pt ) {
-    long num;
+long npart, last, parent, offset;
+int pt;
+
+void tree_allocate() {
     size_t bytes;
-    num = get_particle_num( pt );
-    MaxNodes = num * All.TreeAllocFactor;
-    sprintf( LogBuf, "particle `%i` number = %ld, TreeAllocateFactor = %g, "
-            "MaxNodes = %ld", pt, num, All.TreeAllocFactor, MaxNodes );
+    MaxNodes = npart * All.TreeAllocFactor;
+    sprintf( LogBuf, "particle `%i` npartber = %ld, TreeAllocateFactor = %g, "
+            "MaxNodes = %ld", pt, npart, All.TreeAllocFactor, MaxNodes );
     print_log( LogBuf );
     print_log( "allocate memory for tree" );
     if ( !( Nodes_Base = malloc( bytes = (MaxNodes+1) * sizeof( struct NODE ) ) ) ) {
-        printf( "failed to allocate memory for %ld tree-nodes (%g MB)\n", MaxNodes, bytes / 1024.0 / 1024.0 );
+        printf( "failed to allocate memory for %ld tree-nodes `Nodes_Base`(%g MB)\n", MaxNodes, bytes / 1024.0 / 1024.0 );
         endrun( 20171225 );
     }
-    sprintf( LogBuf, "allocate memory for %ld tree-nodes ( %g MB )", MaxNodes, bytes / 1024.0 / 1024.0 );
-    Nodes = Nodes_Base - num;
+    sprintf( LogBuf, "allocate memory for %ld tree-nodes `Nodes_Base`( %g MB )", MaxNodes, bytes / 1024.0 / 1024.0 );
+    Nodes = Nodes_Base - npart;
+    print_log( LogBuf );
+
+    if ( !( NextNode = malloc( bytes = (npart) * sizeof( long ) ) ) ) {
+        printf( "falied to allocate memory for `NextNode` ( %g MB )\n", bytes / 1024.0 / 1024.0 );
+        endrun( 20171227 );
+    }
+    sprintf( LogBuf, "allocate memory for `NextNode` ( %g MB )", bytes / 1024.0 / 1024.0 );
     print_log( LogBuf );
     print_log( sep_str );
 }
@@ -23,27 +31,21 @@ void tree_free() {
     print_log( "free memory for tree" );
     print_log( sep_str );
     free( Nodes_Base );
+    free( NextNode );
 }
 
-void tree_build( int pt ) {
-    long offset, num, i, j, subnode, bits, nfree, n, nn, parent, ii;
+void tree_build_single() {
+    long i, j, subnode, bits, nfree, n, nn, ii;
     struct NODE *nfreep;
     double max[3], min[3], len, lenhalf;
-    tree_allocate( pt );
-    offset = get_particle_offset( pt );
-    num = get_particle_num( pt );
-    if ( num == 0 ) {
-        printf( "particle `%li` number is zero !!!\n", pt );
-        endrun( 20171225 );
-    }
-    nfree = num;
+    nfree = npart;
     nfreep = &Nodes[nfree];
     print_log( "tree build ..." );
     for ( j=0; j<3; j++ ) {
         max[j] = DBL_MIN;
         min[j] = DBL_MAX;
     }
-    for ( i=offset; i<offset+num; i++ ) {
+    for ( i=offset; i<offset+npart; i++ ) {
         for ( j=0; j<3; j++ ) {
             max[j] = ( P[i].Pos[j] > max[j] ) ? P[i].Pos[j] : max[j];
             min[j] = ( P[i].Pos[j] < min[j] ) ? P[i].Pos[j] : min[j];
@@ -75,11 +77,12 @@ void tree_build( int pt ) {
     /* initialize first node*/
     nfree++;
     nfreep++;
-    for ( i=offset+1; i<offset+num; i++ ) {
+    for ( i=offset+1; i<offset+npart; i++ ) {
         ii = i - offset;
-        n = num;
+        if ( !P[i].Flag ) continue;
+        n = npart;
         while(1) {
-            if ( n >= num ){
+            if ( n >= npart ){
                 for( j=0, subnode=0, bits=1; j<3; j++, bits<<=1 )
                     subnode += ( P[i].Pos[j] > Nodes[n].center[j] ) ? bits : 0;
                 nn = Nodes[n].suns[subnode];
@@ -106,14 +109,82 @@ void tree_build( int pt ) {
                 n = nfree;
                 nfree++;
                 nfreep++;
-                if ( nfree-num >= MaxNodes ){
+                if ( nfree-npart >= MaxNodes ){
                     printf( "Max number of tree nodes reached.\n" );
                     endrun( 20171225 );
                 }
             }
         }
     }
-
     print_log( "tree build ... done." );
+}
+
+void tree_walk_recursive( long n, long sib, long father ) {
+    int i, j;
+    long nextsib, p, pp;
+    if ( n >= npart ) {
+        if ( last >= 0 ) {
+            if ( last >= npart )
+                Nodes[last].nextnode = n;
+            else
+                NextNode[last] = n;
+        }
+        last = n;
+        /*
+        debug_l[0] = n;
+        for ( i=0; i<8; i++ )
+            printf( "%li ", Nodes[n].suns[i] );
+        printf( "\n" );
+        */
+        for ( i=0; i<8; i++ ) {
+            if ( (p = Nodes[n].suns[i]) >= 0 ) {
+                for ( j=i+1; j<8; j++ )
+                    if ( (pp = Nodes[n].suns[j]) >= 0 )
+                        break;
+                nextsib = ( j<8 ) ? pp : sib;
+                tree_walk_recursive( p, nextsib, n );
+            }
+        }
+    }
+    else {
+        if ( last >= 0 ) {
+            if ( last >= npart ) {
+                Nodes[last].nextnode = n;
+            }
+            else {
+                NextNode[last] = n;
+            }
+        }
+        last = n;
+    }
+}
+
+void tree_build( int ptype ) {
+    pt = ptype;
+    int i, j;
+    npart = get_particle_num( pt );
+    if ( npart == 0 ) {
+        printf( "particle `%li` npartber is zero !!!\n", pt );
+        endrun( 20171225 );
+    }
+    /*
+    npart = 10;
+    All.TreeAllocFactor = 2;
+    */
+    offset = get_particle_offset( pt );
+    tree_allocate();
+    tree_build_single();
+    /*
+    for ( i=0; i<npart*All.TreeAllocFactor; i++ ) {
+        printf( "%2i %2i: ", i, i+npart );
+        for ( j=0; j<8; j++ )
+            printf( "%3li ", Nodes_Base[i].suns[j] );
+        printf( "\n" );
+    }
+    */
+    last = -1;
+    print_log( "tree walk build ..." );
+    tree_walk_recursive( npart, -1, -1 );
+    print_log( "tree walk build ... done." );
     print_log( sep_str );
 }
