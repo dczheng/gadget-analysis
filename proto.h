@@ -29,3 +29,6 @@ double H_a( double a );
 double comoving_distance( double a );
 double angular_distance( double a );
 double luminosity_distance( double a );
+
+void fof( int pt );
+void fof_free();

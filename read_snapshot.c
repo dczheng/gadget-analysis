@@ -665,6 +665,7 @@ void read_snapshot() {
     }
     N_Gas = header.npartTotal[0] + ( ( (long long)header.npartTotalHighWord[0] ) << 32 );
     BoxSize = header.BoxSize;
+    HalfBoxSize = BoxSize / 2;
     RedShift = header.redshift;
     sprintf( LogBuf, "NumPart = %ld, N_Gas = %ld", NumPart, N_Gas );
     print_log( LogBuf );

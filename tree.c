@@ -1,6 +1,6 @@
 #include "allvars.h"
 
-long npart, last, parent, offset;
+long npart, last, parent, offset, father;
 int pt;
 
 void tree_allocate() {
@@ -143,6 +143,8 @@ void tree_walk_recursive( long n, long sib, long father ) {
                         break;
                 nextsib = ( j<8 ) ? pp : sib;
                 tree_walk_recursive( p, nextsib, n );
+                Nodes[n].sibling = sib;
+                Nodes[n].father = father;
             }
         }
     }
@@ -159,19 +161,41 @@ void tree_walk_recursive( long n, long sib, long father ) {
     }
 }
 
+void tree_walk_test(){
+    long n, signal;
+    n = npart;
+    signal = 0;
+    while ( n>=0 ) {
+        if ( n<npart ){
+            printf( "%li -> ", n );
+            if ( !(++signal % 10)  )
+                printf( "\n" );
+            n = NextNode[n];
+        }
+        else {
+            n = Nodes[n].nextnode;
+        }
+    }
+}
+
 void tree_build( int ptype ) {
     pt = ptype;
     int i, j;
+    long num;
     npart = get_particle_num( pt );
     if ( npart == 0 ) {
         printf( "particle `%li` npartber is zero !!!\n", pt );
         endrun( 20171225 );
     }
     /*
-    npart = 10;
+    npart = 30;
     All.TreeAllocFactor = 2;
     */
     offset = get_particle_offset( pt );
+    for ( i=offset, num=0; i<offset+num; i++ )
+        if ( P[i].Type ) num++;
+    sprintf( LogBuf, "%i particle used in tree build", num );
+    print_log( LogBuf );
     tree_allocate();
     tree_build_single();
     /*
@@ -185,6 +209,13 @@ void tree_build( int ptype ) {
     last = -1;
     print_log( "tree walk build ..." );
     tree_walk_recursive( npart, -1, -1 );
+    if ( last >= npart ) {
+        Nodes[last].nextnode = -1;
+    }
+    else {
+        NextNode[last] = -1;
+    }
+    //tree_walk_test();
     print_log( "tree walk build ... done." );
     print_log( sep_str );
 }

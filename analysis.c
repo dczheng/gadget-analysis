@@ -345,8 +345,10 @@ void syn_slice() {
 
 void analysis(){
     init_analysis();
-    tree_build( 1 );
-    tree_free();
+    //tree_build( 1 );
+    //tree_free();
+    fof( 1 );
+    fof_free();
     /*
     calc_vl();
     magnetic_field_slice();

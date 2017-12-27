@@ -3,7 +3,7 @@
 char sep_str[ SEP_LEN ];
 long long TotNgroups, NumPart, N_Gas, SliceStart[6], SliceEnd[6];
 int ThisTask, NumTask;
-double BoxSize, RedShift, *KernelMat2D[6], *KernelMat3D[6];
+double BoxSize, RedShift, *KernelMat2D[6], *KernelMat3D[6], HalfBoxSize;
 void *CommBuffer;
 char LogFile[ FILENAME_MAX ], LogBuf[500];
 FILE *LogFilefd;
@@ -29,5 +29,6 @@ double proj_x, proj_y, proj_size;
 struct NODE *Nodes, *Nodes_Base;
 long MaxNodes;
 long *NextNode;
+int *Ngblist;
 
 struct gadget_2_cgs_unit g2c;

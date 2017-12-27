@@ -213,7 +213,7 @@ extern struct sph_particle_data {
 
 extern char sep_str[ SEP_LEN ];
 extern int ThisTask, NumTask;
-extern double BoxSize, RedShift, *KernelMat2D[6], *KernelMat3D[6];
+extern double BoxSize, RedShift, *KernelMat2D[6], *KernelMat3D[6], HalfBoxSize;
 extern void *CommBuffer;
 extern long long NumPart, N_Gas, TotNgroups, SliceStart[6], SliceEnd[6];
 extern char LogFile[ FILENAME_MAX ], LogBuf[500];
@@ -243,11 +243,12 @@ extern struct plot_struct{
 extern struct NODE {
     double center[3];
     double len;
-    long suns[8];
+    long suns[8], sibling, father;
     long nextnode;
 } *Nodes, *Nodes_Base;
 extern long MaxNodes;
 extern long *NextNode;
+extern int *Ngblist;
 
 extern struct gadget_2_cgs_unit{
     double cm, g, s, erg;
