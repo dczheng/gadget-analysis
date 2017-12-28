@@ -29,6 +29,7 @@ double proj_x, proj_y, proj_size;
 struct NODE *Nodes, *Nodes_Base;
 long MaxNodes;
 long *NextNode;
-int *Ngblist;
+long *Ngblist, Ngroups;
+long *Head, *Len, *Next, *Tail;
 
 struct gadget_2_cgs_unit g2c;

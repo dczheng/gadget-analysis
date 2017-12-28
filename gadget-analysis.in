@@ -1,6 +1,6 @@
 FilePrefix  test_snapshot
 NumFiles                      1
-PicSize                       300
+PicSize                       360
 GroupDir                      ./test
 UnitLength_in_cm              3.085678e21
 UnitMass_in_g                 1.989e43
@@ -14,7 +14,7 @@ SofteningBulge                1
 SofteningStar                 1
 SofteningBndry                1
 Alpha                         3.2
-StartSnapIndex                0
+StartSnapIndex                62
 StartX                        0
 EndX                          0
 StartY                        0
@@ -27,3 +27,4 @@ HgeFlag                       1
 CrFlag                        1
 BFlag                         1
 TreeAllocFactor               1
+LinkLength                    0.2

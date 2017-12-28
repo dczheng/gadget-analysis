@@ -36,6 +36,7 @@
 #define LIGHT_SPEED              2.9979e10
 #define THOMSON_CROSS_SECTION    6.65246e-25
 #define PARSEC                   3.0857e18
+#define GRAVITY                  6.672e-8
 
 #define GSL_INTE_WS_LEN 1000
 #define GSL_INTE_ERR_ABS 0.0
@@ -231,7 +232,7 @@ extern struct global_parameters_struct {
          UnitEnergy_in_cgs,
          UnitVelocity_in_cm_per_s;
     double Start[3], End[3];
-    double TreeAllocFactor;
+    double TreeAllocFactor, LinkLength, G, Hubble;
 }All;
 
 extern struct plot_struct{
@@ -248,7 +249,9 @@ extern struct NODE {
 } *Nodes, *Nodes_Base;
 extern long MaxNodes;
 extern long *NextNode;
-extern int *Ngblist;
+extern long *Ngblist;
+extern long *Head, *Len, *Next, *Tail;
+extern int Ngroup;
 
 extern struct gadget_2_cgs_unit{
     double cm, g, s, erg;

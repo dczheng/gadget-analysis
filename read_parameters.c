@@ -139,6 +139,10 @@ void read_parameters( char *fn ) {
         addr[nt] = &All.TreeAllocFactor;
         id[nt++] = REAL;
 
+        strcpy( tag[nt], "LinkLength" );
+        addr[nt] = &All.LinkLength;
+        id[nt++] = REAL;
+
         while( !feof( fd ) ) {
             *buf = 0;
             fgets( buf, 200, fd );
