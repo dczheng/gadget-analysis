@@ -6,6 +6,7 @@ void set_units() {
     All.UnitDensity_in_cgs = All.UnitMass_in_g / pow( All.UnitLength_in_cm, 3 );
     All.UnitEnergy_in_cgs = All.UnitMass_in_g * pow( All.UnitLength_in_cm,2 ) / pow( All.UnitTime_in_s, 2 );
     All.G = GRAVITY / pow( All.UnitLength_in_cm, 3 ) * All.UnitMass_in_g * pow( All.UnitTime_in_s, 2 );
+    All.Hubble = HUBBLE * All.UnitTime_in_s;
 
     sprintf( LogBuf,  "%-35s: %g", "UnitMass_in_g", All.UnitMass_in_g );
     print_log( LogBuf );
@@ -19,6 +20,7 @@ void set_units() {
     print_log( LogBuf );
     sprintf( LogBuf,  "%-35s: %g", "UnitVelocity_in_cm_per_s", All.UnitVelocity_in_cm_per_s );
     sprintf( LogBuf,  "%-35s: %g", "Gravity constant", All.G );
+    sprintf( LogBuf,  "%-35s: %g", "Hubble", All.Hubble );
     print_log( LogBuf );
     if ( All.MpcFlag != 1 ) {
         All.MpcFlag = 1000;

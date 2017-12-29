@@ -197,7 +197,7 @@ void plot_slice() {
         }
     }
 
-    sprintf( buf, "./%s/%s_%.2f\n", plot_info.data_name, plot_info.data_name, RedShift );
+    sprintf( buf, "./%s/%s_%.2f\n", plot_info.data_name, plot_info.data_name, All.RedShift );
     giza_open_device( "/png", buf );
     giza_set_environment( 0.0, PicSize, 0.0, PicSize, 1, -1 );
     giza_set_colour_table( cp, red, green, blue, cpn, 1, 1 );
@@ -224,7 +224,7 @@ void plot_slice() {
         giza_colour_bar( &cb_s, 1, 3, cb_min, cb_max, plot_info.cb_label );
     }
     if ( strcmp( plot_info.title, "" ) == 0 ){
-        sprintf( plot_info.title, "%s (z=%.2f)", plot_info.data_name, RedShift );
+        sprintf( plot_info.title, "%s (z=%.2f)", plot_info.data_name, All.RedShift );
     }
     giza_label( plot_info.xlabel, plot_info.ylabel, plot_info.title );
     show_plot_info();
@@ -371,7 +371,7 @@ void plot_syn_slice() {
         }
     }
 
-    sprintf( buf, "./%s/%s_%.2f\n", plot_info.data_name, plot_info.data_name, RedShift );
+    sprintf( buf, "./%s/%s_%.2f\n", plot_info.data_name, plot_info.data_name, All.RedShift );
     giza_open_device( "/png", buf );
     giza_set_environment( 0.0, PicSize, 0.0, PicSize, 1, -1 );
     giza_set_colour_table( cp, red, green, blue, cpn, 1, 1 );
@@ -398,7 +398,7 @@ void plot_syn_slice() {
         giza_colour_bar( &cb_s, 1, 3, cb_min, cb_max, plot_info.cb_label );
     }
     if ( strcmp( plot_info.title, "" ) == 0 ){
-        sprintf( plot_info.title, "%s (z=%.2f)", plot_info.data_name, RedShift );
+        sprintf( plot_info.title, "%s (z=%.2f)", plot_info.data_name, All.RedShift );
     }
     giza_label( plot_info.xlabel, plot_info.ylabel, plot_info.title );
     show_plot_info();

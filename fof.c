@@ -5,24 +5,15 @@ double LinkL, rhodm;
 
 void fof_allocate() {
     size_t bytes;
-    if ( !(Head = malloc( bytes = npart * sizeof( long ) ) ) )
-        printf( "failed to allocate memory for `Head` ( %g MB )\n", bytes / 1024.0 / 1024.0 );
-    sprintf( LogBuf, "allocate memory for `Head` ( %g MB )", bytes / 1024.0 / 1024.0 );
+
+    if ( !(fof_info = malloc( bytes = npart * sizeof( struct fof_info_struct ) ) ) )
+        printf( "failed to allocate memory for `fof_info` ( %g MB )\n", bytes / 1024.0 / 1024.0 );
+    sprintf( LogBuf, "allocate memory for `fof_info` ( %g MB )", bytes / 1024.0 / 1024.0 );
     print_log( LogBuf );
 
-    if ( !(Tail = malloc( bytes = npart * sizeof( long ) ) ) )
-        printf( "failed to allocate memory for `Tail` ( %g MB )\n", bytes / 1024.0 / 1024.0 );
-    sprintf( LogBuf, "allocate memory for `Tail` ( %g MB )", bytes / 1024.0 / 1024.0 );
-    print_log( LogBuf );
-
-    if ( !(Len = malloc( bytes = npart * sizeof( long ) ) ) )
-        printf( "failed to allocate memory for `Len` ( %g MB )\n", bytes / 1024.0 / 1024.0 );
-    sprintf( LogBuf, "allocate memory for `Len` ( %g MB )", bytes / 1024.0 / 1024.0 );
-    print_log( LogBuf );
-
-    if ( !(Next = malloc( bytes = npart * sizeof( long ) ) ) )
-        printf( "failed to allocate memory for `Next` ( %g MB )\n", bytes / 1024.0 / 1024.0 );
-    sprintf( LogBuf, "allocate memory for `Next` ( %g MB )", bytes / 1024.0 / 1024.0 );
+    if ( !(fof_Next = malloc( bytes = npart * sizeof( long ) ) ) )
+        printf( "failed to allocate memory for `fof_Next` ( %g MB )\n", bytes / 1024.0 / 1024.0 );
+    sprintf( LogBuf, "allocate memory for `fof_Next` ( %g MB )", bytes / 1024.0 / 1024.0 );
     print_log( LogBuf );
 
     if ( !(Ngblist = malloc( bytes = npart * sizeof( long ) ) ) )
@@ -34,11 +25,13 @@ void fof_allocate() {
 }
 
 void fof_free() {
-    free( Head );
-    free( Tail );
-    free( Len );
-    free( Next );
+    free( fof_info );
+    free( fof_Next );
     free( Ngblist );
+}
+
+int fof_compare_len( const void *a, const void *b ) {
+    return ( ( ( ( struct fof_info_struct *)a )->Len < ( ( struct fof_info_struct * )b )->Len ) ? 1 : -1 );
 }
 
 void fof_find_groups() {
@@ -54,8 +47,8 @@ void fof_find_groups() {
         ngbnum = ngb_fof( pos, LinkL, npart );
         for ( k=0; k<ngbnum; k++ ) {
             j = Ngblist[k];
-            if ( Head[ii] != Head[j] ) {
-                if ( Len[Head[ii]] > Len[Head[j]] ) {
+            if ( fof_info[ii].Head != fof_info[j].Head ) {
+                if ( fof_info[fof_info[ii].Head].Len > fof_info[fof_info[j].Head].Len ) {
                     p = ii;
                     s = j;
                 }
@@ -63,17 +56,49 @@ void fof_find_groups() {
                     p = j;
                     s = ii;
                 }
-                Next[Tail[Head[p]]] = Head[s];
-                Tail[Head[p]] = Tail[Head[s]];
-                Len[Head[p]] += Len[Head[s]];
-                ss = Head[s];
+                fof_Next[ fof_info[fof_info[p].Head].Tail ] = fof_info[s].Head;
+                fof_info[ fof_info[p].Head ].Tail = fof_info[ fof_info[s].Head ].Tail;
+                fof_info[ fof_info[p].Head ].Len += fof_info[ fof_info[s].Head ].Len;
+                ss = fof_info[s].Head;
                 do
-                    Head[ss] = Head[p];
-                while( (ss=Next[ss]) >=0 );
+                    fof_info[ss].Head = fof_info[p].Head;
+                while( (ss=fof_Next[ss]) >=0 );
             }
         }
     }
+    qsort( fof_info, npart, sizeof( struct fof_info_struct ), fof_compare_len );
     print_log( "fof find groups ... done" );
+}
+
+void fof_compute_group_properties() {
+    int i;
+    print_log( "fof compute groups properties ... " );
+    for ( i=0; i<npart; i++ ) {
+        if ( fof_info[i].Len > All.FofMinLen )
+            printf( "%li\n", fof_info[i].Len );
+    }
+    print_log( "fof compute groups properties ... done " );
+}
+
+void fof_test() {
+    int i, index;
+    long p, j;
+    FILE *fd;
+    index = 0;
+    fd = fopen( "fof.txt", "w" );
+    p = fof_info[index].Head;
+    for ( i=0; i<fof_info[index].Len; i++ ){
+        j = p + offset;
+        fprintf( fd, "%g %g %g\n",
+                P[j].Pos[0],
+                P[j].Pos[1],
+                P[j].Pos[2] );
+        p = fof_Next[p];
+    }
+    fclose( fd );
+}
+
+void fof_save() {
 }
 
 void fof( int pt ) {
@@ -85,11 +110,11 @@ void fof( int pt ) {
     fof_allocate();
     tree_build( pt );
     for ( i=0; i<npart; i++ ) {
-        Head[i] = Tail[i] = i;
-        Len[i] = 1;
-        Next[i] = -1;
+        fof_info[i].Head = fof_info[i].Tail = i;
+        fof_info[i].Len = 1;
+        fof_Next[i] = -1;
     }
-    rhodm = header.Omega0 * 3 * SQR( header.HubbleParam ) / ( 8 * M_PI * All.G );
+    rhodm = (All.Omega0-All.OmegaBaryon) * 3 * SQR( All.Hubble ) / ( 8 * M_PI * All.G );
     if ( header.mass[pt] != 0 )
         mass = header.mass[pt];
     else{
@@ -102,12 +127,8 @@ void fof( int pt ) {
             "Comoving linking lenght %g", rhodm, LinkL );
     print_log( LogBuf );
     fof_find_groups();
-    i = 0;
-    i = Head[i];
-    while( i>=0 ) {
-        printf( "%li\n", i );
-        i = Next[i];
-    }
+    fof_compute_group_properties();
+    fof_test();
     tree_free();
     print_log( "fof ... done" );
     print_log( sep_str );

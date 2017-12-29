@@ -1,7 +1,7 @@
 #include "allvars.h"
 
 double fabsx;
-#define NGB_PERIODIC( x ) ( fabsx=fabs(x), ( (fabsx > HalfBoxSize) ? ( BoxSize-fabsx ) : fabsx ) )
+#define NGB_PERIODIC( x ) ( fabsx=fabs(x), ( (fabsx > All.HalfBoxSize) ? ( All.BoxSize-fabsx ) : fabsx ) )
 #define FAC  0.366025403785  /* 0.5 * ( sqrt(3) - 1 ) */
 
 int ngb_fof( double *searchcenter, double h, long npart ) {

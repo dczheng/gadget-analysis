@@ -10,17 +10,17 @@ void slice() {
 
     if ( All.End[0] == 0 ){
         All.Start[0] = 0;
-        All.End[0] = BoxSize;
+        All.End[0] = All.BoxSize;
     }
 
     if ( All.End[1] == 0 ){
         All.Start[1] = 0;
-        All.End[1] = BoxSize;
+        All.End[1] = All.BoxSize;
     }
 
     if ( All.End[2] == 0 ){
         All.Start[2] = 0;
-        All.End[2] = BoxSize;
+        All.End[2] = All.BoxSize;
     }
     sprintf( LogBuf, "StartX: %g, EndX: %g\n"
             "StartY: %g, EndY: %g\n"

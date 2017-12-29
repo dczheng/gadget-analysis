@@ -143,6 +143,14 @@ void read_parameters( char *fn ) {
         addr[nt] = &All.LinkLength;
         id[nt++] = REAL;
 
+        strcpy( tag[nt], "FofMinLen" );
+        addr[nt] = &All.FofMinLen;
+        id[nt++] = INT;
+
+        strcpy( tag[nt], "OmegaBaryon" );
+        addr[nt] = &All.OmegaBaryon;
+        id[nt++] = REAL;
+
         while( !feof( fd ) ) {
             *buf = 0;
             fgets( buf, 200, fd );

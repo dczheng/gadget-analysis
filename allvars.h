@@ -37,6 +37,7 @@
 #define THOMSON_CROSS_SECTION    6.65246e-25
 #define PARSEC                   3.0857e18
 #define GRAVITY                  6.672e-8
+#define HUBBLE                   3.24077789e-18  /* in h/sec */
 
 #define GSL_INTE_WS_LEN 1000
 #define GSL_INTE_ERR_ABS 0.0
@@ -214,7 +215,7 @@ extern struct sph_particle_data {
 
 extern char sep_str[ SEP_LEN ];
 extern int ThisTask, NumTask;
-extern double BoxSize, RedShift, *KernelMat2D[6], *KernelMat3D[6], HalfBoxSize;
+extern double *KernelMat2D[6], *KernelMat3D[6], HalfBoxSize;
 extern void *CommBuffer;
 extern long long NumPart, N_Gas, TotNgroups, SliceStart[6], SliceEnd[6];
 extern char LogFile[ FILENAME_MAX ], LogBuf[500];
@@ -232,7 +233,10 @@ extern struct global_parameters_struct {
          UnitEnergy_in_cgs,
          UnitVelocity_in_cm_per_s;
     double Start[3], End[3];
-    double TreeAllocFactor, LinkLength, G, Hubble;
+    double TreeAllocFactor, LinkLength;
+    double G, Hubble, Omega0, OmegaLambda, OmegaBaryon,
+           BoxSize, HalfBoxSize, RedShift, HubbleParam;
+    int FofMinLen;
 }All;
 
 extern struct plot_struct{
@@ -250,8 +254,11 @@ extern struct NODE {
 extern long MaxNodes;
 extern long *NextNode;
 extern long *Ngblist;
-extern long *Head, *Len, *Next, *Tail;
-extern int Ngroup;
+extern struct fof_info_struct{
+    long Head, Len, Tail;
+    double mass, cm, vir200;
+} *fof_info;
+extern long *fof_Next;
 
 extern struct gadget_2_cgs_unit{
     double cm, g, s, erg;

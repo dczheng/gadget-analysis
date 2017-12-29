@@ -664,9 +664,12 @@ void read_snapshot() {
         NumPart += get_particle_num( i );
     }
     N_Gas = header.npartTotal[0] + ( ( (long long)header.npartTotalHighWord[0] ) << 32 );
-    BoxSize = header.BoxSize;
-    HalfBoxSize = BoxSize / 2;
-    RedShift = header.redshift;
+    All.BoxSize = header.BoxSize;
+    All.HalfBoxSize = All.BoxSize / 2;
+    All.RedShift = header.redshift;
+    All.Omega0 = header.Omega0;
+    All.OmegaLambda = header.OmegaLambda;
+    All.HubbleParam = header.HubbleParam;
     sprintf( LogBuf, "NumPart = %ld, N_Gas = %ld", NumPart, N_Gas );
     print_log( LogBuf );
     allocate_memory();
