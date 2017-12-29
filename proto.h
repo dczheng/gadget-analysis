@@ -32,4 +32,4 @@ double luminosity_distance( double a );
 
 void fof( int pt );
 void fof_free();
-int ngb_fof(  double *searchcenter, double h, long npart );
+int ngb_fof(  double *searchcenter, double h, int pt );

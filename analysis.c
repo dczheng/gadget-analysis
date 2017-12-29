@@ -278,7 +278,7 @@ void calc_vl() {
     double B;
     for ( i=0; i<N_Gas; i++ ) {
         B = sqrt( pow( SphP[i].B[0], 2 ) + pow( SphP[i].B[1], 2 ) + pow( SphP[i].B[2], 2 ) );
-        SphP[i].vL = ELECTRON_CHARGE * B / ( 2 * M_PI * ELECTRON_MASS * LIGHT_SPEED );
+        SphP[i].vL = ELECTRON_CHARGE * B / ( 2 * PI * ELECTRON_MASS * LIGHT_SPEED );
     }
 }
 
@@ -310,7 +310,7 @@ void calc_syn( double v ) {
     for ( i=0; i<N_Gas; i++ ) {
         n0 = SphP[i].CRE_n0 * SphP[i].Density * ( g2c.g / CUBE(g2c.cm) );
         B = sqrt( pow( SphP[i].B[0], 2 ) + pow( SphP[i].B[1], 2 ) + pow( SphP[i].B[2], 2 ) );
-        Ub = B * B / ( 8 * M_PI );
+        Ub = B * B / ( 8 * PI );
         vl = SphP[i].vL;
         SphP[i].P = 2.0 / 3.0 * LIGHT_SPEED * Ub * THOMSON_CROSS_SECTION *
             pow( v / vl, -(All.Alpha-1) / 2 ) / vl;
@@ -337,8 +337,8 @@ void syn_slice() {
     plot_info.istart = SliceStart[0];
     plot_info.iend = SliceEnd[0];
     for ( i=SliceStart[0]; i<SliceEnd[0]; i++ )
-        plot_info.data[i-SliceStart[0]] = SphP[i].P / ( 4*M_PI * SQR(com_dis) ) * 1e23;
-            //* 3.0/4.0 * M_PI * pow(All.SofteningTable[0]*PARSEC, 3 ) * 1000;
+        plot_info.data[i-SliceStart[0]] = SphP[i].P / ( 4*PI * SQR(com_dis) ) * 1e23;
+            //* 3.0/4.0 * PI * pow(All.SofteningTable[0]*PARSEC, 3 ) * 1000;
     plot_slice();
     free( plot_info.data );
 }

@@ -162,20 +162,21 @@ void tree_walk_recursive( long n, long sib, long father ) {
 }
 
 void tree_walk_test(){
+    FILE *fd;
     long n, signal;
     n = npart;
     signal = 0;
+    fd = fopen( "walk.txt", "w" );
     while ( n>=0 ) {
         if ( n<npart ){
-            printf( "%li -> ", n );
-            if ( !(++signal % 10)  )
-                printf( "\n" );
+            fprintf( fd, "%li\n", n );
             n = NextNode[n];
         }
         else {
             n = Nodes[n].nextnode;
         }
     }
+    fclose( fd );
 }
 
 void tree_build( int ptype ) {

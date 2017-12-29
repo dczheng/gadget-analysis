@@ -1,4 +1,5 @@
-FilePrefix  test_snapshot
+FilePrefix                    snapshot
+StartSnapIndex                51
 NumFiles                      1
 PicSize                       360
 GroupDir                      ./test
@@ -15,7 +16,6 @@ SofteningBulge                1
 SofteningStar                 1
 SofteningBndry                1
 Alpha                         3.2
-StartSnapIndex                62
 StartX                        0
 EndX                          0
 StartY                        0
@@ -29,4 +29,5 @@ CrFlag                        1
 BFlag                         1
 TreeAllocFactor               1
 LinkLength                    0.2
-FofMinLen                     8
+FofMinLen                     32
+FofFileName                   fof

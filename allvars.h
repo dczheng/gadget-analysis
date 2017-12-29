@@ -38,6 +38,7 @@
 #define PARSEC                   3.0857e18
 #define GRAVITY                  6.672e-8
 #define HUBBLE                   3.24077789e-18  /* in h/sec */
+#define PI M_PI
 
 #define GSL_INTE_WS_LEN 1000
 #define GSL_INTE_ERR_ABS 0.0
@@ -221,7 +222,8 @@ extern long long NumPart, N_Gas, TotNgroups, SliceStart[6], SliceEnd[6];
 extern char LogFile[ FILENAME_MAX ], LogBuf[500];
 extern FILE *LogFilefd;
 extern struct global_parameters_struct {
-    char FilePrefix[ FILENAME_MAX ], GroupDir[ FILENAME_MAX ];
+    char FilePrefix[ FILENAME_MAX ], GroupDir[ FILENAME_MAX ],
+         FofFileName[ FILENAME_MAX ];
     FILE *LogFilefd;
     int StartSnapIndex, MpcFlag, ProjectDirection, KernelN,
         PicSize, BufferSize, NumFiles, HgeFlag, CrFlag, BFlag;
@@ -235,7 +237,7 @@ extern struct global_parameters_struct {
     double Start[3], End[3];
     double TreeAllocFactor, LinkLength;
     double G, Hubble, Omega0, OmegaLambda, OmegaBaryon,
-           BoxSize, HalfBoxSize, RedShift, HubbleParam;
+           BoxSize, HalfBoxSize, RedShift, HubbleParam, CriticalDensity;
     int FofMinLen;
 }All;
 
@@ -256,9 +258,9 @@ extern long *NextNode;
 extern long *Ngblist;
 extern struct fof_info_struct{
     long Head, Len, Tail;
-    double mass, cm, vir200;
+    double mass, cm[3], vr200, vel[3];
 } *fof_info;
-extern long *fof_Next;
+extern long *fof_Next, Ngroups;
 
 extern struct gadget_2_cgs_unit{
     double cm, g, s, erg;

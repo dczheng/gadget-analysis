@@ -34,17 +34,19 @@ int fof_compare_len( const void *a, const void *b ) {
     return ( ( ( ( struct fof_info_struct *)a )->Len < ( ( struct fof_info_struct * )b )->Len ) ? 1 : -1 );
 }
 
-void fof_find_groups() {
-    int ngbnum, k;
+void fof_find_groups( int pt ) {
+    int ngbnum, k, ngbmax;
     double pos[3];
     long i, ii, p, s, j, ss;
+    ngbmax = 0;
     print_log( "start fof find groups ..." );
     for ( i=offset; i<offset+npart; i++ ) {
         ii = i-offset;
         if ( !P[i].Flag ) continue;
         for( j=0; j<3; j++ )
             pos[j] = P[i].Pos[j];
-        ngbnum = ngb_fof( pos, LinkL, npart );
+        ngbnum = ngb_fof( pos, LinkL, pt );
+        if ( ngbnum > ngbmax ) ngbmax = ngbnum;
         for ( k=0; k<ngbnum; k++ ) {
             j = Ngblist[k];
             if ( fof_info[ii].Head != fof_info[j].Head ) {
@@ -67,16 +69,47 @@ void fof_find_groups() {
         }
     }
     qsort( fof_info, npart, sizeof( struct fof_info_struct ), fof_compare_len );
+    sprintf( LogBuf, "the maximum number of ngb: %i", ngbmax );
+    print_log( LogBuf );
     print_log( "fof find groups ... done" );
 }
 
-void fof_compute_group_properties() {
-    int i;
+void fof_compute_group_properties( int pt ) {
+    int i, num, j, k;
+    long ii, p;
+    double mass;
     print_log( "fof compute groups properties ... " );
     for ( i=0; i<npart; i++ ) {
-        if ( fof_info[i].Len > All.FofMinLen )
-            printf( "%li\n", fof_info[i].Len );
+        if ( fof_info[i].Len < All.FofMinLen ) break;
+        p = fof_info[i].Head;
+        fof_info[i].mass = 0;
+        for ( k=0; k<3; k++ ){
+            fof_info[i].cm[k] = 0;
+            fof_info[i].vel[k] = 0;
+        }
+        fof_info[i].vr200 = 0;
+        for ( j=0; j<fof_info[i].Len; j++ ) {
+            ii = p + offset;
+            p = fof_Next[p];
+            mass = ( header.mass[pt] != 0 ) ? header.mass[pt] : P[ii].Mass;
+            fof_info[i].mass += mass;
+            for ( k=0; k<3; k++ ){
+                fof_info[i].cm[k] += mass * P[ii].Pos[k];
+                fof_info[i].vel[k] += mass * P[ii].Vel[k];
+            }
+        }
+        for ( k=0; k<3; k++ ){
+            fof_info[i].cm[k] /= fof_info[i].mass;
+            fof_info[i].vel[k] /= fof_info[i].mass;
+        }
+        fof_info[i].vr200 = pow( fof_info[i].mass /
+            ( All.CriticalDensity * 200 * 4.0 / 3.0 * PI ), 1.0/3.0 );
     }
+    Ngroups = i;
+    sprintf( LogBuf, "The number of groups with at least %i particles: %li", All.FofMinLen, Ngroups );
+    print_log( LogBuf );
+    sprintf( LogBuf, "Largest group has %li particles", fof_info[0].Len );
+    print_log( LogBuf );
     print_log( "fof compute groups properties ... done " );
 }
 
@@ -99,6 +132,11 @@ void fof_test() {
 }
 
 void fof_save() {
+    hid_t hdf5_file, hdf5_dataset, hdf5_dataspace;
+    herr_t herr;
+    sprintf( All.FofFileName, "%s.hdf5", All.FofFileName );
+    hdf5_file = H5Fcreate( All.FofFileName, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT );
+    H5Fclose( hdf5_file );
 }
 
 void fof( int pt ) {
@@ -114,7 +152,7 @@ void fof( int pt ) {
         fof_info[i].Len = 1;
         fof_Next[i] = -1;
     }
-    rhodm = (All.Omega0-All.OmegaBaryon) * 3 * SQR( All.Hubble ) / ( 8 * M_PI * All.G );
+    rhodm = (All.Omega0-All.OmegaBaryon) * 3 * SQR( All.Hubble ) / ( 8 * PI * All.G );
     if ( header.mass[pt] != 0 )
         mass = header.mass[pt];
     else{
@@ -124,11 +162,11 @@ void fof( int pt ) {
     }
     LinkL = All.LinkLength * pow( mass / rhodm, 1.0/3 );
     sprintf( LogBuf, "critical density of dark matter: %g\n"
-            "Comoving linking lenght %g", rhodm, LinkL );
+            "comoving linking lenght %g", rhodm, LinkL );
     print_log( LogBuf );
-    fof_find_groups();
-    fof_compute_group_properties();
-    fof_test();
+    fof_find_groups( pt );
+    fof_compute_group_properties( pt );
+    //fof_test();
     tree_free();
     print_log( "fof ... done" );
     print_log( sep_str );

@@ -151,6 +151,10 @@ void read_parameters( char *fn ) {
         addr[nt] = &All.OmegaBaryon;
         id[nt++] = REAL;
 
+        strcpy( tag[nt], "FofFileName" );
+        addr[nt] = &All.FofFileName;
+        id[nt++] = STRING;
+
         while( !feof( fd ) ) {
             *buf = 0;
             fgets( buf, 200, fd );

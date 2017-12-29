@@ -2,9 +2,9 @@
 
 double kernel( double q ) {
     if ( 0 <= q && q <= 0.5 )
-        return 8.0 / M_PI * ( 1 - 6*q*q + 6*q*q*q );
+        return 8.0 / PI * ( 1 - 6*q*q + 6*q*q*q );
     if ( q <= 1 )
-        return 8.0 / M_PI * ( 2.0 * pow( 1-q, 3.0 ) );
+        return 8.0 / PI * ( 2.0 * pow( 1-q, 3.0 ) );
     return 0;
 }
 
