@@ -60,12 +60,12 @@ void tree_build_single() {
         sprintf( LogBuf, "%smax[%i]=%g, min[%i]=%g\n",
                 LogBuf, i, max[i], i, min[i] );
     }
-    len *= 1.01;
+    len *= 1.001;
     sprintf( LogBuf, "%slen=%g", LogBuf, len );
     print_log( LogBuf );
     /* initialize first node */
     for ( j=0; j<3; j++ ) {
-        nfreep->center[j] = ( max[j] + min[j] ) / 2;
+        nfreep->center[j] = ( max[j] + min[j] ) * 0.5;
     }
     for ( j=0; j<8; j++ ) {
         nfreep->suns[j] = -1;
