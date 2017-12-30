@@ -171,7 +171,7 @@ void fof( int pt ) {
     print_log( LogBuf );
     fof_find_groups( pt );
     fof_compute_group_properties( pt );
-    fof_test();
+    //fof_test();
     tree_free();
     print_log( "fof ... done" );
     print_log( sep_str );
