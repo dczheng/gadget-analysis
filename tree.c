@@ -104,7 +104,7 @@ void tree_build_single() {
                 for ( j=0; j<8; j++ )
                     nfreep->suns[j] = -1;
                 for ( j=0, subnode=0, bits=1; j<3; j++, bits<<=1 )
-                    subnode += (( P[n].Pos[j] > nfreep->center[j] ) ? bits : 0);
+                    subnode += (( P[n+offset].Pos[j] > nfreep->center[j] ) ? bits : 0);
                 nfreep->suns[subnode] = n;
                 n = nfree;
                 nfree++;

@@ -38,6 +38,7 @@ void fof_find_groups( int pt ) {
     int ngbnum, k, ngbmax;
     double pos[3];
     long i, ii, p, s, j, ss;
+    //int flag=0;
     ngbmax = 0;
     print_log( "start fof find groups ..." );
     for ( i=offset; i<offset+npart; i++ ) {
@@ -46,6 +47,8 @@ void fof_find_groups( int pt ) {
         for( j=0; j<3; j++ )
             pos[j] = P[i].Pos[j];
         ngbnum = ngb_fof( pos, LinkL, pt );
+        //printf( "%i\n", ngbnum );
+        //if ( flag++ > 30 ) endrun( 20171230 );
         if ( ngbnum > ngbmax ) ngbmax = ngbnum;
         for ( k=0; k<ngbnum; k++ ) {
             j = Ngblist[k];
@@ -61,10 +64,11 @@ void fof_find_groups( int pt ) {
                 fof_Next[ fof_info[fof_info[p].Head].Tail ] = fof_info[s].Head;
                 fof_info[ fof_info[p].Head ].Tail = fof_info[ fof_info[s].Head ].Tail;
                 fof_info[ fof_info[p].Head ].Len += fof_info[ fof_info[s].Head ].Len;
+                fof_info[ fof_info[s].Head ].Len = 0;
                 ss = fof_info[s].Head;
                 do
                     fof_info[ss].Head = fof_info[p].Head;
-                while( (ss=fof_Next[ss]) >=0 );
+                while( (ss=fof_Next[ss]) >= 0 );
             }
         }
     }
@@ -79,6 +83,7 @@ void fof_compute_group_properties( int pt ) {
     long ii, p;
     double mass;
     print_log( "fof compute groups properties ... " );
+    Ngroups = 0;
     for ( i=0; i<npart; i++ ) {
         if ( fof_info[i].Len < All.FofMinLen ) break;
         p = fof_info[i].Head;
@@ -166,7 +171,7 @@ void fof( int pt ) {
     print_log( LogBuf );
     fof_find_groups( pt );
     fof_compute_group_properties( pt );
-    //fof_test();
+    fof_test();
     tree_free();
     print_log( "fof ... done" );
     print_log( sep_str );
