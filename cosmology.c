@@ -10,7 +10,7 @@ double E_a ( double a ) {
 
 double H_a( double a ) {
     double H;
-    H = All.HubbleParam * 100 * E_a( a );
+    H = All.HubbleParam * All.Hubble * E_a( a );
     return H;
 }
 
@@ -25,7 +25,7 @@ double comoving_distance( double a ) {
     gsl_integration_qag( &F, a, 1,
             GSL_INTE_ERR_ABS, GSL_INTE_ERR_REL, GSL_INTE_WS_LEN,
             GSL_INTE_KEY, inte_ws, &d, &err );
-    d *= ( LIGHT_SPEED / 1e5 ) / ( All.HubbleParam * 100 ); //Mpc
+    d *= ( LIGHT_SPEED / 1e5 ) / ( All.HubbleParam * All.Hubble );
     return d;
 }
 
