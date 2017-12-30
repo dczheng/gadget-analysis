@@ -32,4 +32,5 @@ double luminosity_distance( double a );
 
 void fof( int pt );
 void fof_free();
+void fof_save_groups();
 int ngb_fof(  double *searchcenter, double h, int pt );

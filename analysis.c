@@ -348,6 +348,7 @@ void analysis(){
     //tree_build( 1 );
     //tree_free();
     fof( 1 );
+    fof_save_groups();
     fof_free();
     /*
     calc_vl();

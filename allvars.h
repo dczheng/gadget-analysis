@@ -236,9 +236,9 @@ extern struct global_parameters_struct {
          UnitVelocity_in_cm_per_s;
     double Start[3], End[3];
     double TreeAllocFactor, LinkLength;
+    int FofMinLen;
     double G, Hubble, Omega0, OmegaLambda, OmegaBaryon,
            BoxSize, HalfBoxSize, RedShift, HubbleParam, CriticalDensity;
-    int FofMinLen;
 }All;
 
 extern struct plot_struct{
@@ -260,7 +260,8 @@ extern struct fof_info_struct{
     long Head, Len, Tail;
     double mass, cm[3], vr200, vel[3];
 } *fof_info;
-extern long *fof_Next, Ngroups;
+extern long *fof_Next;
+extern int Ngroups;
 
 extern struct gadget_2_cgs_unit{
     double cm, g, s, erg;

@@ -31,7 +31,8 @@ long MaxNodes;
 long *NextNode;
 long *Ngblist;
 
-long  *fof_Next, Ngroups;
+long  *fof_Next;
+int Ngroups;
 struct fof_info_struct *fof_info;
 
 struct gadget_2_cgs_unit g2c;
