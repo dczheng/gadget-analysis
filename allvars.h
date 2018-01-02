@@ -35,10 +35,12 @@
 #define BOLTZMANN                1.38066e-16
 #define LIGHT_SPEED              2.9979e10
 #define THOMSON_CROSS_SECTION    6.65246e-25
-#define PARSEC                   3.0857e18
 #define GRAVITY                  6.672e-8
 #define HUBBLE                   3.24077789e-18  /* in h/sec */
 #define PI M_PI
+#define PC                       3.0857e18
+#define KPC                      3.0857e21
+#define MPC                      3.0857e24
 
 #define GSL_INTE_WS_LEN 1000
 #define GSL_INTE_ERR_ABS 0.0
@@ -242,7 +244,7 @@ extern struct global_parameters_struct {
 }All;
 
 extern struct plot_struct{
-    int log_flag, istart, iend, global_colorbar_flag;
+    int log_flag, istart, iend, global_colorbar_flag, PicSize;
     char data_name[100],cb_label[100], xlabel[100], ylabel[100], title[100];
     double *data, h;
 }plot_info;

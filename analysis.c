@@ -276,10 +276,13 @@ void test_id() {
 void calc_vl() {
     long i;
     double B;
+    print_log( "compute Larmor frequency ..." );
     for ( i=0; i<N_Gas; i++ ) {
         B = sqrt( pow( SphP[i].B[0], 2 ) + pow( SphP[i].B[1], 2 ) + pow( SphP[i].B[2], 2 ) );
         SphP[i].vL = ELECTRON_CHARGE * B / ( 2 * PI * ELECTRON_MASS * LIGHT_SPEED );
     }
+    print_log( "compute Larmor frequency ... done." );
+    print_log( sep_str );
 }
 
 void vl_slice() {
@@ -304,69 +307,70 @@ void vl_slice() {
     free( plot_info.data );
 }
 
-void calc_syn( double v ) {
-    long i;
-    double B, Ub, n0, vl;
+void syn( double v ) {
+    long i, xi, yi, PicSize;
+    double B, Ub, n0, vl, pmin, pmax, *img, dx, dy, d1, d2, com_dis, ang_dis, BoxSize;
+    print_log( "compute synchrotron radiation ..." );
+    pmin = DBL_MAX;
+    pmax = DBL_MIN;
     for ( i=0; i<N_Gas; i++ ) {
-        n0 = SphP[i].CRE_n0 * SphP[i].Density * ( g2c.g / CUBE(g2c.cm) );
+        n0 = SphP[i].CRE_n0 * SphP[i].Density / (ELECTRON_MASS/g2c.g) * ( 1/CUBE(g2c.cm) );
+        //printf( "%g\n", n0 );
         B = sqrt( pow( SphP[i].B[0], 2 ) + pow( SphP[i].B[1], 2 ) + pow( SphP[i].B[2], 2 ) );
         Ub = B * B / ( 8 * PI );
         vl = SphP[i].vL;
         SphP[i].P = 2.0 / 3.0 * LIGHT_SPEED * Ub * THOMSON_CROSS_SECTION *
             pow( v / vl, -(All.Alpha-1) / 2 ) / vl;
+        pmin = ( SphP[i].P < pmin ) ? SphP[i].P : pmin;
+        pmax = ( SphP[i].P > pmax ) ? SphP[i].P : pmax;
     }
+    sprintf( LogBuf, "pmin = %g, pmax = %g", pmin, pmax );
+    img = malloc( sizeof( double ) * SQR( All.PicSize ) );
+    memset( img, 0, sizeof( double ) * SQR( All.PicSize ) );
+    com_dis = comoving_distance( header.time );
+    ang_dis = angular_distance( header.time );
+    PicSize = All.PicSize;
+    BoxSize = All.BoxSize;
+    dy = dx = BoxSize / PicSize;
+    for ( i=0; i<N_Gas; i++ ) {
+        d1 = com_dis + P[i].Pos[3];
+        d2 = ang_dis + P[i].Pos[3];
+        d1 *= g2c.cm;
+        d2 *= g2c.cm;
+        xi = (int)( P[i].Pos[0] / dx );
+        yi = (int)( P[i].Pos[1] / dy );
+        img[xi * PicSize + yi] += SphP[i].P / ( 4*PI*com_dis );
+    }
+    free( img );
+    print_log( LogBuf );
+    print_log( "compute synchrotron radiation ... done." );
+    print_log( sep_str );
 }
 
-void syn_slice() {
-    int num, i;
-    double com_dis;
-    num = SliceEnd[0] - SliceStart[0];
-
-    com_dis = comoving_distance( header.time );
-    com_dis *= 1e6 * PARSEC;
-    plot_info.h = All.SofteningTable[0];
-    plot_info.log_flag = 1;
-    plot_info.global_colorbar_flag = 0;
-    sprintf( plot_info.data_name, "syn" );
-    sprintf( plot_info.xlabel, "%g Mpc", proj_size / All.MpcFlag );
-    sprintf( plot_info.ylabel, "" );
-    sprintf( plot_info.title, "" );
-    sprintf( plot_info.cb_label, "(10^x)(mJy)");
-    plot_info.data = malloc( sizeof(double) * num );
-    memset( plot_info.data, 0, sizeof(double) * num );
-    plot_info.istart = SliceStart[0];
-    plot_info.iend = SliceEnd[0];
-    for ( i=SliceStart[0]; i<SliceEnd[0]; i++ )
-        plot_info.data[i-SliceStart[0]] = SphP[i].P / ( 4*PI * SQR(com_dis) ) * 1e23;
-            //* 3.0/4.0 * PI * pow(All.SofteningTable[0]*PARSEC, 3 ) * 1000;
-    plot_slice();
-    free( plot_info.data );
+void radio_halo() {
 }
 
 void analysis(){
     init_analysis();
     //tree_build( 1 );
     //tree_free();
-    fof( 1 );
-    fof_save_groups();
-    fof_free();
-    /*
-    calc_vl();
-    magnetic_field_slice();
+    //fof( 1 );
+    //fof_save_groups();
+    //fof_free();
     gas_rho_slice();
-    vl_slice();
-    calc_syn( 1.4e9 );
-    syn_slice();
-    */
+    magnetic_field_slice();
     //test_id();
     //divB_slice();
     //gas_vel_slice();
     //mach_slice();
-    //hge_n_slice();
-    //cr_n_slice();
+    hge_n_slice();
+    cr_n_slice();
     //hge_e_slice();
     //cr_e_slice();
     //vel_value();
     //sort_gas_rho();
+    calc_vl();
+    syn( 1.4e9 );
+    //radio_halo();
     free_analysis();
 }
