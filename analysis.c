@@ -309,45 +309,64 @@ void vl_slice() {
 
 void syn( double v ) {
     long i, xi, yi, PicSize;
-    double B, Ub, n0, vl, pmin, pmax, *img, dx, dy, d1, d2, com_dis, ang_dis, BoxSize;
+    double B, Ub, vl, pmin, pmax, *img, dx, dy, d1, d2,
+           com_dis, ang_dis, lum_dis, BoxSize, C, img_max, img_min, V,
+           h, tmp, ang, beam;
     print_log( "compute synchrotron radiation ..." );
     pmin = DBL_MAX;
     pmax = DBL_MIN;
     for ( i=0; i<N_Gas; i++ ) {
-        n0 = SphP[i].CRE_n0 * SphP[i].Density / (ELECTRON_MASS/g2c.g) * ( 1/CUBE(g2c.cm) );
-        //printf( "%g\n", n0 );
+        C = SphP[i].CRE_C0 * pow( SphP[i].Density, (All.Alpha-2)/3.0 );
+        C = C * SphP[i].Density / ( ELECTRON_MASS /(g2c.g) );
+        //printf( "%g\n", C );
+        C /= CUBE( g2c.cm );
+        //printf( "%g\n", C );
         B = sqrt( pow( SphP[i].B[0], 2 ) + pow( SphP[i].B[1], 2 ) + pow( SphP[i].B[2], 2 ) );
         Ub = B * B / ( 8 * PI );
         vl = SphP[i].vL;
-        SphP[i].P = 2.0 / 3.0 * LIGHT_SPEED * Ub * THOMSON_CROSS_SECTION *
-            pow( v / vl, -(All.Alpha-1) / 2 ) / vl;
-        pmin = ( SphP[i].P < pmin ) ? SphP[i].P : pmin;
+        SphP[i].P = C * 2.0 / 3.0 * LIGHT_SPEED * Ub * THOMSON_CROSS_SECTION *
+            pow( v / vl-1, (1-All.Alpha) / 2 ) / vl;
+        pmin = ( SphP[i].P < pmin && SphP[i].P > 0 ) ? SphP[i].P : pmin;
         pmax = ( SphP[i].P > pmax ) ? SphP[i].P : pmax;
     }
     sprintf( LogBuf, "pmin = %g, pmax = %g", pmin, pmax );
+    print_log( LogBuf );
     img = malloc( sizeof( double ) * SQR( All.PicSize ) );
     memset( img, 0, sizeof( double ) * SQR( All.PicSize ) );
-    com_dis = comoving_distance( header.time );
-    ang_dis = angular_distance( header.time );
+    com_dis = comoving_distance( header.time ) * ( g2c.cm );
+    ang_dis = angular_distance( header.time ) * ( g2c.cm );
+    lum_dis = luminosity_distance( header.time ) * ( g2c.cm );
     PicSize = All.PicSize;
     BoxSize = All.BoxSize;
     dy = dx = BoxSize / PicSize;
+    h = All.SofteningTable[0] * ( g2c.cm );
+    V = 4.0 / 3.0 * PI * pow( h, 3 );
+    ang = h / ang_dis / PI * 180.0 * 60;
+    beam = pow( 10.0 / 60, 2.0 ) / ( 4.0 * log(2) );
+    img_max = DBL_MIN;
+    img_min = DBL_MAX;
     for ( i=0; i<N_Gas; i++ ) {
-        d1 = com_dis + P[i].Pos[3];
-        d2 = ang_dis + P[i].Pos[3];
-        d1 *= g2c.cm;
-        d2 *= g2c.cm;
         xi = (int)( P[i].Pos[0] / dx );
         yi = (int)( P[i].Pos[1] / dy );
-        img[xi * PicSize + yi] += SphP[i].P / ( 4*PI*com_dis );
+        tmp = img[xi * PicSize + yi] += SphP[i].P * V / ( 4*PI*pow(lum_dis,2) ) / SQR(ang)
+            * beam * 1e25;
+        img_max = ( tmp > img_max ) ? tmp : img_max;
+        img_min = ( tmp < img_min && tmp > 0 ) ? tmp : img_min;
     }
-    free( img );
+    sprintf( LogBuf, "img_max = %g, img_min = %g\n", img_max, img_min );
     print_log( LogBuf );
+    plot_info.data = img;
+    plot_info.PicSize = All.PicSize;
+    sprintf( plot_info.data_name, "syn" );
+    plot_info.log_flag = 1;
+    sprintf( plot_info.xlabel, "%g Mpc", All.BoxSize / All.MpcFlag );
+    sprintf( plot_info.title, "1.4GHz" );
+    sprintf( plot_info.ylabel, "" );
+    sprintf( plot_info.cb_label, "10^x(mJy/beam)" );
+    plot_imshow();
+    free( img );
     print_log( "compute synchrotron radiation ... done." );
     print_log( sep_str );
-}
-
-void radio_halo() {
 }
 
 void analysis(){
@@ -363,8 +382,8 @@ void analysis(){
     //divB_slice();
     //gas_vel_slice();
     //mach_slice();
-    hge_n_slice();
-    cr_n_slice();
+    //hge_n_slice();
+    //cr_n_slice();
     //hge_e_slice();
     //cr_e_slice();
     //vel_value();
