@@ -139,7 +139,7 @@ void hge_n_slice() {
     sprintf( plot_info.xlabel, "%g Mpc", proj_size / All.MpcFlag );
     sprintf( plot_info.ylabel, "" );
     sprintf( plot_info.title, "" );
-    sprintf( plot_info.cb_label, "(10^x)");
+    sprintf( plot_info.cb_label, "(10^x)cm^{-3}Kpc^{-2}");
     plot_info.data = malloc( sizeof(double) * num );
     memset( plot_info.data, 0, sizeof(double) * num );
     plot_info.istart = SliceStart[0];
@@ -161,7 +161,7 @@ void cr_n_slice() {
     sprintf( plot_info.xlabel, "%g Mpc", proj_size / All.MpcFlag );
     sprintf( plot_info.ylabel, "" );
     sprintf( plot_info.title, "" );
-    sprintf( plot_info.cb_label, "(10^x)");
+    sprintf( plot_info.cb_label, "(10^x)cm{-3}Kpc^{-2}");
     plot_info.data = malloc( sizeof(double) * num );
     memset( plot_info.data, 0, sizeof(double) * num );
     plot_info.istart = SliceStart[0];
@@ -183,7 +183,7 @@ void cr_e_slice() {
     sprintf( plot_info.xlabel, "%g Mpc", proj_size / All.MpcFlag );
     sprintf( plot_info.ylabel, "" );
     sprintf( plot_info.title, "" );
-    sprintf( plot_info.cb_label, "(10^x)");
+    sprintf( plot_info.cb_label, "(10^x)erg cm^{-3} Kpc^{-2}");
     plot_info.data = malloc( sizeof(double) * num );
     memset( plot_info.data, 0, sizeof(double) * num );
     plot_info.istart = SliceStart[0];
@@ -205,7 +205,7 @@ void hge_e_slice() {
     sprintf( plot_info.xlabel, "%g Mpc", proj_size / All.MpcFlag );
     sprintf( plot_info.ylabel, "" );
     sprintf( plot_info.title, "" );
-    sprintf( plot_info.cb_label, "(10^x)");
+    sprintf( plot_info.cb_label, "(10^x)erg cm^{-3} Kpc^{-2}");
     plot_info.data = malloc( sizeof(double) * num );
     memset( plot_info.data, 0, sizeof(double) * num );
     plot_info.istart = SliceStart[0];
@@ -350,6 +350,10 @@ void syn( double v ) {
         yi = (int)( P[i].Pos[1] / dy );
         tmp = img[xi * PicSize + yi] += SphP[i].P * V / ( 4*PI*pow(lum_dis,2) ) / SQR(ang)
             * beam * 1e25;
+        /*
+        tmp = img[xi * PicSize + yi] += SphP[i].P * V / ( 4*PI*pow(lum_dis,2) ) / SQR(ang)
+            * 1e25;
+            */
         img_max = ( tmp > img_max ) ? tmp : img_max;
         img_min = ( tmp < img_min && tmp > 0 ) ? tmp : img_min;
     }
@@ -359,10 +363,11 @@ void syn( double v ) {
     plot_info.PicSize = All.PicSize;
     sprintf( plot_info.data_name, "syn" );
     plot_info.log_flag = 1;
-    sprintf( plot_info.xlabel, "%g Mpc", All.BoxSize / All.MpcFlag );
-    sprintf( plot_info.title, "1.4GHz" );
-    sprintf( plot_info.ylabel, "" );
-    sprintf( plot_info.cb_label, "10^x(mJy/beam)" );
+    sprintf( plot_info.xlabel, "%.2g deg", BoxSize * (g2c.cm) / ang_dis / PI * 180);
+    sprintf( plot_info.ylabel, "%.2g deg", BoxSize * (g2c.cm) / ang_dis / PI * 180);
+    sprintf( plot_info.title, "1.4GHz(z=%.2f)", All.RedShift );
+    //sprintf( plot_info.cb_label, "10^x(mJy arcmin^{-2})" );
+    sprintf( plot_info.cb_label, "10^x(mJy beam^{-1})" );
     plot_imshow();
     free( img );
     print_log( "compute synchrotron radiation ... done." );
@@ -381,11 +386,11 @@ void analysis(){
     //test_id();
     //divB_slice();
     //gas_vel_slice();
-    //mach_slice();
-    //hge_n_slice();
-    //cr_n_slice();
-    //hge_e_slice();
-    //cr_e_slice();
+    mach_slice();
+    hge_n_slice();
+    cr_n_slice();
+    hge_e_slice();
+    cr_e_slice();
     //vel_value();
     //sort_gas_rho();
     calc_vl();
