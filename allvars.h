@@ -15,6 +15,7 @@
 #include "limits.h"
 #include "sys/stat.h"
 #include "proto.h"
+#include "dislin.h"
 
 #define DEBUG
 

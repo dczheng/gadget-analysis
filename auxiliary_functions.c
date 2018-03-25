@@ -12,3 +12,7 @@ long get_particle_offset( int pt ) {
     }
     return offset;
 }
+
+double get_B( long i ) {
+    return sqrt( SQR(SphP[i].B[0]) + SQR(SphP[i].B[1]) + SQR(SphP[i].B[2]) );
+}

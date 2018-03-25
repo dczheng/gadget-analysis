@@ -1,4 +1,4 @@
-FilePrefix                    snapshot
+FilePrefix  test_snapshot
 StartSnapIndex                51
 NumFiles                      1
 PicSize                       360

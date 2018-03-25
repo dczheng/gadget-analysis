@@ -7,6 +7,7 @@ void signal_hander( int sig );
 void endrun( int ierr );
 void read_parameters();
 void set_units();
+
 void slice();
 void init_projection();
 void print_log( char *log );
@@ -14,12 +15,15 @@ void init_plot();
 void free_plot();
 void plot_slice();
 void plot_imshow();
+
 void analysis();
 double kernel( double q );
 void init_kernel_matrix();
 void free_kernel_matrix();
+
 long get_particle_offset( int pt );
 long get_particle_num( int pt );
+double get_B( long i );
 
 void tree_build( int pt );
 void tree_free();
