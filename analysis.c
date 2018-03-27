@@ -374,8 +374,44 @@ void syn( double v ) {
     print_log( sep_str );
 }
 
+void output_mag() {
+    long i;
+    FILE *fd;
+    fd = fopen( "./B.txt", "w" );
+    for ( i=0; i<N_Gas; i++ ) {
+        fprintf( fd, "%g %g %g %g\n",
+                P[i].Pos[0],
+                P[i].Pos[1],
+                P[i].Pos[2],
+                log10(get_B( i ) ) );
+    }
+    fclose( fd );
+}
+
+void output_rho() {
+    long i;
+    FILE *fd;
+    double rho_max, rho_min;
+    fd = fopen( "./rho.txt", "w" );
+    rho_max = -DBL_MAX;
+    rho_min = -DBL_MAX;
+    for ( i=0; i<N_Gas; i++ ) {
+        fprintf( fd, "%g %g %g %g\n",
+                P[i].Pos[0],
+                P[i].Pos[1],
+                P[i].Pos[2],
+                SphP[i].Density );
+        rho_max = ( SphP[i].Density > rho_max ) ? SphP[i].Density : rho_max;
+        rho_min = ( SphP[i].Density < rho_min ) ? SphP[i].Density : rho_min;
+    }
+    printf( "rho_max = %g, rho_min = %g \n", rho_max, rho_min );
+    fclose( fd );
+}
+
 void analysis(){
     init_analysis();
+    output_mag();
+    output_rho();
     //tree_build( 1 );
     //tree_free();
     //fof( 1 );
