@@ -114,11 +114,11 @@ void plot_slice() {
                         j1 = ly / dy;
                         if ( i1 < 0 || i1 >= PicSize ||
                                 j1 < 0 || j1 >= PicSize ) continue;
-                        img[ i1 * PicSize + j1 ] += v * KernelMat2D[0][ li*N + lj ] / ( dx * dy );
+                        img[ i1 * PicSize + j1 ] += v * KernelMat2D[0][ li*N + lj ]; // ( dx * dy );
                 }
         }
         else
-            img[ xi * PicSize + yi ] += v / ( dx * dy );
+            img[ xi * PicSize + yi ] += v; // ( dx * dy );
 
         if ( plot_info.data[i-plot_info.istart] > 0 ){
             data_max = ( v > data_max ) ? v : data_max;

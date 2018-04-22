@@ -53,6 +53,7 @@ void gas_rho_slice() {
     sprintf( plot_info.ylabel, "" );
     sprintf( plot_info.title, "" );
     sprintf( plot_info.cb_label, "(10^x) gcm^{-3}Kpc^{-2}");
+    plot_info.global_colorbar_flag = 1;
     plot_info.data = malloc( sizeof(double) * num );
     memset( plot_info.data, 0, sizeof(double) * num );
     plot_info.istart = SliceStart[0];
@@ -394,7 +395,7 @@ void output_rho() {
     double rho_max, rho_min;
     fd = fopen( "./rho.txt", "w" );
     rho_max = -DBL_MAX;
-    rho_min = -DBL_MAX;
+    rho_min = DBL_MAX;
     for ( i=0; i<N_Gas; i++ ) {
         fprintf( fd, "%g %g %g %g\n",
                 P[i].Pos[0],
@@ -408,21 +409,116 @@ void output_rho() {
     fclose( fd );
 }
 
+void calc_temp() {
+    double yhelium, mu, XH=HYDROGEN_MASSFRAC, T, *x, *y,
+           Tmin, Tmax, rhomin, rhomax;
+    int num, i, k;
+    FILE *fd, *fd2;
+    Tmin = rhomin = DBL_MAX;
+    Tmax = rhomax = -DBL_MAX;
+
+    yhelium = ( 1 - XH ) / ( 4 * XH );
+    fd = fopen( "./T.txt", "w" );
+    fd2 = fopen( "./rho_tt.txt", "w" );
+
+    /*
+    num = SliceEnd[0] - SliceStart[0];
+    plot_info.h = All.SofteningTable[0];
+    plot_info.log_flag = 1;
+    plot_info.global_colorbar_flag = 0;
+    sprintf( plot_info.data_name, "temp" );
+    sprintf( plot_info.xlabel, "%g Mpc", proj_size / All.MpcFlag );
+    sprintf( plot_info.ylabel, "" );
+    sprintf( plot_info.title, "" );
+    sprintf( plot_info.cb_label, "(10x)K");
+    plot_info.data = malloc( sizeof(double) * num );
+    memset( plot_info.data, 0, sizeof(double) * num );
+    plot_info.istart = SliceStart[0];
+    plot_info.iend = SliceEnd[0];
+    k = 0;
+    for ( i=SliceStart[0]; i<SliceEnd[0]; i++ ) {
+        mu = ( 1 + 4 * yhelium ) / ( 1 + yhelium + SphP[i].elec );
+        T = GAMMA_MINUS1 / BOLTZMANN * SphP[i].u * PROTONMASS * mu;
+        plot_info.data[i-SliceStart[0]] = T;
+        x[k++] = SphP[i].Density;
+        y[k++] = T;
+        Tmin = ( T < Tmin ) ? T : Tmin;
+        Tmax = ( T > Tmax ) ? T : Tmax;
+        rhomin = ( SphP[i].Density < rhomin ) ? SphP[i].Density : rhomin;
+        rhomax = ( SphP[i].Density > rhomax ) ? SphP[i].Density : rhomax;
+        fprintf( fd, "%g %g %g %g\n",
+                P[i].Pos[0], P[i].Pos[1], P[i].Pos[2], T );
+        fprintf( fd2, "%g %g\n",
+                SphP[i].Density, T );
+    }
+    plot_slice();
+    free( plot_info.data );
+    */
+
+    x = malloc( sizeof( double ) * N_Gas );
+    y = malloc( sizeof( double ) * N_Gas );
+    for ( i=0; i<N_Gas; i++ ) {
+        mu = ( 1 + 4 * yhelium ) / ( 1 + yhelium + SphP[i].elec );
+        T = GAMMA_MINUS1 / BOLTZMANN * SphP[i].u * PROTONMASS * mu;
+        x[i] = SphP[i].Density;
+        y[i] = T;
+        Tmin = ( T < Tmin ) ? T : Tmin;
+        Tmax = ( T > Tmax ) ? T : Tmax;
+        rhomin = ( SphP[i].Density < rhomin ) ? SphP[i].Density : rhomin;
+        rhomax = ( SphP[i].Density > rhomax ) ? SphP[i].Density : rhomax;
+        fprintf( fd2, "%g %g\n",
+                SphP[i].Density, T );
+        fprintf( fd, "%g %g %g %g\n",
+                P[i].Pos[0], P[i].Pos[1], P[i].Pos[2], T );
+    }
+
+    printf( "rhomin: %g, rhomax: %g, Tmin: %g, Tmax: %g\n",
+            rhomin, rhomax, Tmin, Tmax );
+
+    giza_open_device( "/png", "rho_t" );
+    giza_set_environment( rhomin, rhomax, Tmin, Tmax, 0, 0 );
+    giza_points( num, x, y, 3 );
+    giza_close_device();
+
+    for ( i=0; i<N_Gas; i++ ) {
+        if ( x[i] != 0 )
+            x[i] = log10( x[i] );
+        if ( y[i] != 0 )
+            y[i] = log10( y[i] );
+    }
+    rhomin = log10( rhomin );
+    rhomax = log10( rhomax );
+    Tmin = log10( Tmin );
+    Tmax = log10( Tmax );
+
+    giza_open_device( "/png", "rho_t_log" );
+    giza_set_environment( rhomin, rhomax, Tmin, Tmax, 0, 0 );
+    giza_points( num, x, y, 3 );
+    giza_close_device();
+
+    free( x );
+    free( y );
+
+    fclose( fd2 );
+    fclose( fd );
+}
+
 void analysis(){
     init_analysis();
-    output_mag();
-    output_rho();
+    //calc_temp();
     //tree_build( 1 );
     //tree_free();
     //fof( 1 );
     //fof_save_groups();
     //fof_free();
-    //gas_rho_slice();
-    //magnetic_field_slice();
+    gas_rho_slice();
+    magnetic_field_slice();
+    //output_mag();
+    //output_rho();
     //test_id();
     //divB_slice();
     //gas_vel_slice();
-    //mach_slice();
+    mach_slice();
     //hge_n_slice();
     //cr_n_slice();
     //hge_e_slice();

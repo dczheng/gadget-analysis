@@ -19,6 +19,8 @@ int blockpresent( enum iofields blk, int pt ) {
                 return 1;
             else
                 return 0;
+        case IO_NE:
+        case IO_U:
         case IO_MN:
         case IO_RHO:
             if (( pt == 0 ) && ( header.npart[0] != 0 ))
@@ -48,8 +50,6 @@ int blockpresent( enum iofields blk, int pt ) {
                 return 1;
             else
                 return 0;
-        case IO_U:
-        case IO_NE:
         case IO_POT:
         case IO_ACCEL:
             return 0;
@@ -268,7 +268,7 @@ void empty_buffer( enum iofields blk, int offset, int pt ) {
             break;
         case IO_U:
             for ( i=0; i<n; i++ )
-                SphP[offset+i].Entropy = *fp++;
+                SphP[offset+i].u = *fp++;
             break;
         case IO_MN:
             for ( i=0; i<n; i++ )
