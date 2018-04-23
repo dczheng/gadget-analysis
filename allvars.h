@@ -15,7 +15,6 @@
 #include "limits.h"
 #include "sys/stat.h"
 #include "proto.h"
-#include "dislin.h"
 
 #define DEBUG
 
@@ -42,6 +41,9 @@
 #define PC                       3.0857e18
 #define KPC                      3.0857e21
 #define MPC                      3.0857e24
+#define HYDROGEN_MASSFRAC        0.76
+#define GAMMA                    ( 5.0 / 3.0 )
+#define GAMMA_MINUS1             ( GAMMA - 1 )
 
 #define GSL_INTE_WS_LEN 1000
 #define GSL_INTE_ERR_ABS 0.0
@@ -194,7 +196,7 @@ extern struct particle_data {
 } *P;
 
 extern struct sph_particle_data {
-    MyFloat Entropy;
+    MyFloat u;
     MyFloat Density;
     MyFloat Hsml;
     MyFloat NumNgb;
