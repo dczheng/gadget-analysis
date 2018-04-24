@@ -32,7 +32,16 @@ void magnetic_field_slice() {
     sprintf( pli.ylabel, "" );
     sprintf( pli.cb_label, "(10^x) G/Kpc^2");
     sprintf( pli.title, "" );
-    pli.data = malloc( sizeof(double) * num );
+    pli.PicSize = All.PicSize;
+
+    if ( BufferBytes < sizeof( double ) * num  + sizeof( double ) * SQR(pli.PicSize)) {
+        printf( "BufferSize is too small !\n" );
+        endrun( 20180424 );
+    }
+
+    pli.data = CommBuffer;
+    pli.img = ( double* )CommBuffer + num;
+
     memset( pli.data, 0, sizeof(double) * num );
     pli.istart = SliceStart[0];
     pli.iend = SliceEnd[0];
@@ -41,7 +50,6 @@ void magnetic_field_slice() {
                                                 pow( SphP[i].B[1], 2 ) +
                                                 pow( SphP[i].B[2], 2 ) );
     plot_slice();
-    free( pli.data );
 }
 
 void gas_rho_slice() {
@@ -56,14 +64,22 @@ void gas_rho_slice() {
     sprintf( pli.title, "" );
     sprintf( pli.cb_label, "(10^x) gcm^{-3}Kpc^{-2}");
     pli.global_colorbar_flag = 1;
-    pli.data = malloc( sizeof(double) * num );
-    memset( pli.data, 0, sizeof(double) * num );
     pli.istart = SliceStart[0];
     pli.iend = SliceEnd[0];
+    pli.PicSize = All.PicSize;
+
+    if ( BufferBytes < sizeof( double ) * num  + sizeof( double ) * SQR(pli.PicSize)) {
+        printf( "BufferSize is too small !\n" );
+        endrun( 20180424 );
+    }
+
+    pli.data = CommBuffer;
+    pli.img = ( double* )CommBuffer + num;
+
+    memset( pli.data, 0, sizeof(double) * num );
     for ( i=SliceStart[0]; i<SliceEnd[0]; i++ )
         pli.data[i-SliceStart[0]] = SphP[i].Density  *  (g2c.g / CUBE(g2c.cm) );
     plot_slice();
-    free( pli.data );
 }
 
 void mach_slice() {
@@ -77,14 +93,22 @@ void mach_slice() {
     sprintf( pli.ylabel, "" );
     sprintf( pli.title, "" );
     sprintf( pli.cb_label, "(10^x)");
-    pli.data = malloc( sizeof(double) * num );
-    memset( pli.data, 0, sizeof(double) * num );
     pli.istart = SliceStart[0];
     pli.iend = SliceEnd[0];
+    pli.PicSize = All.PicSize;
+
+    if ( BufferBytes < sizeof( double ) * num  + sizeof( double ) * SQR(pli.PicSize)) {
+        printf( "BufferSize is too small !\n" );
+        endrun( 20180424 );
+    }
+
+    pli.data = CommBuffer;
+    pli.img = ( double* )CommBuffer + num;
+
+    memset( pli.data, 0, sizeof(double) * num );
     for ( i=SliceStart[0]; i<SliceEnd[0]; i++ )
         pli.data[i-SliceStart[0]] = SphP[i].MachNumber;
     plot_slice();
-    free( pli.data );
 }
 
 void divB_slice() {
@@ -98,14 +122,22 @@ void divB_slice() {
     sprintf( pli.ylabel, "" );
     sprintf( pli.title, "" );
     sprintf( pli.cb_label, "(10^x)");
-    pli.data = malloc( sizeof(double) * num );
-    memset( pli.data, 0, sizeof(double) * num );
     pli.istart = SliceStart[0];
     pli.iend = SliceEnd[0];
+    pli.PicSize = All.PicSize;
+
+    if ( BufferBytes < sizeof( double ) * num  + sizeof( double ) * SQR(pli.PicSize)) {
+        printf( "BufferSize is too small !\n" );
+        endrun( 20180424 );
+    }
+
+    pli.data = CommBuffer;
+    pli.img = ( double* )CommBuffer + num;
+
+    memset( pli.data, 0, sizeof(double) * num );
     for ( i=SliceStart[0]; i<SliceEnd[0]; i++ )
         pli.data[i-SliceStart[0]] = SphP[i].divB;
     plot_slice();
-    free( pli.data );
 }
 
 void gas_vel_slice() {
@@ -119,16 +151,24 @@ void gas_vel_slice() {
     sprintf( pli.ylabel, "" );
     sprintf( pli.title, "" );
     sprintf( pli.cb_label, "(10^x)");
-    pli.data = malloc( sizeof(double) * num );
-    memset( pli.data, 0, sizeof(double) * num );
     pli.istart = SliceStart[0];
     pli.iend = SliceEnd[0];
+    pli.PicSize = All.PicSize;
+
+    if ( BufferBytes < sizeof( double ) * num  + sizeof( double ) * SQR(pli.PicSize)) {
+        printf( "BufferSize is too small !\n" );
+        endrun( 20180424 );
+    }
+
+    pli.data = CommBuffer;
+    pli.img = ( double* )CommBuffer + num;
+
+    memset( pli.data, 0, sizeof(double) * num );
     for ( i=SliceStart[0]; i<SliceEnd[0]; i++ )
         pli.data[i-SliceStart[0]] = sqrt( pow( P[i].Vel[0], 2 ) +
                                                 pow( P[i].Vel[1], 2 ) +
                                                 pow( P[i].Vel[2], 2 ) );
     plot_slice();
-    free( pli.data );
 }
 
 void hge_n_slice() {
@@ -143,14 +183,22 @@ void hge_n_slice() {
     sprintf( pli.ylabel, "" );
     sprintf( pli.title, "" );
     sprintf( pli.cb_label, "(10^x)cm^{-3}Kpc^{-2}");
-    pli.data = malloc( sizeof(double) * num );
-    memset( pli.data, 0, sizeof(double) * num );
     pli.istart = SliceStart[0];
     pli.iend = SliceEnd[0];
+    pli.PicSize = All.PicSize;
+
+    if ( BufferBytes < sizeof( double ) * num  + sizeof( double ) * SQR(pli.PicSize)) {
+        printf( "BufferSize is too small !\n" );
+        endrun( 20180424 );
+    }
+
+    pli.data = CommBuffer;
+    pli.img = ( double* )CommBuffer + num;
+
+    memset( pli.data, 0, sizeof(double) * num );
     for ( i=SliceStart[0]; i<SliceEnd[0]; i++ )
         pli.data[i-SliceStart[0]] = SphP[i].CRE_n0 * SphP[i].Density * ( g2c.g / CUBE(g2c.cm) ) / ELECTRON_MASS;
     plot_slice();
-    free( pli.data );
 }
 
 void cr_n_slice() {
@@ -165,14 +213,22 @@ void cr_n_slice() {
     sprintf( pli.ylabel, "" );
     sprintf( pli.title, "" );
     sprintf( pli.cb_label, "(10^x)cm{-3}Kpc^{-2}");
-    pli.data = malloc( sizeof(double) * num );
-    memset( pli.data, 0, sizeof(double) * num );
     pli.istart = SliceStart[0];
     pli.iend = SliceEnd[0];
+    pli.PicSize = All.PicSize;
+
+    if ( BufferBytes < sizeof( double ) * num  + sizeof( double ) * SQR(pli.PicSize)) {
+        printf( "BufferSize is too small !\n" );
+        endrun( 20180424 );
+    }
+
+    pli.data = CommBuffer;
+    pli.img = ( double* )CommBuffer + num;
+
+    memset( pli.data, 0, sizeof(double) * num );
     for ( i=SliceStart[0]; i<SliceEnd[0]; i++ )
         pli.data[i-SliceStart[0]] = SphP[i].CR_n0 * SphP[i].Density * ( g2c.g / CUBE(g2c.cm) ) / PROTONMASS;
     plot_slice();
-    free( pli.data );
 }
 
 void cr_e_slice() {
@@ -187,14 +243,22 @@ void cr_e_slice() {
     sprintf( pli.ylabel, "" );
     sprintf( pli.title, "" );
     sprintf( pli.cb_label, "(10^x)erg cm^{-3} Kpc^{-2}");
-    pli.data = malloc( sizeof(double) * num );
-    memset( pli.data, 0, sizeof(double) * num );
     pli.istart = SliceStart[0];
     pli.iend = SliceEnd[0];
+    pli.PicSize = All.PicSize;
+
+    if ( BufferBytes < sizeof( double ) * num  + sizeof( double ) * SQR(pli.PicSize)) {
+        printf( "BufferSize is too small !\n" );
+        endrun( 20180424 );
+    }
+
+    pli.data = CommBuffer;
+    pli.img = ( double* )CommBuffer + num;
+
+    memset( pli.data, 0, sizeof(double) * num );
     for ( i=SliceStart[0]; i<SliceEnd[0]; i++ )
         pli.data[i-SliceStart[0]] = SphP[i].CR_E0 * SphP[i].Density  * (g2c.erg / CUBE(g2c.cm));
     plot_slice();
-    free( pli.data );
 }
 
 void hge_e_slice() {
@@ -209,14 +273,22 @@ void hge_e_slice() {
     sprintf( pli.ylabel, "" );
     sprintf( pli.title, "" );
     sprintf( pli.cb_label, "(10^x)erg cm^{-3} Kpc^{-2}");
-    pli.data = malloc( sizeof(double) * num );
-    memset( pli.data, 0, sizeof(double) * num );
     pli.istart = SliceStart[0];
     pli.iend = SliceEnd[0];
+    pli.PicSize = All.PicSize;
+
+    if ( BufferBytes < sizeof( double ) * num  + sizeof( double ) * SQR(pli.PicSize)) {
+        printf( "BufferSize is too small !\n" );
+        endrun( 20180424 );
+    }
+
+    pli.data = CommBuffer;
+    pli.img = ( double* )CommBuffer + num;
+
+    memset( pli.data, 0, sizeof(double) * num );
     for ( i=SliceStart[0]; i<SliceEnd[0]; i++ )
         pli.data[i-SliceStart[0]] = SphP[i].CRE_E0 * SphP[i].Density * (g2c.erg / CUBE(g2c.cm) );
     plot_slice();
-    free( pli.data );
 }
 
 int compare_gas_rho( const void *a, const void *b ){
@@ -300,14 +372,22 @@ void vl_slice() {
     sprintf( pli.ylabel, "" );
     sprintf( pli.title, "" );
     sprintf( pli.cb_label, "(10^x)(MHz)");
-    pli.data = malloc( sizeof(double) * num );
-    memset( pli.data, 0, sizeof(double) * num );
     pli.istart = SliceStart[0];
     pli.iend = SliceEnd[0];
+    pli.PicSize = All.PicSize;
+
+    if ( BufferBytes < sizeof( double ) * num  + sizeof( double ) * SQR(pli.PicSize)) {
+        printf( "BufferSize is too small !\n" );
+        endrun( 20180424 );
+    }
+
+    pli.data = CommBuffer;
+    pli.img = ( double* )CommBuffer + num;
+
+    memset( pli.data, 0, sizeof(double) * num );
     for ( i=SliceStart[0]; i<SliceEnd[0]; i++ )
         pli.data[i-SliceStart[0]] = SphP[i].vL / 1e6;
     plot_slice();
-    free( pli.data );
 }
 
 void syn( double v ) {
@@ -334,8 +414,14 @@ void syn( double v ) {
     }
     sprintf( LogBuf, "pmin = %g, pmax = %g", pmin, pmax );
     print_log( LogBuf );
-    img = malloc( sizeof( double ) * SQR( All.PicSize ) );
+
+    if ( BufferBytes < sizeof( double ) * SQR( All.PicSize ) ) {
+        printf( "BufferSize is too small !\n" );
+        endrun( 20180424 );
+    }
+    img = CommBuffer;
     memset( img, 0, sizeof( double ) * SQR( All.PicSize ) );
+
     com_dis = comoving_distance( header.time ) * ( g2c.cm );
     ang_dis = angular_distance( header.time ) * ( g2c.cm );
     lum_dis = luminosity_distance( header.time ) * ( g2c.cm );
@@ -362,7 +448,7 @@ void syn( double v ) {
     }
     sprintf( LogBuf, "img_max = %g, img_min = %g\n", img_max, img_min );
     print_log( LogBuf );
-    pli.data = img;
+    pli.img = img;
     sprintf( pli.data_name, "syn" );
     pli.log_flag = 1;
     sprintf( pli.xlabel, "%.2g deg", BoxSize * (g2c.cm) / ang_dis / PI * 180);
@@ -371,7 +457,6 @@ void syn( double v ) {
     //sprintf( pli.cb_label, "10^x(mJy arcmin^{-2})" );
     sprintf( pli.cb_label, "10^x(mJy beam^{-1})" );
     plot_imshow();
-    free( img );
     print_log( "compute synchrotron radiation ... done." );
     print_log( sep_str );
 }
@@ -410,127 +495,38 @@ void output_rho() {
     fclose( fd );
 }
 
-void calc_temp() {
-    double yhelium, mu, XH=HYDROGEN_MASSFRAC, T, *x, *y,
-           Tmin, Tmax, rhomin, rhomax;
-    int num, i, k;
-    FILE *fd, *fd2;
+void gas_state() {
+    double yhelium, mu, XH=HYDROGEN_MASSFRAC, T,
+           Tmin, Tmax, rhomin, rhomax, *img;
+    int num, i, k, PicSize;
     Tmin = rhomin = DBL_MAX;
-    Tmax = rhomax = -DBL_MAX;
+    Tmax = rhomax = DBL_MIN;
 
     yhelium = ( 1 - XH ) / ( 4 * XH );
-    fd = fopen( "./T.txt", "w" );
-    fd2 = fopen( "./rho_tt.txt", "w" );
 
-    /*
-    num = SliceEnd[0] - SliceStart[0];
-    pli.h = All.SofteningTable[0];
-    pli.log_flag = 1;
-    pli.global_colorbar_flag = 0;
-    sprintf( pli.data_name, "temp" );
-    sprintf( pli.xlabel, "%g Mpc", proj_size / All.MpcFlag );
-    sprintf( pli.ylabel, "" );
-    sprintf( pli.title, "" );
-    sprintf( pli.cb_label, "(10x)K");
-    pli.data = malloc( sizeof(double) * num );
-    memset( pli.data, 0, sizeof(double) * num );
-    pli.istart = SliceStart[0];
-    pli.iend = SliceEnd[0];
-    k = 0;
-    for ( i=SliceStart[0]; i<SliceEnd[0]; i++ ) {
-        mu = ( 1 + 4 * yhelium ) / ( 1 + yhelium + SphP[i].elec );
-        T = GAMMA_MINUS1 / BOLTZMANN * SphP[i].u * PROTONMASS * mu;
-        pli.data[i-SliceStart[0]] = T;
-        x[k++] = SphP[i].Density;
-        y[k++] = T;
-        Tmin = ( T < Tmin ) ? T : Tmin;
-        Tmax = ( T > Tmax ) ? T : Tmax;
-        rhomin = ( SphP[i].Density < rhomin ) ? SphP[i].Density : rhomin;
-        rhomax = ( SphP[i].Density > rhomax ) ? SphP[i].Density : rhomax;
-        fprintf( fd, "%g %g %g %g\n",
-                P[i].Pos[0], P[i].Pos[1], P[i].Pos[2], T );
-        fprintf( fd2, "%g %g\n",
-                SphP[i].Density, T );
-    }
-    plot_slice();
-    free( pli.data );
-    */
-
-    x = malloc( sizeof( double ) * N_Gas );
-    y = malloc( sizeof( double ) * N_Gas );
+    img = malloc( SQR(PicSize) * sizeof( double ) );
     for ( i=0; i<N_Gas; i++ ) {
         mu = ( 1 + 4 * yhelium ) / ( 1 + yhelium + SphP[i].elec );
         T = GAMMA_MINUS1 / BOLTZMANN * SphP[i].u * PROTONMASS * mu;
-        x[i] = SphP[i].Density;
-        y[i] = T;
         Tmin = ( T < Tmin ) ? T : Tmin;
         Tmax = ( T > Tmax ) ? T : Tmax;
         rhomin = ( SphP[i].Density < rhomin ) ? SphP[i].Density : rhomin;
         rhomax = ( SphP[i].Density > rhomax ) ? SphP[i].Density : rhomax;
-        fprintf( fd2, "%g %g\n",
-                SphP[i].Density, T );
-        fprintf( fd, "%g %g %g %g\n",
-                P[i].Pos[0], P[i].Pos[1], P[i].Pos[2], T );
     }
 
     printf( "rhomin: %g, rhomax: %g, Tmin: %g, Tmax: %g\n",
             rhomin, rhomax, Tmin, Tmax );
 
-    fp_tmp = stdout;
-    stdout = LogFilefd;
-    giza_open_device( "/png", "rho_t" );
-    stdout = fp_tmp;
-
-    giza_set_environment( rhomin, rhomax, Tmin, Tmax, 0, 0 );
-    giza_points( num, x, y, 3 );
-    giza_close_device();
-
-    for ( i=0; i<N_Gas; i++ ) {
-        if ( x[i] != 0 )
-            x[i] = log10( x[i] );
-        if ( y[i] != 0 )
-            y[i] = log10( y[i] );
-    }
     rhomin = log10( rhomin );
     rhomax = log10( rhomax );
     Tmin = log10( Tmin );
     Tmax = log10( Tmax );
-
-    fp_tmp = stdout;
-    stdout = LogFilefd;
-    giza_open_device( "/png", "rho_t_log" );
-    stdout = fp_tmp;
-
-    giza_set_environment( rhomin, rhomax, Tmin, Tmax, 0, 0 );
-    giza_points( num, x, y, 3 );
-    giza_close_device();
-
-    free( x );
-    free( y );
-
-    fclose( fd2 );
-    fclose( fd );
 }
 
-/*
-void gas_state() {
-    FILE *gs_fd;
-    char buf[50];
-    int i, PicSize;
-    double TMin, TMax, RhoMin, RhoMax, T;
-    PicSize = All.PicSize;
-    pli.data = malloc( sizeof( double ) * SQR( PicSize ) );
-    TMin = RhoMin = DBL_MAX;
-    TMax = RhoMax = -DBL_MAX;
-    for ( i=0; i<N_Gas; i++ ) {
-    }
-    free( pli.data );
-}
-*/
 
 void analysis(){
     init_analysis();
-    //calc_temp();
+    //gas_state();
     //tree_build( 1 );
     //tree_free();
     //fof( 1 );

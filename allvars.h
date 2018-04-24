@@ -222,7 +222,8 @@ extern char sep_str[ SEP_LEN ];
 extern int ThisTask, NumTask;
 extern double *KernelMat2D[6], *KernelMat3D[6], HalfBoxSize;
 extern void *CommBuffer;
-extern long long NumPart, N_Gas, TotNgroups, SliceStart[6], SliceEnd[6];
+extern long long NumPart, N_Gas, TotNgroups, SliceStart[6], SliceEnd[6],
+       BufferBytes;
 extern char LogFile[ FILENAME_MAX ], LogBuf[500];
 extern FILE *LogFilefd;
 extern struct global_parameters_struct {

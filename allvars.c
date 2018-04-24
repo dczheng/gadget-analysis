@@ -1,7 +1,8 @@
 #include "allvars.h"
 
 char sep_str[ SEP_LEN ];
-long long TotNgroups, NumPart, N_Gas, SliceStart[6], SliceEnd[6];
+long long TotNgroups, NumPart, N_Gas, SliceStart[6], SliceEnd[6],
+     BufferBytes;
 int ThisTask, NumTask;
 double *KernelMat2D[6], *KernelMat3D[6], HalfBoxSize;
 void *CommBuffer;

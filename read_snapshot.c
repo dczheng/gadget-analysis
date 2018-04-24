@@ -591,7 +591,8 @@ void allocate_memory() {
     sprintf( LogBuf, "Allocated %g MB for SphP.", bytes / 1024.0 / 1024.0 );
     print_log( LogBuf );
 
-    if ( !( CommBuffer = malloc( bytes = All.BufferSize * 1024 * 1024  ) ) ) {
+    BufferBytes = All.BufferSize * 1024 * 1024;
+    if ( !( CommBuffer = malloc( bytes = BufferBytes  ) ) ) {
         printf( "failed to allocate memory for CommBuffer ( %g Mb ).\n", bytes / 1024.0 / 1024.0 );
         endrun( 0 );
     }
@@ -685,7 +686,7 @@ void read_snapshot() {
                     read_header( file_name );
                     if ( blockpresent( blk, pt ) ) {
                         nbytes = get_block_nbytes( blk );
-                        if ( All.BufferSize * 1024 * 1024 < nbytes * header.npart[pt] ){
+                        if ( BufferBytes < nbytes * header.npart[pt] ){
                             printf( "BufferSize is too small.\n" );
                             endrun( 1 );
                         }

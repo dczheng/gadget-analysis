@@ -194,7 +194,7 @@ void plot_slice() {
     PicSize = pli.PicSize;
     sprintf( LogBuf, "plot %s slice ...", pli.data_name );
     print_log( LogBuf );
-    img = malloc( sizeof( double ) * PicSize * PicSize );
+    img = pli.img;
     memset( img, 0, sizeof( double ) * PicSize * PicSize );
     dx = dy = proj_size / PicSize;
     data_max = DBL_MIN;
@@ -235,7 +235,7 @@ void plot_slice() {
 
         if ( pli.data[i-pli.istart] > 0 ){
             data_max = ( v > data_max ) ? v : data_max;
-            data_min = ( v < data_min ) ? v : data_min;
+            data_min = ( v < data_min && v > 0 ) ? v : data_min;
         }
 
     }
@@ -258,10 +258,8 @@ void plot_slice() {
     print_log( LogBuf );
     print_log( sep_str );
 
-    pli.img = img;
     plot_imshow();
 
-    free( img );
     sprintf( LogBuf, "plot %s slice ... done", pli.data_name );
     print_log( LogBuf );
     print_log( sep_str );
