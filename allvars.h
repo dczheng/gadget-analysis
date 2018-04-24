@@ -10,7 +10,6 @@
 #include "gsl/gsl_sf_gamma.h"
 #include "mpi.h"
 #include "signal.h"
-#include "unistd.h"
 #include "giza.h"
 #include "limits.h"
 #include "sys/stat.h"
@@ -247,10 +246,13 @@ extern struct global_parameters_struct {
 }All;
 
 extern struct plot_struct{
-    int log_flag, istart, iend, global_colorbar_flag, PicSize;
+    int log_flag, istart, iend, global_colorbar_flag, tick_flag, PicSize;
     char data_name[100],cb_label[100], xlabel[100], ylabel[100], title[100];
-    double *data, h;
-}plot_info;
+    char box_xopt, box_yopt;
+    int box_nxsub, box_nysub;
+    double box_xtick, box_ytick;
+    double *data, h, *img;
+}pli;
 
 extern struct NODE {
     double center[3];

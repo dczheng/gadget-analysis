@@ -1,5 +1,7 @@
 #include "allvars.h"
 
+FILE *fp_tmp;
+
 void init_analysis() {
     print_log( "initialize analysis..." );
     slice();
@@ -23,198 +25,198 @@ void free_analysis() {
 void magnetic_field_slice() {
     int num, i;
     num = SliceEnd[0] - SliceStart[0];
-    plot_info.h = All.SofteningTable[0];
-    plot_info.log_flag = 1;
-    sprintf( plot_info.data_name, "B" );
-    sprintf( plot_info.xlabel, "%g Mpc", proj_size / All.MpcFlag );
-    sprintf( plot_info.ylabel, "" );
-    sprintf( plot_info.cb_label, "(10^x) G/Kpc^2");
-    sprintf( plot_info.title, "" );
-    plot_info.data = malloc( sizeof(double) * num );
-    memset( plot_info.data, 0, sizeof(double) * num );
-    plot_info.istart = SliceStart[0];
-    plot_info.iend = SliceEnd[0];
+    pli.h = All.SofteningTable[0];
+    pli.log_flag = 1;
+    sprintf( pli.data_name, "B" );
+    sprintf( pli.xlabel, "%g Mpc", proj_size / All.MpcFlag );
+    sprintf( pli.ylabel, "" );
+    sprintf( pli.cb_label, "(10^x) G/Kpc^2");
+    sprintf( pli.title, "" );
+    pli.data = malloc( sizeof(double) * num );
+    memset( pli.data, 0, sizeof(double) * num );
+    pli.istart = SliceStart[0];
+    pli.iend = SliceEnd[0];
     for ( i=SliceStart[0]; i<SliceEnd[0]; i++ )
-        plot_info.data[i-SliceStart[0]] = sqrt( pow( SphP[i].B[0], 2 ) +
+        pli.data[i-SliceStart[0]] = sqrt( pow( SphP[i].B[0], 2 ) +
                                                 pow( SphP[i].B[1], 2 ) +
                                                 pow( SphP[i].B[2], 2 ) );
     plot_slice();
-    free( plot_info.data );
+    free( pli.data );
 }
 
 void gas_rho_slice() {
     int num, i;
     num = SliceEnd[0] - SliceStart[0];
 
-    plot_info.h = All.SofteningTable[0];
-    plot_info.log_flag = 1;
-    sprintf( plot_info.data_name, "rho" );
-    sprintf( plot_info.xlabel, "%g Mpc", proj_size / All.MpcFlag );
-    sprintf( plot_info.ylabel, "" );
-    sprintf( plot_info.title, "" );
-    sprintf( plot_info.cb_label, "(10^x) gcm^{-3}Kpc^{-2}");
-    plot_info.global_colorbar_flag = 1;
-    plot_info.data = malloc( sizeof(double) * num );
-    memset( plot_info.data, 0, sizeof(double) * num );
-    plot_info.istart = SliceStart[0];
-    plot_info.iend = SliceEnd[0];
+    pli.h = All.SofteningTable[0];
+    pli.log_flag = 1;
+    sprintf( pli.data_name, "rho" );
+    sprintf( pli.xlabel, "%g Mpc", proj_size / All.MpcFlag );
+    sprintf( pli.ylabel, "" );
+    sprintf( pli.title, "" );
+    sprintf( pli.cb_label, "(10^x) gcm^{-3}Kpc^{-2}");
+    pli.global_colorbar_flag = 1;
+    pli.data = malloc( sizeof(double) * num );
+    memset( pli.data, 0, sizeof(double) * num );
+    pli.istart = SliceStart[0];
+    pli.iend = SliceEnd[0];
     for ( i=SliceStart[0]; i<SliceEnd[0]; i++ )
-        plot_info.data[i-SliceStart[0]] = SphP[i].Density  *  (g2c.g / CUBE(g2c.cm) );
+        pli.data[i-SliceStart[0]] = SphP[i].Density  *  (g2c.g / CUBE(g2c.cm) );
     plot_slice();
-    free( plot_info.data );
+    free( pli.data );
 }
 
 void mach_slice() {
     int num, i;
     num = SliceEnd[0] - SliceStart[0];
 
-    plot_info.h = All.SofteningTable[0];
-    plot_info.log_flag = 1;
-    sprintf( plot_info.data_name, "mn" );
-    sprintf( plot_info.xlabel, "%g Mpc", proj_size / All.MpcFlag );
-    sprintf( plot_info.ylabel, "" );
-    sprintf( plot_info.title, "" );
-    sprintf( plot_info.cb_label, "(10^x)");
-    plot_info.data = malloc( sizeof(double) * num );
-    memset( plot_info.data, 0, sizeof(double) * num );
-    plot_info.istart = SliceStart[0];
-    plot_info.iend = SliceEnd[0];
+    pli.h = All.SofteningTable[0];
+    pli.log_flag = 1;
+    sprintf( pli.data_name, "mn" );
+    sprintf( pli.xlabel, "%g Mpc", proj_size / All.MpcFlag );
+    sprintf( pli.ylabel, "" );
+    sprintf( pli.title, "" );
+    sprintf( pli.cb_label, "(10^x)");
+    pli.data = malloc( sizeof(double) * num );
+    memset( pli.data, 0, sizeof(double) * num );
+    pli.istart = SliceStart[0];
+    pli.iend = SliceEnd[0];
     for ( i=SliceStart[0]; i<SliceEnd[0]; i++ )
-        plot_info.data[i-SliceStart[0]] = SphP[i].MachNumber;
+        pli.data[i-SliceStart[0]] = SphP[i].MachNumber;
     plot_slice();
-    free( plot_info.data );
+    free( pli.data );
 }
 
 void divB_slice() {
     int num, i;
     num = SliceEnd[0] - SliceStart[0];
 
-    plot_info.h = All.SofteningTable[0];
-    plot_info.log_flag = 1;
-    sprintf( plot_info.data_name, "divB" );
-    sprintf( plot_info.xlabel, "%g Mpc", proj_size / All.MpcFlag );
-    sprintf( plot_info.ylabel, "" );
-    sprintf( plot_info.title, "" );
-    sprintf( plot_info.cb_label, "(10^x)");
-    plot_info.data = malloc( sizeof(double) * num );
-    memset( plot_info.data, 0, sizeof(double) * num );
-    plot_info.istart = SliceStart[0];
-    plot_info.iend = SliceEnd[0];
+    pli.h = All.SofteningTable[0];
+    pli.log_flag = 1;
+    sprintf( pli.data_name, "divB" );
+    sprintf( pli.xlabel, "%g Mpc", proj_size / All.MpcFlag );
+    sprintf( pli.ylabel, "" );
+    sprintf( pli.title, "" );
+    sprintf( pli.cb_label, "(10^x)");
+    pli.data = malloc( sizeof(double) * num );
+    memset( pli.data, 0, sizeof(double) * num );
+    pli.istart = SliceStart[0];
+    pli.iend = SliceEnd[0];
     for ( i=SliceStart[0]; i<SliceEnd[0]; i++ )
-        plot_info.data[i-SliceStart[0]] = SphP[i].divB;
+        pli.data[i-SliceStart[0]] = SphP[i].divB;
     plot_slice();
-    free( plot_info.data );
+    free( pli.data );
 }
 
 void gas_vel_slice() {
     int num, i;
     num = SliceEnd[0] - SliceStart[0];
 
-    plot_info.h = All.SofteningTable[0];
-    plot_info.log_flag = 1;
-    sprintf( plot_info.data_name, "vel" );
-    sprintf( plot_info.xlabel, "%g Mpc", proj_size / All.MpcFlag );
-    sprintf( plot_info.ylabel, "" );
-    sprintf( plot_info.title, "" );
-    sprintf( plot_info.cb_label, "(10^x)");
-    plot_info.data = malloc( sizeof(double) * num );
-    memset( plot_info.data, 0, sizeof(double) * num );
-    plot_info.istart = SliceStart[0];
-    plot_info.iend = SliceEnd[0];
+    pli.h = All.SofteningTable[0];
+    pli.log_flag = 1;
+    sprintf( pli.data_name, "vel" );
+    sprintf( pli.xlabel, "%g Mpc", proj_size / All.MpcFlag );
+    sprintf( pli.ylabel, "" );
+    sprintf( pli.title, "" );
+    sprintf( pli.cb_label, "(10^x)");
+    pli.data = malloc( sizeof(double) * num );
+    memset( pli.data, 0, sizeof(double) * num );
+    pli.istart = SliceStart[0];
+    pli.iend = SliceEnd[0];
     for ( i=SliceStart[0]; i<SliceEnd[0]; i++ )
-        plot_info.data[i-SliceStart[0]] = sqrt( pow( P[i].Vel[0], 2 ) +
+        pli.data[i-SliceStart[0]] = sqrt( pow( P[i].Vel[0], 2 ) +
                                                 pow( P[i].Vel[1], 2 ) +
                                                 pow( P[i].Vel[2], 2 ) );
     plot_slice();
-    free( plot_info.data );
+    free( pli.data );
 }
 
 void hge_n_slice() {
     int num, i;
     num = SliceEnd[0] - SliceStart[0];
 
-    plot_info.h = All.SofteningTable[0];
-    plot_info.log_flag = 1;
-    plot_info.global_colorbar_flag = 1;
-    sprintf( plot_info.data_name, "hge_n" );
-    sprintf( plot_info.xlabel, "%g Mpc", proj_size / All.MpcFlag );
-    sprintf( plot_info.ylabel, "" );
-    sprintf( plot_info.title, "" );
-    sprintf( plot_info.cb_label, "(10^x)cm^{-3}Kpc^{-2}");
-    plot_info.data = malloc( sizeof(double) * num );
-    memset( plot_info.data, 0, sizeof(double) * num );
-    plot_info.istart = SliceStart[0];
-    plot_info.iend = SliceEnd[0];
+    pli.h = All.SofteningTable[0];
+    pli.log_flag = 1;
+    pli.global_colorbar_flag = 1;
+    sprintf( pli.data_name, "hge_n" );
+    sprintf( pli.xlabel, "%g Mpc", proj_size / All.MpcFlag );
+    sprintf( pli.ylabel, "" );
+    sprintf( pli.title, "" );
+    sprintf( pli.cb_label, "(10^x)cm^{-3}Kpc^{-2}");
+    pli.data = malloc( sizeof(double) * num );
+    memset( pli.data, 0, sizeof(double) * num );
+    pli.istart = SliceStart[0];
+    pli.iend = SliceEnd[0];
     for ( i=SliceStart[0]; i<SliceEnd[0]; i++ )
-        plot_info.data[i-SliceStart[0]] = SphP[i].CRE_n0 * SphP[i].Density * ( g2c.g / CUBE(g2c.cm) ) / ELECTRON_MASS;
+        pli.data[i-SliceStart[0]] = SphP[i].CRE_n0 * SphP[i].Density * ( g2c.g / CUBE(g2c.cm) ) / ELECTRON_MASS;
     plot_slice();
-    free( plot_info.data );
+    free( pli.data );
 }
 
 void cr_n_slice() {
     int num, i;
     num = SliceEnd[0] - SliceStart[0];
 
-    plot_info.h = All.SofteningTable[0];
-    plot_info.log_flag = 1;
-    plot_info.global_colorbar_flag = 1;
-    sprintf( plot_info.data_name, "cr_n" );
-    sprintf( plot_info.xlabel, "%g Mpc", proj_size / All.MpcFlag );
-    sprintf( plot_info.ylabel, "" );
-    sprintf( plot_info.title, "" );
-    sprintf( plot_info.cb_label, "(10^x)cm{-3}Kpc^{-2}");
-    plot_info.data = malloc( sizeof(double) * num );
-    memset( plot_info.data, 0, sizeof(double) * num );
-    plot_info.istart = SliceStart[0];
-    plot_info.iend = SliceEnd[0];
+    pli.h = All.SofteningTable[0];
+    pli.log_flag = 1;
+    pli.global_colorbar_flag = 1;
+    sprintf( pli.data_name, "cr_n" );
+    sprintf( pli.xlabel, "%g Mpc", proj_size / All.MpcFlag );
+    sprintf( pli.ylabel, "" );
+    sprintf( pli.title, "" );
+    sprintf( pli.cb_label, "(10^x)cm{-3}Kpc^{-2}");
+    pli.data = malloc( sizeof(double) * num );
+    memset( pli.data, 0, sizeof(double) * num );
+    pli.istart = SliceStart[0];
+    pli.iend = SliceEnd[0];
     for ( i=SliceStart[0]; i<SliceEnd[0]; i++ )
-        plot_info.data[i-SliceStart[0]] = SphP[i].CR_n0 * SphP[i].Density * ( g2c.g / CUBE(g2c.cm) ) / PROTONMASS;
+        pli.data[i-SliceStart[0]] = SphP[i].CR_n0 * SphP[i].Density * ( g2c.g / CUBE(g2c.cm) ) / PROTONMASS;
     plot_slice();
-    free( plot_info.data );
+    free( pli.data );
 }
 
 void cr_e_slice() {
     int num, i;
     num = SliceEnd[0] - SliceStart[0];
 
-    plot_info.h = All.SofteningTable[0];
-    plot_info.log_flag = 1;
-    plot_info.global_colorbar_flag = 0;
-    sprintf( plot_info.data_name, "cr_e" );
-    sprintf( plot_info.xlabel, "%g Mpc", proj_size / All.MpcFlag );
-    sprintf( plot_info.ylabel, "" );
-    sprintf( plot_info.title, "" );
-    sprintf( plot_info.cb_label, "(10^x)erg cm^{-3} Kpc^{-2}");
-    plot_info.data = malloc( sizeof(double) * num );
-    memset( plot_info.data, 0, sizeof(double) * num );
-    plot_info.istart = SliceStart[0];
-    plot_info.iend = SliceEnd[0];
+    pli.h = All.SofteningTable[0];
+    pli.log_flag = 1;
+    pli.global_colorbar_flag = 0;
+    sprintf( pli.data_name, "cr_e" );
+    sprintf( pli.xlabel, "%g Mpc", proj_size / All.MpcFlag );
+    sprintf( pli.ylabel, "" );
+    sprintf( pli.title, "" );
+    sprintf( pli.cb_label, "(10^x)erg cm^{-3} Kpc^{-2}");
+    pli.data = malloc( sizeof(double) * num );
+    memset( pli.data, 0, sizeof(double) * num );
+    pli.istart = SliceStart[0];
+    pli.iend = SliceEnd[0];
     for ( i=SliceStart[0]; i<SliceEnd[0]; i++ )
-        plot_info.data[i-SliceStart[0]] = SphP[i].CR_E0 * SphP[i].Density  * (g2c.erg / CUBE(g2c.cm));
+        pli.data[i-SliceStart[0]] = SphP[i].CR_E0 * SphP[i].Density  * (g2c.erg / CUBE(g2c.cm));
     plot_slice();
-    free( plot_info.data );
+    free( pli.data );
 }
 
 void hge_e_slice() {
     int num, i;
     num = SliceEnd[0] - SliceStart[0];
 
-    plot_info.h = All.SofteningTable[0];
-    plot_info.log_flag = 1;
-    plot_info.global_colorbar_flag = 0;
-    sprintf( plot_info.data_name, "hge_e" );
-    sprintf( plot_info.xlabel, "%g Mpc", proj_size / All.MpcFlag );
-    sprintf( plot_info.ylabel, "" );
-    sprintf( plot_info.title, "" );
-    sprintf( plot_info.cb_label, "(10^x)erg cm^{-3} Kpc^{-2}");
-    plot_info.data = malloc( sizeof(double) * num );
-    memset( plot_info.data, 0, sizeof(double) * num );
-    plot_info.istart = SliceStart[0];
-    plot_info.iend = SliceEnd[0];
+    pli.h = All.SofteningTable[0];
+    pli.log_flag = 1;
+    pli.global_colorbar_flag = 0;
+    sprintf( pli.data_name, "hge_e" );
+    sprintf( pli.xlabel, "%g Mpc", proj_size / All.MpcFlag );
+    sprintf( pli.ylabel, "" );
+    sprintf( pli.title, "" );
+    sprintf( pli.cb_label, "(10^x)erg cm^{-3} Kpc^{-2}");
+    pli.data = malloc( sizeof(double) * num );
+    memset( pli.data, 0, sizeof(double) * num );
+    pli.istart = SliceStart[0];
+    pli.iend = SliceEnd[0];
     for ( i=SliceStart[0]; i<SliceEnd[0]; i++ )
-        plot_info.data[i-SliceStart[0]] = SphP[i].CRE_E0 * SphP[i].Density * (g2c.erg / CUBE(g2c.cm) );
+        pli.data[i-SliceStart[0]] = SphP[i].CRE_E0 * SphP[i].Density * (g2c.erg / CUBE(g2c.cm) );
     plot_slice();
-    free( plot_info.data );
+    free( pli.data );
 }
 
 int compare_gas_rho( const void *a, const void *b ){
@@ -290,22 +292,22 @@ void vl_slice() {
     int num, i;
     num = SliceEnd[0] - SliceStart[0];
 
-    plot_info.h = All.SofteningTable[0];
-    plot_info.log_flag = 1;
-    plot_info.global_colorbar_flag = 0;
-    sprintf( plot_info.data_name, "vl" );
-    sprintf( plot_info.xlabel, "%g Mpc", proj_size / All.MpcFlag );
-    sprintf( plot_info.ylabel, "" );
-    sprintf( plot_info.title, "" );
-    sprintf( plot_info.cb_label, "(10^x)(MHz)");
-    plot_info.data = malloc( sizeof(double) * num );
-    memset( plot_info.data, 0, sizeof(double) * num );
-    plot_info.istart = SliceStart[0];
-    plot_info.iend = SliceEnd[0];
+    pli.h = All.SofteningTable[0];
+    pli.log_flag = 1;
+    pli.global_colorbar_flag = 0;
+    sprintf( pli.data_name, "vl" );
+    sprintf( pli.xlabel, "%g Mpc", proj_size / All.MpcFlag );
+    sprintf( pli.ylabel, "" );
+    sprintf( pli.title, "" );
+    sprintf( pli.cb_label, "(10^x)(MHz)");
+    pli.data = malloc( sizeof(double) * num );
+    memset( pli.data, 0, sizeof(double) * num );
+    pli.istart = SliceStart[0];
+    pli.iend = SliceEnd[0];
     for ( i=SliceStart[0]; i<SliceEnd[0]; i++ )
-        plot_info.data[i-SliceStart[0]] = SphP[i].vL / 1e6;
+        pli.data[i-SliceStart[0]] = SphP[i].vL / 1e6;
     plot_slice();
-    free( plot_info.data );
+    free( pli.data );
 }
 
 void syn( double v ) {
@@ -360,15 +362,14 @@ void syn( double v ) {
     }
     sprintf( LogBuf, "img_max = %g, img_min = %g\n", img_max, img_min );
     print_log( LogBuf );
-    plot_info.data = img;
-    plot_info.PicSize = All.PicSize;
-    sprintf( plot_info.data_name, "syn" );
-    plot_info.log_flag = 1;
-    sprintf( plot_info.xlabel, "%.2g deg", BoxSize * (g2c.cm) / ang_dis / PI * 180);
-    sprintf( plot_info.ylabel, "%.2g deg", BoxSize * (g2c.cm) / ang_dis / PI * 180);
-    sprintf( plot_info.title, "1.4GHz(z=%.2f)", All.RedShift );
-    //sprintf( plot_info.cb_label, "10^x(mJy arcmin^{-2})" );
-    sprintf( plot_info.cb_label, "10^x(mJy beam^{-1})" );
+    pli.data = img;
+    sprintf( pli.data_name, "syn" );
+    pli.log_flag = 1;
+    sprintf( pli.xlabel, "%.2g deg", BoxSize * (g2c.cm) / ang_dis / PI * 180);
+    sprintf( pli.ylabel, "%.2g deg", BoxSize * (g2c.cm) / ang_dis / PI * 180);
+    sprintf( pli.title, "1.4GHz(z=%.2f)", All.RedShift );
+    //sprintf( pli.cb_label, "10^x(mJy arcmin^{-2})" );
+    sprintf( pli.cb_label, "10^x(mJy beam^{-1})" );
     plot_imshow();
     free( img );
     print_log( "compute synchrotron radiation ... done." );
@@ -423,23 +424,23 @@ void calc_temp() {
 
     /*
     num = SliceEnd[0] - SliceStart[0];
-    plot_info.h = All.SofteningTable[0];
-    plot_info.log_flag = 1;
-    plot_info.global_colorbar_flag = 0;
-    sprintf( plot_info.data_name, "temp" );
-    sprintf( plot_info.xlabel, "%g Mpc", proj_size / All.MpcFlag );
-    sprintf( plot_info.ylabel, "" );
-    sprintf( plot_info.title, "" );
-    sprintf( plot_info.cb_label, "(10x)K");
-    plot_info.data = malloc( sizeof(double) * num );
-    memset( plot_info.data, 0, sizeof(double) * num );
-    plot_info.istart = SliceStart[0];
-    plot_info.iend = SliceEnd[0];
+    pli.h = All.SofteningTable[0];
+    pli.log_flag = 1;
+    pli.global_colorbar_flag = 0;
+    sprintf( pli.data_name, "temp" );
+    sprintf( pli.xlabel, "%g Mpc", proj_size / All.MpcFlag );
+    sprintf( pli.ylabel, "" );
+    sprintf( pli.title, "" );
+    sprintf( pli.cb_label, "(10x)K");
+    pli.data = malloc( sizeof(double) * num );
+    memset( pli.data, 0, sizeof(double) * num );
+    pli.istart = SliceStart[0];
+    pli.iend = SliceEnd[0];
     k = 0;
     for ( i=SliceStart[0]; i<SliceEnd[0]; i++ ) {
         mu = ( 1 + 4 * yhelium ) / ( 1 + yhelium + SphP[i].elec );
         T = GAMMA_MINUS1 / BOLTZMANN * SphP[i].u * PROTONMASS * mu;
-        plot_info.data[i-SliceStart[0]] = T;
+        pli.data[i-SliceStart[0]] = T;
         x[k++] = SphP[i].Density;
         y[k++] = T;
         Tmin = ( T < Tmin ) ? T : Tmin;
@@ -452,7 +453,7 @@ void calc_temp() {
                 SphP[i].Density, T );
     }
     plot_slice();
-    free( plot_info.data );
+    free( pli.data );
     */
 
     x = malloc( sizeof( double ) * N_Gas );
@@ -475,7 +476,11 @@ void calc_temp() {
     printf( "rhomin: %g, rhomax: %g, Tmin: %g, Tmax: %g\n",
             rhomin, rhomax, Tmin, Tmax );
 
+    fp_tmp = stdout;
+    stdout = LogFilefd;
     giza_open_device( "/png", "rho_t" );
+    stdout = fp_tmp;
+
     giza_set_environment( rhomin, rhomax, Tmin, Tmax, 0, 0 );
     giza_points( num, x, y, 3 );
     giza_close_device();
@@ -491,7 +496,11 @@ void calc_temp() {
     Tmin = log10( Tmin );
     Tmax = log10( Tmax );
 
+    fp_tmp = stdout;
+    stdout = LogFilefd;
     giza_open_device( "/png", "rho_t_log" );
+    stdout = fp_tmp;
+
     giza_set_environment( rhomin, rhomax, Tmin, Tmax, 0, 0 );
     giza_points( num, x, y, 3 );
     giza_close_device();
@@ -503,6 +512,22 @@ void calc_temp() {
     fclose( fd );
 }
 
+/*
+void gas_state() {
+    FILE *gs_fd;
+    char buf[50];
+    int i, PicSize;
+    double TMin, TMax, RhoMin, RhoMax, T;
+    PicSize = All.PicSize;
+    pli.data = malloc( sizeof( double ) * SQR( PicSize ) );
+    TMin = RhoMin = DBL_MAX;
+    TMax = RhoMax = -DBL_MAX;
+    for ( i=0; i<N_Gas; i++ ) {
+    }
+    free( pli.data );
+}
+*/
+
 void analysis(){
     init_analysis();
     //calc_temp();
@@ -512,13 +537,13 @@ void analysis(){
     //fof_save_groups();
     //fof_free();
     gas_rho_slice();
-    magnetic_field_slice();
+    //magnetic_field_slice();
     //output_mag();
     //output_rho();
     //test_id();
     //divB_slice();
     //gas_vel_slice();
-    mach_slice();
+    //mach_slice();
     //hge_n_slice();
     //cr_n_slice();
     //hge_e_slice();

@@ -13,7 +13,7 @@ struct sph_particle_data *SphP;
 
 struct io_header header;
 struct group_struct *group;
-struct plot_struct plot_info;
+struct plot_struct pli;
 
 #ifdef DEBUG
     long debug_l[DEBUG_ARR_LEN];
