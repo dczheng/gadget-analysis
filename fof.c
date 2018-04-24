@@ -8,20 +8,17 @@ void fof_allocate() {
 
     if ( !(fof_info = malloc( bytes = npart * sizeof( struct fof_info_struct ) ) ) )
         printf( "failed to allocate memory for `fof_info` ( %g MB )\n", bytes / 1024.0 / 1024.0 );
-    sprintf( LogBuf, "allocate memory for `fof_info` ( %g MB )", bytes / 1024.0 / 1024.0 );
-    print_log( LogBuf );
+    writelog( "allocate memory for `fof_info` ( %g MB )\n", bytes / 1024.0 / 1024.0 );
 
     if ( !(fof_Next = malloc( bytes = npart * sizeof( long ) ) ) )
         printf( "failed to allocate memory for `fof_Next` ( %g MB )\n", bytes / 1024.0 / 1024.0 );
-    sprintf( LogBuf, "allocate memory for `fof_Next` ( %g MB )", bytes / 1024.0 / 1024.0 );
-    print_log( LogBuf );
+    writelog( "allocate memory for `fof_Next` ( %g MB )\n", bytes / 1024.0 / 1024.0 );
 
     if ( !(Ngblist = malloc( bytes = npart * sizeof( long ) ) ) )
         printf( "failed to allocate memory for `Ngblist` ( %g MB )\n", bytes / 1024.0 / 1024.0 );
-    sprintf( LogBuf, "allocate memory for `Ngblist` ( %g MB )", bytes / 1024.0 / 1024.0 );
-    print_log( LogBuf );
+    writelog( "allocate memory for `Ngblist` ( %g MB )\n", bytes / 1024.0 / 1024.0 );
 
-    print_log( sep_str );
+    writelog( sep_str );
 }
 
 void fof_free() {
@@ -40,7 +37,7 @@ void fof_find_groups( int pt ) {
     long i, ii, p, s, j, ss;
     //int flag=0;
     ngbmax = 0;
-    print_log( "start fof find groups ..." );
+    writelog( "start fof find groups ...\n" );
     for ( i=offset; i<offset+npart; i++ ) {
         ii = i-offset;
         if ( !P[i].Flag ) continue;
@@ -73,16 +70,15 @@ void fof_find_groups( int pt ) {
         }
     }
     qsort( fof_info, npart, sizeof( struct fof_info_struct ), fof_compare_len );
-    sprintf( LogBuf, "the maximum number of ngb: %i", ngbmax );
-    print_log( LogBuf );
-    print_log( "fof find groups ... done" );
+    writelog( "the maximum number of ngb: %i\n", ngbmax );
+    writelog( "fof find groups ... done\n" );
 }
 
 void fof_compute_group_properties( int pt ) {
     int i, num, j, k;
     long ii, p;
     double mass;
-    print_log( "fof compute groups properties ... " );
+    writelog( "fof compute groups properties ... \n" );
     Ngroups = 0;
     for ( i=0; i<npart; i++ ) {
         if ( fof_info[i].Len < All.FofMinLen ) break;
@@ -111,11 +107,9 @@ void fof_compute_group_properties( int pt ) {
             ( All.CriticalDensity * 200 * 4.0 / 3.0 * PI ), 1.0/3.0 );
     }
     Ngroups = i;
-    sprintf( LogBuf, "The number of groups with at least %i particles: %li", All.FofMinLen, Ngroups );
-    print_log( LogBuf );
-    sprintf( LogBuf, "Largest group has %li particles", fof_info[0].Len );
-    print_log( LogBuf );
-    print_log( "fof compute groups properties ... done " );
+    writelog( "The number of groups with at least %i particles: %li\n", All.FofMinLen, Ngroups );
+    writelog( "Largest group has %li particles\n", fof_info[0].Len );
+    writelog( "fof compute groups properties ... done\n" );
 }
 
 void fof_test() {
@@ -143,7 +137,7 @@ void fof_save_groups() {
     double *buf2;
     int ndims;
     hsize_t dims[2];
-    print_log( "fof save groups ... " );
+    writelog( "fof save groups ...\n" );
     sprintf( All.FofFileName, "%s.hdf5", All.FofFileName );
     hdf5_file = H5Fcreate( All.FofFileName, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT );
 
@@ -246,13 +240,13 @@ void fof_save_groups() {
     /*************************************/
 
     H5Fclose( hdf5_file );
-    print_log( "fof save groups ... done" );
+    writelog( "fof save groups ... done\n" );
 }
 
 void fof( int pt ) {
     long i;
     double masstot, mass;
-    print_log( "start fof ..." );
+    writelog( "start fof ...\n" );
     npart = get_particle_num( pt );
     offset = get_particle_offset( pt );
     fof_allocate();
@@ -271,13 +265,12 @@ void fof( int pt ) {
         mass = masstot / npart;
     }
     LinkL = All.LinkLength * pow( mass / rhodm, 1.0/3 );
-    sprintf( LogBuf, "critical density of dark matter: %g\n"
-            "comoving linking lenght %g", rhodm, LinkL );
-    print_log( LogBuf );
+    writelog( "critical density of dark matter: %g\n"
+            "comoving linking lenght %g\n", rhodm, LinkL );
     fof_find_groups( pt );
     fof_compute_group_properties( pt );
     //fof_test();
     tree_free();
-    print_log( "fof ... done" );
-    print_log( sep_str );
+    writelog( "fof ... done\n" );
+    writelog( sep_str );
 }

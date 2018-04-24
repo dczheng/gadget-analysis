@@ -7,7 +7,8 @@ void endrun( int ierr ) {
 }
 
 void init_sep_str() {
-    memset( sep_str, '-', SEP_LEN-1 );
+    memset( sep_str, '-', SEP_LEN-2 );
+    sep_str[ SEP_LEN-2 ] = '\n';
     sep_str[ SEP_LEN-1 ] = '\0';
 }
 
@@ -15,6 +16,7 @@ int main( int argc, char *argv[] ){
     int i;
     time_t time1, time2;
     struct tm *tb;
+    char buf[100];
     MPI_Init( &argc, &argv );
     MPI_Comm_rank( MPI_COMM_WORLD, &ThisTask );
     MPI_Comm_size( MPI_COMM_WORLD, &NumTask );
@@ -31,7 +33,7 @@ int main( int argc, char *argv[] ){
 
     init_sep_str();
     if ( ThisTask == 0 ) {
-        printf( "%s\n", sep_str );
+        printf( "%s", sep_str );
         if ( access( "./gadget-analysis.log/", 0 ) == -1 ) {
             printf( "create directory ./gadget-analysis.log/ by task 0\n" );
             if ( mkdir( "./gadget-analysis.log/", 0755 ) == -1 ) {
@@ -44,12 +46,10 @@ int main( int argc, char *argv[] ){
     sprintf( LogFile, "./gadget-analysis.log/gadget-analysis-%03d.log", ThisTask );
     LogFilefd = fopen( LogFile, "w" );
 
-    print_log( "open log file" );
-    sprintf( LogBuf, "Start At: %s", asctime(tb) );
-    LogBuf[strlen( LogBuf )-1] = '\0';
-    print_log( LogBuf );
+    writelog( "open log file\n" );
+    writelog( "Start At: %s", asctime(tb) );
 
-    print_log( sep_str );
+    writelog( sep_str );
     read_parameters( argv[1] );
     read_snapshot();
 
@@ -66,13 +66,10 @@ int main( int argc, char *argv[] ){
     time2 = time( NULL );
     tb = localtime( &time2 );
 
-    sprintf( LogBuf, "End At: %s", asctime(tb) );
-    LogBuf[strlen( LogBuf )-1] = '\0';
-    print_log( LogBuf );
+    writelog( "End At: %s", asctime(tb) );
 
-    sprintf( LogBuf, "Total Time %i", time2-time1 );
-    print_log( LogBuf );
-    print_log( sep_str );
+    writelog( "Total Time %i\n", time2-time1 );
+    writelog( sep_str );
 
     fclose( LogFilefd );
     MPI_Finalize();

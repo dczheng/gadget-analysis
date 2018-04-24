@@ -10,7 +10,6 @@ void set_units();
 
 void slice();
 void init_projection();
-void print_log( char *log );
 void init_plot();
 void free_plot();
 void plot_slice();

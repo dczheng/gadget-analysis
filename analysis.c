@@ -3,23 +3,23 @@
 FILE *fp_tmp;
 
 void init_analysis() {
-    print_log( "initialize analysis..." );
+    writelog( "initialize analysis...\n" );
     slice();
     init_projection();
     init_kernel_matrix();
     init_plot();
     inte_ws = gsl_integration_workspace_alloc( GSL_INTE_WS_LEN );
-    print_log( "initialize analysis... done." );
-    print_log( sep_str );
+    writelog( "initialize analysis... done.\n" );
+    writelog( sep_str );
 }
 
 void free_analysis() {
-    print_log( "free analysis ..." );
+    writelog( "free analysis ...\n" );
     gsl_integration_workspace_free( inte_ws );
     free_kernel_matrix();
     free_plot();
-    print_log( "free analysis ... done." );
-    print_log( sep_str );
+    writelog( "free analysis ... done.\n" );
+    writelog( sep_str );
 }
 
 void magnetic_field_slice() {
@@ -308,7 +308,7 @@ void sort_gas_rho(){
 }
 
 void vel_value() {
-    print_log( "velocities value analysis ..." );
+    writelog( "velocities value analysis ...\n" );
     FILE *fd;
     char buf[20];
     int i;
@@ -322,8 +322,8 @@ void vel_value() {
         }
     }
     fclose( fd );
-    print_log( "velocities value analysis ... done" );
-    print_log( sep_str );
+    writelog( "velocities value analysis ... done\n" );
+    writelog( sep_str );
 }
 
 void test_id() {
@@ -351,13 +351,13 @@ void test_id() {
 void calc_vl() {
     long i;
     double B;
-    print_log( "compute Larmor frequency ..." );
+    writelog( "compute Larmor frequency ...\n" );
     for ( i=0; i<N_Gas; i++ ) {
         B = sqrt( pow( SphP[i].B[0], 2 ) + pow( SphP[i].B[1], 2 ) + pow( SphP[i].B[2], 2 ) );
         SphP[i].vL = ELECTRON_CHARGE * B / ( 2 * PI * ELECTRON_MASS * LIGHT_SPEED );
     }
-    print_log( "compute Larmor frequency ... done." );
-    print_log( sep_str );
+    writelog( "compute Larmor frequency ... done.\n" );
+    writelog( sep_str );
 }
 
 void vl_slice() {
@@ -395,9 +395,11 @@ void syn( double v ) {
     double B, Ub, vl, pmin, pmax, *img, dx, dy, d1, d2,
            com_dis, ang_dis, lum_dis, BoxSize, C, img_max, img_min, V,
            h, tmp, ang, beam;
-    print_log( "compute synchrotron radiation ..." );
+    writelog( "compute synchrotron radiation ...\n" );
     pmin = DBL_MAX;
     pmax = DBL_MIN;
+    PicSize = All.PicSize;
+    BoxSize = All.BoxSize;
     for ( i=0; i<N_Gas; i++ ) {
         C = SphP[i].CRE_C0 * pow( SphP[i].Density, (All.Alpha-2)/3.0 );
         C = C * SphP[i].Density / ( ELECTRON_MASS /(g2c.g) );
@@ -412,21 +414,18 @@ void syn( double v ) {
         pmin = ( SphP[i].P < pmin && SphP[i].P > 0 ) ? SphP[i].P : pmin;
         pmax = ( SphP[i].P > pmax ) ? SphP[i].P : pmax;
     }
-    sprintf( LogBuf, "pmin = %g, pmax = %g", pmin, pmax );
-    print_log( LogBuf );
+    writelog( "pmin = %g, pmax = %g\n", pmin, pmax );
 
-    if ( BufferBytes < sizeof( double ) * SQR( All.PicSize ) ) {
+    if ( BufferBytes < sizeof( double ) * SQR( PicSize ) ) {
         printf( "BufferSize is too small !\n" );
         endrun( 20180424 );
     }
     img = CommBuffer;
-    memset( img, 0, sizeof( double ) * SQR( All.PicSize ) );
+    memset( img, 0, sizeof( double ) * SQR( PicSize ) );
 
     com_dis = comoving_distance( header.time ) * ( g2c.cm );
     ang_dis = angular_distance( header.time ) * ( g2c.cm );
     lum_dis = luminosity_distance( header.time ) * ( g2c.cm );
-    PicSize = All.PicSize;
-    BoxSize = All.BoxSize;
     dy = dx = BoxSize / PicSize;
     h = All.SofteningTable[0] * ( g2c.cm );
     V = 4.0 / 3.0 * PI * pow( h, 3 );
@@ -446,8 +445,7 @@ void syn( double v ) {
         img_max = ( tmp > img_max ) ? tmp : img_max;
         img_min = ( tmp < img_min && tmp > 0 ) ? tmp : img_min;
     }
-    sprintf( LogBuf, "img_max = %g, img_min = %g\n", img_max, img_min );
-    print_log( LogBuf );
+    writelog( "img_max = %g, img_min = %g\n", img_max, img_min );
     pli.img = img;
     sprintf( pli.data_name, "syn" );
     pli.log_flag = 1;
@@ -457,8 +455,8 @@ void syn( double v ) {
     //sprintf( pli.cb_label, "10^x(mJy arcmin^{-2})" );
     sprintf( pli.cb_label, "10^x(mJy beam^{-1})" );
     plot_imshow();
-    print_log( "compute synchrotron radiation ... done." );
-    print_log( sep_str );
+    writelog( "compute synchrotron radiation ... done.\n" );
+    writelog( sep_str );
 }
 
 void output_mag() {
@@ -496,37 +494,48 @@ void output_rho() {
 }
 
 void gas_state() {
-    double yhelium, mu, XH=HYDROGEN_MASSFRAC, T,
-           Tmin, Tmax, rhomin, rhomax, *img;
+    double yhelium, mu, XH=HYDROGEN_MASSFRAC, *T,
+           TempMin, TempMax, DensMin, DensMax,
+           LogTempMin, LogTempMax, LogDensMin, LogDensMax,
+           *img;
     int num, i, k, PicSize;
-    Tmin = rhomin = DBL_MAX;
-    Tmax = rhomax = DBL_MIN;
+    TempMin = DensMin = DBL_MAX;
+    TempMax = DensMax = DBL_MIN;
 
     yhelium = ( 1 - XH ) / ( 4 * XH );
 
-    img = malloc( SQR(PicSize) * sizeof( double ) );
-    for ( i=0; i<N_Gas; i++ ) {
-        mu = ( 1 + 4 * yhelium ) / ( 1 + yhelium + SphP[i].elec );
-        T = GAMMA_MINUS1 / BOLTZMANN * SphP[i].u * PROTONMASS * mu;
-        Tmin = ( T < Tmin ) ? T : Tmin;
-        Tmax = ( T > Tmax ) ? T : Tmax;
-        rhomin = ( SphP[i].Density < rhomin ) ? SphP[i].Density : rhomin;
-        rhomax = ( SphP[i].Density > rhomax ) ? SphP[i].Density : rhomax;
+    PicSize = pli.PicSize = All.PicSize;
+
+    if ( BufferBytes < sizeof( double ) * N_Gas  + sizeof( double ) * SQR(PicSize)) {
+        printf( "BufferSize is too small !\n" );
+        endrun( 20180424 );
     }
 
-    printf( "rhomin: %g, rhomax: %g, Tmin: %g, Tmax: %g\n",
-            rhomin, rhomax, Tmin, Tmax );
+    img = CommBuffer;
+    T = ( double* )CommBuffer + SQR( PicSize );
 
-    rhomin = log10( rhomin );
-    rhomax = log10( rhomax );
-    Tmin = log10( Tmin );
-    Tmax = log10( Tmax );
+    for ( i=0; i<N_Gas; i++ ) {
+        mu = ( 1 + 4 * yhelium ) / ( 1 + yhelium + SphP[i].elec );
+        T[i] = GAMMA_MINUS1 / BOLTZMANN * SphP[i].u * PROTONMASS * mu;
+        TempMin = ( T[i] < TempMin && T[i] > 0 ) ? T[i] : TempMin;
+        TempMax = ( T[i] > TempMax ) ? T[i] : TempMax;
+        DensMin = ( SphP[i].Density < DensMin && SphP[i].Density > 0 ) ? SphP[i].Density : DensMin;
+        DensMax = ( SphP[i].Density > DensMax ) ? SphP[i].Density : DensMax;
+    }
+
+    printf( "DensMin: %g, DensMax: %g, TempMin: %g, TempMax: %g\n",
+            DensMin, DensMax, TempMin, TempMax );
+
+    LogDensMin = log10( DensMin );
+    LogDensMax = log10( DensMax );
+    LogTempMin = log10( TempMin );
+    LogTempMax = log10( TempMax );
 }
 
 
 void analysis(){
     init_analysis();
-    //gas_state();
+    gas_state();
     //tree_build( 1 );
     //tree_free();
     //fof( 1 );

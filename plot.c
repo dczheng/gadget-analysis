@@ -6,7 +6,7 @@ char cb_s;
 FILE *fp_tmp;
 
 void show_pli() {
-    sprintf( LogBuf, "plot info:\n%-25s: %i\n"
+    writelog( "plot info:\n%-25s: %i\n"
                                  "%-25s: %i\n"
                                  "%-25s: %i\n"
                                  "%-25s: %i\n"
@@ -17,7 +17,7 @@ void show_pli() {
                                  "%-25s: %s\n"
                                  "%-25s: %s\n"
                                  "%-25s: %s\n"
-                                 "%-25s: %g",
+                                 "%-25s: %g\n",
                                  "log_flag", pli.log_flag,
                                  "tick_flag", pli.tick_flag,
                                  "global_colorbar_flag", pli.global_colorbar_flag,
@@ -30,13 +30,12 @@ void show_pli() {
                                  "ylabel", pli.ylabel,
                                  "title", pli.title,
                                  "h", pli.h );
-    print_log( LogBuf );
-    print_log( sep_str );
+    writelog( sep_str );
 }
 
 void init_plot() {
     int i;
-    print_log( "initialize plot..." );
+    writelog( "initialize plot...\n" );
     affine[0] = 1;
     affine[1] = 0;
     affine[2] = 0;
@@ -70,51 +69,48 @@ void init_plot() {
     sprintf( pli.title, "" );
 
     show_pli();
-    print_log( sep_str );
+    writelog( sep_str );
 }
 
 void plot_imshow() {
 
     int i, PicSize;
-    double *img, img_max, img_min, log_img_max, log_img_min,
-           glob_img_max, glob_img_min, glob_log_img_min, glob_log_img_max,
+    double *img, ImgMax, ImgMin, LogImgMax, LogImgMin,
+           GlobImgMax, GlobImgMin, GlobLogImgMin, GlobLogImgMax,
            cb_max, cb_min, cb_log_min, cb_log_max;
     FILE *fp_tmp;
     char buf[500];
 
-    img_max = DBL_MIN;
-    img_min = DBL_MAX;
+    ImgMax = DBL_MIN;
+    ImgMin = DBL_MAX;
 
     PicSize = pli.PicSize;
     img = pli.img;
 
     for ( i=0; i<SQR(PicSize); i++ ) {
-        img_max = ( img[i] > img_max ) ? img[i] : img_max;
-        img_min = ( (img[i] < img_min && img[i] > 0 )) ? img[i] : img_min;
+        ImgMax = ( img[i] > ImgMax ) ? img[i] : ImgMax;
+        ImgMin = ( (img[i] < ImgMin && img[i] > 0 )) ? img[i] : ImgMin;
     }
-    log_img_max = log10( img_max );
-    log_img_min = log10( img_min );
+    LogImgMax = log10( ImgMax );
+    LogImgMin = log10( ImgMin );
 
-    MPI_Reduce( &img_max, &glob_img_max, 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD );
-    MPI_Reduce( &img_min, &glob_img_min, 1, MPI_DOUBLE, MPI_MIN, 0, MPI_COMM_WORLD );
-    MPI_Reduce( &log_img_max, &glob_log_img_max, 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD );
-    MPI_Reduce( &log_img_min, &glob_log_img_min, 1, MPI_DOUBLE, MPI_MIN, 0, MPI_COMM_WORLD );
+    MPI_Reduce( &ImgMax, &GlobImgMax, 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD );
+    MPI_Reduce( &ImgMin, &GlobImgMin, 1, MPI_DOUBLE, MPI_MIN, 0, MPI_COMM_WORLD );
+    MPI_Reduce( &LogImgMax, &GlobLogImgMax, 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD );
+    MPI_Reduce( &LogImgMin, &GlobLogImgMin, 1, MPI_DOUBLE, MPI_MIN, 0, MPI_COMM_WORLD );
     MPI_Barrier( MPI_COMM_WORLD );
 
-    print_log( sep_str );
-    sprintf( LogBuf, "Image info: \nLocal: max: %g, min: %g, log_max: %g, log_min: %g",
-            img_max, img_min, log_img_max, log_img_min );
-    print_log( LogBuf );
-    sprintf( LogBuf, "Global: max: %g, min: %g, log_max: %g, log_min: %g",
-            glob_img_max, glob_img_min, glob_log_img_max, glob_log_img_min );
-    print_log( LogBuf );
-    print_log( sep_str );
+    writelog( sep_str );
+    writelog( "Image info: \nLocal: max: %g, min: %g, log_max: %g, log_min: %g\n",
+            ImgMax, ImgMin, LogImgMax, LogImgMin );
+    writelog( "Global: max: %g, min: %g, log_max: %g, log_min: %g\n",
+            GlobImgMax, GlobImgMin, GlobLogImgMax, GlobLogImgMin );
+    writelog( sep_str );
 
     if ( ThisTask == 0 ){
         sprintf( buf, "./%s/", pli.data_name );
         if ( access( buf, 0 ) == -1 ){
-            sprintf( LogBuf, "create directory `./%s/` by task 0", pli.data_name );
-            print_log( LogBuf );
+            writelog( "create directory `./%s/` by task 0\n", pli.data_name );
             if ( mkdir( buf, 0755) == -1 ){
                 printf( "failed create directory %s.\n", buf );
                 endrun( 20180102 );
@@ -126,16 +122,16 @@ void plot_imshow() {
     sprintf( buf, "./%s/%s_%.2f", pli.data_name, pli.data_name, All.RedShift );
 
     if ( pli.global_colorbar_flag == 1 ){
-        cb_max = glob_img_max;
-        cb_min = glob_img_min;
-        cb_log_max = glob_log_img_max;
-        cb_log_min = glob_log_img_min;
+        cb_max = GlobImgMax;
+        cb_min = GlobImgMin;
+        cb_log_max = GlobLogImgMax;
+        cb_log_min = GlobLogImgMin;
     }
     else{
-        cb_max = img_max;
-        cb_min = img_min;
-        cb_log_max = log_img_max;
-        cb_log_min = log_img_min;
+        cb_max = ImgMax;
+        cb_min = ImgMin;
+        cb_log_max = LogImgMax;
+        cb_log_min = LogImgMin;
     }
 
     if ( pli.log_flag == 1 )
@@ -143,7 +139,7 @@ void plot_imshow() {
             if ( img[i] > 0 )
                 img[i] = log10( img[i] );
             else
-                img[i] = log_img_min;
+                img[i] = LogImgMin;
         }
 
     giza_open_device( "/png", buf );
@@ -152,12 +148,12 @@ void plot_imshow() {
 
     if ( pli.log_flag == 1 ){
         giza_render( PicSize, PicSize, img, 0, PicSize, 0, PicSize,
-            glob_log_img_min, glob_log_img_max, 0, affine );
+            GlobLogImgMin, GlobLogImgMax, 0, affine );
         giza_colour_bar( &cb_s, 1, 3, cb_log_min, cb_log_max, pli.cb_label );
     }
     else{
         giza_render( PicSize, PicSize, img, 0, PicSize, 0, PicSize,
-            glob_img_min, glob_img_max, 0, affine );
+            GlobImgMin, GlobImgMax, 0, affine );
         giza_colour_bar( &cb_s, 1, 3, cb_min, cb_max, pli.cb_label );
     }
 
@@ -187,18 +183,17 @@ void plot_imshow() {
 
 void plot_slice() {
     double *img,
-           data_max, data_min, log_data_max, log_data_min,
-           glob_data_max, glob_data_min, glob_log_data_max, glob_log_data_min,
+           DataMax, DataMin, LogDataMax, LogDataMin,
+           GlobDataMax, GlobDataMin, GlobLogDataMax, GlobLogDataMin,
            dx, dy, x, y, h, dh, lx, ly, v;
     int i, j, xi, yi, N, Nhalf, i1, i2, j1, j2, li, lj, PicSize;
     PicSize = pli.PicSize;
-    sprintf( LogBuf, "plot %s slice ...", pli.data_name );
-    print_log( LogBuf );
+    writelog( "plot %s slice ...\n", pli.data_name );
     img = pli.img;
     memset( img, 0, sizeof( double ) * PicSize * PicSize );
     dx = dy = proj_size / PicSize;
-    data_max = DBL_MIN;
-    data_min = DBL_MAX;
+    DataMax = DBL_MIN;
+    DataMin = DBL_MAX;
     N = All.KernelN;
     Nhalf = N / 2;
     h = pli.h;
@@ -234,40 +229,37 @@ void plot_slice() {
             img[ xi * PicSize + yi ] += v / ( dx * dy );
 
         if ( pli.data[i-pli.istart] > 0 ){
-            data_max = ( v > data_max ) ? v : data_max;
-            data_min = ( v < data_min && v > 0 ) ? v : data_min;
+            DataMax = ( v > DataMax ) ? v : DataMax;
+            DataMin = ( v < DataMin && v > 0 ) ? v : DataMin;
         }
 
     }
 
-    log_data_max = log10( data_max );
-    log_data_min = log10( data_min );
+    LogDataMax = log10( DataMax );
+    LogDataMin = log10( DataMin );
 
-    MPI_Reduce( &data_max, &glob_data_max, 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD );
-    MPI_Reduce( &data_min, &glob_data_min, 1, MPI_DOUBLE, MPI_MIN, 0, MPI_COMM_WORLD );
-    MPI_Reduce( &log_data_max, &glob_log_data_max, 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD );
-    MPI_Reduce( &log_data_min, &glob_log_data_min, 1, MPI_DOUBLE, MPI_MIN, 0, MPI_COMM_WORLD );
+    MPI_Reduce( &DataMax, &GlobDataMax, 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD );
+    MPI_Reduce( &DataMin, &GlobDataMin, 1, MPI_DOUBLE, MPI_MIN, 0, MPI_COMM_WORLD );
+    MPI_Reduce( &LogDataMax, &GlobLogDataMax, 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD );
+    MPI_Reduce( &LogDataMin, &GlobLogDataMin, 1, MPI_DOUBLE, MPI_MIN, 0, MPI_COMM_WORLD );
     MPI_Barrier( MPI_COMM_WORLD );
 
-    print_log( sep_str );
-    sprintf( LogBuf, "Particle info: \nLocal: max: %g, min: %g, log_max: %g, log_min: %g",
-            data_max, data_min, log_data_max, log_data_min );
-    print_log( LogBuf );
-    sprintf( LogBuf, "Global: max: %g, min: %g, log_max: %g, log_min: %g",
-            glob_data_max, glob_data_min, glob_log_data_max, glob_log_data_min );
-    print_log( LogBuf );
-    print_log( sep_str );
+    writelog( sep_str );
+    writelog( "Particle info: \nLocal: max: %g, min: %g, log_max: %g, log_min: %g\n",
+            DataMax, DataMin, LogDataMax, LogDataMin );
+    writelog( "Global: max: %g, min: %g, log_max: %g, log_min: %g\n",
+            GlobDataMax, GlobDataMin, GlobLogDataMax, GlobLogDataMin );
+    writelog( sep_str );
 
     plot_imshow();
 
-    sprintf( LogBuf, "plot %s slice ... done", pli.data_name );
-    print_log( LogBuf );
-    print_log( sep_str );
+    writelog( "plot %s slice ... done\n", pli.data_name );
+    writelog( sep_str );
 
 }
 
 void free_plot() {
-    print_log( "free plot ..." );
+    writelog( "free plot ...\n" );
     free( cp );
     free( red );
     free( green );

@@ -394,64 +394,50 @@ void read_header( char *fn ) {
 
 void show_header( struct io_header header ) {
     int i;
-    print_log( sep_str );
-    print_log( "header Info:" );
 
-    sprintf( LogBuf, "%-25s: ", "npart" );
+    writelog( sep_str );
+    writelog( "header Info:\n" );
+
+    writelog( "%-25s: ", "npart" );
     for ( i=0; i<6; i++ )
-        sprintf( LogBuf, "%s%li ", LogBuf, header.npart[i] );
-    print_log( LogBuf );
+        writelog(  "%li ", header.npart[i] );
+    writelog( "\n" );
 
-    sprintf( LogBuf, "%-25s: ", "mass" );
+    writelog(  "%-25s: ", "mass" );
     for ( i=0; i<6; i++ )
-        sprintf( LogBuf, "%s%lf ", LogBuf, header.mass[i] );
-    print_log( LogBuf );
+        writelog(  "%lf ", header.mass[i] );
+    writelog( "\n" );
 
-    sprintf( LogBuf, "%-25s: ", "npartTotal" );
+    writelog( "%-25s: ", "npartTotal" );
     for ( i=0; i<6; i++ )
-        sprintf( LogBuf, "%s%i ", LogBuf, header.npartTotal[i] );
-    print_log( LogBuf );
+        writelog( "%i ", header.npartTotal[i] );
+    writelog( "\n" );
 
-    sprintf( LogBuf, "%-25s: ", "npartTotalHighWord" );
+    writelog( "%-25s: ", "npartTotalHighWord" );
     for ( i=0; i<6; i++ )
-        sprintf( LogBuf, "%s%i ", LogBuf, header.npartTotalHighWord[i] );
-    print_log( LogBuf );
+        writelog( "%i ", header.npartTotalHighWord[i] );
+    writelog( "\n" );
 
-    sprintf( LogBuf, "%-25s: %lf", "readshift",             header.redshift );
-    print_log( LogBuf );
-    sprintf( LogBuf, "%-25s: %lf", "HubbleParam",           header.HubbleParam );
-    print_log( LogBuf );
-    sprintf( LogBuf, "%-25s: %i", "flag_sfr",               header.flag_sfr );
-    print_log( LogBuf );
-    sprintf( LogBuf, "%-25s: %i", "flag_feedback",          header.flag_feedback );
-    print_log( LogBuf );
-    sprintf( LogBuf, "%-25s: %i", "num_files",              header.num_files );
-    print_log( LogBuf );
-    sprintf( LogBuf, "%-25s: %lf", "BoxSize",               header.BoxSize );
-    print_log( LogBuf );
-    sprintf( LogBuf, "%-25s: %lf", "Omega0",                header.Omega0 );
-    print_log( LogBuf );
-    sprintf( LogBuf, "%-25s: %lf", "OmegaLambda",           header.OmegaLambda );
-    print_log( LogBuf );
-    sprintf( LogBuf, "%-25s: %i", "flag_stellarge",         header.flag_stellarage );
-    print_log( LogBuf );
-    sprintf( LogBuf, "%-25s: %i", "flag_metals",            header.flag_metals );
-    print_log( LogBuf );
-    sprintf( LogBuf, "%-25s: %i", "flag_entropy_instead_u", header.flag_entropy_instead_u );
-    print_log( LogBuf );
-    sprintf( LogBuf, "%-25s: %i", "flag_doubleprecision",   header.flag_doubleprecision );
-    print_log( LogBuf );
-    sprintf( LogBuf, "%-25s: %i", "flag_ic_info",           header.flag_ic_info );
-    print_log( LogBuf );
-    sprintf( LogBuf, "%-25s: %f", "lpt_scalingfactor",      header.lpt_scalingfactor );
-    print_log( LogBuf );
-    print_log( sep_str );
+    writelog( "%-25s: %lf\n", "readshift",             header.redshift );
+    writelog( "%-25s: %lf\n", "HubbleParam",           header.HubbleParam );
+    writelog( "%-25s: %i\n", "flag_sfr",               header.flag_sfr );
+    writelog( "%-25s: %i\n", "flag_feedback",          header.flag_feedback );
+    writelog( "%-25s: %i\n", "num_files",              header.num_files );
+    writelog( "%-25s: %lf\n", "BoxSize",               header.BoxSize );
+    writelog( "%-25s: %lf\n", "Omega0",                header.Omega0 );
+    writelog( "%-25s: %lf\n", "OmegaLambda",           header.OmegaLambda );
+    writelog( "%-25s: %i\n", "flag_stellarge",         header.flag_stellarage );
+    writelog( "%-25s: %i\n", "flag_metals",            header.flag_metals );
+    writelog( "%-25s: %i\n", "flag_entropy_instead_u", header.flag_entropy_instead_u );
+    writelog( "%-25s: %i\n", "flag_doubleprecision",   header.flag_doubleprecision );
+    writelog( "%-25s: %i\n", "flag_ic_info",           header.flag_ic_info );
+    writelog( "%-25s: %f\n", "lpt_scalingfactor",      header.lpt_scalingfactor );
+    writelog( sep_str );
 }
 
 void write_header( char *fn, struct io_header header ) {
 
-    sprintf(  LogBuf, "write header To %s", fn  );
-    print_log( LogBuf );
+    writelog( "write header To %s\n", fn  );
     hdf5_file = H5Fcreate( fn, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT );
     //hdf5_file = H5Fopen( fn, H5F_ACC_RDWR, H5P_DEFAULT );
     hdf5_group = H5Gcreate( hdf5_file, "/Header", 0 );
@@ -580,16 +566,14 @@ void allocate_memory() {
         endrun( 0 );
     }
     bytes_tot += bytes;
-    sprintf( LogBuf, "Allocated %g MB for P.", bytes / 1024.0 / 1024.0 );
-    print_log( LogBuf );
+    writelog( "Allocated %g MB for P.\n", bytes / 1024.0 / 1024.0 );
 
     if ( !( SphP = malloc( bytes = N_Gas * sizeof( struct sph_particle_data ) ) ) ) {
         printf( "failed to allocate memory for SphP ( %g Mb ).\n", bytes / 1024.0 / 1024.0 );
         endrun( 0 );
     }
     bytes_tot += bytes;
-    sprintf( LogBuf, "Allocated %g MB for SphP.", bytes / 1024.0 / 1024.0 );
-    print_log( LogBuf );
+    writelog( "Allocated %g MB for SphP.\n", bytes / 1024.0 / 1024.0 );
 
     BufferBytes = All.BufferSize * 1024 * 1024;
     if ( !( CommBuffer = malloc( bytes = BufferBytes  ) ) ) {
@@ -597,65 +581,61 @@ void allocate_memory() {
         endrun( 0 );
     }
     bytes_tot += bytes;
-    sprintf( LogBuf, "Allocated %g MB for CommBuffer.", bytes / 1024.0 / 1024.0 );
-    print_log( LogBuf );
+    writelog( "Allocated %g MB for CommBuffer.\n", bytes / 1024.0 / 1024.0 );
 
-    sprintf( LogBuf, "Allocate total %g MB.", bytes_tot / 1024.0 / 1024.0 );
-    print_log( LogBuf );
+    writelog( "Allocate total %g MB.\n", bytes_tot / 1024.0 / 1024.0 );
 }
 
 void free_memory() {
-    print_log( "free memory ..." );
+    writelog( "free memory ...\n" );
     free( P );
     free( SphP );
     free( CommBuffer );
-    print_log( "free memory ... done." );
-    print_log( sep_str );
+    writelog( "free memory ... done.\n" );
+    writelog( sep_str );
 }
 
 void find_id() {
     int bits;
     long i, num, offset;
-    print_log( "find id ..." );
+    writelog( "find id ...\n" );
 
     for ( bits=0; GENERATIONS > (1<<bits); bits++ );
-    sprintf( LogBuf, "bits = %i", bits );
-    print_log( LogBuf );
-    print_log( "find gas id ..." );
+    writelog( "bits = %i\n", bits );
+    writelog( "find gas id ...\n" );
     for ( i=0; i<N_Gas; i++ ){
         P[i].ID <<= bits;
         P[i].ID >>= bits;
     }
     num = get_particle_num( 4 );
     offset = get_particle_offset( 4 );
-    sprintf( LogBuf, "Start Particle offset %li", offset );
-    print_log( LogBuf );
+    writelog( "Start Particle offset %li\n", offset );
     if ( num != 0 ) {
-        print_log( "find gas id ..." );
+        writelog( "find gas id ...\n" );
         for ( i=0; i<num; i++ ) {
             P[offset+i].ID <<= bits;
             P[offset+i].ID >>= bits;
         }
     }
-    print_log( "find id ... done." );
-    print_log( sep_str );
+    writelog( "find id ... done.\n" );
+    writelog( sep_str );
 }
 
 void init_particle_flag() {
     long i;
-    print_log( "initialize particle tree flag ..." );
+    writelog( "initialize particle tree flag ...\n" );
     for ( i=0; i<NumPart; i++ ) {
         P[i].Flag = 1;
     }
-    print_log( "initialize particle tree flag ... done." );
-    print_log( sep_str );
+    writelog( "initialize particle tree flag ... done.\n" );
+    writelog( sep_str );
 }
 
 void read_snapshot() {
     int pt, blk, nbytes, rank;
     long i, file, pc, offset, num;
     char file_name[FILENAME_MAX], buf[200], buf1[200];
-    print_log( "read_data ..." );
+    writelog( "read_data ...\n" );
     sprintf( file_name, "%s_%03d.%3i.hdf5", All.FilePrefix, All.StartSnapIndex + ThisTask, 0 );
     if ( All.NumFiles < 2 )
         sprintf( file_name, "%s_%03d.hdf5", All.FilePrefix, All.StartSnapIndex + ThisTask );
@@ -671,8 +651,7 @@ void read_snapshot() {
     All.Omega0 = header.Omega0;
     All.OmegaLambda = header.OmegaLambda;
     All.HubbleParam = header.HubbleParam;
-    sprintf( LogBuf, "NumPart = %ld, N_Gas = %ld", NumPart, N_Gas );
-    print_log( LogBuf );
+    writelog( "NumPart = %ld, N_Gas = %ld\n", NumPart, N_Gas );
     allocate_memory();
     show_header( header );
     for ( blk=0; blk<IO_NBLOCKS; blk++ ) {
@@ -693,8 +672,7 @@ void read_snapshot() {
                         hdf5_file = H5Fopen( file_name, H5F_ACC_RDWR, H5P_DEFAULT );
                         get_dataset_name( blk, buf );
                         get_hdf5_native_type( blk, &hdf5_type );
-                        sprintf( LogBuf, "[%i] reading %s ...", pt, buf );
-                        print_log( LogBuf );
+                        writelog( "[%i] reading %s ...\n", pt, buf );
                         sprintf( buf1, "PartType%i/%s", pt, buf );
                         hdf5_dataset = H5Dopen( hdf5_file, buf1 );
                         herr = H5Dread( hdf5_dataset, hdf5_type, H5S_ALL, H5S_ALL, H5P_DEFAULT, CommBuffer );
@@ -710,15 +688,14 @@ void read_snapshot() {
     for ( pt=0, offset=0; pt<6; pt++ ) {
         num = header.npartTotal[pt] + ( ( ( long long )header.npartTotalHighWord[pt] ) << 32 );
         if ( num != 0 && header.mass[pt] != 0 ){
-            sprintf( LogBuf, "copy particle %d mass from header to paritcle data", pt );
-            print_log( LogBuf );
+            writelog( "copy particle %d mass from header to paritcle data\n", pt );
             for ( i=offset; i<offset+num; i++ )
                 P[i].Mass = header.mass[pt];
         }
         offset += num;
     }
-    print_log( "read data ... done. " );
-    print_log( sep_str );
+    writelog( "read data ... done. \n" );
+    writelog( sep_str );
     find_id();
     init_particle_flag();
 }

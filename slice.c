@@ -6,7 +6,7 @@ void slice() {
     long long offset, num, index, i;
     struct particle_data p_tmp;
     struct sph_particle_data sphp_tmp;
-    print_log( "determine slice info ..." );
+    writelog( "determine slice info ...\n" );
 
     if ( All.End[0] == 0 ){
         All.Start[0] = 0;
@@ -22,13 +22,12 @@ void slice() {
         All.Start[2] = 0;
         All.End[2] = All.BoxSize;
     }
-    sprintf( LogBuf, "StartX: %g, EndX: %g\n"
+    writelog( "StartX: %g, EndX: %g\n"
             "StartY: %g, EndY: %g\n"
-            "StartZ: %g, EndZ: %g",
+            "StartZ: %g, EndZ: %g\n",
             All.Start[0], All.End[0],
             All.Start[1], All.End[1],
             All.Start[2], All.End[2] );
-    print_log( LogBuf );
 
     for ( pt=0; pt<6; pt++ ) {
         offset = get_particle_offset( pt );
@@ -39,9 +38,8 @@ void slice() {
             SliceEnd[pt] = -1;
             continue;
         }
-        sprintf( LogBuf, "particle %i: offset=%li, num=%li",
+        writelog( "particle %i: offset=%li, num=%li\n",
                 pt, offset, num );
-        print_log( LogBuf );
         for ( i=offset; i<offset+num; i++ ) {
             if ( P[i].Pos[0] >= All.Start[0] &&
                  P[i].Pos[0] <= All.End[0] &&
@@ -63,19 +61,19 @@ void slice() {
         SliceStart[pt] = offset;
         SliceEnd[pt] = index;
     }
-    sprintf( LogBuf, "Slice Start: " );
+    writelog( "Slice Start: " );
     for ( pt=0; pt<6; pt++ ) {
-        sprintf( LogBuf, "%s%ld ", LogBuf, SliceStart[pt] );
+        writelog( "%ld ", SliceStart[pt] );
     }
-    print_log( LogBuf );
+    writelog( "\n" );
 
-    sprintf( LogBuf, "Slice End: " );
+    writelog( "Slice End: " );
     for ( pt=0; pt<6; pt++ ) {
-        sprintf( LogBuf, "%s%ld ", LogBuf, SliceEnd[pt] );
+        writelog( "%ld ", SliceEnd[pt] );
     }
-    print_log( LogBuf );
+    writelog( "\n" );
 
-    print_log( "determine slice info ... done." );
-    print_log( sep_str );
+    writelog( "determine slice info ... done.\n" );
+    writelog( sep_str );
 }
 

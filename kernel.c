@@ -12,7 +12,7 @@ void init_kernel_matrix() {
     int pt, i, j, k, N, Nhalf;
     long long num;
     double dh, q, h;
-    print_log( "initialize kernel maxtrix ..." );
+    writelog( "initialize kernel matrix ...\n" );
     N = All.KernelN;
     Nhalf = N / 2;
     for( pt=0; pt<6; pt++ ) {
@@ -42,22 +42,20 @@ void init_kernel_matrix() {
             for ( i=0, q=0; i<N*N*N; i++ ) {
                 q += KernelMat3D[pt][i];
             }
-            sprintf( LogBuf, "sum of 3d kernel[%d] = %g", pt, q );
-            print_log( LogBuf );
+            writelog( "sum of 3d kernel[%d] = %g\n", pt, q );
             for ( i=0, q=0; i<N*N; i++ )
                 q += KernelMat2D[pt][i];
-            sprintf( LogBuf, "sum of 2d kernel[%d] = %g", pt, q );
-            print_log( LogBuf );
+            writelog( "sum of 2d kernel[%d] = %g\n", pt, q );
         }
     }
-    print_log( "initialize kernel maxtrix ... done." );
-    print_log( sep_str );
+    writelog( "initialize kernel matrix ... done.\n" );
+    writelog( sep_str );
 }
 
 void free_kernel_matrix() {
     long long num;
     int pt;
-    print_log( "free kernel maxtrix ..." );
+    writelog( "free kernel matrix ...\n" );
     for ( pt=0; pt<6; pt++ ) {
         num = header.npartTotal[pt] + ( ( ( long long )header.npartTotalHighWord[pt] ) << 32 );
         if ( num != 0 ) {

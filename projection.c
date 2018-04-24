@@ -7,7 +7,7 @@ void init_projection() {
         printf( "project direction must be 0, 1 or 2 !\n" );
         endrun( 20171207 );
     }
-    print_log( "initialize projection ..." );
+    writelog( "initialize projection ...\n" );
     switch( All.ProjectDirection ) {
         case 0:
             proj_i = 1;
@@ -33,14 +33,13 @@ void init_projection() {
         endrun( 20171207 );
     }
     proj_size = proj_x;
-    sprintf( LogBuf, "proj_i = %d, proj_j = %d, "
+    writelog( "proj_i = %d, proj_j = %d\n"
                      "proj_x = %g, proj_y = %g\n"
-                     "proj_size = %g",
+                     "proj_size = %g\n",
                      proj_i, proj_j,
                      proj_x, proj_y,
                      proj_size );
-    print_log( LogBuf );
-    print_log( "initialize projection ... done." );
-    print_log( sep_str );
+    writelog( "initialize projection ... done.\n" );
+    writelog( sep_str );
 }
 

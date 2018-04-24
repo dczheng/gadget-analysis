@@ -9,7 +9,7 @@ void read_parameters( char *fn ) {
     void *addr[MAXTAGS];
     char tag[MAXTAGS][50], buf[200], buf1[200], buf2[200], buf3[200];
         int id[MAXTAGS], nt, i, j, errflag=0;;
-        print_log( "read parameter..." );
+        writelog( "read parameter...\n" );
     if ( ThisTask == 0 ) {
         fd = fopen( fn, "r" );
         if ( NULL == fd ) {
@@ -172,18 +172,15 @@ void read_parameters( char *fn ) {
                 switch ( id[j] ) {
                     case REAL:
                         *( (double*)addr[j] ) = atof( buf2 );
-                        sprintf( LogBuf, "%-35s: %g", buf1, *((double*)addr[j]) );
-                        print_log( LogBuf );
+                        writelog( "%-35s: %g\n", buf1, *((double*)addr[j]) );
                         break;
                     case INT:
                         *( (int*)addr[j] ) = atoi( buf2 );
-                        sprintf( LogBuf, "%-35s: %d", buf1, *((int*)addr[j]) );
-                        print_log( LogBuf );
+                        writelog( "%-35s: %d\n", buf1, *((int*)addr[j]) );
                         break;
                     case STRING:
                         strcpy( (char*)addr[j], buf2 );
-                        sprintf( LogBuf, "%-35s: %s", buf1, buf2 );
-                        print_log( LogBuf );
+                        writelog( "%-35s: %s\n", buf1, buf2 );
                         break;
                 }
             }
@@ -204,6 +201,6 @@ void read_parameters( char *fn ) {
     }
     MPI_Barrier( MPI_COMM_WORLD );
     MPI_Bcast( &All, sizeof( struct global_parameters_struct ), MPI_BYTE, 0, MPI_COMM_WORLD );
-    print_log( sep_str );
+    writelog( sep_str );
 }
 

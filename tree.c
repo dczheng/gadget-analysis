@@ -6,30 +6,27 @@ int pt;
 void tree_allocate() {
     size_t bytes;
     MaxNodes = npart * All.TreeAllocFactor;
-    sprintf( LogBuf, "particle `%i` npartber = %ld, TreeAllocateFactor = %g, "
-            "MaxNodes = %ld", pt, npart, All.TreeAllocFactor, MaxNodes );
-    print_log( LogBuf );
-    print_log( "allocate memory for tree" );
+    writelog( "particle `%i` npartber = %ld, TreeAllocateFactor = %g, "
+            "MaxNodes = %ld\n", pt, npart, All.TreeAllocFactor, MaxNodes );
+    writelog( "allocate memory for tree\n" );
     if ( !( Nodes_Base = malloc( bytes = (MaxNodes+1) * sizeof( struct NODE ) ) ) ) {
         printf( "failed to allocate memory for %ld tree-nodes `Nodes_Base`(%g MB)\n", MaxNodes, bytes / 1024.0 / 1024.0 );
         endrun( 20171225 );
     }
-    sprintf( LogBuf, "allocate memory for %ld tree-nodes `Nodes_Base`( %g MB )", MaxNodes, bytes / 1024.0 / 1024.0 );
+    writelog( "allocate memory for %ld tree-nodes `Nodes_Base`( %g MB )\n", MaxNodes, bytes / 1024.0 / 1024.0 );
     Nodes = Nodes_Base - npart;
-    print_log( LogBuf );
 
     if ( !( NextNode = malloc( bytes = (npart) * sizeof( long ) ) ) ) {
         printf( "falied to allocate memory for `NextNode` ( %g MB )\n", bytes / 1024.0 / 1024.0 );
         endrun( 20171227 );
     }
-    sprintf( LogBuf, "allocate memory for `NextNode` ( %g MB )", bytes / 1024.0 / 1024.0 );
-    print_log( LogBuf );
-    print_log( sep_str );
+    writelog( "allocate memory for `NextNode` ( %g MB )\n", bytes / 1024.0 / 1024.0 );
+    writelog( sep_str );
 }
 
 void tree_free() {
-    print_log( "free memory for tree" );
-    print_log( sep_str );
+    writelog( "free memory for tree\n" );
+    writelog( sep_str );
     free( Nodes_Base );
     free( NextNode );
 }
@@ -40,7 +37,7 @@ void tree_build_single() {
     double max[3], min[3], len, lenhalf;
     nfree = npart;
     nfreep = &Nodes[nfree];
-    print_log( "tree build ..." );
+    writelog( "tree build ...\n" );
     for ( j=0; j<3; j++ ) {
         max[j] = DBL_MIN;
         min[j] = DBL_MAX;
@@ -55,14 +52,12 @@ void tree_build_single() {
     for ( i=0; i<3; i++ ) {
         len = ( max[i] - min[i] > len ) ? ( max[i] - min[i] ) : len;
     }
-    sprintf( LogBuf, "" );
     for ( i=0; i<3; i++ ) {
-        sprintf( LogBuf, "%smax[%i]=%g, min[%i]=%g\n",
-                LogBuf, i, max[i], i, min[i] );
+        writelog( "max[%i]=%g, min[%i]=%g\n",
+                i, max[i], i, min[i] );
     }
     len *= 1.001;
-    sprintf( LogBuf, "%slen=%g", LogBuf, len );
-    print_log( LogBuf );
+    writelog( "len=%g\n", len );
     /* initialize first node */
     for ( j=0; j<3; j++ ) {
         nfreep->center[j] = ( max[j] + min[j] ) * 0.5;
@@ -116,7 +111,7 @@ void tree_build_single() {
             }
         }
     }
-    print_log( "tree build ... done." );
+    writelog( "tree build ... done.\n" );
 }
 
 void tree_walk_recursive( long n, long sib, long father ) {
@@ -195,8 +190,7 @@ void tree_build( int ptype ) {
     offset = get_particle_offset( pt );
     for ( i=offset, num=0; i<offset+num; i++ )
         if ( P[i].Type ) num++;
-    sprintf( LogBuf, "%i particle used in tree build", num );
-    print_log( LogBuf );
+    writelog( "%i particle used in tree build\n", num );
     tree_allocate();
     tree_build_single();
     /*
@@ -208,7 +202,7 @@ void tree_build( int ptype ) {
     }
     */
     last = -1;
-    print_log( "tree walk build ..." );
+    writelog( "tree walk build ...\n" );
     tree_walk_recursive( npart, -1, -1 );
     if ( last >= npart ) {
         Nodes[last].nextnode = -1;
@@ -217,6 +211,6 @@ void tree_build( int ptype ) {
         NextNode[last] = -1;
     }
     //tree_walk_test();
-    print_log( "tree walk build ... done." );
-    print_log( sep_str );
+    writelog( "tree walk build ... done.\n" );
+    writelog( sep_str );
 }

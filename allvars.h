@@ -224,7 +224,7 @@ extern double *KernelMat2D[6], *KernelMat3D[6], HalfBoxSize;
 extern void *CommBuffer;
 extern long long NumPart, N_Gas, TotNgroups, SliceStart[6], SliceEnd[6],
        BufferBytes;
-extern char LogFile[ FILENAME_MAX ], LogBuf[500];
+extern char LogFile[ FILENAME_MAX ];
 extern FILE *LogFilefd;
 extern struct global_parameters_struct {
     char FilePrefix[ FILENAME_MAX ], GroupDir[ FILENAME_MAX ],
@@ -278,6 +278,13 @@ extern struct gadget_2_cgs_unit{
 extern int proj_i, proj_j;
 extern double proj_x, proj_y, proj_size;
 
+
+#define writelog( fmt, ... ) { \
+    fprintf( LogFilefd, fmt, ##__VA_ARGS__ ); \
+    if ( ThisTask == 0 ) { \
+        printf( fmt, ##__VA_ARGS__ ); \
+    }\
+}
 
 #ifdef DEBUG
 #define DEBUG_ARR_LEN 6
