@@ -665,10 +665,7 @@ void read_snapshot() {
                     read_header( file_name );
                     if ( blockpresent( blk, pt ) ) {
                         nbytes = get_block_nbytes( blk );
-                        if ( BufferBytes < nbytes * header.npart[pt] ){
-                            printf( "BufferSize is too small.\n" );
-                            endrun( 1 );
-                        }
+                        CHECK_BUFFERSIZE( nbytes * header.npart[pt] );
                         hdf5_file = H5Fopen( file_name, H5F_ACC_RDWR, H5P_DEFAULT );
                         get_dataset_name( blk, buf );
                         get_hdf5_native_type( blk, &hdf5_type );

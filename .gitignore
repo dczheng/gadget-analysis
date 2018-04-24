@@ -4,3 +4,4 @@ gadget-analysis
 test/
 *.txt
 *.png
+*data*

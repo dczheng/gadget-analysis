@@ -10,7 +10,6 @@
 #include "gsl/gsl_sf_gamma.h"
 #include "mpi.h"
 #include "signal.h"
-#include "giza.h"
 #include "limits.h"
 #include "sys/stat.h"
 #include "proto.h"
@@ -246,14 +245,11 @@ extern struct global_parameters_struct {
            BoxSize, HalfBoxSize, RedShift, HubbleParam, CriticalDensity;
 }All;
 
-extern struct plot_struct{
-    int log_flag, istart, iend, global_colorbar_flag, tick_flag, PicSize;
-    char data_name[100],cb_label[100], xlabel[100], ylabel[100], title[100];
-    char box_xopt, box_yopt;
-    int box_nxsub, box_nysub;
-    double box_xtick, box_ytick;
-    double *data, h, *img;
-}pli;
+extern struct image_struct{
+    double *data, *img, DataMax, DataMin, GlobalDataMax, GlobalDataMin,
+           ImgMin, ImgMax, GlobalImgMin, GlobalImgMax,
+           xmin, xmax, ymin, ymax, zmin, zmax;
+}image;
 
 extern struct NODE {
     double center[3];
@@ -275,15 +271,26 @@ extern struct gadget_2_cgs_unit{
     double cm, g, s, erg;
 }g2c;
 
-extern int proj_i, proj_j;
-extern double proj_x, proj_y, proj_size;
-
+extern int proj_i, proj_j, proj_k;
 
 #define writelog( fmt, ... ) { \
     fprintf( LogFilefd, fmt, ##__VA_ARGS__ ); \
     if ( ThisTask == 0 ) { \
         printf( fmt, ##__VA_ARGS__ ); \
     }\
+}
+
+#define VMAX( a, b ) ( a > b ) ? a : b
+#define VMIN( a, b, mode) ( mode == 0 ) ? ( ( a > b ) ? b : a ) : ( ( a > b && b > 0 ) ? b : a )
+#define CHECK_BUFFERSIZE( a ) { \
+    if ( BufferBytes < a ) { \
+        printf( "BufferSize is too Small!\n" ); \
+        endrun( 20180424 ); \
+    }\
+}
+#define find_global_value( a, A, type, op ) { \
+    MPI_Reduce( &a, &A, 1, type, op, 0, MPI_COMM_WORLD ); \
+    MPI_Barrier( MPI_COMM_WORLD ); \
 }
 
 #ifdef DEBUG

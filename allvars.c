@@ -14,7 +14,7 @@ struct sph_particle_data *SphP;
 
 struct io_header header;
 struct group_struct *group;
-struct plot_struct pli;
+struct image_struct image;
 
 #ifdef DEBUG
     long debug_l[DEBUG_ARR_LEN];
@@ -23,9 +23,6 @@ struct plot_struct pli;
 #endif
 
 gsl_integration_workspace *inte_ws;
-
-int proj_i, proj_j;
-double proj_x, proj_y, proj_size;
 
 struct NODE *Nodes, *Nodes_Base;
 long MaxNodes;
@@ -37,3 +34,4 @@ int Ngroups;
 struct fof_info_struct *fof_info;
 
 struct gadget_2_cgs_unit g2c;
+int proj_i, proj_j, proj_k;

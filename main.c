@@ -12,7 +12,7 @@ void init_sep_str() {
     sep_str[ SEP_LEN-1 ] = '\0';
 }
 
-int main( int argc, char *argv[] ){
+void main( int argc, char *argv[] ){
     int i;
     time_t time1, time2;
     struct tm *tb;
@@ -32,7 +32,7 @@ int main( int argc, char *argv[] ){
     tb = localtime( &time1 );
 
     init_sep_str();
-    if ( ThisTask == 0 ) {
+    if ( ThisTask == 0 ){
         printf( "%s", sep_str );
         if ( access( "./gadget-analysis.log/", 0 ) == -1 ) {
             printf( "create directory ./gadget-analysis.log/ by task 0\n" );

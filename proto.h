@@ -9,11 +9,9 @@ void read_parameters();
 void set_units();
 
 void slice();
-void init_projection();
-void init_plot();
-void free_plot();
-void plot_slice();
-void plot_imshow();
+void make_slice_img( int pt );
+void write_img( char *fn, int mode);
+void create_dir( char *s );
 
 void analysis();
 double kernel( double q );
