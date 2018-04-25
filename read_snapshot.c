@@ -65,7 +65,7 @@ int get_block_nbytes( enum iofields blk ) {
         case IO_VEL:
         case IO_ACCEL:
         case IO_MAG:
-            block_nbytes = 3 * sizeof( float );
+            block_nbytes = 3 * sizeof( double );
             break;
         case IO_DIVB:
         case IO_DBDT:
@@ -83,7 +83,7 @@ int get_block_nbytes( enum iofields blk ) {
         case IO_CRE_Q0:
         case IO_CRE_E0:
         case IO_CRE_n0:
-            block_nbytes = sizeof( float );
+            block_nbytes = sizeof( double );
             break;
         case IO_ID:
             block_nbytes = sizeof( MyIDType );
@@ -269,6 +269,10 @@ void empty_buffer( enum iofields blk, int offset, int pt ) {
         case IO_U:
             for ( i=0; i<n; i++ )
                 SphP[offset+i].u = *fp++;
+            break;
+        case IO_NE:
+            for ( i=0; i<n; i++ )
+                SphP[offset+i].elec = *fp++;
             break;
         case IO_MN:
             for ( i=0; i<n; i++ )
@@ -665,7 +669,7 @@ void read_snapshot() {
                     read_header( file_name );
                     if ( blockpresent( blk, pt ) ) {
                         nbytes = get_block_nbytes( blk );
-                        CHECK_BUFFERSIZE( nbytes * header.npart[pt] );
+                        check_buffersize( nbytes * header.npart[pt] );
                         hdf5_file = H5Fopen( file_name, H5F_ACC_RDWR, H5P_DEFAULT );
                         get_dataset_name( blk, buf );
                         get_hdf5_native_type( blk, &hdf5_type );

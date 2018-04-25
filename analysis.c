@@ -20,12 +20,12 @@ void free_analysis() {
     writelog( sep_str );
 }
 
-void gas_rho_slice() {
+void gas_density_slice() {
     int num, i;
     char buf[100];
     writelog( "gas density silce ...\n" );
     num = SliceEnd[0] - SliceStart[0];
-    CHECK_BUFFERSIZE( (num + SQR(All.PicSize)) * sizeof( double ) );
+    check_buffersize( (num + SQR(All.PicSize)) * sizeof( double ) );
     image.data = CommBuffer;
     image.img = (double *)CommBuffer + num;
     for ( i=SliceStart[0]; i<num; i++ ) {
@@ -137,7 +137,7 @@ void syn( double v ) {
     }
     writelog( "pmin = %g, pmax = %g\n", pmin, pmax );
 
-    CHECK_BUFFERSIZE( sizeof( double ) * SQR( PicSize ) );
+    check_buffersize( sizeof( double ) * SQR( PicSize ) );
     img = CommBuffer;
     memset( img, 0, sizeof( double ) * SQR( PicSize ) );
 
@@ -200,34 +200,44 @@ void output_rho() {
     fclose( fd );
 }
 
+void compute_temperature() {
+    double yhelium, u, ne, mu, XH;
+    int i;
+    writelog( "compute gas temprature...\n" );
+    XH = HYDROGEN_MASSFRAC;
+    yhelium = ( 1 - XH ) / ( 4 * XH );
+    for ( i=0; i<N_Gas; i++ ) {
+        u = SphP[i].u * All.UnitPressure_in_cgs / All.UnitDensity_in_cgs;
+        ne = SphP[i].elec;
+        mu = ( 1 + 4 * yhelium ) / ( 1 + yhelium + ne );
+        SphP[i].Temp = GAMMA_MINUS1 / BOLTZMANN * u * PROTONMASS * mu;
+    }
+    writelog( "compute gas temprature... done.\n" );
+    writelog( sep_str );
+}
+
 void gas_state() {
-    double yhelium, mu, XH=HYDROGEN_MASSFRAC, *T,
-           TempMin, TempMax, DensMin, DensMax,
+    double TempMin, TempMax, DensMin, DensMax,
            LogTempMin, LogTempMax, LogDensMin, LogDensMax,
            *img, DLogTemp, DLogDens, LogDens, LogTemp;
-    int num, i, j, k, PicSize, N, PicSize_tmp;
+    int num, i, j, k, PicSize, N;
     char buf[100];
     TempMin = DensMin = DBL_MAX;
     TempMax = DensMax = DBL_MIN;
     writelog( "plot gas state...\n" );
 
-    yhelium = ( 1 - XH ) / ( 4 * XH );
+    //PicSize_tmp = All.PicSize;
+    PicSize = All.PicSize;
 
-    PicSize_tmp = All.PicSize;
-    PicSize = All.PicSize = 512;
-
-    CHECK_BUFFERSIZE( sizeof( double ) * N_Gas  + sizeof( double ) * SQR(PicSize) );
+    check_buffersize( sizeof( double ) * N_Gas  + sizeof( double ) * SQR(PicSize) );
 
     img = CommBuffer;
-    T = ( double* )CommBuffer + SQR( PicSize );
 
     for ( i=0; i<N_Gas; i++ ) {
-        mu = ( 1 + 4 * yhelium ) / ( 1 + yhelium + SphP[i].elec );
-        T[i] = GAMMA_MINUS1 / BOLTZMANN * SphP[i].u * PROTONMASS * mu;
-        TempMin = ( T[i] < TempMin && T[i] > 0 ) ? T[i] : TempMin;
-        TempMax = ( T[i] > TempMax ) ? T[i] : TempMax;
-        DensMin = ( SphP[i].Density < DensMin && SphP[i].Density > 0 ) ? SphP[i].Density : DensMin;
-        DensMax = ( SphP[i].Density > DensMax ) ? SphP[i].Density : DensMax;
+        TempMin = vmin( SphP[i].Temp, TempMin, 1 );
+        TempMax = vmax( SphP[i].Temp, TempMax );
+        DensMin = vmin( SphP[i].Density, DensMin, 1 );
+        DensMax = vmax( SphP[i].Density, DensMax );
     }
 
     LogDensMin = log10( DensMin );
@@ -243,18 +253,17 @@ void gas_state() {
 
     memset( img, 0, SQR( PicSize ) * sizeof( double ) );
     for ( k=0; k<N_Gas; k++ ) {
-        LogTemp = T[k];
+        LogTemp = SphP[k].Temp;
+        //if ( LogTemp > 1e8 ) continue;
         LogTemp = ( LogDens == 0 ) ? LogTempMin : log10( LogTemp );
         LogDens = SphP[k].Density;
         LogDens = ( LogDens == 0 ) ? LogDensMin : log10( LogDens );
 
         i = ( LogTemp - LogTempMin ) / DLogTemp;
-        i = ( i >= PicSize ) ? PicSize - 1 : i;
-        i = ( i < 0 ) ? 0 : i;
+        i = check_picture_index( i );
 
         j = ( LogDens - LogDensMin ) / DLogDens;
-        j = ( j >= PicSize ) ? PicSize - 1 : j;
-        j = ( j < 0 ) ? 0 : j;
+        j = check_picture_index( j );
 
         img[ i*PicSize + j ]++;
  //       printf( "%g ", img[ i*PicSize +j ] ) ;
@@ -269,28 +278,29 @@ void gas_state() {
     image.ImgMin = DBL_MAX;
     image.ImgMax = DBL_MIN;
     for ( i=0; i<SQR(PicSize); i++ ) {
-        image.ImgMin = VMIN( image.ImgMin, img[i], 1 );
-        image.ImgMax = VMAX( image.ImgMax, img[i] );
+        image.ImgMin = vmin( image.ImgMin, img[i], 1 );
+        image.ImgMax = vmax( image.ImgMax, img[i] );
     }
 
     find_global_value( image.ImgMin, image.GlobalImgMin, MPI_DOUBLE, MPI_MIN );
     find_global_value( image.ImgMax, image.GlobalImgMax, MPI_DOUBLE, MPI_MAX );
 
     image.img = img;
-    image.xmin = LogDensMin;
-    image.xmax = LogDensMax;
+    image.xmin = log10(DensMin * All.UnitDensity_in_cgs);
+    image.xmax = log10(DensMax * All.UnitDensity_in_cgs);
     image.ymin = LogTempMin;
-    image.ymax = LogTempMin;
+    image.ymax = LogTempMax;
     write_img( buf, 1 );
 
-    All.PicSize = PicSize_tmp;
+    //All.PicSize = PicSize_tmp;
     writelog( sep_str );
 }
 
 void analysis(){
     init_analysis();
+    compute_temperature();
     gas_state();
-    gas_rho_slice();
+    gas_density_slice();
     //tree_build( 1 );
     //tree_free();
     //fof( 1 );

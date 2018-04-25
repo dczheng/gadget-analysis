@@ -213,6 +213,7 @@ extern struct sph_particle_data {
     MyFloat divB;
     MyFloat dBdt;
     MyFloat elec;
+    MyFloat Temp;
     double vL;
     double P;
 } *SphP;
@@ -237,6 +238,7 @@ extern struct global_parameters_struct {
          UnitLength_in_cm,
          UnitDensity_in_cgs,
          UnitEnergy_in_cgs,
+         UnitPressure_in_cgs,
          UnitVelocity_in_cm_per_s;
     double Start[3], End[3];
     double TreeAllocFactor, LinkLength;
@@ -280,14 +282,15 @@ extern int proj_i, proj_j, proj_k;
     }\
 }
 
-#define VMAX( a, b ) ( a > b ) ? a : b
-#define VMIN( a, b, mode) ( mode == 0 ) ? ( ( a > b ) ? b : a ) : ( ( a > b && b > 0 ) ? b : a )
-#define CHECK_BUFFERSIZE( a ) { \
+#define vmax( a, b ) ( a > b ) ? a : b
+#define vmin( a, b, mode) ( mode == 0 ) ? ( ( a > b ) ? b : a ) : ( ( a > b && b > 0 ) ? b : a )
+#define check_buffersize( a ) { \
     if ( BufferBytes < a ) { \
         printf( "BufferSize is too Small!\n" ); \
         endrun( 20180424 ); \
     }\
 }
+#define check_picture_index( i ) ( ( i<0 || i>=All.PicSize ) ? ( (i<0) ? 0 : All.PicSize ) : i )
 #define find_global_value( a, A, type, op ) { \
     MPI_Reduce( &a, &A, 1, type, op, 0, MPI_COMM_WORLD ); \
     MPI_Barrier( MPI_COMM_WORLD ); \

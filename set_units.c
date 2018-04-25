@@ -5,6 +5,7 @@ void set_units() {
     All.UnitTime_in_s = All.UnitLength_in_cm / All.UnitVelocity_in_cm_per_s;
     All.UnitDensity_in_cgs = All.UnitMass_in_g / pow( All.UnitLength_in_cm, 3 );
     All.UnitEnergy_in_cgs = All.UnitMass_in_g * pow( All.UnitLength_in_cm,2 ) / pow( All.UnitTime_in_s, 2 );
+    All.UnitPressure_in_cgs = All.UnitMass_in_g / All.UnitLength_in_cm / pow( All.UnitTime_in_s, 2 );
     All.G = GRAVITY / pow( All.UnitLength_in_cm, 3 ) * All.UnitMass_in_g * pow( All.UnitTime_in_s, 2 );
     All.Hubble = HUBBLE * All.UnitTime_in_s;
     All.CriticalDensity = 3 * pow( H_a( header.time ), 2 ) / ( 8*PI*All.G );

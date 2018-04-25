@@ -128,13 +128,13 @@ void make_slice_img( int pt ) {
             img[ xi * PicSize + yi ] += v / ( dx * dy );
         //printf( "%g\n", img[ xi * PicSize + yi ] );
 
-       image.DataMin = VMIN( image.DataMin, v, 1 );
-       image.DataMax = VMAX( image.DataMax, v );
+       image.DataMin = vmin( image.DataMin, v, 1 );
+       image.DataMax = vmax( image.DataMax, v );
     }
 
     for ( i=0; i<SQR(PicSize); i++ ) {
-        image.ImgMin = VMIN( image.ImgMin, img[i], 1 );
-        image.ImgMax = VMAX( image.ImgMax, img[i] );
+        image.ImgMin = vmin( image.ImgMin, img[i], 1 );
+        image.ImgMax = vmax( image.ImgMax, img[i] );
     }
 
     /*
