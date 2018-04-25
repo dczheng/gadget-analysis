@@ -231,7 +231,8 @@ extern struct global_parameters_struct {
          FofFileName[ FILENAME_MAX ];
     FILE *LogFilefd;
     int StartSnapIndex, MpcFlag, ProjectDirection, KernelN,
-        PicSize, BufferSize, NumFiles, HgeFlag, CrFlag, BFlag;
+        PicSize, BufferSize, NumFiles, HgeFlag, CrFlag, BFlag,
+        GasState, GasDensity, GasTemperature;
     double SofteningTable[6], Alpha;
     double UnitTime_in_s,
          UnitMass_in_g,

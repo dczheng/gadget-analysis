@@ -135,6 +135,18 @@ void read_parameters( char *fn ) {
         addr[nt] = &All.BFlag;
         id[nt++] = INT;
 
+        strcpy( tag[nt], "GasState" );
+        addr[nt] = &All.GasState;
+        id[nt++] = INT;
+
+        strcpy( tag[nt], "GasDensity" );
+        addr[nt] = &All.GasDensity;
+        id[nt++] = INT;
+
+        strcpy( tag[nt], "GasTemperature" );
+        addr[nt] = &All.GasTemperature;
+        id[nt++] = INT;
+
         strcpy( tag[nt], "TreeAllocFactor" );
         addr[nt] = &All.TreeAllocFactor;
         id[nt++] = REAL;

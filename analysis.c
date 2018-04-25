@@ -32,8 +32,21 @@ void gas_density_slice() {
         image.data[i] = SphP[i].Density;
     }
 
-    create_dir( "./gas_rho" );
-    sprintf( buf, "./gas_rho/%.2f.dat", All.RedShift );
+    create_dir( "./gas_density" );
+    sprintf( buf, "./gas_density/%.2f.dat", All.RedShift );
+
+    for ( i=0; i<SQR(All.PicSize); i++ ) {
+        image.img[i] *= All.UnitMass_in_g / pow( All.UnitLength_in_cm, 2 );
+    }
+    image.DataMin *= All.UnitDensity_in_cgs;
+    image.DataMax *= All.UnitDensity_in_cgs;
+    image.GlobalDataMin *= All.UnitDensity_in_cgs;
+    image.GlobalDataMax *= All.UnitDensity_in_cgs;
+
+    image.ImgMin *= All.UnitMass_in_g / pow( All.UnitLength_in_cm, 2 );
+    image.ImgMax *= All.UnitMass_in_g / pow( All.UnitLength_in_cm, 2 );
+    image.GlobalImgMin *= All.UnitMass_in_g / pow( All.UnitLength_in_cm, 2 );
+    image.GlobalImgMax *= All.UnitMass_in_g / pow( All.UnitLength_in_cm, 2 );
 
     make_slice_img( 0 );
     write_img( buf, 1 );
@@ -296,11 +309,55 @@ void gas_state() {
     writelog( sep_str );
 }
 
+void gas_temperature_slice() {
+
+    int num, i;
+    char buf[100];
+    writelog( "gas temperature silce ...\n" );
+    num = SliceEnd[0] - SliceStart[0];
+    check_buffersize( (num + SQR(All.PicSize)) * sizeof( double ) );
+    image.data = CommBuffer;
+    image.img = (double *)CommBuffer + num;
+    for ( i=SliceStart[0]; i<num; i++ ) {
+        image.data[i] = SphP[i].Temp;
+    }
+
+    create_dir( "./gas_temperature" );
+    sprintf( buf, "./gas_temperature/%.2f.dat", All.RedShift );
+
+    for ( i=0; i<SQR(All.PicSize); i++ ){
+        image.img[i] *= All.UnitLength_in_cm;
+    }
+
+    image.ImgMin *=  All.UnitLength_in_cm;
+    image.ImgMax *=  All.UnitLength_in_cm;
+    image.GlobalImgMin *= All.UnitLength_in_cm;
+    image.GlobalImgMax *= All.UnitLength_in_cm;
+
+    make_slice_img( 0 );
+    write_img( buf, 1 );
+
+    writelog( "gas Temperature silce ... done.\n" );
+    writelog( sep_str );
+
+}
+
 void analysis(){
     init_analysis();
-    compute_temperature();
-    gas_state();
-    gas_density_slice();
+
+    if ( All.GasTemperature ||
+         All.GasState )
+        compute_temperature();
+
+    if ( All.GasState ) {
+        gas_state();
+    }
+
+    if ( All.GasDensity )
+        gas_density_slice();
+
+    if ( All.GasTemperature )
+        gas_temperature_slice();
     //tree_build( 1 );
     //tree_free();
     //fof( 1 );

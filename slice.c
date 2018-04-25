@@ -106,8 +106,8 @@ void make_slice_img( int pt ) {
         xi = x / dx;
         yi = y / dy;
         //printf( "%i, %i\n", xi, yi );
-        xi = ( xi >= PicSize-1 ) ? PicSize-1 : xi;
-        yi = ( yi >= PicSize-1 ) ? PicSize-1 : yi;
+        xi = check_picture_index( xi );
+        yi = check_picture_index( yi );
         i1 = (int)(( x-h ) / dx);
         i2 = (int)(( x+h ) / dx);
         j1 = (int)(( y-h ) / dy);
@@ -121,11 +121,11 @@ void make_slice_img( int pt ) {
                         j1 = ly / dy;
                         if ( i1 < 0 || i1 >= PicSize ||
                                 j1 < 0 || j1 >= PicSize ) continue;
-                        img[ i1 * PicSize + j1 ] += v * KernelMat2D[0][ li*N + lj ] / ( dx * dy );
+                        img[ i1 * PicSize + j1 ] += v * KernelMat2D[pt][ li*N + lj ];
                 }
         }
         else
-            img[ xi * PicSize + yi ] += v / ( dx * dy );
+            img[ xi * PicSize + yi ] += v;
         //printf( "%g\n", img[ xi * PicSize + yi ] );
 
        image.DataMin = vmin( image.DataMin, v, 1 );

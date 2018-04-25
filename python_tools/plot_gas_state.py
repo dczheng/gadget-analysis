@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+import matplotlib as mpl
+mpl.use( 'agg' )
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.ticker as tik
@@ -38,7 +40,7 @@ fig = plt.figure()
 ax = fig.add_subplot( 111 )
 img = ax.imshow( data )
 
-ax.set_xlabel( "Density ($10^x gcm^-3$)" )
+ax.set_xlabel( "Density ($10^x gcm^{-3}$)" )
 ax.set_ylabel( "Temperature ($10^x$ K)" )
 ax.set_title( "Gas State(z=%.2f)"%(z) )
 
@@ -60,4 +62,5 @@ ax.set_yticklabels( TempList )
 cbar = fig.colorbar( img )
 cbar.set_label( "Number $(10^x)$" )
 
-plt.show()
+plt.savefig( sys.argv[2] )
+#plt.show()
