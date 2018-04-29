@@ -102,12 +102,20 @@ void make_slice_img( int pt ) {
         x -= All.Start[proj_i];
         y -= All.Start[proj_j];
         v = image.data[ i-SliceStart[pt] ];
+
+        image.DataMin = vmin( image.DataMin, v, 1 );
+        image.DataMax = vmax( image.DataMax, v );
+
         //printf( "%g\n", v );
         xi = x / dx;
         yi = y / dy;
         //printf( "%i, %i\n", xi, yi );
         xi = check_picture_index( xi );
         yi = check_picture_index( yi );
+        if ( All.KernelInterpolation == 0 ){
+            img[ xi * PicSize + yi ] += v;
+            continue;
+        }
         i1 = (int)(( x-h ) / dx);
         i2 = (int)(( x+h ) / dx);
         j1 = (int)(( y-h ) / dy);
@@ -128,8 +136,6 @@ void make_slice_img( int pt ) {
             img[ xi * PicSize + yi ] += v;
         //printf( "%g\n", img[ xi * PicSize + yi ] );
 
-       image.DataMin = vmin( image.DataMin, v, 1 );
-       image.DataMax = vmax( image.DataMax, v );
     }
 
     for ( i=0; i<SQR(PicSize); i++ ) {
@@ -149,8 +155,8 @@ void make_slice_img( int pt ) {
     find_global_value( image.ImgMin, image.GlobalImgMin, MPI_DOUBLE, MPI_MIN );
     find_global_value( image.ImgMax, image.GlobalImgMax, MPI_DOUBLE, MPI_MAX );
 
-    writelog( "Data:\nMin: %g, Max: %g, GlobalMin: %g, GlobalMax: %g\n"
-              "Image: \nMin: %g, Max: %g, GlobalMin: %g, GlobalMax: %g\n",
+    writelog( "Data:  Min=%g, Max=%g, GlobalMin=%g, GlobalMax=%g\n"
+              "Image: Min=%g, Max=%g, GlobalMin=%g, GlobalMax=%g\n",
               image.DataMin, image.DataMax, image.GlobalDataMin, image.GlobalDataMax,
               image.ImgMin,  image.ImgMax,  image.GlobalImgMin,  image.GlobalImgMax );
     image.xmin = All.Start[ proj_i ];

@@ -9,26 +9,18 @@ void tree_allocate() {
     writelog( "particle `%i` npartber = %ld, TreeAllocateFactor = %g, "
             "MaxNodes = %ld\n", pt, npart, All.TreeAllocFactor, MaxNodes );
     writelog( "allocate memory for tree\n" );
-    if ( !( Nodes_Base = malloc( bytes = (MaxNodes+1) * sizeof( struct NODE ) ) ) ) {
-        printf( "failed to allocate memory for %ld tree-nodes `Nodes_Base`(%g MB)\n", MaxNodes, bytes / 1024.0 / 1024.0 );
-        endrun( 20171225 );
-    }
-    writelog( "allocate memory for %ld tree-nodes `Nodes_Base`( %g MB )\n", MaxNodes, bytes / 1024.0 / 1024.0 );
+    mymalloc( Nodes_Base, ( MaxNodes+1 ) * sizeof( struct NODE ) );
     Nodes = Nodes_Base - npart;
 
-    if ( !( NextNode = malloc( bytes = (npart) * sizeof( long ) ) ) ) {
-        printf( "falied to allocate memory for `NextNode` ( %g MB )\n", bytes / 1024.0 / 1024.0 );
-        endrun( 20171227 );
-    }
-    writelog( "allocate memory for `NextNode` ( %g MB )\n", bytes / 1024.0 / 1024.0 );
+    mymalloc( NextNode, (npart) * sizeof( long ) );
     writelog( sep_str );
 }
 
 void tree_free() {
     writelog( "free memory for tree\n" );
+    myfree( Nodes_Base );
+    myfree( NextNode );
     writelog( sep_str );
-    free( Nodes_Base );
-    free( NextNode );
 }
 
 void tree_build_single() {

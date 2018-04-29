@@ -6,25 +6,17 @@ double LinkL, rhodm;
 void fof_allocate() {
     size_t bytes;
 
-    if ( !(fof_info = malloc( bytes = npart * sizeof( struct fof_info_struct ) ) ) )
-        printf( "failed to allocate memory for `fof_info` ( %g MB )\n", bytes / 1024.0 / 1024.0 );
-    writelog( "allocate memory for `fof_info` ( %g MB )\n", bytes / 1024.0 / 1024.0 );
-
-    if ( !(fof_Next = malloc( bytes = npart * sizeof( long ) ) ) )
-        printf( "failed to allocate memory for `fof_Next` ( %g MB )\n", bytes / 1024.0 / 1024.0 );
-    writelog( "allocate memory for `fof_Next` ( %g MB )\n", bytes / 1024.0 / 1024.0 );
-
-    if ( !(Ngblist = malloc( bytes = npart * sizeof( long ) ) ) )
-        printf( "failed to allocate memory for `Ngblist` ( %g MB )\n", bytes / 1024.0 / 1024.0 );
-    writelog( "allocate memory for `Ngblist` ( %g MB )\n", bytes / 1024.0 / 1024.0 );
+    mymalloc( fof_info, npart * sizeof( struct fof_info_struct ) );
+    mymalloc( fof_Next, npart * sizeof( long ) );
+    mymalloc( Ngblist, npart * sizeof( long long ) );
 
     writelog( sep_str );
 }
 
 void fof_free() {
-    free( fof_info );
-    free( fof_Next );
-    free( Ngblist );
+    myfree( fof_info );
+    myfree( fof_Next );
+    myfree( Ngblist );
 }
 
 int fof_compare_len( const void *a, const void *b ) {
@@ -104,7 +96,7 @@ void fof_compute_group_properties( int pt ) {
             fof_info[i].vel[k] /= fof_info[i].mass;
         }
         fof_info[i].vr200 = pow( fof_info[i].mass /
-            ( All.CriticalDensity * 200 * 4.0 / 3.0 * PI ), 1.0/3.0 );
+            ( All.RhoCrit * 200 * 4.0 / 3.0 * PI ), 1.0/3.0 );
     }
     Ngroups = i;
     writelog( "The number of groups with at least %i particles: %li\n", All.FofMinLen, Ngroups );
@@ -163,11 +155,9 @@ void fof_save_groups() {
     H5Tclose( hdf5_type );
     H5Sclose( hdf5_dataspace );
     /*************************************/
-    if( !(buf1 = malloc( sizeof( long ) * Ngroups )) ){
-        printf( "failed allocate `buf1` to save groups !\n" );
-        fof_info[i].Head;
-        endrun( 20171229 );
-    }
+
+    mymalloc( buf1, Ngroups * sizeof( long ) );
+
     ndims = 1;
     dims[0] = Ngroups;
     hdf5_dataspace = H5Screate_simple( ndims, dims, NULL );
@@ -188,15 +178,13 @@ void fof_save_groups() {
     /*************************************/
     H5Tclose( hdf5_type );
     H5Sclose( hdf5_dataspace );
-    free( buf1 );
+    myfree( buf1 );
     /*************************************/
     ndims = 1;
     dims[0] = Ngroups;
-    if( !(buf2 = malloc( sizeof( double ) * Ngroups * 3 )) ){
-        printf( "failed allocate `buf2` to save groups !\n" );
-        fof_info[i].Head;
-        endrun( 20171229 );
-    }
+
+    mymalloc( buf2, Ngroups * sizeof( double ) * 3 );
+
     hdf5_type = H5Tcopy( H5T_NATIVE_DOUBLE );
     /*************************************/
     hdf5_dataspace = H5Screate_simple( ndims, dims, NULL );
@@ -236,7 +224,7 @@ void fof_save_groups() {
     H5Sclose( hdf5_dataspace );
     /*************************************/
     H5Tclose( hdf5_type );
-    free( buf2 );
+    myfree( buf2 );
     /*************************************/
 
     H5Fclose( hdf5_file );

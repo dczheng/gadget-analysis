@@ -6,6 +6,7 @@ hid_t hdf5_file, hdf5_group, hdf5_dataset, hdf5_dataspace, hdf5_dataspace_in_fil
 herr_t herr;
 hsize_t dims[2], maxdims[2];
 int ndims;
+void *CommBuffer;
 
 int blockpresent( enum iofields blk, int pt ) {
     switch( blk ) {
@@ -14,10 +15,15 @@ int blockpresent( enum iofields blk, int pt ) {
         case IO_ID:
             if ( header.npart[pt] > 0 )
                 return 1;
+            else
+                return 0;
         case IO_MASS:
             if ( (header.npart[pt] > 0 ) && header.mass[pt] == 0 )
                 return 1;
             else
+                return 0;
+        case IO_TEMP:
+            if ( All.ReadTemperature == 0 )
                 return 0;
         case IO_NE:
         case IO_U:
@@ -71,6 +77,7 @@ int get_block_nbytes( enum iofields blk ) {
         case IO_DBDT:
         case IO_MASS:
         case IO_U:
+        case IO_TEMP:
         case IO_RHO:
         case IO_POT:
         case IO_NE:
@@ -105,6 +112,7 @@ void get_block_dims( int pt, enum iofields blk, hsize_t (*dims)[2] ) {
         case IO_DBDT:
         case IO_MASS:
         case IO_U:
+        case IO_TEMP:
         case IO_RHO:
         case IO_POT:
         case IO_NE:
@@ -149,6 +157,9 @@ void get_dataset_name( enum iofields blk, char *buf ) {
             break;
         case IO_U:
             strcpy( buf, "InternalEnergy" );
+            break;
+        case IO_TEMP:
+            strcpy( buf, "Temperature" );
             break;
         case IO_RHO:
             strcpy( buf, "Density" );
@@ -269,6 +280,10 @@ void empty_buffer( enum iofields blk, int offset, int pt ) {
         case IO_U:
             for ( i=0; i<n; i++ )
                 SphP[offset+i].u = *fp++;
+            break;
+        case IO_TEMP:
+            for ( i=0; i<n; i++ )
+                SphP[offset+i].Temp = *fp++;
             break;
         case IO_NE:
             for ( i=0; i<n; i++ )
@@ -565,36 +580,17 @@ void write_header( char *fn, struct io_header header ) {
 void allocate_memory() {
     double bytes_tot = 0;
     size_t bytes;
-    if ( !( P = malloc( bytes = NumPart * sizeof( struct particle_data ) ) ) ) {
-        printf( "failed to allocate memory for P ( %g Mb ).\n", bytes / 1024.0 / 1024.0 );
-        endrun( 0 );
-    }
-    bytes_tot += bytes;
-    writelog( "Allocated %g MB for P.\n", bytes / 1024.0 / 1024.0 );
-
-    if ( !( SphP = malloc( bytes = N_Gas * sizeof( struct sph_particle_data ) ) ) ) {
-        printf( "failed to allocate memory for SphP ( %g Mb ).\n", bytes / 1024.0 / 1024.0 );
-        endrun( 0 );
-    }
-    bytes_tot += bytes;
-    writelog( "Allocated %g MB for SphP.\n", bytes / 1024.0 / 1024.0 );
-
-    BufferBytes = All.BufferSize * 1024 * 1024;
-    if ( !( CommBuffer = malloc( bytes = BufferBytes  ) ) ) {
-        printf( "failed to allocate memory for CommBuffer ( %g Mb ).\n", bytes / 1024.0 / 1024.0 );
-        endrun( 0 );
-    }
-    bytes_tot += bytes;
-    writelog( "Allocated %g MB for CommBuffer.\n", bytes / 1024.0 / 1024.0 );
-
-    writelog( "Allocate total %g MB.\n", bytes_tot / 1024.0 / 1024.0 );
+    malloc_max_mem = malloc_mem = malloc_n = 0;
+    mymalloc( P, NumPart * sizeof( struct particle_data ) );
+    mymalloc( SphP, N_Gas * sizeof( struct sph_particle_data ) );
 }
 
 void free_memory() {
     writelog( "free memory ...\n" );
-    free( P );
-    free( SphP );
-    free( CommBuffer );
+    myfree( P );
+    myfree( SphP );
+    id_to_index++;
+    myfree( id_to_index );
     writelog( "free memory ... done.\n" );
     writelog( sep_str );
 }
@@ -613,9 +609,9 @@ void find_id() {
     }
     num = get_particle_num( 4 );
     offset = get_particle_offset( 4 );
-    writelog( "Start Particle offset %li\n", offset );
+    writelog( "Star Particle offset: %li\n", offset );
     if ( num != 0 ) {
-        writelog( "find gas id ...\n" );
+        writelog( "find star id ...\n" );
         for ( i=0; i<num; i++ ) {
             P[offset+i].ID <<= bits;
             P[offset+i].ID >>= bits;
@@ -635,20 +631,62 @@ void init_particle_flag() {
     writelog( sep_str );
 }
 
+void construct_id_to_index() {
+    long long idmax, idmin, i, idn, N;
+    size_t bytes;
+    writelog( "construct id to index ...\n" );
+    idmax = -1;
+    idmin = LONG_MAX;
+    for ( i=0; i<NumPart; i++ ) {
+        idmax = vmax( idmax, P[i].ID );
+        idmin = vmin( idmin, P[i].ID, 0 );
+    }
+    idn = idmax - idmin + 1;
+    writelog( "Min ID: %li, Max ID: %li, ID Num: %li\n", idmin, idmax, idn );
+
+    mymalloc( id_to_index, idn * sizeof( long long ) );
+
+    memset( id_to_index, 0, sizeof( long long ) *  idn );
+
+    id_to_index--;
+
+    N = N_Gas + get_particle_num( 1 );
+
+    for ( i=0; i<N; i++ ) {
+        id_to_index[ P[i].ID ] = i;
+    }
+
+    long long offset, num, id;
+    offset = get_particle_offset( 4 );
+    num = get_particle_num( 4 );
+    for ( i=offset; i<offset+num; i++ ) {
+        id = P[i].ID;
+        if ( P[id_to_index[id]].ID != id )
+            printf( "%li %li %li\n", id, id_to_index[id], P[id_to_index[id]].ID );
+    }
+
+    writelog( "construct id to index ... done.\n" );
+    writelog( sep_str );
+}
+
+
 void read_snapshot() {
     int pt, blk, nbytes, rank;
     long i, file, pc, offset, num;
     char file_name[FILENAME_MAX], buf[200], buf1[200];
+    size_t BufferBytes;
     writelog( "read_data ...\n" );
     sprintf( file_name, "%s_%03d.%3i.hdf5", All.FilePrefix, All.StartSnapIndex + ThisTask, 0 );
     if ( All.NumFiles < 2 )
         sprintf( file_name, "%s_%03d.hdf5", All.FilePrefix, All.StartSnapIndex + ThisTask );
     N_Gas = NumPart = 0;
     read_header( file_name );
+    show_header( header );
     for ( i=0; i<6; i++ ){
         NumPart += get_particle_num( i );
     }
     N_Gas = header.npartTotal[0] + ( ( (long long)header.npartTotalHighWord[0] ) << 32 );
+
     All.BoxSize = header.BoxSize;
     All.HalfBoxSize = All.BoxSize / 2;
     All.RedShift = header.redshift;
@@ -656,8 +694,12 @@ void read_snapshot() {
     All.OmegaLambda = header.OmegaLambda;
     All.HubbleParam = header.HubbleParam;
     writelog( "NumPart = %ld, N_Gas = %ld\n", NumPart, N_Gas );
+
     allocate_memory();
-    show_header( header );
+
+    BufferBytes = header.npart[0] * sizeof( double ) * 3;
+    mymalloc( CommBuffer, BufferBytes );
+
     for ( blk=0; blk<IO_NBLOCKS; blk++ ) {
         for ( pt=0, offset=0; pt<6; pt++ ) {
             for (file=0; file<All.NumFiles; file++) {
@@ -669,7 +711,12 @@ void read_snapshot() {
                     read_header( file_name );
                     if ( blockpresent( blk, pt ) ) {
                         nbytes = get_block_nbytes( blk );
-                        check_buffersize( nbytes * header.npart[pt] );
+                        if ( nbytes * header.npart[pt] > BufferBytes ){
+                            writelog( "CommBuffer IS TOO SMALL.\n" );
+                            myfree( CommBuffer );
+                            BufferBytes = nbytes * header.npart[pt];
+                            mymalloc( CommBuffer, BufferBytes );
+                        }
                         hdf5_file = H5Fopen( file_name, H5F_ACC_RDWR, H5P_DEFAULT );
                         get_dataset_name( blk, buf );
                         get_hdf5_native_type( blk, &hdf5_type );
@@ -686,10 +733,11 @@ void read_snapshot() {
             }
         }
     }
+    myfree( CommBuffer );
     for ( pt=0, offset=0; pt<6; pt++ ) {
         num = header.npartTotal[pt] + ( ( ( long long )header.npartTotalHighWord[pt] ) << 32 );
         if ( num != 0 && header.mass[pt] != 0 ){
-            writelog( "copy particle %d mass from header to paritcle data\n", pt );
+            writelog( "set particle `%d` mass from header\n", pt );
             for ( i=offset; i<offset+num; i++ )
                 P[i].Mass = header.mass[pt];
         }
@@ -699,5 +747,6 @@ void read_snapshot() {
     writelog( sep_str );
     find_id();
     init_particle_flag();
+    construct_id_to_index();
 }
 

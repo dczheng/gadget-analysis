@@ -26,10 +26,11 @@ void tree_build( int pt );
 void tree_free();
 
 
-double H_a( double a );
+double hubble_function( double a );
 double comoving_distance( double a );
 double angular_distance( double a );
 double luminosity_distance( double a );
+void compute_cosmo_quantities();
 
 void fof( int pt );
 void fof_free();

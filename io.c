@@ -23,10 +23,10 @@ void write_img( char *fn, int mode ) {
                 image.GlobalDataMin, image.GlobalDataMax );
     }
     else {
-        writelog( "write log image ...\n" );
+        writelog( "log image info: " );
         vl1 = log10( image.GlobalImgMin );
         vl2 = log10( image.GlobalImgMax );
-        printf( "Image Log:    Min: %g Max: %g\n", vl1, vl2 );
+        writelog( "Min=%g, Max=%g\n", vl1, vl2 );
         fprintf( fd, "%g %g %g %g %g %g %g %g ",
                 log10(image.ImgMin), log10(image.ImgMax),
                 log10(image.GlobalImgMin), log10(image.GlobalImgMax),

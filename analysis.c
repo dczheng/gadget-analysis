@@ -6,7 +6,8 @@ void init_analysis() {
     proj_i = ( All.ProjectDirection + 1 ) % 3;
     proj_j = ( All.ProjectDirection + 2 ) % 3;
     slice();
-    init_kernel_matrix();
+    if ( All.KernelInterpolation == 1 )
+        init_kernel_matrix();
     inte_ws = gsl_integration_workspace_alloc( GSL_INTE_WS_LEN );
     writelog( "initialize analysis... done.\n" );
     writelog( sep_str );
@@ -15,7 +16,8 @@ void init_analysis() {
 void free_analysis() {
     writelog( "free analysis ...\n" );
     gsl_integration_workspace_free( inte_ws );
-    free_kernel_matrix();
+    if ( All.KernelInterpolation == 1 )
+        free_kernel_matrix();
     writelog( "free analysis ... done.\n" );
     writelog( sep_str );
 }
@@ -25,9 +27,10 @@ void gas_density_slice() {
     char buf[100];
     writelog( "gas density silce ...\n" );
     num = SliceEnd[0] - SliceStart[0];
-    check_buffersize( (num + SQR(All.PicSize)) * sizeof( double ) );
-    image.data = CommBuffer;
-    image.img = (double *)CommBuffer + num;
+    mymalloc( image.data, sizeof( double ) * num );
+    mymalloc( image.img, sizeof( double ) * SQR( All.PicSize ) );
+    memset( image.data, 0, sizeof( double ) * num );
+    memset( image.img, 0, sizeof( double ) * SQR( All.PicSize ) );
     for ( i=SliceStart[0]; i<num; i++ ) {
         image.data[i] = SphP[i].Density;
     }
@@ -35,9 +38,12 @@ void gas_density_slice() {
     create_dir( "./gas_density" );
     sprintf( buf, "./gas_density/%.2f.dat", All.RedShift );
 
+    make_slice_img( 0 );
+
     for ( i=0; i<SQR(All.PicSize); i++ ) {
         image.img[i] *= All.UnitMass_in_g / pow( All.UnitLength_in_cm, 2 );
     }
+
     image.DataMin *= All.UnitDensity_in_cgs;
     image.DataMax *= All.UnitDensity_in_cgs;
     image.GlobalDataMin *= All.UnitDensity_in_cgs;
@@ -48,8 +54,10 @@ void gas_density_slice() {
     image.GlobalImgMin *= All.UnitMass_in_g / pow( All.UnitLength_in_cm, 2 );
     image.GlobalImgMax *= All.UnitMass_in_g / pow( All.UnitLength_in_cm, 2 );
 
-    make_slice_img( 0 );
+
     write_img( buf, 1 );
+    myfree( image.data );
+    myfree( image.img );
 
     writelog( "gas density silce ... done.\n" );
     writelog( sep_str );
@@ -90,28 +98,6 @@ void vel_value() {
     writelog( sep_str );
 }
 
-void test_id() {
-    long id_max, id_min, i, num, offset;
-    id_min = INT_MAX;
-    id_max = INT_MIN;
-    for ( i=0; i<N_Gas; i++ ) {
-        id_max = ( P[i].ID > id_max ) ? P[i].ID : id_max;
-        id_min = ( P[i].ID < id_min ) ? P[i].ID : id_min;
-    }
-    printf( "Gas MAX ID: %li, MIN ID: %li\n", id_max, id_min );
-    offset = get_particle_offset( 4 );
-    num = get_particle_offset( 4 );
-    printf( "start offset: %li, num: %li\n", offset, num );
-    if ( num == 0 ) return;
-    id_min = INT_MAX;
-    id_max = INT_MIN;
-    for ( i=offset; i<offset+num; i++ ) {
-        id_max = ( P[i].ID > id_max ) ? P[i].ID : id_max;
-        id_min = ( P[i].ID < id_min ) ? P[i].ID : id_min;
-    }
-    printf( "Star MAX ID: %li, MIN ID: %li\n", id_max, id_min );
-}
-
 void calc_vl() {
     long i;
     double B;
@@ -150,8 +136,7 @@ void syn( double v ) {
     }
     writelog( "pmin = %g, pmax = %g\n", pmin, pmax );
 
-    check_buffersize( sizeof( double ) * SQR( PicSize ) );
-    img = CommBuffer;
+    mymalloc( img, sizeof( double ) * SQR( PicSize ) );
     memset( img, 0, sizeof( double ) * SQR( PicSize ) );
 
     com_dis = comoving_distance( header.time ) * ( g2c.cm );
@@ -176,6 +161,7 @@ void syn( double v ) {
         img_max = ( tmp > img_max ) ? tmp : img_max;
         img_min = ( tmp < img_min && tmp > 0 ) ? tmp : img_min;
     }
+    myfree( img );
     writelog( "img_max = %g, img_min = %g\n", img_max, img_min );
 }
 
@@ -214,7 +200,7 @@ void output_rho() {
 }
 
 void compute_temperature() {
-    double yhelium, u, ne, mu, XH;
+    double yhelium, u, ne, mu, XH, rho;
     int i;
     writelog( "compute gas temprature...\n" );
     XH = HYDROGEN_MASSFRAC;
@@ -232,7 +218,7 @@ void compute_temperature() {
 void gas_state() {
     double TempMin, TempMax, DensMin, DensMax,
            LogTempMin, LogTempMax, LogDensMin, LogDensMax,
-           *img, DLogTemp, DLogDens, LogDens, LogTemp;
+           *img, DLogTemp, DLogDens, LogDens, LogTemp, sum;
     int num, i, j, k, PicSize, N;
     char buf[100];
     TempMin = DensMin = DBL_MAX;
@@ -242,15 +228,15 @@ void gas_state() {
     //PicSize_tmp = All.PicSize;
     PicSize = All.PicSize;
 
-    check_buffersize( sizeof( double ) * N_Gas  + sizeof( double ) * SQR(PicSize) );
 
-    img = CommBuffer;
+    mymalloc( img, sizeof( double ) * SQR( PicSize ) );
+    memset( img, 0, sizeof( double ) * SQR( PicSize ) );
 
     for ( i=0; i<N_Gas; i++ ) {
         TempMin = vmin( SphP[i].Temp, TempMin, 1 );
         TempMax = vmax( SphP[i].Temp, TempMax );
-        DensMin = vmin( SphP[i].Density, DensMin, 1 );
-        DensMax = vmax( SphP[i].Density, DensMax );
+        DensMin = vmin( SphP[i].Density/All.RhoBaryon, DensMin, 1 );
+        DensMax = vmax( SphP[i].Density/All.RhoBaryon, DensMax );
     }
 
     LogDensMin = log10( DensMin );
@@ -268,8 +254,8 @@ void gas_state() {
     for ( k=0; k<N_Gas; k++ ) {
         LogTemp = SphP[k].Temp;
         //if ( LogTemp > 1e8 ) continue;
-        LogTemp = ( LogDens == 0 ) ? LogTempMin : log10( LogTemp );
-        LogDens = SphP[k].Density;
+        LogTemp = ( LogTemp == 0 ) ? LogTempMin : log10( LogTemp );
+        LogDens = SphP[k].Density / All.RhoBaryon;
         LogDens = ( LogDens == 0 ) ? LogDensMin : log10( LogDens );
 
         i = ( LogTemp - LogTempMin ) / DLogTemp;
@@ -283,6 +269,12 @@ void gas_state() {
     }
 
 
+    for ( i=0, sum=0; i<SQR(PicSize); i++ )
+        sum += img[i];
+
+    for ( i=0; i<SQR(PicSize); i++ )
+        img[i] /= sum;
+
     create_dir( "./gas_state" );
     sprintf( buf, "./gas_state/%.2f.dat", All.RedShift );
 
@@ -290,6 +282,7 @@ void gas_state() {
 
     image.ImgMin = DBL_MAX;
     image.ImgMax = DBL_MIN;
+
     for ( i=0; i<SQR(PicSize); i++ ) {
         image.ImgMin = vmin( image.ImgMin, img[i], 1 );
         image.ImgMax = vmax( image.ImgMax, img[i] );
@@ -299,11 +292,12 @@ void gas_state() {
     find_global_value( image.ImgMax, image.GlobalImgMax, MPI_DOUBLE, MPI_MAX );
 
     image.img = img;
-    image.xmin = log10(DensMin * All.UnitDensity_in_cgs);
-    image.xmax = log10(DensMax * All.UnitDensity_in_cgs);
+    image.xmin = LogDensMin;
+    image.xmax = LogDensMax;
     image.ymin = LogTempMin;
     image.ymax = LogTempMax;
-    write_img( buf, 1 );
+    write_img( buf, 0 );
+    myfree( img );
 
     //All.PicSize = PicSize_tmp;
     writelog( sep_str );
@@ -315,15 +309,19 @@ void gas_temperature_slice() {
     char buf[100];
     writelog( "gas temperature silce ...\n" );
     num = SliceEnd[0] - SliceStart[0];
-    check_buffersize( (num + SQR(All.PicSize)) * sizeof( double ) );
-    image.data = CommBuffer;
-    image.img = (double *)CommBuffer + num;
+    mymalloc( image.data, sizeof( double ) * num );
+    mymalloc( image.img, sizeof( double ) * SQR( All.PicSize ) );
+    memset( image.img, 0, sizeof( double ) * SQR( All.PicSize ) );
+    memset( image.data, 0, sizeof( double ) * num );
+
     for ( i=SliceStart[0]; i<num; i++ ) {
         image.data[i] = SphP[i].Temp;
     }
 
     create_dir( "./gas_temperature" );
     sprintf( buf, "./gas_temperature/%.2f.dat", All.RedShift );
+
+    make_slice_img( 0 );
 
     for ( i=0; i<SQR(All.PicSize); i++ ){
         image.img[i] *= All.UnitLength_in_cm;
@@ -334,9 +332,10 @@ void gas_temperature_slice() {
     image.GlobalImgMin *= All.UnitLength_in_cm;
     image.GlobalImgMax *= All.UnitLength_in_cm;
 
-    make_slice_img( 0 );
     write_img( buf, 1 );
 
+    myfree( image.data );
+    myfree( image.img );
     writelog( "gas Temperature silce ... done.\n" );
     writelog( sep_str );
 
@@ -345,8 +344,8 @@ void gas_temperature_slice() {
 void analysis(){
     init_analysis();
 
-    if ( All.GasTemperature ||
-         All.GasState )
+    if ( (All.GasTemperature ||
+         All.GasState) && All.ReadTemperature == 0  )
         compute_temperature();
 
     if ( All.GasState ) {
@@ -365,7 +364,6 @@ void analysis(){
     //fof_free();
     //output_mag();
     //output_rho();
-    //test_id();
     //vel_value();
     //sort_gas_rho();
     //calc_vl();

@@ -13,14 +13,16 @@
 #include "limits.h"
 #include "sys/stat.h"
 #include "proto.h"
+#include "omp.h"
 
 #define DEBUG
+#define MALLOC_VAR_NUM 1000
+#define MALLOC_VAR_LEN 200
 
 #define MAX_PARA_FILE_LINE_LEN 200
 #define SEP_LEN 80
 #define IO_NBLOCKS 100
 //#define LONGIDS
-
 #define GENERATIONS 8
 
 #define SFR
@@ -175,7 +177,8 @@ enum iofields {
     IO_CRE_E0,
     IO_CRE_n0,
     IO_DIVB,
-    IO_DBDT
+    IO_DBDT,
+    IO_TEMP
 };
 
 
@@ -221,9 +224,7 @@ extern struct sph_particle_data {
 extern char sep_str[ SEP_LEN ];
 extern int ThisTask, NumTask;
 extern double *KernelMat2D[6], *KernelMat3D[6], HalfBoxSize;
-extern void *CommBuffer;
-extern long long NumPart, N_Gas, TotNgroups, SliceStart[6], SliceEnd[6],
-       BufferBytes;
+extern long long NumPart, N_Gas, TotNgroups, SliceStart[6], SliceEnd[6], *id_to_index;
 extern char LogFile[ FILENAME_MAX ];
 extern FILE *LogFilefd;
 extern struct global_parameters_struct {
@@ -231,8 +232,9 @@ extern struct global_parameters_struct {
          FofFileName[ FILENAME_MAX ];
     FILE *LogFilefd;
     int StartSnapIndex, MpcFlag, ProjectDirection, KernelN,
-        PicSize, BufferSize, NumFiles, HgeFlag, CrFlag, BFlag,
-        GasState, GasDensity, GasTemperature;
+        PicSize, NumFiles, HgeFlag, CrFlag, BFlag,
+        GasState, GasDensity, GasTemperature, KernelInterpolation,
+        ReadTemperature;
     double SofteningTable[6], Alpha;
     double UnitTime_in_s,
          UnitMass_in_g,
@@ -245,7 +247,8 @@ extern struct global_parameters_struct {
     double TreeAllocFactor, LinkLength;
     int FofMinLen;
     double G, Hubble, Omega0, OmegaLambda, OmegaBaryon,
-           BoxSize, HalfBoxSize, RedShift, HubbleParam, CriticalDensity;
+           BoxSize, HalfBoxSize, RedShift, HubbleParam, RhoCrit,
+           Time, Hubble_a, RhoBaryon;
 }All;
 
 extern struct image_struct{
@@ -276,6 +279,10 @@ extern struct gadget_2_cgs_unit{
 
 extern int proj_i, proj_j, proj_k;
 
+extern char malloc_var[MALLOC_VAR_NUM][MALLOC_VAR_LEN];
+extern long long malloc_mem, malloc_var_bytes[MALLOC_VAR_NUM],
+       malloc_i, malloc_n, malloc_b, malloc_max_mem;
+
 #define writelog( fmt, ... ) { \
     fprintf( LogFilefd, fmt, ##__VA_ARGS__ ); \
     if ( ThisTask == 0 ) { \
@@ -285,17 +292,126 @@ extern int proj_i, proj_j, proj_k;
 
 #define vmax( a, b ) ( a > b ) ? a : b
 #define vmin( a, b, mode) ( mode == 0 ) ? ( ( a > b ) ? b : a ) : ( ( a > b && b > 0 ) ? b : a )
-#define check_buffersize( a ) { \
-    if ( BufferBytes < a ) { \
-        printf( "BufferSize is too Small!\n" ); \
-        endrun( 20180424 ); \
-    }\
-}
 #define check_picture_index( i ) ( ( i<0 || i>=All.PicSize ) ? ( (i<0) ? 0 : All.PicSize ) : i )
 #define find_global_value( a, A, type, op ) { \
     MPI_Reduce( &a, &A, 1, type, op, 0, MPI_COMM_WORLD ); \
+    MPI_Bcast( &A, 1, type, 0, MPI_COMM_WORLD ); \
     MPI_Barrier( MPI_COMM_WORLD ); \
 }
+
+#define check_malloc_var_num() {\
+    if ( malloc_n > MALLOC_VAR_NUM ) {\
+        writelog( "MALLOC_VAR_NUM IS TOO SMALL ...\n" );\
+        endrun( 20180430 ); \
+    }\
+}
+
+#define check_malloc_var_len( a ) {\
+    if ( strlen( #a ) > MALLOC_VAR_LEN ) {\
+        writelog( "MALLOC_VAR_LEN IS TOO SMALL ...\n" );\
+        endrun( 20180430 ); \
+    }\
+}
+
+#define malloc_report() { \
+    if ( malloc_mem > CUBE( 1024 ) ) {\
+        writelog( "Total memory: < %g Gb >\n", malloc_mem / CUBE( 1024. ) ); \
+    }\
+    else if ( malloc_mem > SQR( 1024 ) ) {\
+        writelog( "Total memory: < %g Mb >\n", malloc_mem / SQR( 1024. ) ); \
+    }\
+    else if( malloc_mem > 1024 ) {\
+        writelog( "Total memory: < %g kb >\n", malloc_mem / 1024. ); \
+    }\
+    else {\
+        writelog( "Total memory: < %lli b >\n", malloc_mem ); \
+    }\
+\
+    writelog( "Malloc variable number: <%lli>\n", malloc_n ); \
+\
+    if ( malloc_max_mem > CUBE( 1024 ) ) {\
+        writelog( "Max memory: < %g Gb >\n", malloc_max_mem / CUBE( 1024. ) ); \
+    }\
+    else if ( malloc_max_mem > SQR( 1024 ) ) {\
+        writelog( "Max memory: < %g Mb >\n", malloc_max_mem / SQR( 1024. ) ); \
+    }\
+    else if( malloc_max_mem > 1024 ) {\
+        writelog( "Max memory: < %g kb >\n", malloc_max_mem / 1024. ); \
+    }\
+    else {\
+        writelog( "Max memory: < %lli b >\n", malloc_max_mem ); \
+    }\
+}
+
+#define mymalloc( a, n ) {\
+    if ( !(a = malloc( n )) ) { \
+        if ( n > CUBE( 1024 ) ) {\
+            writelog( "Failed to allocate memory for `%s` ( %g Gb )\n", #a, n / CUBE( 1024. ) ); \
+        }\
+        else if ( n > SQR( 1024 ) ) {\
+            writelog( "Failed to allocate memory for `%s` ( %g Mb )\n", #a, n / SQR( 1024. ) ); \
+        }\
+        else if( n > 1024 ) {\
+            writelog( "Failed to allocate memory for `%s` ( %g Kb )\n", #a, n /  1024. ); \
+        }\
+        else {\
+            writelog( "Failed to allocate memory for `%s` ( %lli b )\n", #a, n ); \
+        }\
+        endrun( 20180430 ); \
+    }\
+\
+    if ( n > CUBE( 1024 ) ) {\
+        writelog( "Allocate memory for `%s` ( %g Gb )\n", #a, n / CUBE( 1024. ) ); \
+    }\
+    else if ( n > SQR( 1024 ) ) {\
+        writelog( "Allocate memory for `%s` ( %g Mb )\n", #a, n / SQR(  1024. ) ); \
+    }\
+    else if( n > 1024 ) {\
+        writelog( "Allocate memory for `%s` ( %g Kb )\n", #a, n /  1024 ); \
+    }\
+    else {\
+        writelog( "Allocate memory for `%s` ( %lli b )\n", #a, n ); \
+    }\
+\
+    check_malloc_var_len( a );\
+    sprintf( malloc_var[malloc_n], "%s", #a );\
+    malloc_var_bytes[malloc_n] = n;\
+    malloc_n++; \
+    malloc_mem += n; \
+    malloc_max_mem = vmax( malloc_max_mem, malloc_mem ); \
+    check_malloc_var_num();\
+    malloc_report(); \
+}
+#define myfree( a ) {\
+    for ( malloc_i=0; malloc_i<malloc_n; malloc_i++ ) {\
+        if ( !( strcmp( malloc_var[malloc_i], #a ) ) ) {\
+            malloc_b = malloc_var_bytes[malloc_i];\
+            break;\
+        }\
+    }\
+\
+    if ( malloc_b > CUBE( 1024 ) ) {\
+        writelog( "Free memory for `%s` ( %g Gb )\n", #a, malloc_b / CUBE( 1024. ) ); \
+    }\
+    else if ( malloc_b > SQR( 1024 ) ) {\
+        writelog( "Free memory for `%s` ( %g Mb )\n", #a, malloc_b / SQR(  1024. ) ); \
+    }\
+    else if( malloc_b > 1024 ) {\
+        writelog( "Free memory for `%s` ( %g Kb )\n", #a, malloc_b /  1024 ); \
+    }\
+    else {\
+        writelog( "Free memory for `%s` ( %lli b )\n", #a, malloc_b ); \
+    }\
+\
+    for ( ; malloc_i<malloc_n-1; malloc_i++ ) {\
+        sprintf( malloc_var[malloc_i], "%s",  malloc_var[malloc_i+1] ); \
+        malloc_var_bytes[malloc_i] = malloc_var_bytes[malloc_i+1]; \
+    }\
+    malloc_n--; \
+    malloc_mem -= malloc_b; \
+    malloc_report(); \
+}
+
 
 #ifdef DEBUG
 #define DEBUG_ARR_LEN 6

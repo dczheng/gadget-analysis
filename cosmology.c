@@ -8,7 +8,7 @@ double E_a ( double a ) {
     return sqrt( E2 );
 }
 
-double H_a( double a ) {
+double hubble_function( double a ) {
     double H;
     H = All.Hubble * E_a( a );
     return H;
@@ -36,3 +36,18 @@ double angular_distance( double a ) {
 double luminosity_distance( double a ) {
     return comoving_distance( a ) / a;
 }
+
+void compute_cosmo_quantities() {
+    writelog( "compute cosmology quantities ...\n" );
+    All.Time = 1 / ( All.RedShift + 1 );
+    All.Hubble_a = hubble_function( All.Time );
+    All.RhoCrit = 3 * SQR( All.Hubble_a ) / ( 8*PI*All.G );
+    All.RhoBaryon = All.OmegaBaryon * All.RhoCrit;
+    writelog( "%-35s: %g\n", "Time", All.Time );
+    writelog( "%-35s: %g\n", "Hubble_a", All.Hubble_a );
+    writelog( "%-35s: %g\n", "RhoBaryon", All.RhoBaryon );
+    writelog( "%-35s: %g\n", "RhoCrit", All.RhoCrit );
+    writelog( "compute cosmology quantities ... done.\n" );
+    writelog( sep_str );
+}
+

@@ -1,11 +1,9 @@
 #include "allvars.h"
 
 char sep_str[ SEP_LEN ];
-long long TotNgroups, NumPart, N_Gas, SliceStart[6], SliceEnd[6],
-     BufferBytes;
+long long TotNgroups, NumPart, N_Gas, SliceStart[6], SliceEnd[6], *id_to_index;
 int ThisTask, NumTask;
 double *KernelMat2D[6], *KernelMat3D[6], HalfBoxSize;
-void *CommBuffer;
 char LogFile[ FILENAME_MAX ], LogBuf[500];
 FILE *LogFilefd;
 struct global_parameters_struct All;
@@ -35,3 +33,6 @@ struct fof_info_struct *fof_info;
 
 struct gadget_2_cgs_unit g2c;
 int proj_i, proj_j, proj_k;
+char malloc_var[MALLOC_VAR_NUM][MALLOC_VAR_LEN];
+long long malloc_mem, malloc_var_bytes[MALLOC_VAR_NUM],
+     malloc_i, malloc_n, malloc_b, malloc_max_mem;

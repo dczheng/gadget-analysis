@@ -52,8 +52,8 @@ void main( int argc, char *argv[] ){
     writelog( sep_str );
     read_parameters( argv[1] );
     read_snapshot();
-
     set_units();
+    compute_cosmo_quantities();
     //group_analysis();
     /******************analysis***********************/
     analysis();

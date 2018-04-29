@@ -51,10 +51,6 @@ void read_parameters( char *fn ) {
         addr[nt] = &All.UnitVelocity_in_cm_per_s;
         id[nt++] = REAL;
 
-        strcpy( tag[nt], "BufferSize" );
-        addr[nt] = &All.BufferSize;
-        id[nt++] = INT;
-
         strcpy( tag[nt], "MpcFlag" );
         addr[nt] = &All.MpcFlag;
         id[nt++] = INT;
@@ -139,12 +135,20 @@ void read_parameters( char *fn ) {
         addr[nt] = &All.GasState;
         id[nt++] = INT;
 
+        strcpy( tag[nt], "ReadTemperature" );
+        addr[nt] = &All.ReadTemperature;
+        id[nt++] = INT;
+
         strcpy( tag[nt], "GasDensity" );
         addr[nt] = &All.GasDensity;
         id[nt++] = INT;
 
         strcpy( tag[nt], "GasTemperature" );
         addr[nt] = &All.GasTemperature;
+        id[nt++] = INT;
+
+        strcpy( tag[nt], "KernelInterpolation" );
+        addr[nt] = &All.KernelInterpolation;
         id[nt++] = INT;
 
         strcpy( tag[nt], "TreeAllocFactor" );

@@ -42,7 +42,7 @@ img = ax.imshow( data )
 
 ax.set_xlabel( "Mpc" )
 ax.set_ylabel( "" )
-ax.set_title( "Gas Density(z=%.2f)"%(z) )
+ax.set_title( "Gas Temperature(z=%.2f)"%(z) )
 
 xloc = tik.LinearLocator(NX)
 xfmt = tik.FixedFormatter(XList)
@@ -60,7 +60,7 @@ ax.set_yticks( np.linspace( 0, m, NY ) )
 ax.set_yticklabels( YList )
 '''
 cbar = fig.colorbar( img )
-cbar.set_label( r"$10^x gcm^{-2}$" )
+cbar.set_label( r"$10^x Kcm$" )
 
 plt.savefig( sys.argv[2] )
 #plt.show()
