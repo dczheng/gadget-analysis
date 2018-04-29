@@ -279,7 +279,7 @@ extern struct gadget_2_cgs_unit{
 
 extern int proj_i, proj_j, proj_k;
 
-extern char malloc_var[MALLOC_VAR_NUM][MALLOC_VAR_LEN];
+extern char malloc_var[MALLOC_VAR_NUM][MALLOC_VAR_LEN], malloc_str[100];
 extern long long malloc_mem, malloc_var_bytes[MALLOC_VAR_NUM],
        malloc_i, malloc_n, malloc_b, malloc_max_mem;
 
@@ -314,33 +314,35 @@ extern long long malloc_mem, malloc_var_bytes[MALLOC_VAR_NUM],
 }
 
 #define malloc_report() { \
+    sprintf( malloc_str, "Mem Info:" );\
     if ( malloc_mem > CUBE( 1024 ) ) {\
-        writelog( "Total memory: < %g Gb >\n", malloc_mem / CUBE( 1024. ) ); \
+        sprintf( malloc_str, "%s Total %g Gb,", malloc_str, malloc_mem / CUBE( 1024. )  );\
     }\
     else if ( malloc_mem > SQR( 1024 ) ) {\
-        writelog( "Total memory: < %g Mb >\n", malloc_mem / SQR( 1024. ) ); \
+        sprintf( malloc_str, "%s Total %g Mb,", malloc_str, malloc_mem / SQR( 1024. )  );\
     }\
     else if( malloc_mem > 1024 ) {\
-        writelog( "Total memory: < %g kb >\n", malloc_mem / 1024. ); \
+        sprintf( malloc_str, "%s Total %g Kb,", malloc_str, malloc_mem / 1024. );\
     }\
     else {\
-        writelog( "Total memory: < %lli b >\n", malloc_mem ); \
+        sprintf( malloc_str, "%s Total %lli b,", malloc_str, malloc_mem );\
     }\
-\
-    writelog( "Malloc variable number: <%lli>\n", malloc_n ); \
 \
     if ( malloc_max_mem > CUBE( 1024 ) ) {\
-        writelog( "Max memory: < %g Gb >\n", malloc_max_mem / CUBE( 1024. ) ); \
+        sprintf( malloc_str, "%s Max %g Gb,", malloc_str, malloc_max_mem / CUBE( 1024. ) );\
     }\
     else if ( malloc_max_mem > SQR( 1024 ) ) {\
-        writelog( "Max memory: < %g Mb >\n", malloc_max_mem / SQR( 1024. ) ); \
+        sprintf( malloc_str, "%s Max %g Mb,", malloc_str, malloc_max_mem / SQR( 1024. ) );\
     }\
     else if( malloc_max_mem > 1024 ) {\
-        writelog( "Max memory: < %g kb >\n", malloc_max_mem / 1024. ); \
+        sprintf( malloc_str, "%s Max %g Kb,", malloc_str, malloc_max_mem / 1024. );\
     }\
     else {\
-        writelog( "Max memory: < %lli b >\n", malloc_max_mem ); \
+        sprintf( malloc_str, "%s Max %lli b,", malloc_str, malloc_max_mem );\
     }\
+\
+    sprintf( malloc_str, "%s Nvars %lli.\n", malloc_str, malloc_n );\
+    writelog( malloc_str ); \
 }
 
 #define mymalloc( a, n ) {\
