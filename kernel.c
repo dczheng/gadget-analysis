@@ -18,10 +18,10 @@ void init_kernel_matrix() {
     for( pt=0; pt<6; pt++ ) {
         num = header.npartTotal[pt] + ( ( ( long long )header.npartTotalHighWord[pt] ) << 32 );
         if ( num != 0 ) {
-            KernelMat2D[pt] = malloc( sizeof( double ) * N * N );
-            KernelMat3D[pt] = malloc( sizeof( double ) * N * N * N );
-            memset( KernelMat2D[pt], 0, sizeof( double ) * N * N );
-            memset( KernelMat3D[pt], 0, sizeof( double ) * N * N * N );
+            All.KernelMat2D[pt] = malloc( sizeof( double ) * N * N );
+            All.KernelMat3D[pt] = malloc( sizeof( double ) * N * N * N );
+            memset( All.KernelMat2D[pt], 0, sizeof( double ) * N * N );
+            memset( All.KernelMat3D[pt], 0, sizeof( double ) * N * N * N );
             if ( All.SofteningTable[pt] == 0 ) {
                 printf( "SofteningTable[%d] is zeros !!!\n", pt );
                 endrun( 20171207 );
@@ -35,16 +35,16 @@ void init_kernel_matrix() {
                                   pow( j-Nhalf, 2 ) +
                                   pow( k-Nhalf, 2 ) );
                         q = q / Nhalf;
-                        KernelMat3D[pt][ i*N*N + j*N + k ] = kernel( q ) / pow( h, 3 )
+                        All.KernelMat3D[pt][ i*N*N + j*N + k ] = kernel( q ) / pow( h, 3 )
                             * pow( dh, 3 );
-                        KernelMat2D[pt][ i*N + j ] += KernelMat3D[pt][ i*N*N + j*N + k ];
+                        All.KernelMat2D[pt][ i*N + j ] += All.KernelMat3D[pt][ i*N*N + j*N + k ];
                     }
             for ( i=0, q=0; i<N*N*N; i++ ) {
-                q += KernelMat3D[pt][i];
+                q += All.KernelMat3D[pt][i];
             }
             writelog( "sum of 3d kernel[%d] = %g\n", pt, q );
             for ( i=0, q=0; i<N*N; i++ )
-                q += KernelMat2D[pt][i];
+                q += All.KernelMat2D[pt][i];
             writelog( "sum of 2d kernel[%d] = %g\n", pt, q );
         }
     }
@@ -58,8 +58,8 @@ void free_kernel_matrix() {
     for ( pt=0; pt<6; pt++ ) {
         num = header.npartTotal[pt] + ( ( ( long long )header.npartTotalHighWord[pt] ) << 32 );
         if ( num != 0 ) {
-            free( KernelMat2D[pt] );
-            free( KernelMat3D[pt] );
+            free( All.KernelMat2D[pt] );
+            free( All.KernelMat3D[pt] );
         }
     }
 }

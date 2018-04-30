@@ -2,9 +2,9 @@
 
 void init_analysis() {
     writelog( "initialize analysis...\n" );
-    proj_k = All.ProjectDirection;
-    proj_i = ( All.ProjectDirection + 1 ) % 3;
-    proj_j = ( All.ProjectDirection + 2 ) % 3;
+    All.proj_k = All.ProjectDirection;
+    All.proj_i = ( All.ProjectDirection + 1 ) % 3;
+    All.proj_j = ( All.ProjectDirection + 2 ) % 3;
     slice();
     if ( All.KernelInterpolation == 1 )
         init_kernel_matrix();
@@ -26,12 +26,12 @@ void gas_density_slice() {
     int num, i;
     char buf[100];
     writelog( "gas density silce ...\n" );
-    num = SliceEnd[0] - SliceStart[0];
+    num = All.SliceEnd[0] - All.SliceStart[0];
     mymalloc( image.data, sizeof( double ) * num );
     mymalloc( image.img, sizeof( double ) * SQR( All.PicSize ) );
     memset( image.data, 0, sizeof( double ) * num );
     memset( image.img, 0, sizeof( double ) * SQR( All.PicSize ) );
-    for ( i=SliceStart[0]; i<num; i++ ) {
+    for ( i=All.SliceStart[0]; i<num; i++ ) {
         image.data[i] = SphP[i].Density;
     }
 
@@ -308,13 +308,13 @@ void gas_temperature_slice() {
     int num, i;
     char buf[100];
     writelog( "gas temperature silce ...\n" );
-    num = SliceEnd[0] - SliceStart[0];
+    num = All.SliceEnd[0] - All.SliceStart[0];
     mymalloc( image.data, sizeof( double ) * num );
     mymalloc( image.img, sizeof( double ) * SQR( All.PicSize ) );
     memset( image.img, 0, sizeof( double ) * SQR( All.PicSize ) );
     memset( image.data, 0, sizeof( double ) * num );
 
-    for ( i=SliceStart[0]; i<num; i++ ) {
+    for ( i=All.SliceStart[0]; i<num; i++ ) {
         image.data[i] = SphP[i].Temp;
     }
 

@@ -8,8 +8,8 @@ void slice() {
     struct sph_particle_data sphp_tmp;
     writelog( "determine slice info ...\n" );
 
-    if ( All.End[proj_i] - All.Start[proj_i] !=
-            All.End[proj_j] - All.Start[proj_j] ) {
+    if ( All.End[All.proj_i] - All.Start[All.proj_i] !=
+            All.End[All.proj_j] - All.Start[All.proj_j] ) {
         printf( "Projection Region Must Be Square!...\n" );
         endrun( 20180424 );
     }
@@ -40,8 +40,8 @@ void slice() {
         num = get_particle_num( pt );
         index = offset;
         if ( num == 0 ) {
-            SliceStart[pt] = -1;
-            SliceEnd[pt] = -1;
+            All.SliceStart[pt] = -1;
+            All.SliceEnd[pt] = -1;
             continue;
         }
         writelog( "particle %i: offset=%li, num=%li\n",
@@ -64,18 +64,18 @@ void slice() {
                 index ++;
             }
         }
-        SliceStart[pt] = offset;
-        SliceEnd[pt] = index;
+        All.SliceStart[pt] = offset;
+        All.SliceEnd[pt] = index;
     }
     writelog( "Slice Start: " );
     for ( pt=0; pt<6; pt++ ) {
-        writelog( "%ld ", SliceStart[pt] );
+        writelog( "%ld ", All.SliceStart[pt] );
     }
     writelog( "\n" );
 
     writelog( "Slice End: " );
     for ( pt=0; pt<6; pt++ ) {
-        writelog( "%ld ", SliceEnd[pt] );
+        writelog( "%ld ", All.SliceEnd[pt] );
     }
     writelog( "\n" );
 
@@ -89,19 +89,19 @@ void make_slice_img( int pt ) {
     writelog( "make slice imgage  ...\n" );
     img = image.img;
     memset( img, 0, sizeof( double ) * PicSize * PicSize );
-    dx = dy = (All.End[proj_i] - All.Start[proj_i])/ PicSize;
+    dx = dy = (All.End[All.proj_i] - All.Start[All.proj_i])/ PicSize;
     image.DataMin = image.ImgMin = DBL_MAX;
     image.DataMax = image.ImgMax = DBL_MIN;
     N = All.KernelN;
     Nhalf = N / 2;
     h = All.SofteningTable[pt];
     dh = h / Nhalf;
-    for ( i=SliceStart[pt]; i<SliceEnd[pt]; i++ ){
-        x = P[i].Pos[proj_i];
-        y = P[i].Pos[proj_j];
-        x -= All.Start[proj_i];
-        y -= All.Start[proj_j];
-        v = image.data[ i-SliceStart[pt] ];
+    for ( i=All.SliceStart[pt]; i<All.SliceEnd[pt]; i++ ){
+        x = P[i].Pos[All.proj_i];
+        y = P[i].Pos[All.proj_j];
+        x -= All.Start[All.proj_i];
+        y -= All.Start[All.proj_j];
+        v = image.data[ i-All.SliceStart[pt] ];
 
         image.DataMin = vmin( image.DataMin, v, 1 );
         image.DataMax = vmax( image.DataMax, v );
@@ -129,7 +129,7 @@ void make_slice_img( int pt ) {
                         j1 = ly / dy;
                         if ( i1 < 0 || i1 >= PicSize ||
                                 j1 < 0 || j1 >= PicSize ) continue;
-                        img[ i1 * PicSize + j1 ] += v * KernelMat2D[pt][ li*N + lj ];
+                        img[ i1 * PicSize + j1 ] += v * All.KernelMat2D[pt][ li*N + lj ];
                 }
         }
         else
@@ -159,11 +159,11 @@ void make_slice_img( int pt ) {
               "Image: Min=%g, Max=%g, GlobalMin=%g, GlobalMax=%g\n",
               image.DataMin, image.DataMax, image.GlobalDataMin, image.GlobalDataMax,
               image.ImgMin,  image.ImgMax,  image.GlobalImgMin,  image.GlobalImgMax );
-    image.xmin = All.Start[ proj_i ];
-    image.xmax = All.End[ proj_i ];
-    image.ymin = All.Start[ proj_j ];
-    image.ymax = All.End[ proj_j ];
-    image.zmin = All.Start[ proj_k ];
-    image.zmax = All.End[ proj_k ];
+    image.xmin = All.Start[ All.proj_i ];
+    image.xmax = All.End[ All.proj_i ];
+    image.ymin = All.Start[ All.proj_j ];
+    image.ymax = All.End[ All.proj_j ];
+    image.zmin = All.Start[ All.proj_k ];
+    image.zmax = All.End[ All.proj_k ];
     writelog( "make slice image ... done\n" );
 }

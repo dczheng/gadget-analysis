@@ -11,7 +11,7 @@ CC      = mpicc $(DEBUG)
 
 $(EXEC): $(OBJS)
 	$(CC) $(OPT) $(OBJS) $(CLIBS) -o $(EXEC)
-$(OBJS): allvars.h
+$(OBJS): allvars.h protos.h macros.h
 
 clean: 
 	rm -f $(EXEC)  $(OBJS)
