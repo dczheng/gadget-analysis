@@ -69,7 +69,7 @@ else:
 fig = plt.figure()
 ax = fig.add_subplot( 111 )
 norm = mplc.LogNorm()
-img = ax.imshow( data, norm=norm, cmap=cm.plasma )
+img = ax.imshow( data, norm=norm, cmap=cm.jet )
 
 ax.set_xlabel( r"$\frac{\rho}{\rho_{Bar}}(10^x)$" )
 ax.set_ylabel( r"$Temperature (10^x K)$" )

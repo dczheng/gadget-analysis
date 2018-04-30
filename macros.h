@@ -1,5 +1,5 @@
 #define writelog( fmt, ... ) { \
-    fprintf( All.LogFilefd, fmt, ##__VA_ARGS__ ); \
+    fprintf( LogFileFd, fmt, ##__VA_ARGS__ ); \
     if ( ThisTask == 0 ) { \
         printf( fmt, ##__VA_ARGS__ ); \
     }\

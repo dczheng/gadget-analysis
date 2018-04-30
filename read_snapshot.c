@@ -669,7 +669,6 @@ void construct_id_to_index() {
     writelog( sep_str );
 }
 
-
 void read_snapshot() {
     int pt, blk, nbytes, rank;
     long i, file, pc, offset, num;

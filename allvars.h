@@ -225,12 +225,12 @@ extern struct sph_particle_data {
 extern char sep_str[ SEP_LEN ];
 extern int ThisTask, NumTask;
 extern long long TotNgroups, *id_to_index, NumPart, N_Gas;
+extern FILE *LogFileFd;
 
 extern struct global_parameters_struct {
     char FilePrefix[ FILENAME_MAX ], GroupDir[ FILENAME_MAX ],
          FofFileName[ FILENAME_MAX ],
          LogFile[ FILENAME_MAX ];
-    FILE *LogFilefd;
     int StartSnapIndex, MpcFlag, ProjectDirection, KernelN,
         PicSize, NumFiles, HgeFlag, CrFlag, BFlag,
         GasState, GasDensity, GasTemperature, KernelInterpolation,

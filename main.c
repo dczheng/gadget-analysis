@@ -44,7 +44,7 @@ void main( int argc, char *argv[] ){
     }
     MPI_Barrier( MPI_COMM_WORLD );
     sprintf( All.LogFile, "./gadget-analysis.log/gadget-analysis-%03d.log", ThisTask );
-    All.LogFilefd = fopen( All.LogFile, "w" );
+    LogFileFd = fopen( All.LogFile, "w" );
 
     writelog( "open log file\n" );
     writelog( "Start At: %s", asctime(tb) );
@@ -71,7 +71,7 @@ void main( int argc, char *argv[] ){
     writelog( "Total Time %i\n", time2-time1 );
     writelog( sep_str );
 
-    fclose( All.LogFilefd );
+    fclose( LogFileFd );
     MPI_Finalize();
 }
 
