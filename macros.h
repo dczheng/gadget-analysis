@@ -30,7 +30,7 @@
 }
 
 #define malloc_report() { \
-    sprintf( malloc_str, "Mem Info:" );\
+    sprintf( malloc_str, "memory info:" );\
     if ( malloc_mem > CUBE( 1024 ) ) {\
         sprintf( malloc_str, "%s Total %g Gb,", malloc_str, malloc_mem / CUBE( 1024. )  );\
     }\
@@ -79,16 +79,16 @@
     }\
 \
     if ( n > CUBE( 1024 ) ) {\
-        writelog( "Allocate memory for `%s` ( %g Gb )\n", #a, n / CUBE( 1024. ) ); \
+        writelog( "allocate memory for `%s` ( %g Gb )\n", #a, n / CUBE( 1024. ) ); \
     }\
     else if ( n > SQR( 1024 ) ) {\
-        writelog( "Allocate memory for `%s` ( %g Mb )\n", #a, n / SQR(  1024. ) ); \
+        writelog( "allocate memory for `%s` ( %g Mb )\n", #a, n / SQR(  1024. ) ); \
     }\
     else if( n > 1024 ) {\
-        writelog( "Allocate memory for `%s` ( %g Kb )\n", #a, n /  1024 ); \
+        writelog( "allocate memory for `%s` ( %g Kb )\n", #a, n /  1024 ); \
     }\
     else {\
-        writelog( "Allocate memory for `%s` ( %lli b )\n", #a, n ); \
+        writelog( "allocate memory for `%s` ( %lli b )\n", #a, n ); \
     }\
 \
     check_malloc_var_len( a );\

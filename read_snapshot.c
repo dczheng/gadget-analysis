@@ -609,7 +609,17 @@ void find_id() {
     }
     num = get_particle_num( 4 );
     offset = get_particle_offset( 4 );
-    writelog( "Star Particle offset: %li\n", offset );
+    writelog( "Star Particle Offset: %li\n", offset );
+    if ( num != 0 ) {
+        writelog( "find star id ...\n" );
+        for ( i=0; i<num; i++ ) {
+            P[offset+i].ID <<= bits;
+            P[offset+i].ID >>= bits;
+        }
+    }
+    num = get_particle_num( 5 );
+    offset = get_particle_offset( 5 );
+    writelog( "Black Hole Particle Offset: %li\n", offset );
     if ( num != 0 ) {
         writelog( "find star id ...\n" );
         for ( i=0; i<num; i++ ) {
@@ -621,18 +631,8 @@ void find_id() {
     writelog( sep_str );
 }
 
-void init_particle_flag() {
-    long i;
-    writelog( "initialize particle tree flag ...\n" );
-    for ( i=0; i<NumPart; i++ ) {
-        P[i].Flag = 1;
-    }
-    writelog( "initialize particle tree flag ... done.\n" );
-    writelog( sep_str );
-}
-
 void construct_id_to_index() {
-    long long idmax, idmin, i, idn, N;
+    long idmax, idmin, i, idn, N;
     size_t bytes;
     writelog( "construct id to index ...\n" );
     idmax = -1;
@@ -644,9 +644,9 @@ void construct_id_to_index() {
     idn = idmax - idmin + 1;
     writelog( "Min ID: %li, Max ID: %li, ID Num: %li\n", idmin, idmax, idn );
 
-    mymalloc( id_to_index, idn * sizeof( long long ) );
+    mymalloc( id_to_index, idn * sizeof( long ) );
 
-    memset( id_to_index, 0, sizeof( long long ) *  idn );
+    memset( id_to_index, 0, sizeof( long ) *  idn );
 
     id_to_index--;
 
@@ -656,7 +656,8 @@ void construct_id_to_index() {
         id_to_index[ P[i].ID ] = i;
     }
 
-    long long offset, num, id;
+    /*
+    long offset, num, id;
     offset = get_particle_offset( 4 );
     num = get_particle_num( 4 );
     for ( i=offset; i<offset+num; i++ ) {
@@ -664,6 +665,7 @@ void construct_id_to_index() {
         if ( P[id_to_index[id]].ID != id )
             printf( "%li %li %li\n", id, id_to_index[id], P[id_to_index[id]].ID );
     }
+    */
 
     writelog( "construct id to index ... done.\n" );
     writelog( sep_str );
@@ -684,7 +686,7 @@ void read_snapshot() {
     for ( i=0; i<6; i++ ){
         NumPart += get_particle_num( i );
     }
-    N_Gas = header.npartTotal[0] + ( ( (long long)header.npartTotalHighWord[0] ) << 32 );
+    N_Gas = header.npartTotal[0] + ( ( (long)header.npartTotalHighWord[0] ) << 32 );
 
     All.BoxSize = header.BoxSize;
     All.HalfBoxSize = All.BoxSize / 2;
@@ -734,7 +736,7 @@ void read_snapshot() {
     }
     myfree( CommBuffer );
     for ( pt=0, offset=0; pt<6; pt++ ) {
-        num = header.npartTotal[pt] + ( ( ( long long )header.npartTotalHighWord[pt] ) << 32 );
+        num = header.npartTotal[pt] + ( ( ( long )header.npartTotalHighWord[pt] ) << 32 );
         if ( num != 0 && header.mass[pt] != 0 ){
             writelog( "set particle `%d` mass from header\n", pt );
             for ( i=offset; i<offset+num; i++ )
@@ -745,7 +747,6 @@ void read_snapshot() {
     writelog( "read data ... done. \n" );
     writelog( sep_str );
     find_id();
-    init_particle_flag();
     construct_id_to_index();
 }
 

@@ -17,8 +17,8 @@ void read_parameters( char *fn ) {
             endrun( 1 );
         }
 
-        if ( sizeof( long long ) != 8 ) {
-            printf( "Type `long long` is no 64 bit on this platform. Stopping. \n" );
+        if ( sizeof( long ) != 8 ) {
+            printf( "Type `long` is no 64 bit on this platform. Stopping. \n" );
             endrun( 20171207 );
         }
 
@@ -161,6 +161,10 @@ void read_parameters( char *fn ) {
 
         strcpy( tag[nt], "FofMinLen" );
         addr[nt] = &All.FofMinLen;
+        id[nt++] = INT;
+
+        strcpy( tag[nt], "TreePartType" );
+        addr[nt] = &All.TreePartType;
         id[nt++] = INT;
 
         strcpy( tag[nt], "OmegaBaryon" );

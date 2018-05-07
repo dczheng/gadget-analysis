@@ -8,7 +8,7 @@ void read_group() {
     struct group_struct *group_local;
     int Ngroups, Ntask, Nids, malloc_flag;
     int group_offset, *len, i, j, *offset, *lentype;
-    long long TotNids;
+    long TotNids;
     float *mass, *cm, *vel, *veldisp, *tensor, *rmax, *vmax, *pos;
     float *angmom;
     fputs( sep_str, stdout );
@@ -34,7 +34,7 @@ void read_group() {
         fread( &Ngroups, sizeof( int ), 1, fd );
         fread( &TotNgroups, sizeof( int ), 1, fd );
         fread( &Nids, sizeof( int ), 1, fd );
-        fread( &TotNids, sizeof( long long ), 1, fd );
+        fread( &TotNids, sizeof( long ), 1, fd );
         fread( &Ntask, sizeof( int ), 1, fd );
         if ( malloc_flag ) {
             group = ( struct group_struct * ) malloc(

@@ -56,7 +56,7 @@ extern gsl_integration_workspace *inte_ws;
 #define CUBE(X) ( X*X*X )
 
 #ifdef LONGIDS
-typedef unsigned long long MyIDType;
+typedef unsigned long MyIDType;
 #else
 typedef unsigned int MyIDType;
 #endif
@@ -194,7 +194,6 @@ extern struct particle_data {
     MyFloat Acc[3];
     MyIDType ID;
     int Type;
-    int Flag;
 } *P;
 
 extern struct sph_particle_data {
@@ -224,7 +223,7 @@ extern struct sph_particle_data {
 
 extern char sep_str[ SEP_LEN ];
 extern int ThisTask, NumTask;
-extern long long TotNgroups, *id_to_index, NumPart, N_Gas;
+extern long TotNgroups, *id_to_index, NumPart, N_Gas;
 extern FILE *LogFileFd;
 
 extern struct global_parameters_struct {
@@ -234,7 +233,8 @@ extern struct global_parameters_struct {
     int StartSnapIndex, MpcFlag, ProjectDirection, KernelN,
         PicSize, NumFiles, HgeFlag, CrFlag, BFlag,
         GasState, GasDensity, GasTemperature, KernelInterpolation,
-        ReadTemperature, FofMinLen, proj_i, proj_j, proj_k;
+        ReadTemperature, FofMinLen, proj_i, proj_j, proj_k,
+        TreePartType;
     double SofteningTable[6], Alpha ,
            UnitTime_in_s,
            UnitMass_in_g,
@@ -250,7 +250,7 @@ extern struct global_parameters_struct {
            Time, Hubble_a, RhoBaryon,
            RedShift, HubbleParam, RhoCrit, G,
            Hubble, Omega0, OmegaLambda, OmegaBaryon;
-    long long SliceStart[6], SliceEnd[6];
+    long SliceStart[6], SliceEnd[6];
 }All;
 
 extern struct image_struct{
@@ -269,11 +269,11 @@ extern long MaxNodes;
 extern long *NextNode;
 extern long *Ngblist;
 
-extern struct fof_info_struct{
-    long Head, Len, Tail;
+extern struct fof_properties_struct{
     double mass, cm[3], vr200, vel[3];
-} *fof_info;
-extern long *fof_Next;
+    long Head, Tail, Len;
+} *FoFProps;
+extern long *FoFNext;
 extern int Ngroups;
 
 extern struct gadget_2_cgs_unit{
@@ -282,7 +282,7 @@ extern struct gadget_2_cgs_unit{
 
 
 extern char malloc_var[MALLOC_VAR_NUM][MALLOC_VAR_LEN], malloc_str[100];
-extern long long malloc_mem, malloc_var_bytes[MALLOC_VAR_NUM],
+extern long malloc_mem, malloc_var_bytes[MALLOC_VAR_NUM],
        malloc_i, malloc_n, malloc_b, malloc_max_mem;
 
 

@@ -10,13 +10,13 @@ double kernel( double q ) {
 
 void init_kernel_matrix() {
     int pt, i, j, k, N, Nhalf;
-    long long num;
+    long num;
     double dh, q, h;
     writelog( "initialize kernel matrix ...\n" );
     N = All.KernelN;
     Nhalf = N / 2;
     for( pt=0; pt<6; pt++ ) {
-        num = header.npartTotal[pt] + ( ( ( long long )header.npartTotalHighWord[pt] ) << 32 );
+        num = header.npartTotal[pt] + ( ( ( long )header.npartTotalHighWord[pt] ) << 32 );
         if ( num != 0 ) {
             All.KernelMat2D[pt] = malloc( sizeof( double ) * N * N );
             All.KernelMat3D[pt] = malloc( sizeof( double ) * N * N * N );
@@ -52,11 +52,11 @@ void init_kernel_matrix() {
 }
 
 void free_kernel_matrix() {
-    long long num;
+    long num;
     int pt;
     writelog( "free kernel matrix ...\n" );
     for ( pt=0; pt<6; pt++ ) {
-        num = header.npartTotal[pt] + ( ( ( long long )header.npartTotalHighWord[pt] ) << 32 );
+        num = header.npartTotal[pt] + ( ( ( long )header.npartTotalHighWord[pt] ) << 32 );
         if ( num != 0 ) {
             free( All.KernelMat2D[pt] );
             free( All.KernelMat3D[pt] );

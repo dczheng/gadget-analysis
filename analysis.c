@@ -357,11 +357,11 @@ void analysis(){
 
     if ( All.GasTemperature )
         gas_temperature_slice();
-    //tree_build( 1 );
+    //tree_build();
     //tree_free();
-    //fof( 1 );
+    fof();
     //fof_save_groups();
-    //fof_free();
+    fof_free();
     //output_mag();
     //output_rho();
     //vel_value();

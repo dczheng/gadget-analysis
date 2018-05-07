@@ -3,7 +3,7 @@
 void slice() {
     char buf[200];
     int pt;
-    long long offset, num, index, i;
+    long offset, num, index, i;
     struct particle_data p_tmp;
     struct sph_particle_data sphp_tmp;
     writelog( "determine slice info ...\n" );

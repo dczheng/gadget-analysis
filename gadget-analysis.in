@@ -26,6 +26,7 @@ KernelN                       10
 KernelInterpolation           0
 TreeAllocFactor               1
 LinkLength                    0.2
+TreePartType                  51
 FofMinLen                     32
 FofFileName                   fof
 HgeFlag                       1

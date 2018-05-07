@@ -22,7 +22,7 @@ long get_particle_offset( int pt );
 long get_particle_num( int pt );
 double get_B( long i );
 
-void tree_build( int pt );
+void tree_build();
 void tree_free();
 
 
@@ -32,7 +32,7 @@ double angular_distance( double a );
 double luminosity_distance( double a );
 void compute_cosmo_quantities();
 
-void fof( int pt );
+void fof();
 void fof_free();
 void fof_save_groups();
-int ngb_fof(  double *searchcenter, double h, int pt );
+int ngb_fof(  double *searchcenter, double h );
