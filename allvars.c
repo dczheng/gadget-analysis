@@ -23,10 +23,7 @@ struct group_struct *group;
 struct image_struct image;
 struct fof_info_struct *fof_info;
 struct gadget_2_cgs_unit g2c;
-
-char malloc_var[MALLOC_VAR_NUM][MALLOC_VAR_LEN], malloc_str[100];
-long malloc_mem, malloc_var_bytes[MALLOC_VAR_NUM],
-     malloc_i, malloc_n, malloc_b, malloc_max_mem;
+struct malloc_struct ms;
 
 #ifdef ZDEBUG
 struct sig_struct sig;

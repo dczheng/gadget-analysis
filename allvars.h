@@ -17,8 +17,6 @@
 #include "omp.h"
 
 #define ZDEBUG
-#define MALLOC_VAR_NUM 1000
-#define MALLOC_VAR_LEN 200
 
 #define MAX_PARA_FILE_LINE_LEN 200
 #define SEP_LEN 80
@@ -234,7 +232,7 @@ extern struct global_parameters_struct {
         PicSize, PicSize2, NumFiles, HgeFlag, CrFlag, BFlag,
         GasState, GasDensity, GasTemperature, KernelInterpolation,
         ReadTemperature, FofMinLen, proj_i, proj_j, proj_k,
-        TreePartType, ConvN, ConvFlag;
+        TreePartType, ConvN, ConvFlag, GroupIndex;
     double SofteningTable[6], Alpha ,
            UnitTime_in_s,
            UnitMass_in_g,
@@ -254,11 +252,39 @@ extern struct global_parameters_struct {
     long SliceStart[6], SliceEnd[6];
 }All;
 
-extern struct image_struct{
+#define IMG_PROPS_START 11
+#define IMG_PROPS_OTHERS ( All.PicSize - IMG_PROPS_START )
+#define img_nprops     ( images.nprops[0] )
+#define img_xmin       ( image.props[1] )
+#define img_xmax       ( image.props[2] )
+#define img_ymin       ( image.props[3] )
+#define img_ymax       ( image.props[4] )
+#define img_proj       ( image.props[5] )
+#define img_z          ( image.props[6] )
+#define img_min        ( image.props[7] )
+#define img_max        ( image.props[8] )
+#define img_globmin    ( image.props[9] )
+#define img_globmax    ( image.props[10] )
+#define img_props(i)   ( image.props[ IMG_PROPS_START+i ] )
+struct image_struct{
     double *data, *img,
-           ImgMin, ImgMax, GlobalImgMin, GlobalImgMax,
-           xmin, xmax, ymin, ymax;
-}image;
+           *props;
+    /* props:
+     *      0 nprops
+     *      1 xmin
+     *      2 xmax
+     *      3 ymin
+     *      4 ymax
+     *      5 projctdirection
+     *      6 redshift
+     *      7 min_i
+     *      8 max_i
+     *      9 globmin_i
+     *      10 globmax_i
+     *      11 ~ end others ... */
+
+};
+extern struct image_struct image;
 
 extern struct NODE {
     double center[3];
@@ -283,11 +309,16 @@ extern struct gadget_2_cgs_unit{
     double cm, g, s, erg;
 }g2c;
 
+#define MALLOC_VAR_NUM 1000
+#define MALLOC_VAR_LEN 200
 
-extern char malloc_var[MALLOC_VAR_NUM][MALLOC_VAR_LEN], malloc_str[100];
-extern long malloc_mem, malloc_var_bytes[MALLOC_VAR_NUM],
-       malloc_i, malloc_n, malloc_b, malloc_max_mem;
+struct malloc_struct {
+    char var[MALLOC_VAR_NUM][MALLOC_VAR_LEN], str[100];
+    long mem, var_bytes[MALLOC_VAR_NUM],
+       i, nn, b, max_mem;
+};
 
+extern struct malloc_struct ms;
 
 #ifdef ZDEBUG
 void signal_hander( int s );

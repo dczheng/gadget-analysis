@@ -10,6 +10,8 @@ void set_units();
 void slice();
 void make_slice_img( int pt );
 void write_img( char *fn );
+void init_img();
+void free_img();
 void create_dir( char *s );
 
 void analysis();
@@ -37,3 +39,4 @@ void fof_save_groups();
 int ngb_fof(  double *searchcenter, double h );
 
 void conv( double ds );
+

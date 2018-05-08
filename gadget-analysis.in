@@ -39,3 +39,4 @@ ReadTemperature               0
 ConvN                         3
 ConvSigma                     1
 ConvFlag                      1
+GroupIndex                    0

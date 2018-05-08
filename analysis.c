@@ -12,6 +12,7 @@ void init_analysis() {
     inte_ws = gsl_integration_workspace_alloc( GSL_INTE_WS_LEN );
     if ( All.ConvFlag )
         init_conv_kernel();
+    init_img();
     writelog( "initialize analysis... done.\n" );
     writelog( sep_str );
 }
@@ -23,6 +24,7 @@ void free_analysis() {
         free_kernel_matrix();
     if ( All.ConvFlag )
         free_conv_kernel();
+    free_img();
     writelog( "free analysis ... done.\n" );
     writelog( sep_str );
 }
@@ -108,7 +110,7 @@ void calc_vl() {
 void syn( double v ) {
     long i, xi, yi, PicSize;
     double B, Ub, vl, pmin, pmax, *img, dx, dy, d1, d2,
-           com_dis, ang_dis, lum_dis, BoxSize, C, img_max, img_min, V,
+           com_dis, ang_dis, lum_dis, BoxSize, C, imgmax, imgmin, V,
            h, tmp, ang, beam;
     writelog( "compute synchrotron radiation ...\n" );
     pmin = DBL_MAX;
@@ -276,10 +278,10 @@ void gas_state() {
     memset( &image, 0, sizeof( struct image_struct ) );
 
     image.img = img;
-    image.xmin = LogDensMin;
-    image.xmax = LogDensMax;
-    image.ymin = LogTempMin;
-    image.ymax = LogTempMax;
+    img_xmin = LogDensMin;
+    img_xmax = LogDensMax;
+    img_ymin = LogTempMin;
+    img_ymax = LogTempMax;
     write_img( buf );
     myfree( img );
 
@@ -326,9 +328,9 @@ void group_analysis() {
     long index, i, j, p, PicSize, x, y, ii, jj,
          xo, yo, PicSize2, npart[6];
     struct fof_properties g;
-    double *img, *m, L, dL;
+    double *img, *m, L, dL, mass[6];;
     char buf[100];
-    index = 0;
+    index = All.GroupIndex;
     writelog( "analysis group: %li ...\n", index );
 
     PicSize = All.PicSize;
@@ -348,11 +350,14 @@ void group_analysis() {
 
     p = g.Head;
 
-    for ( i=0; i<6; i++ )
+    for ( i=0; i<6; i++ ) {
         npart[i] = 0;
+        mass[i] = 0;
+    }
 
     for ( i=0, L=0; i<g.Len; i++, p=FoFNext[p] ){
         npart[ P[p].Type ] ++;
+        mass[ P[p].Type] += P[i].Mass;
         if ( P[p].Type != 0 )
             continue;
             L = vmax( NGB_PERIODIC( P[p].Pos[x] - g.cm[x] ), L );
@@ -364,6 +369,14 @@ void group_analysis() {
     for ( i=0; i<6; i++ )
         writelog( "%li ", npart[i] );
     writelog( "\n" );
+
+    writelog( "mass: " );
+    for ( i=0; i<6; i++ ) {
+        mass[i] *= 1e10;
+        writelog( "%g ", mass[i] );
+    }
+    writelog( "\n" );
+
     writelog( "L: %g, dL:%g\n", 2*L, dL );
 
     p = g.Head;
@@ -386,11 +399,14 @@ void group_analysis() {
     }
 
     image.img = img;
-    image.xmin =  -L;
-    image.xmax =  L;
-    image.ymin =  -L;
-    image.ymax =  L;
+    for ( i=0; i<6; i++ )
+        img_props(i) = mass[i];
+    img_xmin =  -L;
+    img_xmax =  L;
+    img_ymin =  -L;
+    img_ymax =  L;
 
+    if ( All.ConvFlag )
     conv( dL );
 
     create_dir( "./group" );

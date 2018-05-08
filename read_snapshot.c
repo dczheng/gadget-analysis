@@ -580,7 +580,7 @@ void write_header( char *fn, struct io_header header ) {
 void allocate_memory() {
     double bytes_tot = 0;
     size_t bytes;
-    malloc_max_mem = malloc_mem = malloc_n = 0;
+    ms.max_mem = ms.mem = ms.nn = 0;
     mymalloc( P, NumPart * sizeof( struct particle_data ) );
     mymalloc( SphP, N_Gas * sizeof( struct sph_particle_data ) );
 }

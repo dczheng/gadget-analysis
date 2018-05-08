@@ -187,6 +187,10 @@ void read_parameters( char *fn ) {
         addr[nt] = &All.FofFileName;
         id[nt++] = STRING;
 
+        strcpy( tag[nt], "GroupIndex" );
+        addr[nt] = &All.GroupIndex;
+        id[nt++] = INT;
+
         while( !feof( fd ) ) {
             *buf = 0;
             fgets( buf, 200, fd );

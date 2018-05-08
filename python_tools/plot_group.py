@@ -16,11 +16,22 @@ if ( len( sys.argv ) != 3 ):
 data = np.loadtxt( sys.argv[1] )
 data_info = data[ 0, : ]
 data = np.flipud(data[ 1:, : ])
-z = data_info[0]
+z = data_info[6]
 XMin = data_info[1] / 1000.0
 XMax = data_info[2] / 1000.0
 YMin = data_info[3] / 1000.0
 YMax = data_info[4] / 1000.0
+proj = int( data_info[5] )
+mgas = data_info[ 11+0 ]
+mdm = data_info[ 11+1 ]
+ms = data_info[ 11+4 ]
+mbh = data_info[ 11+5 ]
+if ( proj == 0 ):
+    ProDire = 'x'
+if ( proj == 1 ):
+    ProDire = 'y'
+if ( proj == 2 ):
+    ProDire = 'z'
 #print( data_info )
 m,n = data.shape
 print( "PicSize: (%i,%i)"%( m, n ) )
@@ -48,14 +59,16 @@ yl = YMax - YMin
 print( "xmin: %i, xmax: %i, ymin: %i, ymax: %i"%( xmin, xmax, ymin ,ymax ) )
 
 if ( xmin > xmax ):
-    pass
+    xLocList = []
+    xFmtList = []
 else:
     xLocList = np.linspace( xmin, xmax, xmax - xmin + 1 )
     xFmtList = xLocList
     xLocList = ( xLocList - XMin ) / xl * n
     print( "xticks: ", xFmtList )
 if ( ymin > ymax ):
-    pass
+    yLocList = []
+    yFmtList = []
 else:
     yLocList = np.linspace( ymin, ymax, ymax - ymin + 1 )
     yFmtList = yLocList
@@ -82,6 +95,21 @@ ax.xaxis.set_major_formatter( xfmt )
 ax.yaxis.set_major_locator( yloc )
 ax.yaxis.set_major_formatter( yfmt )
 
+pt1y = 0.1
+pt2y = pt1y + pt1y * 0.5
+pt3y = pt1y + pt1y * 1
+pt4y = pt1y + pt1y * 1.5
+
+pt1x = pt1y
+pt2x = pt1x
+pt3x = pt1x
+pt4x = pt1x
+
+ax.text( m * pt1x, n * pt1y, r"$ M_{gas}: %.2e$"%( mgas) )
+ax.text( m * pt2x, n * pt2y, r"$ M_{dm} : %.2e$"%( mdm ) )
+ax.text( m * pt3x, n * pt3y, r"$ M_{s}  : %.2e$"%( ms  ) )
+ax.text( m * pt4x, n * pt4y, r"$ M_{bh} : %.2e$"%( mbh ) )
+
 '''
 ax.set_xticks( np.linspace( 0, n, NX ) )
 ax.set_xticklabels( DensList )
@@ -89,7 +117,8 @@ ax.set_yticks( np.linspace( 0, m, NY ) )
 ax.set_yticklabels( TempList )
 '''
 cbar = fig.colorbar( img )
-cbar.set_label( "Temperature" )
+cbar.set_label( "Temperature\n%s direction"%(ProDire) )
 
-plt.savefig( sys.argv[2] )
+print( "save image to " +  ProDire + sys.argv[2] )
+plt.savefig( ProDire + sys.argv[2] )
 #plt.show()

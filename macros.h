@@ -17,14 +17,14 @@
     MPI_Barrier( MPI_COMM_WORLD ); \
 }
 
-#define check_malloc_var_num() {\
-    if ( malloc_n > MALLOC_VAR_NUM ) {\
+#define check_var_num() {\
+    if ( ms.nn > MALLOC_VAR_NUM ) {\
         writelog( "MALLOC_VAR_NUM IS TOO SMALL ...\n" );\
         endrun( 20180430 ); \
     }\
 }
 
-#define check_malloc_var_len( a ) {\
+#define check_var_len( a ) {\
     if ( strlen( #a ) > MALLOC_VAR_LEN ) {\
         writelog( "MALLOC_VAR_LEN IS TOO SMALL ...\n" );\
         endrun( 20180430 ); \
@@ -32,35 +32,35 @@
 }
 
 #define malloc_report() { \
-    sprintf( malloc_str, "memory info:" );\
-    if ( malloc_mem > CUBE( 1024 ) ) {\
-        sprintf( malloc_str, "%s Total %g Gb,", malloc_str, malloc_mem / CUBE( 1024. )  );\
+    sprintf( ms.str, "memory info:" );\
+    if ( ms.mem > CUBE( 1024 ) ) {\
+        sprintf( ms.str, "%s Total %g Gb,", ms.str, ms.mem / CUBE( 1024. )  );\
     }\
-    else if ( malloc_mem > SQR( 1024 ) ) {\
-        sprintf( malloc_str, "%s Total %g Mb,", malloc_str, malloc_mem / SQR( 1024. )  );\
+    else if ( ms.mem > SQR( 1024 ) ) {\
+        sprintf( ms.str, "%s Total %g Mb,", ms.str, ms.mem / SQR( 1024. )  );\
     }\
-    else if( malloc_mem > 1024 ) {\
-        sprintf( malloc_str, "%s Total %g Kb,", malloc_str, malloc_mem / 1024. );\
-    }\
-    else {\
-        sprintf( malloc_str, "%s Total %lli b,", malloc_str, malloc_mem );\
-    }\
-\
-    if ( malloc_max_mem > CUBE( 1024 ) ) {\
-        sprintf( malloc_str, "%s Max %g Gb,", malloc_str, malloc_max_mem / CUBE( 1024. ) );\
-    }\
-    else if ( malloc_max_mem > SQR( 1024 ) ) {\
-        sprintf( malloc_str, "%s Max %g Mb,", malloc_str, malloc_max_mem / SQR( 1024. ) );\
-    }\
-    else if( malloc_max_mem > 1024 ) {\
-        sprintf( malloc_str, "%s Max %g Kb,", malloc_str, malloc_max_mem / 1024. );\
+    else if( ms.mem > 1024 ) {\
+        sprintf( ms.str, "%s Total %g Kb,", ms.str, ms.mem / 1024. );\
     }\
     else {\
-        sprintf( malloc_str, "%s Max %lli b,", malloc_str, malloc_max_mem );\
+        sprintf( ms.str, "%s Total %lli b,", ms.str, ms.mem );\
     }\
 \
-    sprintf( malloc_str, "%s Nvars %lli.\n", malloc_str, malloc_n );\
-    writelog( malloc_str ); \
+    if ( ms.max_mem > CUBE( 1024 ) ) {\
+        sprintf( ms.str, "%s Max %g Gb,", ms.str, ms.max_mem / CUBE( 1024. ) );\
+    }\
+    else if ( ms.max_mem > SQR( 1024 ) ) {\
+        sprintf( ms.str, "%s Max %g Mb,", ms.str, ms.max_mem / SQR( 1024. ) );\
+    }\
+    else if( ms.max_mem > 1024 ) {\
+        sprintf( ms.str, "%s Max %g Kb,", ms.str, ms.max_mem / 1024. );\
+    }\
+    else {\
+        sprintf( ms.str, "%s Max %lli b,", ms.str, ms.max_mem );\
+    }\
+\
+    sprintf( ms.str, "%s Nvars %lli.\n", ms.str, ms.nn );\
+    writelog( ms.str ); \
 }
 
 #define mymalloc( a, n ) {\
@@ -93,43 +93,43 @@
         writelog( "allocate memory for `%s` ( %lli b )\n", #a, n ); \
     }\
 \
-    check_malloc_var_len( a );\
-    sprintf( malloc_var[malloc_n], "%s", #a );\
-    malloc_var_bytes[malloc_n] = n;\
-    malloc_n++; \
-    malloc_mem += n; \
-    malloc_max_mem = vmax( malloc_max_mem, malloc_mem ); \
-    check_malloc_var_num();\
+    check_var_len( a );\
+    sprintf( ms.var[ms.nn], "%s", #a );\
+    ms.var_bytes[ms.nn] = n;\
+    ms.nn++; \
+    ms.mem += n; \
+    ms.max_mem = vmax( ms.max_mem, ms.mem ); \
+    check_var_num();\
     malloc_report(); \
 }
 
 #define myfree( a ) {\
-    for ( malloc_i=0; malloc_i<malloc_n; malloc_i++ ) {\
-        if ( !( strcmp( malloc_var[malloc_i], #a ) ) ) {\
-            malloc_b = malloc_var_bytes[malloc_i];\
+    for ( ms.i=0; ms.i<ms.nn; ms.i++ ) {\
+        if ( !( strcmp( ms.var[ms.i], #a ) ) ) {\
+            ms.b = ms.var_bytes[ms.i];\
             break;\
         }\
     }\
 \
-    if ( malloc_b > CUBE( 1024 ) ) {\
-        writelog( "Free memory for `%s` ( %g Gb )\n", #a, malloc_b / CUBE( 1024. ) ); \
+    if ( ms.b > CUBE( 1024 ) ) {\
+        writelog( "Free memory for `%s` ( %g Gb )\n", #a, ms.b / CUBE( 1024. ) ); \
     }\
-    else if ( malloc_b > SQR( 1024 ) ) {\
-        writelog( "Free memory for `%s` ( %g Mb )\n", #a, malloc_b / SQR(  1024. ) ); \
+    else if ( ms.b > SQR( 1024 ) ) {\
+        writelog( "Free memory for `%s` ( %g Mb )\n", #a, ms.b / SQR(  1024. ) ); \
     }\
-    else if( malloc_b > 1024 ) {\
-        writelog( "Free memory for `%s` ( %g Kb )\n", #a, malloc_b /  1024 ); \
+    else if( ms.b > 1024 ) {\
+        writelog( "Free memory for `%s` ( %g Kb )\n", #a, ms.b /  1024 ); \
     }\
     else {\
-        writelog( "Free memory for `%s` ( %lli b )\n", #a, malloc_b ); \
+        writelog( "Free memory for `%s` ( %lli b )\n", #a, ms.b ); \
     }\
 \
-    for ( ; malloc_i<malloc_n-1; malloc_i++ ) {\
-        sprintf( malloc_var[malloc_i], "%s",  malloc_var[malloc_i+1] ); \
-        malloc_var_bytes[malloc_i] = malloc_var_bytes[malloc_i+1]; \
+    for ( ; ms.i<ms.nn-1; ms.i++ ) {\
+        sprintf( ms.var[ms.i], "%s",  ms.var[ms.i+1] ); \
+        ms.var_bytes[ms.i] = ms.var_bytes[ms.i+1]; \
     }\
-    malloc_n--; \
-    malloc_mem -= malloc_b; \
+    ms.nn--; \
+    ms.mem -= ms.b; \
     malloc_report(); \
 }
 
