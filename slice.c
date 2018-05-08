@@ -90,8 +90,6 @@ void make_slice_img( int pt ) {
     img = image.img;
     memset( img, 0, sizeof( double ) * PicSize * PicSize );
     dx = dy = (All.End[All.proj_i] - All.Start[All.proj_i])/ PicSize;
-    image.DataMin = image.ImgMin = DBL_MAX;
-    image.DataMax = image.ImgMax = DBL_MIN;
     N = All.KernelN;
     Nhalf = N / 2;
     h = All.SofteningTable[pt];
@@ -103,15 +101,12 @@ void make_slice_img( int pt ) {
         y -= All.Start[All.proj_j];
         v = image.data[ i-All.SliceStart[pt] ];
 
-        image.DataMin = vmin( image.DataMin, v, 1 );
-        image.DataMax = vmax( image.DataMax, v );
-
         //printf( "%g\n", v );
         xi = x / dx;
         yi = y / dy;
         //printf( "%i, %i\n", xi, yi );
-        xi = check_picture_index( xi );
-        yi = check_picture_index( yi );
+        check_picture_index( xi );
+        check_picture_index( yi );
         if ( All.KernelInterpolation == 0 ){
             img[ xi * PicSize + yi ] += v;
             continue;
@@ -138,32 +133,9 @@ void make_slice_img( int pt ) {
 
     }
 
-    for ( i=0; i<SQR(PicSize); i++ ) {
-        image.ImgMin = vmin( image.ImgMin, img[i], 1 );
-        image.ImgMax = vmax( image.ImgMax, img[i] );
-    }
-
-    /*
-    MPI_Reduce( &image.DataMin, &image.GlobalDataMin, 1, MPI_DOUBLE, MPI_MIN, 0, MPI_COMM_WORLD );
-    MPI_Reduce( &image.DataMax, &image.GlobalDataMax, 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD );
-    MPI_Reduce( &image.ImgMin, &image.GlobalImgMin, 1, MPI_DOUBLE, MPI_MIN, 0, MPI_COMM_WORLD );
-    MPI_Reduce( &image.ImgMax, &image.GlobalImgMax, 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD );
-    MPI_Barrier( MPI_COMM_WORLD );
-    */
-    find_global_value( image.DataMin, image.GlobalDataMin, MPI_DOUBLE, MPI_MIN );
-    find_global_value( image.DataMax, image.GlobalDataMax, MPI_DOUBLE, MPI_MAX );
-    find_global_value( image.ImgMin, image.GlobalImgMin, MPI_DOUBLE, MPI_MIN );
-    find_global_value( image.ImgMax, image.GlobalImgMax, MPI_DOUBLE, MPI_MAX );
-
-    writelog( "Data:  Min=%g, Max=%g, GlobalMin=%g, GlobalMax=%g\n"
-              "Image: Min=%g, Max=%g, GlobalMin=%g, GlobalMax=%g\n",
-              image.DataMin, image.DataMax, image.GlobalDataMin, image.GlobalDataMax,
-              image.ImgMin,  image.ImgMax,  image.GlobalImgMin,  image.GlobalImgMax );
     image.xmin = All.Start[ All.proj_i ];
     image.xmax = All.End[ All.proj_i ];
     image.ymin = All.Start[ All.proj_j ];
     image.ymax = All.End[ All.proj_j ];
-    image.zmin = All.Start[ All.proj_k ];
-    image.zmax = All.End[ All.proj_k ];
     writelog( "make slice image ... done\n" );
 }

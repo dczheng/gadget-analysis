@@ -5,7 +5,7 @@ double LinkL, rhodm;
 void fof_allocate() {
     size_t bytes;
 
-    mymalloc( FoFProps, NumPart * sizeof( struct fof_properties_struct ) );
+    mymalloc( FoFProps, NumPart * sizeof( struct fof_properties ) );
     mymalloc( FoFNext, NumPart * sizeof( long ) );
     mymalloc( Ngblist, NumPart * sizeof( long ) );
 
@@ -19,7 +19,7 @@ void fof_free() {
 }
 
 int fof_compare_len( const void *a, const void *b ) {
-    return ( ( ( ( struct fof_properties_struct *)a )->Len < ( ( struct fof_properties_struct * )b )->Len ) ? 1 : -1 );
+    return ( ( ( ( struct fof_properties *)a )->Len < ( ( struct fof_properties * )b )->Len ) ? 1 : -1 );
 }
 
 void fof_find_groups() {
@@ -58,18 +58,18 @@ void fof_find_groups() {
             }
         }
     }
-    qsort( FoFProps, NumPart, sizeof( struct fof_properties_struct ), fof_compare_len );
+    qsort( FoFProps, NumPart, sizeof( struct fof_properties ), fof_compare_len );
     writelog( "the maximum number of ngb: %i\n", ngbmax );
     writelog( "FoF find groups ... done\n" );
 }
 
 void fof_compute_group_properties() {
-    long p, i, j, k;
+    long p, i, j, k, p0;
     writelog( "FoF compute groups properties ... \n" );
     Ngroups = 0;
     for ( i=0; i<NumPart; i++ ) {
         if ( FoFProps[i].Len < All.FofMinLen ) break;
-        p = FoFProps[i].Head;
+        p0 = p = FoFProps[i].Head;
         FoFProps[i].mass = 0;
         for ( k=0; k<3; k++ ){
             FoFProps[i].cm[k] = 0;
@@ -79,7 +79,8 @@ void fof_compute_group_properties() {
         for ( j=0; j<FoFProps[i].Len; j++ ) {
             FoFProps[i].mass += P[p].Mass;
             for ( k=0; k<3; k++ ){
-                FoFProps[i].cm[k] += P[p].Mass * P[p].Pos[k];
+                FoFProps[i].cm[k] += P[p].Mass *
+                    ( PERIODIC( P[p].Pos[k]-P[p0].Pos[k] ) + P[p0].Pos[k] );
                 FoFProps[i].vel[k] += P[p].Mass * P[p].Vel[k];
             }
             p = FoFNext[p];

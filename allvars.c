@@ -11,7 +11,7 @@ long MaxNodes;
 long *NextNode;
 long *Ngblist;
 
-struct fof_properties_struct *FoFProps;
+struct fof_properties *FoFProps;
 long  *FoFNext;
 int Ngroups;
 
@@ -24,16 +24,10 @@ struct image_struct image;
 struct fof_info_struct *fof_info;
 struct gadget_2_cgs_unit g2c;
 
-#ifdef DEBUG
-    long debug_l[DEBUG_ARR_LEN];
-    double debug_d[DEBUG_ARR_LEN];
-    char debug_s[500];
-#endif
-
-
-
-
-
 char malloc_var[MALLOC_VAR_NUM][MALLOC_VAR_LEN], malloc_str[100];
 long malloc_mem, malloc_var_bytes[MALLOC_VAR_NUM],
      malloc_i, malloc_n, malloc_b, malloc_max_mem;
+
+#ifdef ZDEBUG
+struct sig_struct sig;
+#endif

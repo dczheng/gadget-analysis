@@ -1,5 +1,5 @@
 #include "allvars.h"
-//#define GROUP_DEBUG
+//#define GROUP_ZDEBUG
 
 hid_t hdf5_file, hdf5_group, hdf5_dataset, hdf5_dataspace, hdf5_dataspace_in_file,
        hdf5_dataspace_in_memory, hdf5_type, hdf5_hdf5_type_mem, hdf5_attribute, hdf5_type;

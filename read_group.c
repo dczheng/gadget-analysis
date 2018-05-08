@@ -24,7 +24,7 @@ void read_group() {
              ( strcmp( ptr->d_name, ".." ) == 0 ) )
             continue;
         sprintf( group_file, "%s%s", All.GroupDir, ptr->d_name );
-#ifdef GROUP_DEBUG
+#ifdef GROUP_ZDEBUG
         fprintf( stdout, "%s\n", ptr->d_name );
 #endif
         if ( !( fd = fopen( group_file, "r" ) ) ) {
@@ -43,7 +43,7 @@ void read_group() {
             malloc_flag = 0;
         }
         if ( Ngroups ){
-#ifdef GROUP_DEBUG
+#ifdef GROUP_ZDEBUG
             fprintf( stdout, "Ngroups = %i, TotNgroups = %i,"
                     " Nids = %i, TotNids = %lli, Ntask = %i\n",
                     Ngroups, TotNgroups, Nids, TotNids, Ntask );
@@ -55,7 +55,7 @@ void read_group() {
                 endrun( 6 );
             }
             for ( i=0; i<Ngroups; i++ ) {
-#ifdef GROUP_DEBUG
+#ifdef GROUP_ZDEBUG
                 fprintf( stdout, "len[%i] = %i\n", i, len[i] );
 #endif
                 group[i+group_offset].Len = len[i];
@@ -68,7 +68,7 @@ void read_group() {
                 endrun( 6 );
             }
             for ( i=0; i<Ngroups; i++ ) {
-#ifdef GROUP_DEBUG
+#ifdef GROUP_ZDEBUG
                 fprintf( stdout, "offset[%i] = %i\n", i, offset[i] );
 #endif
                 group[i+group_offset].Offset = offset[i];
@@ -81,7 +81,7 @@ void read_group() {
                 endrun( 6 );
             }
             for ( i=0; i<Ngroups; i++ ) {
-#ifdef GROUP_DEBUG
+#ifdef GROUP_ZDEBUG
                 fprintf( stdout, "mass[%i] = %f\n", i, mass[i] );
 #endif
                 group[i+group_offset].Mass = mass[i];
@@ -95,12 +95,12 @@ void read_group() {
             }
             for ( i=0; i<Ngroups; i++ ){
                 for ( j=0; j<3; j++ ) {
-#ifdef GROUP_DEBUG
+#ifdef GROUP_ZDEBUG
                     fprintf( stdout, "cm[%i][%i]=%-15.7f ", i, j, cm[ i*3+j ] );
 #endif
                     group[ i+group_offset ].CM[j] = cm[ i*3+j ];
                 }
-#ifdef GROUP_DEBUG
+#ifdef GROUP_ZDEBUG
                 fprintf( stdout, "\n" );
 #endif
             }
@@ -113,12 +113,12 @@ void read_group() {
             }
             for ( i=0; i<Ngroups; i++ ){
                 for ( j=0; j<3; j++ ) {
-#ifdef GROUP_DEBUG
+#ifdef GROUP_ZDEBUG
                     fprintf( stdout, "vel[%i][%i]=%-15.7f ", i, j, vel[ i*3+j ] );
 #endif
                     group[ i+group_offset ].Vel[j] = vel[ i*3+j ];
                 }
-#ifdef GROUP_DEBUG
+#ifdef GROUP_ZDEBUG
                 fprintf( stdout, "\n" );
 #endif
             }
@@ -132,12 +132,12 @@ void read_group() {
             }
             for ( i=0; i<Ngroups; i++ ) {
                 for ( j=0; j<6; j++ ) {
-#ifdef GROUP_DEBUG
+#ifdef GROUP_ZDEBUG
                     fprintf( stdout, "lentype[%i][%i]=%i ", i, j, lentype[ i*6+j ] );
 #endif
                     group[ i+group_offset ].LenType[j] = len[ i*6+j ];
                 }
-#ifdef GROUP_DEBUG
+#ifdef GROUP_ZDEBUG
                 fprintf( stdout, "\n" );
 #endif
             }
@@ -150,7 +150,7 @@ void read_group() {
                 endrun( 6 );
             }
             for ( i=0; i<Ngroups; i++ ) {
-#ifdef GROUP_DEBUG
+#ifdef GROUP_ZDEBUG
                 fprintf( stdout, "veldisp[i]=%f\n", i, veldisp[i] );
 #endif
                 group[ i+group_offset ].VelDisp = veldisp[i];
@@ -220,7 +220,7 @@ void read_group() {
                 endrun( 6 );
             }
             for ( i=0; i<Ngroups; i++ ) {
-#ifdef GROUP_DEBUG
+#ifdef GROUP_ZDEBUG
                 fprintf( stdout, "sfr_mass[%i]=%f\n", i, mass[i] );
 #endif
                 group[ i+group_offset ].Sfr = mass[i];
@@ -234,7 +234,7 @@ void read_group() {
                 endrun( 6 );
             }
             for ( i=0; i<Ngroups; i++ ) {
-#ifdef GROUP_DEBUG
+#ifdef GROUP_ZDEBUG
                 fprintf( stdout, "bh_mass[%i]=%f\n", i, mass[i] );
 #endif
                 group[ i+group_offset ].BH_Mass = mass[i];
@@ -247,7 +247,7 @@ void read_group() {
                 endrun( 6 );
             }
             for ( i=0; i<Ngroups; i++ ) {
-#ifdef GROUP_DEBUG
+#ifdef GROUP_ZDEBUG
                 fprintf( stdout, "bh_mdot_mass[%i]\n", i, mass[i] );
 #endif
                 group[ i+group_offset ].BH_Mdot = mass[i];

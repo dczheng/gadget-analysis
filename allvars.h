@@ -16,7 +16,7 @@
 #include "macros.h"
 #include "omp.h"
 
-#define DEBUG
+#define ZDEBUG
 #define MALLOC_VAR_NUM 1000
 #define MALLOC_VAR_LEN 200
 
@@ -231,10 +231,10 @@ extern struct global_parameters_struct {
          FofFileName[ FILENAME_MAX ],
          LogFile[ FILENAME_MAX ];
     int StartSnapIndex, MpcFlag, ProjectDirection, KernelN,
-        PicSize, NumFiles, HgeFlag, CrFlag, BFlag,
+        PicSize, PicSize2, NumFiles, HgeFlag, CrFlag, BFlag,
         GasState, GasDensity, GasTemperature, KernelInterpolation,
         ReadTemperature, FofMinLen, proj_i, proj_j, proj_k,
-        TreePartType;
+        TreePartType, ConvN, ConvFlag;
     double SofteningTable[6], Alpha ,
            UnitTime_in_s,
            UnitMass_in_g,
@@ -249,14 +249,15 @@ extern struct global_parameters_struct {
            *KernelMat2D[6], *KernelMat3D[6],
            Time, Hubble_a, RhoBaryon,
            RedShift, HubbleParam, RhoCrit, G,
-           Hubble, Omega0, OmegaLambda, OmegaBaryon;
+           Hubble, Omega0, OmegaLambda, OmegaBaryon,
+           *ConvKernel, ConvSigma;
     long SliceStart[6], SliceEnd[6];
 }All;
 
 extern struct image_struct{
-    double *data, *img, DataMax, DataMin, GlobalDataMax, GlobalDataMin,
+    double *data, *img,
            ImgMin, ImgMax, GlobalImgMin, GlobalImgMax,
-           xmin, xmax, ymin, ymax, zmin, zmax;
+           xmin, xmax, ymin, ymax;
 }image;
 
 extern struct NODE {
@@ -269,10 +270,12 @@ extern long MaxNodes;
 extern long *NextNode;
 extern long *Ngblist;
 
-extern struct fof_properties_struct{
+struct fof_properties{
     double mass, cm[3], vr200, vel[3];
     long Head, Tail, Len;
-} *FoFProps;
+};
+
+extern struct fof_properties *FoFProps;
 extern long *FoFNext;
 extern int Ngroups;
 
@@ -286,10 +289,36 @@ extern long malloc_mem, malloc_var_bytes[MALLOC_VAR_NUM],
        malloc_i, malloc_n, malloc_b, malloc_max_mem;
 
 
-#ifdef DEBUG
-#define DEBUG_ARR_LEN 6
-    extern long debug_l[DEBUG_ARR_LEN];
-    extern double debug_d[DEBUG_ARR_LEN];
-    extern char debug_s[500];
-#endif
+#ifdef ZDEBUG
+void signal_hander( int s );
+void init_sig();
+void empty_sig_buf();
+#define ZDEBUG_NUM 10
 
+struct sig_struct{
+    char stop[500];
+    char buf[ZDEBUG_NUM][500];
+    int i, j;
+    double d[ZDEBUG_NUM];
+} sig;
+
+#define RAISE_SIGSTOP() { \
+    sprintf( sig.stop, "%s %s %i" , __FILE__, __FUNCTION__, __LINE__ ); raise( SIGSEGV );\
+}
+
+#define ZSPRINTF( k, fmt, ... ) { \
+    if ( k >= ZDEBUG_NUM ) { \
+        sprintf( sig.buf[0], "%d is too large.", k ); \
+        RAISE_SIGSTOP(); \
+    } \
+    sprintf( sig.buf[k], fmt, ##__VA_ARGS__ ); \
+}
+
+#define ZCLEAR() { empty_sig_buf();  }
+
+#else
+
+#define ZSPRINTF( k, fmt, ... )
+#define ZCLEAR()
+
+#endif

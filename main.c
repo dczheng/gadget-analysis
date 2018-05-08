@@ -25,9 +25,6 @@ void main( int argc, char *argv[] ){
             fprintf( stderr, "Parameter file is required on command line!\n " );
             endrun( 1 );
         }
-#ifdef DEBUG
-    signal( SIGSEGV, signal_hander );
-#endif
     time1 = time( NULL );
     tb = localtime( &time1 );
 
@@ -48,6 +45,12 @@ void main( int argc, char *argv[] ){
 
     writelog( "open log file\n" );
     writelog( "Start At: %s", asctime(tb) );
+
+#ifdef ZDEBUG
+    writelog( "Assign `SIGSEGV` to signal_hander function.\n" );
+    signal( SIGSEGV, signal_hander );
+    init_sig();
+#endif
 
     writelog( sep_str );
     read_parameters( argv[1] );

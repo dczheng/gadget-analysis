@@ -3,14 +3,13 @@ void free_memory();
 void group_analysis();
 void read_group();
 void free_group();
-void signal_hander( int sig );
 void endrun( int ierr );
 void read_parameters();
 void set_units();
 
 void slice();
 void make_slice_img( int pt );
-void write_img( char *fn, int mode);
+void write_img( char *fn );
 void create_dir( char *s );
 
 void analysis();
@@ -36,3 +35,5 @@ void fof();
 void fof_free();
 void fof_save_groups();
 int ngb_fof(  double *searchcenter, double h );
+
+void conv( double ds );

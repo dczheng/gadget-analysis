@@ -171,6 +171,18 @@ void read_parameters( char *fn ) {
         addr[nt] = &All.OmegaBaryon;
         id[nt++] = REAL;
 
+        strcpy( tag[nt], "ConvN" );
+        addr[nt] = &All.ConvN;
+        id[nt++] = INT;
+
+        strcpy( tag[nt], "ConvFlag" );
+        addr[nt] = &All.ConvFlag;
+        id[nt++] = INT;
+
+        strcpy( tag[nt], "ConvSigma" );
+        addr[nt] = &All.ConvSigma;
+        id[nt++] = REAL;
+
         strcpy( tag[nt], "FofFileName" );
         addr[nt] = &All.FofFileName;
         id[nt++] = STRING;

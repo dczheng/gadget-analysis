@@ -5,10 +5,13 @@ void init_analysis() {
     All.proj_k = All.ProjectDirection;
     All.proj_i = ( All.ProjectDirection + 1 ) % 3;
     All.proj_j = ( All.ProjectDirection + 2 ) % 3;
+    All.PicSize2 = SQR( All.PicSize );
     slice();
-    if ( All.KernelInterpolation == 1 )
+    if ( All.KernelInterpolation )
         init_kernel_matrix();
     inte_ws = gsl_integration_workspace_alloc( GSL_INTE_WS_LEN );
+    if ( All.ConvFlag )
+        init_conv_kernel();
     writelog( "initialize analysis... done.\n" );
     writelog( sep_str );
 }
@@ -16,8 +19,10 @@ void init_analysis() {
 void free_analysis() {
     writelog( "free analysis ...\n" );
     gsl_integration_workspace_free( inte_ws );
-    if ( All.KernelInterpolation == 1 )
+    if ( All.KernelInterpolation )
         free_kernel_matrix();
+    if ( All.ConvFlag )
+        free_conv_kernel();
     writelog( "free analysis ... done.\n" );
     writelog( sep_str );
 }
@@ -44,18 +49,8 @@ void gas_density_slice() {
         image.img[i] *= All.UnitMass_in_g / pow( All.UnitLength_in_cm, 2 );
     }
 
-    image.DataMin *= All.UnitDensity_in_cgs;
-    image.DataMax *= All.UnitDensity_in_cgs;
-    image.GlobalDataMin *= All.UnitDensity_in_cgs;
-    image.GlobalDataMax *= All.UnitDensity_in_cgs;
 
-    image.ImgMin *= All.UnitMass_in_g / pow( All.UnitLength_in_cm, 2 );
-    image.ImgMax *= All.UnitMass_in_g / pow( All.UnitLength_in_cm, 2 );
-    image.GlobalImgMin *= All.UnitMass_in_g / pow( All.UnitLength_in_cm, 2 );
-    image.GlobalImgMax *= All.UnitMass_in_g / pow( All.UnitLength_in_cm, 2 );
-
-
-    write_img( buf, 1 );
+    write_img( buf );
     myfree( image.data );
     myfree( image.img );
 
@@ -259,10 +254,10 @@ void gas_state() {
         LogDens = ( LogDens == 0 ) ? LogDensMin : log10( LogDens );
 
         i = ( LogTemp - LogTempMin ) / DLogTemp;
-        i = check_picture_index( i );
+        check_picture_index( i );
 
         j = ( LogDens - LogDensMin ) / DLogDens;
-        j = check_picture_index( j );
+        check_picture_index( j );
 
         img[ i*PicSize + j ]++;
  //       printf( "%g ", img[ i*PicSize +j ] ) ;
@@ -280,23 +275,12 @@ void gas_state() {
 
     memset( &image, 0, sizeof( struct image_struct ) );
 
-    image.ImgMin = DBL_MAX;
-    image.ImgMax = DBL_MIN;
-
-    for ( i=0; i<SQR(PicSize); i++ ) {
-        image.ImgMin = vmin( image.ImgMin, img[i], 1 );
-        image.ImgMax = vmax( image.ImgMax, img[i] );
-    }
-
-    find_global_value( image.ImgMin, image.GlobalImgMin, MPI_DOUBLE, MPI_MIN );
-    find_global_value( image.ImgMax, image.GlobalImgMax, MPI_DOUBLE, MPI_MAX );
-
     image.img = img;
     image.xmin = LogDensMin;
     image.xmax = LogDensMax;
     image.ymin = LogTempMin;
     image.ymax = LogTempMax;
-    write_img( buf, 0 );
+    write_img( buf );
     myfree( img );
 
     //All.PicSize = PicSize_tmp;
@@ -305,9 +289,11 @@ void gas_state() {
 
 void gas_temperature_slice() {
 
-    int num, i;
+    int num, i, PicSize, PicSize2;
     char buf[100];
     writelog( "gas temperature silce ...\n" );
+    PicSize = All.PicSize;
+    PicSize2 = All.PicSize2;
     num = All.SliceEnd[0] - All.SliceStart[0];
     mymalloc( image.data, sizeof( double ) * num );
     mymalloc( image.img, sizeof( double ) * SQR( All.PicSize ) );
@@ -323,22 +309,98 @@ void gas_temperature_slice() {
 
     make_slice_img( 0 );
 
-    for ( i=0; i<SQR(All.PicSize); i++ ){
+    for ( i=0; i<PicSize2; i++ ){
         image.img[i] *= All.UnitLength_in_cm;
     }
 
-    image.ImgMin *=  All.UnitLength_in_cm;
-    image.ImgMax *=  All.UnitLength_in_cm;
-    image.GlobalImgMin *= All.UnitLength_in_cm;
-    image.GlobalImgMax *= All.UnitLength_in_cm;
-
-    write_img( buf, 1 );
+    write_img( buf );
 
     myfree( image.data );
     myfree( image.img );
     writelog( "gas Temperature silce ... done.\n" );
     writelog( sep_str );
 
+}
+
+void group_analysis() {
+    long index, i, j, p, PicSize, x, y, ii, jj,
+         xo, yo, PicSize2, npart[6];
+    struct fof_properties g;
+    double *img, *m, L, dL;
+    char buf[100];
+    index = 0;
+    writelog( "analysis group: %li ...\n", index );
+
+    PicSize = All.PicSize;
+    PicSize2 = All.PicSize2;
+    x = All.proj_i;
+    y = All.proj_j;
+    xo = PicSize / 2;
+    yo = PicSize / 2;
+    g = FoFProps[index];
+    mymalloc( img, PicSize2 * sizeof( double ) );
+    mymalloc( m, PicSize2 * sizeof( double ) );
+    memset( img, 0, PicSize2 * sizeof( double ) );
+    memset( m, 0, PicSize2 * sizeof( double ) );
+
+    writelog( "center of mass: %g %g %g\n",
+            g.cm[0], g.cm[1], g.cm[2] );
+
+    p = g.Head;
+
+    for ( i=0; i<6; i++ )
+        npart[i] = 0;
+
+    for ( i=0, L=0; i<g.Len; i++, p=FoFNext[p] ){
+        npart[ P[p].Type ] ++;
+        if ( P[p].Type != 0 )
+            continue;
+            L = vmax( NGB_PERIODIC( P[p].Pos[x] - g.cm[x] ), L );
+            L = vmax( NGB_PERIODIC( P[p].Pos[y] - g.cm[y] ), L );
+    }
+
+    dL = 2 * L / PicSize;
+    writelog( "npart: " );
+    for ( i=0; i<6; i++ )
+        writelog( "%li ", npart[i] );
+    writelog( "\n" );
+    writelog( "L: %g, dL:%g\n", 2*L, dL );
+
+    p = g.Head;
+    for ( i=0; i<g.Len; i++, p=FoFNext[p] ) {
+        if ( P[p].Type != 0 )
+            continue;
+        ii = PERIODIC( P[p].Pos[x] - g.cm[x] ) / dL + xo;
+        jj = PERIODIC( P[p].Pos[y] - g.cm[y] ) / dL + yo;
+        //printf( "%li, %li\n", ii, jj );
+        check_picture_index( ii );
+        check_picture_index( jj );
+        img[ ii*PicSize + jj ] += SphP[p].Temp * P[p].Mass;
+        m[ ii*PicSize + jj ] += P[p].Mass;
+    }
+
+    for ( i=0; i<PicSize2; i++ ) {
+        if ( m[i] == 0 )
+            continue;
+        img[i] /= m[i];
+    }
+
+    image.img = img;
+    image.xmin =  -L;
+    image.xmax =  L;
+    image.ymin =  -L;
+    image.ymax =  L;
+
+    conv( dL );
+
+    create_dir( "./group" );
+    sprintf( buf, "./group/%.2f.dat", All.RedShift );
+    write_img( buf );
+
+    myfree( img );
+    myfree( m );
+    writelog( "analysis group: %li ... done.\n", index );
+    writelog( sep_str );
 }
 
 void analysis(){
@@ -360,6 +422,7 @@ void analysis(){
     //tree_build();
     //tree_free();
     fof();
+    group_analysis();
     //fof_save_groups();
     fof_free();
     //output_mag();

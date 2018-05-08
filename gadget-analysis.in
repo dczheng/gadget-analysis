@@ -36,3 +36,6 @@ GasDensity                    1
 GasTemperature                1
 GasState                      1
 ReadTemperature               0
+ConvN                         3
+ConvSigma                     1
+ConvFlag                      1

@@ -5,9 +5,11 @@
     }\
 }
 
-#define vmax( a, b ) ( a > b ) ? a : b
+#define vmax( a, b ) ( ( a > b ) ? a : b )
 #define vmin( a, b, mode) ( mode == 0 ) ? ( ( a > b ) ? b : a ) : ( ( a > b && b > 0 ) ? b : a )
-#define check_picture_index( i ) ( ( i<0 || i>=All.PicSize ) ? ( (i<0) ? 0 : All.PicSize ) : i )
+#define check_picture_index( i ) ( i = ( ( i<0 || i>=All.PicSize ) ? ( (i<0) ? 0 : All.PicSize ) : i ) )
+#define PERIODIC( x ) ( ( x > All.HalfBoxSize || x < -All.HalfBoxSize ) ? ( ( x > All.HalfBoxSize ) ? ( x - All.BoxSize ) : ( x + All.BoxSize )  ) : x )
+#define NGB_PERIODIC( x ) ( (fabs(x) > All.HalfBoxSize) ? ( All.BoxSize-fabs(x) ) : fabs(x) )
 
 #define find_global_value( a, A, type, op ) { \
     MPI_Reduce( &a, &A, 1, type, op, 0, MPI_COMM_WORLD ); \

@@ -46,7 +46,7 @@ void tree_build_single() {
         len = ( max[i] - min[i] > len ) ? ( max[i] - min[i] ) : len;
     }
     for ( i=0; i<3; i++ ) {
-        writelog( "Min[%i]=%g, Max[%i]=%g\n",
+        writelog( "min[%i]=%g, max[%i]=%g\n",
                 i, min[i], i, max[i] );
     }
     len *= 1.001;
@@ -112,12 +112,6 @@ void tree_build_single() {
 void tree_walk_recursive( long n, long sib, long father ) {
     int i, j;
     long nextsib, p, pp;
-    /*
-    debug_l[0] = n;
-    debug_l[1] = last;
-    debug_l[2] = father;
-    debug_l[3] = NumPart;
-    */
     if ( n >= NumPart ) {
         if ( last >= 0 ) {
             if ( last >= NumPart )
