@@ -117,7 +117,7 @@ ax.set_yticks( np.linspace( 0, m, NY ) )
 ax.set_yticklabels( TempList )
 '''
 cbar = fig.colorbar( img )
-cbar.set_label( "Temperature\n%s direction"%(ProDire) )
+cbar.set_label( "Temperature( K )\n%s direction"%(ProDire) )
 
 print( "save image to " +  ProDire + sys.argv[2] )
 plt.savefig( ProDire + sys.argv[2] )

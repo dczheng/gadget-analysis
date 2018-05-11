@@ -162,18 +162,21 @@ void syn( double v ) {
     writelog( "img_max = %g, img_min = %g\n", img_max, img_min );
 }
 
-void output_mag() {
+void magnetic() {
     long i;
-    FILE *fd;
-    fd = fopen( "./B.txt", "w" );
+    double B, Bmin, Bmax;
+    Bmax = -DBL_MAX;
+    Bmin = DBL_MAX;
     for ( i=0; i<N_Gas; i++ ) {
-        fprintf( fd, "%g %g %g %g\n",
-                P[i].Pos[0],
-                P[i].Pos[1],
-                P[i].Pos[2],
-                log10(get_B( i ) ) );
+        B = sqrt(
+                SQR( SphP[i].B[0] ) +
+                SQR( SphP[i].B[1] ) +
+                SQR( SphP[i].B[2] ) );
+        Bmin = vmin( B, Bmin, 0 );
+        Bmax = vmax( B, Bmax );
     }
-    fclose( fd );
+    printf( "Bmin: %g, Bmax: %g\n",
+            Bmin, Bmax );
 }
 
 void output_rho() {
@@ -328,8 +331,11 @@ void group_analysis() {
     long index, i, j, p, PicSize, x, y, ii, jj,
          xo, yo, PicSize2, npart[6];
     struct fof_properties g;
-    double *img, *m, L, dL, mass[6];;
+    double *img, *m, L, dL, mass[6], B;
     char buf[100];
+
+    fof();
+
     index = All.GroupIndex;
     writelog( "analysis group: %li ...\n", index );
 
@@ -342,8 +348,6 @@ void group_analysis() {
     g = FoFProps[index];
     mymalloc( img, PicSize2 * sizeof( double ) );
     mymalloc( m, PicSize2 * sizeof( double ) );
-    memset( img, 0, PicSize2 * sizeof( double ) );
-    memset( m, 0, PicSize2 * sizeof( double ) );
 
     writelog( "center of mass: %g %g %g\n",
             g.cm[0], g.cm[1], g.cm[2] );
@@ -375,10 +379,33 @@ void group_analysis() {
         mass[i] *= 1e10;
         writelog( "%g ", mass[i] );
     }
-    writelog( "\n" );
 
+    writelog( "\n" );
     writelog( "L: %g, dL:%g\n", 2*L, dL );
 
+    for ( i=0; i<6; i++ )
+        img_props(i) = mass[i];
+    img_xmin =  -L;
+    img_xmax =  L;
+    img_ymin =  -L;
+    img_ymax =  L;
+
+    memset( m, 0, PicSize2 * sizeof( double ) );
+    p = g.Head;
+    for ( i=0; i<g.Len; i++, p=FoFNext[p] ) {
+        if ( P[p].Type != 0 )
+            continue;
+        ii = PERIODIC( P[p].Pos[x] - g.cm[x] ) / dL + xo;
+        jj = PERIODIC( P[p].Pos[y] - g.cm[y] ) / dL + yo;
+        //printf( "%li, %li\n", ii, jj );
+        check_picture_index( ii );
+        check_picture_index( jj );
+        m[ ii*PicSize + jj ] += P[p].Mass;
+    }
+
+/********************temperture*************************/
+    writelog( "\ngroup temperature ...\n" );
+    memset( img, 0, PicSize2 * sizeof( double ) );
     p = g.Head;
     for ( i=0; i<g.Len; i++, p=FoFNext[p] ) {
         if ( P[p].Type != 0 )
@@ -389,7 +416,6 @@ void group_analysis() {
         check_picture_index( ii );
         check_picture_index( jj );
         img[ ii*PicSize + jj ] += SphP[p].Temp * P[p].Mass;
-        m[ ii*PicSize + jj ] += P[p].Mass;
     }
 
     for ( i=0; i<PicSize2; i++ ) {
@@ -399,24 +425,95 @@ void group_analysis() {
     }
 
     image.img = img;
-    for ( i=0; i<6; i++ )
-        img_props(i) = mass[i];
-    img_xmin =  -L;
-    img_xmax =  L;
-    img_ymin =  -L;
-    img_ymax =  L;
 
     if ( All.ConvFlag )
-    conv( dL );
+        conv( dL );
 
     create_dir( "./group" );
-    sprintf( buf, "./group/%.2f.dat", All.RedShift );
+    sprintf( buf, "./group/Temperature_%.2f.dat", All.RedShift );
     write_img( buf );
+    writelog( "group temperature ... done.\n" );
+
+/********************temperture*************************/
+
+/********************magnetic field*************************/
+    writelog( "\ngroup magnetic field ...\n" );
+    memset( img, 0, PicSize2 * sizeof( double ) );
+    p = g.Head;
+    for ( i=0; i<g.Len; i++, p=FoFNext[p] ) {
+        if ( P[p].Type != 0 )
+            continue;
+        ii = PERIODIC( P[p].Pos[x] - g.cm[x] ) / dL + xo;
+        jj = PERIODIC( P[p].Pos[y] - g.cm[y] ) / dL + yo;
+        //printf( "%li, %li\n", ii, jj );
+        check_picture_index( ii );
+        check_picture_index( jj );
+        B = sqrt( SQR( SphP[p].B[0] ) +
+                  SQR( SphP[p].B[1] ) +
+                  SQR( SphP[p].B[2] ) );
+        B *= 1e6;  // convert G to muG
+        img[ ii*PicSize + jj ] += B * P[p].Mass;
+    }
+
+    for ( i=0; i<PicSize2; i++ ) {
+        if ( m[i] == 0 )
+            continue;
+        img[i] /= m[i];
+    }
+
+    image.img = img;
+
+    if ( All.ConvFlag )
+        conv( dL );
+
+    create_dir( "./group" );
+    sprintf( buf, "./group/MagneticField_%.2f.dat", All.RedShift );
+    write_img( buf );
+    writelog( "group magnetic field ... done.\n" );
+
+/********************magnetic field*************************/
+
+/********************mach number*************************/
+    writelog( "\ngroup mach number ...\n" );
+    memset( img, 0, PicSize2 * sizeof( double ) );
+    p = g.Head;
+    for ( i=0; i<g.Len; i++, p=FoFNext[p] ) {
+        if ( P[p].Type != 0 )
+            continue;
+        ii = PERIODIC( P[p].Pos[x] - g.cm[x] ) / dL + xo;
+        jj = PERIODIC( P[p].Pos[y] - g.cm[y] ) / dL + yo;
+        //printf( "%li, %li\n", ii, jj );
+        check_picture_index( ii );
+        check_picture_index( jj );
+        img[ ii*PicSize + jj ] += SphP[p].MachNumber * P[p].Mass;
+    }
+
+    for ( i=0; i<PicSize2; i++ ) {
+        if ( m[i] == 0 )
+            continue;
+        img[i] /= m[i];
+    }
+
+    image.img = img;
+
+    if ( All.ConvFlag )
+        conv( dL );
+
+    create_dir( "./group" );
+    sprintf( buf, "./group/MachNumber_%.2f.dat", All.RedShift );
+    write_img( buf );
+    writelog( "group Mach Number ... done.\n" );
+
+/********************mach number*************************/
 
     myfree( img );
     myfree( m );
+
     writelog( "analysis group: %li ... done.\n", index );
     writelog( sep_str );
+
+    fof_free();
+
 }
 
 void analysis(){
@@ -437,11 +534,8 @@ void analysis(){
         gas_temperature_slice();
     //tree_build();
     //tree_free();
-    fof();
     group_analysis();
     //fof_save_groups();
-    fof_free();
-    //output_mag();
     //output_rho();
     //vel_value();
     //sort_gas_rho();
