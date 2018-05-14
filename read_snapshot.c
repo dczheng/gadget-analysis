@@ -598,7 +598,7 @@ void free_memory() {
 void find_id() {
     int bits;
     long i, num, offset;
-    time_start();
+    timer_start();
     writelog( "find id ...\n" );
 
     for ( bits=0; GENERATIONS > (1<<bits); bits++ );
@@ -629,14 +629,14 @@ void find_id() {
         }
     }
     writelog( "find id ... done.\n" );
-    time_end();
+    timer_end();
     writelog( sep_str );
 }
 
 void construct_id_to_index() {
     long idmax, idmin, i, idn, N;
     size_t bytes;
-    time_start();
+    timer_start();
     writelog( "construct id to index ...\n" );
     idmax = -1;
     idmin = LONG_MAX;
@@ -671,7 +671,7 @@ void construct_id_to_index() {
     */
 
     writelog( "construct id to index ... done.\n" );
-    time_end();
+    timer_end();
     writelog( sep_str );
 }
 
@@ -680,7 +680,7 @@ void read_snapshot() {
     long i, file, pc, offset, num;
     char file_name[MYFILENAME_MAX], buf[200], buf1[200];
     size_t BufferBytes;
-    time_start();
+    timer_start();
     writelog( "read_data ...\n" );
 
 #ifdef OUTPUT_IN_DOUBLEPRECISION
@@ -763,7 +763,7 @@ void read_snapshot() {
         offset += num;
     }
     writelog( "read data ... done. \n" );
-    time_end();
+    timer_end();
     writelog( sep_str );
     find_id();
     construct_id_to_index();

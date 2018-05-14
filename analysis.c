@@ -334,7 +334,11 @@ void group_analysis() {
     double *img, *m, L, dL, mass[6], B;
     char buf[100];
 
-    fof();
+    if ( All.FoFRead )
+        fof_read();
+    else {
+        fof();
+    }
 
     index = All.GroupIndex;
     writelog( "analysis group: %li ...\n", index );

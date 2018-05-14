@@ -176,7 +176,7 @@ void tree_build() {
     npart = 30;
     All.TreeAllocFactor = 2;
     */
-    time_start();
+    timer_start();
     for ( i=0, npart=0; i<NumPart; i++ )
         if ( ( 1 << P[i].Type ) & All.TreePartType )
             npart ++;
@@ -214,6 +214,6 @@ void tree_build() {
     }
     //tree_walk_test();
     writelog( "tree walk ... done.\n" );
-    time_end();
+    timer_end();
     writelog( sep_str );
 }

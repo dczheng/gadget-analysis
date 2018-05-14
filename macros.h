@@ -87,7 +87,7 @@
         writelog( "allocate memory for `%s` ( %g Mb )\n", #a, n / SQR(  1024. ) ); \
     }\
     else if( n > 1024 ) {\
-        writelog( "allocate memory for `%s` ( %g Kb )\n", #a, n /  1024 ); \
+        writelog( "allocate memory for `%s` ( %g Kb )\n", #a, n /  1024. ); \
     }\
     else {\
         writelog( "allocate memory for `%s` ( %lli b )\n", #a, n ); \
@@ -118,7 +118,7 @@
         writelog( "Free memory for `%s` ( %g Mb )\n", #a, ms.b / SQR(  1024. ) ); \
     }\
     else if( ms.b > 1024 ) {\
-        writelog( "Free memory for `%s` ( %g Kb )\n", #a, ms.b /  1024 ); \
+        writelog( "Free memory for `%s` ( %g Kb )\n", #a, ms.b /  1024. ); \
     }\
     else {\
         writelog( "Free memory for `%s` ( %lli b )\n", #a, ms.b ); \
@@ -133,11 +133,11 @@
     malloc_report(); \
 }
 
-#define time_start() \
+#define timer_start() \
     double t0, t1; \
     t0 = second();
 
-#define time_end() \
+#define timer_end() \
     t1 = second(); \
     writelog( "Time: %g sec\n", t1 - t0 );
 

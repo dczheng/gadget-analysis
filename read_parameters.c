@@ -51,6 +51,10 @@ void read_parameters( char *fn ) {
         addr[nt] = &All.MpcFlag;
         id[nt++] = INT;
 
+        strcpy( tag[nt], "FoFRead" );
+        addr[nt] = &All.FoFRead;
+        id[nt++] = INT;
+
         strcpy( tag[nt], "SofteningGas" );
         addr[nt] = &All.SofteningTable[0];
         id[nt++] = REAL;
@@ -155,8 +159,8 @@ void read_parameters( char *fn ) {
         addr[nt] = &All.LinkLength;
         id[nt++] = REAL;
 
-        strcpy( tag[nt], "FofMinLen" );
-        addr[nt] = &All.FofMinLen;
+        strcpy( tag[nt], "FoFMinLen" );
+        addr[nt] = &All.FoFMinLen;
         id[nt++] = INT;
 
         strcpy( tag[nt], "TreePartType" );
@@ -179,8 +183,8 @@ void read_parameters( char *fn ) {
         addr[nt] = &All.ConvSigma;
         id[nt++] = REAL;
 
-        strcpy( tag[nt], "FofFileName" );
-        addr[nt] = &All.FofFileName;
+        strcpy( tag[nt], "FoFPrefix" );
+        addr[nt] = &All.FoFPrefix;
         id[nt++] = STRING;
 
         strcpy( tag[nt], "GroupIndex" );

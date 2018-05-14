@@ -169,14 +169,14 @@ extern struct io_header header;
 
 extern struct global_parameters_struct {
     char FilePrefix[ MYFILENAME_MAX ],
-         FofFileName[ MYFILENAME_MAX ],
+         FoFPrefix[ MYFILENAME_MAX ],
          LogFile[ MYFILENAME_MAX ],
          *ToolsPath;
 
-    int StartSnapIndex, MpcFlag, ProjectDirection, KernelN,
+    int StartSnapIndex, MpcFlag, ProjectDirection, KernelN, FoFRead,
         PicSize, PicSize2, NumFiles, HgeFlag, CrFlag, BFlag,
         GasState, GasDensity, GasTemperature, KernelInterpolation,
-        ReadTemperature, FofMinLen, proj_i, proj_j, proj_k,
+        ReadTemperature, FoFMinLen, proj_i, proj_j, proj_k,
         TreePartType, ConvN, ConvFlag, GroupIndex;
 
     double SofteningTable[6], Alpha ,

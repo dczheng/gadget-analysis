@@ -37,7 +37,8 @@ void compute_cosmo_quantities();
 
 void fof();
 void fof_free();
-void fof_save_groups();
+void fof_save();
+void fof_read();
 int ngb_fof(  double *searchcenter, double h );
 
 void conv( double ds );
