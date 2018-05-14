@@ -1,5 +1,7 @@
 #include "allvars.h"
 
+double t0, t1;
+
 void create_dir( char *s ) {
     if ( ThisTask == 0 ){
         if ( access( s, 0 ) == -1 ){
@@ -11,4 +13,8 @@ void create_dir( char *s ) {
         }
     }
     MPI_Barrier( MPI_COMM_WORLD );
+}
+
+double second() {
+    return ( (double) clock() / CLOCKS_PER_SEC );
 }

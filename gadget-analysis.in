@@ -1,8 +1,7 @@
-FilePrefix  test_snapshot
+FilePrefix                snapshot
 StartSnapIndex                51
 NumFiles                      1
 PicSize                       360
-GroupDir                      ./test
 UnitLength_in_cm              3.085678e21
 UnitMass_in_g                 1.989e43
 UnitVelocity_in_cm_per_s      1e5

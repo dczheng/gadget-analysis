@@ -71,7 +71,7 @@ int get_block_nbytes( enum iofields blk ) {
         case IO_VEL:
         case IO_ACCEL:
         case IO_MAG:
-            block_nbytes = 3 * sizeof( double );
+            block_nbytes = 3 * sizeof( OutputFloat );
             break;
         case IO_DIVB:
         case IO_DBDT:
@@ -90,10 +90,10 @@ int get_block_nbytes( enum iofields blk ) {
         case IO_CRE_Q0:
         case IO_CRE_E0:
         case IO_CRE_n0:
-            block_nbytes = sizeof( double );
+            block_nbytes = sizeof( OutputFloat );
             break;
         case IO_ID:
-            block_nbytes = sizeof( MyIDType );
+            block_nbytes = sizeof( MyIDType  );
             break;
     }
     return block_nbytes;
@@ -225,7 +225,7 @@ void get_hdf5_native_type( enum iofields blk, hid_t *hdf5_type ) {
 void empty_buffer( enum iofields blk, int offset, int pt ) {
     int i, j, t;
     long n;
-    MyFloat *fp;
+    OutputFloat *fp;
     MyIDType *ip;
     fp = CommBuffer;
     ip = CommBuffer;
@@ -598,6 +598,7 @@ void free_memory() {
 void find_id() {
     int bits;
     long i, num, offset;
+    time_start();
     writelog( "find id ...\n" );
 
     for ( bits=0; GENERATIONS > (1<<bits); bits++ );
@@ -628,12 +629,14 @@ void find_id() {
         }
     }
     writelog( "find id ... done.\n" );
+    time_end();
     writelog( sep_str );
 }
 
 void construct_id_to_index() {
     long idmax, idmin, i, idn, N;
     size_t bytes;
+    time_start();
     writelog( "construct id to index ...\n" );
     idmax = -1;
     idmin = LONG_MAX;
@@ -668,20 +671,35 @@ void construct_id_to_index() {
     */
 
     writelog( "construct id to index ... done.\n" );
+    time_end();
     writelog( sep_str );
 }
 
 void read_snapshot() {
     int pt, blk, nbytes, rank;
     long i, file, pc, offset, num;
-    char file_name[FILENAME_MAX], buf[200], buf1[200];
+    char file_name[MYFILENAME_MAX], buf[200], buf1[200];
     size_t BufferBytes;
+    time_start();
     writelog( "read_data ...\n" );
+
+#ifdef OUTPUT_IN_DOUBLEPRECISION
+    writelog( "******Note: output precision is double ! ******\n" );
+#else
+    writelog( "******Note: output precision is float ! ******\n" );
+#endif
+
     sprintf( file_name, "%s_%03d.%3i.hdf5", All.FilePrefix, All.StartSnapIndex + ThisTask, 0 );
     if ( All.NumFiles < 2 )
         sprintf( file_name, "%s_%03d.hdf5", All.FilePrefix, All.StartSnapIndex + ThisTask );
     N_Gas = NumPart = 0;
     read_header( file_name );
+    /*
+    for ( i=0; i<6; i++ ) {
+        printf( "%.20f\n", header.mass[i] );
+    }
+    endrun( 100 );
+    */
     show_header( header );
     for ( i=0; i<6; i++ ){
         NumPart += get_particle_num( i );
@@ -698,7 +716,7 @@ void read_snapshot() {
 
     allocate_memory();
 
-    BufferBytes = header.npart[0] * sizeof( double ) * 3;
+    BufferBytes = header.npart[0] * sizeof( OutputFloat ) * 3;
     mymalloc( CommBuffer, BufferBytes );
 
     for ( blk=0; blk<IO_NBLOCKS; blk++ ) {
@@ -745,6 +763,7 @@ void read_snapshot() {
         offset += num;
     }
     writelog( "read data ... done. \n" );
+    time_end();
     writelog( sep_str );
     find_id();
     construct_id_to_index();

@@ -43,7 +43,7 @@ void gas_density_slice() {
     }
 
     create_dir( "./gas_density" );
-    sprintf( buf, "./gas_density/%.2f.dat", All.RedShift );
+    sprintf( buf, "./gas_density/%s_%.2f.dat", All.FilePrefix, All.RedShift );
 
     make_slice_img( 0 );
 
@@ -276,7 +276,7 @@ void gas_state() {
         img[i] /= sum;
 
     create_dir( "./gas_state" );
-    sprintf( buf, "./gas_state/%.2f.dat", All.RedShift );
+    sprintf( buf, "./gas_state/%s_%.2f.dat", All.FilePrefix, All.RedShift );
 
     memset( &image, 0, sizeof( struct image_struct ) );
 
@@ -310,7 +310,7 @@ void gas_temperature_slice() {
     }
 
     create_dir( "./gas_temperature" );
-    sprintf( buf, "./gas_temperature/%.2f.dat", All.RedShift );
+    sprintf( buf, "./gas_temperature/%s_%.2f.dat", All.FilePrefix, All.RedShift );
 
     make_slice_img( 0 );
 
@@ -430,8 +430,9 @@ void group_analysis() {
         conv( dL );
 
     create_dir( "./group" );
-    sprintf( buf, "./group/Temperature_%.2f.dat", All.RedShift );
+    sprintf( buf, "./group/%s_Temperature_%.2f.dat", All.FilePrefix, All.RedShift );
     write_img( buf );
+
     writelog( "group temperature ... done.\n" );
 
 /********************temperture*************************/
@@ -467,8 +468,10 @@ void group_analysis() {
         conv( dL );
 
     create_dir( "./group" );
-    sprintf( buf, "./group/MagneticField_%.2f.dat", All.RedShift );
+    sprintf( buf, "./group/%s_MagneticField_%.2f.dat", All.FilePrefix, All.RedShift );
     write_img( buf );
+
+
     writelog( "group magnetic field ... done.\n" );
 
 /********************magnetic field*************************/
@@ -500,8 +503,9 @@ void group_analysis() {
         conv( dL );
 
     create_dir( "./group" );
-    sprintf( buf, "./group/MachNumber_%.2f.dat", All.RedShift );
+    sprintf( buf, "./group/%s_MachNumber_%.2f.dat", All.FilePrefix, All.RedShift );
     write_img( buf );
+
     writelog( "group Mach Number ... done.\n" );
 
 /********************mach number*************************/

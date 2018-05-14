@@ -25,9 +25,23 @@ int fof_compare_len( const void *a, const void *b ) {
 void fof_find_groups() {
     int ngbnum, k, ngbmax;
     double pos[3];
-    long i, p, s, j, ss;
+    long i, p, s, j, ss,
+        *Head, *Tail,*Len;
+    time_start();
     ngbmax = 0;
+    writelog( sep_str );
     writelog( "Start FoF find groups ...\n" );
+
+    mymalloc( Head, NumPart * sizeof( long ) );
+    mymalloc( Tail, NumPart * sizeof( long ) );
+    mymalloc( Len, NumPart * sizeof( long ) );
+
+    for ( i=0; i<NumPart; i++ ) {
+        Head[i] = Tail[i] = i;
+        Len[i] = 1;
+        FoFNext[i] = -1;
+    }
+
     for ( i=0; i<NumPart; i++ ) {
         if ( !( ( 1 << P[i].Type ) & All.TreePartType ) )
             continue;
@@ -38,8 +52,8 @@ void fof_find_groups() {
         ngbmax = ( ngbnum > ngbmax ) ? ngbnum : ngbmax;
         for ( k=0; k<ngbnum; k++ ) {
             j = Ngblist[k];
-            if ( FoFProps[i].Head != FoFProps[j].Head ) {
-                if ( FoFProps[FoFProps[i].Head].Len > FoFProps[FoFProps[j].Head].Len ) {
+            if ( Head[i] != Head[j] ) {
+                if ( Len[Head[i]] > Len[Head[j]] ) {
                     p = i;
                     s = j;
                 }
@@ -47,28 +61,54 @@ void fof_find_groups() {
                     p = j;
                     s = i;
                 }
-                FoFNext[ FoFProps[FoFProps[p].Head].Tail ] = FoFProps[s].Head;
-                FoFProps[ FoFProps[p].Head ].Tail = FoFProps[ FoFProps[s].Head ].Tail;
-                FoFProps[ FoFProps[p].Head ].Len += FoFProps[ FoFProps[s].Head ].Len;
-                FoFProps[ FoFProps[s].Head ].Len = 0;
-                ss = FoFProps[s].Head;
+                FoFNext[Tail[Head[p]]] = Head[s];
+                Tail[Head[p]] = Tail[Head[s]];
+                Len[Head[p]] += Len[Head[s]];
+                Len[Head[s]] = 1;
+
+                ss = Head[s];
                 do
-                    FoFProps[ss].Head = FoFProps[p].Head;
+                    Head[ss] = Head[p];
                 while( (ss=FoFNext[ss]) >= 0 );
             }
         }
     }
-    qsort( FoFProps, NumPart, sizeof( struct fof_properties ), fof_compare_len );
+
+    for ( i=0; i<NumPart; i++ ) {
+        FoFProps[i].Head = Head[i];
+        FoFProps[i].Tail = Tail[i];
+        FoFProps[i].Len = Len[i];
+    }
+
+    myfree( Head );
+    myfree( Tail );
+    myfree( Len );
+
     writelog( "the maximum number of ngb: %i\n", ngbmax );
     writelog( "FoF find groups ... done\n" );
+    time_end();
+    writelog( sep_str );
 }
 
 void fof_compute_group_properties() {
     long p, i, j, k, p0;
+
+    time_start();
     writelog( "FoF compute groups properties ... \n" );
+
     Ngroups = 0;
     for ( i=0; i<NumPart; i++ ) {
-        if ( FoFProps[i].Len < All.FofMinLen ) break;
+        if ( FoFProps[i].Len >= All.FofMinLen ) {
+            FoFProps[ Ngroups++ ] = FoFProps[i];
+        }
+    }
+
+    qsort( FoFProps, Ngroups, sizeof( struct fof_properties ), fof_compare_len );
+
+    writelog( "The number of groups with at least %i particles: %li\n", All.FofMinLen, Ngroups );
+    writelog( "Largest group has %li particles\n", FoFProps[0].Len );
+
+    for ( i=0; i<Ngroups; i++ ) {
         p0 = p = FoFProps[i].Head;
         FoFProps[i].mass = 0;
         for ( k=0; k<3; k++ ){
@@ -96,10 +136,10 @@ void fof_compute_group_properties() {
         FoFProps[i].vr200 = pow( FoFProps[i].mass /
             ( All.RhoCrit * 200 * 4.0 / 3.0 * PI ), 1.0/3.0 );
     }
-    Ngroups = i;
-    writelog( "The number of groups with at least %i particles: %li\n", All.FofMinLen, Ngroups );
-    writelog( "Largest group has %li particles\n", FoFProps[0].Len );
     writelog( "FoF compute groups properties ... done\n" );
+    time_end();
+    writelog( sep_str );
+
 }
 
 void fof_test() {
@@ -231,6 +271,7 @@ void fof_save_groups() {
 void fof() {
     long i, npart;
     double masstot, mass;
+    time_start();
     writelog( "Start FoF ...\n" );
     for ( i=0, npart=0, masstot=0; i<NumPart; i++ )
         if ( ( 1 << P[i].Type ) & All.TreePartType ) {
@@ -247,15 +288,15 @@ void fof() {
     fof_allocate();
     tree_build();
 
-    for ( i=0; i<NumPart; i++ ) {
-        FoFProps[i].Head = FoFProps[i].Tail = i;
-        FoFProps[i].Len = 1;
-        FoFNext[i] = -1;
-    }
-
-    rhodm = (All.Omega0-All.OmegaBaryon) * 3 * SQR( All.Hubble ) / ( 8 * PI * All.G );
+    rhodm = (All.Omega0-All.OmegaBaryon) * 3 *  SQR(All.Hubble) / ( 8 * PI * All.G );
     mass = masstot / npart;
     LinkL = All.LinkLength * pow( mass / rhodm, 1.0/3 );
+    //LinkL = 65.5483;
+    /*
+    printf( "%.10f %.10f %.10f %.10f %.20f %.10f %.10f %li \n",
+             All.Omega0, All.OmegaBaryon,
+             All.Hubble, All.G, rhodm, M_PI, masstot, npart );
+             */
 
     writelog( "critical density of dark matter: %g\n"
             "comoving linking lenght %g\n", rhodm, LinkL );
@@ -264,5 +305,6 @@ void fof() {
     //fof_test();
     tree_free();
     writelog( "FoF ... done\n" );
+    time_end();
     writelog( sep_str );
 }

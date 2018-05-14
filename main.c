@@ -53,6 +53,15 @@ void main( int argc, char *argv[] ){
 #endif
 
     writelog( sep_str );
+    All.ToolsPath = getenv( "GADGET_TOOLS" );
+    if ( strcmp( All.ToolsPath, "" ) == 0 ){
+        writelog( "Please set `GADGET_TOOLS` evironment variable.\n" );
+        writelog( sep_str );
+        endrun( 20180513 );
+    }
+    writelog( "GADGET_TOOLS: %s\n", All.ToolsPath );
+    writelog( sep_str );
+
     read_parameters( argv[1] );
     read_snapshot();
     set_units();

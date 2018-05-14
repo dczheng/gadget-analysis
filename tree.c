@@ -26,8 +26,6 @@ void tree_build_single() {
     long i, j, subnode, bits, nfree, n, nn;
     struct NODE *nfreep;
     double max[3], min[3], len, lenhalf;
-    nfree = NumPart;
-    nfreep = &Nodes[nfree];
     writelog( "tree build ...\n" );
     for ( j=0; j<3; j++ ) {
         max[j] = -DBL_MAX;
@@ -53,6 +51,8 @@ void tree_build_single() {
     writelog( "len=%g\n", len );
 
     /* initialize first node */
+    nfree = NumPart;
+    nfreep = &Nodes[nfree];
     for ( j=0; j<3; j++ ) {
         nfreep->center[j] = ( max[j] + min[j] ) * 0.5;
     }
@@ -60,6 +60,7 @@ void tree_build_single() {
         nfreep->suns[j] = -1;
     }
     nfreep->len = len;
+    nfreep -> bitflags = 0;
     nfree++;
     nfreep++;
 
@@ -87,6 +88,7 @@ void tree_build_single() {
             else {
                 Nodes[parent].suns[subnode] = nfree;
                 nfreep->len = 0.5 * Nodes[parent].len;
+                nfreep -> bitflags = 0;
                 lenhalf = 0.25 * Nodes[parent].len;
                 for ( j=0, bits=1; j<3; j++, bits<<=1 )
                     nfreep->center[j] = Nodes[parent].center[j] + ( (subnode & bits) ? ( lenhalf ) : ( -lenhalf ) );
@@ -174,6 +176,7 @@ void tree_build() {
     npart = 30;
     All.TreeAllocFactor = 2;
     */
+    time_start();
     for ( i=0, npart=0; i<NumPart; i++ )
         if ( ( 1 << P[i].Type ) & All.TreePartType )
             npart ++;
@@ -211,5 +214,6 @@ void tree_build() {
     }
     //tree_walk_test();
     writelog( "tree walk ... done.\n" );
+    time_end();
     writelog( sep_str );
 }

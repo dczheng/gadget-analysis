@@ -133,4 +133,11 @@
     malloc_report(); \
 }
 
+#define time_start() \
+    double t0, t1; \
+    t0 = second();
+
+#define time_end() \
+    t1 = second(); \
+    writelog( "Time: %g sec\n", t1 - t0 );
 

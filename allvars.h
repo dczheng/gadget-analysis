@@ -18,15 +18,18 @@
 
 #define ZDEBUG
 
-#define MAX_PARA_FILE_LINE_LEN 200
+#define MYFILENAME_MAX   FILENAME_MAX
+#define MYPATHNAME_MAX   FILENAME_MAX
+
 #define SEP_LEN 80
 #define IO_NBLOCKS 100
-//#define LONGIDS
 #define GENERATIONS 8
 
 #define SFR
 #define BLACK_HOLES
 #define SEC_PER_MEGAYEAR 3.155e13
+
+#define BITFLAG_INSIDE_LINKINGLENGTH       9
 
 #define PROTONMASS               1.6726e-24
 #define ELECTRON_MASS            9.10953e-28
@@ -35,8 +38,8 @@
 #define LIGHT_SPEED              2.9979e10
 #define THOMSON_CROSS_SECTION    6.65246e-25
 #define GRAVITY                  6.672e-8
-#define HUBBLE                   3.24077789e-18  /* in h/sec */
-#define PI M_PI
+#define HUBBLE                   3.2407789e-18  /* in h/sec */
+#define PI                       M_PI
 #define PC                       3.0857e18
 #define KPC                      3.0857e21
 #define MPC                      3.0857e24
@@ -53,6 +56,9 @@ extern gsl_integration_workspace *inte_ws;
 #define SQR(X) ( X*X )
 #define CUBE(X) ( X*X*X )
 
+//#define LONGIDS
+//#define OUTPUT_IN_DOUBLEPRECISION
+
 #ifdef LONGIDS
 typedef unsigned long MyIDType;
 #else
@@ -60,75 +66,13 @@ typedef unsigned int MyIDType;
 #endif
 
 #ifdef OUTPUT_IN_DOUBLEPRECISION
-typedef double MyOutputFloat;
-typedef double MyFloat;
-typedef double MyDouble;
-typedef double MyDoublePos;
+typedef double OutputFloat;
 #else
-typedef float MyOutputFloat;
-typedef float MyFloat;
-typedef float MyDouble;
-typedef float MyDoublePos;
+typedef float OutputFloat;
 #endif
 
-struct group_struct{
-  int Len;
-  unsigned int Offset;
-  MyIDType MinID;
-  MyIDType MinIDTask;
-  int GrNr;
-#ifndef FOF_EXTENDED_PROPERTIES
-  int LenType[6];
-  MyOutputFloat MassType[6];
-#endif
-  MyOutputFloat Mass;
-  MyOutputFloat CM[3];
-  MyOutputFloat Vel[3];
-  MyDoublePos FirstPos[3];
-#ifdef SFR
-  double Sfr;
-#endif
-#ifdef BLACK_HOLES
-  MyOutputFloat BH_Mass;
-  MyOutputFloat BH_Mdot;
-  MyOutputFloat MaxDens;
-  int index_maxdens, task_maxdens;
-#endif
-
-#ifdef SUBFIND
-  int Nsubs;
-  int FirstSub;
-  MyDoublePos Pos[3];
-  MyOutputFloat M_TopHat200, R_TopHat200;
-  MyOutputFloat M_Mean200, R_Mean200;
-  MyOutputFloat M_Crit200, R_Crit200;
-#ifdef SO_VEL_DISPERSIONS
-  MyOutputFloat VelDisp_TopHat200, VelDisp_Mean200, VelDisp_Crit200;
-#endif
-#ifdef SO_BAR_INFO
-  MyOutputFloat M_Mean500, R_Mean500;
-  MyOutputFloat M_Crit500, R_Crit500;
-  MyOutputFloat M_Crit2500, R_Crit2500;
-#ifdef SO_VEL_DISPERSIONS
-  MyOutputFloat VelDisp_Mean500, VelDisp_Crit500, VelDisp_Crit2500;
-#endif
-#endif
-  int ContaminationLen;
-  MyOutputFloat ContaminationMass;
-#ifdef SO_BAR_INFO
-  MyOutputFloat gas_mass[6], star_mass[6], temp[6], xlum[6], ygas[6];
-#endif
-#endif
-
-#ifdef FOF_EXTENDED_PROPERTIES
-  MyOutputFloat VelDisp, Rmax, Vmax;
-  MyOutputFloat ToI[9];
-  MyOutputFloat AngMom[9];
-  MyOutputFloat Pos[3];
-  unsigned short Origintask;
-#endif
-
-};
+typedef double MyFloat;
+//typedef float MyFloat;
 
 struct io_header{
   int npart[6];
@@ -181,8 +125,6 @@ enum iofields {
 };
 
 
-extern struct io_header header;
-extern struct group_struct *group;
 
 extern struct particle_data {
     MyFloat Pos[3];
@@ -221,18 +163,22 @@ extern struct sph_particle_data {
 
 extern char sep_str[ SEP_LEN ];
 extern int ThisTask, NumTask;
-extern long TotNgroups, *id_to_index, NumPart, N_Gas;
+extern long *id_to_index, NumPart, N_Gas;
 extern FILE *LogFileFd;
+extern struct io_header header;
 
 extern struct global_parameters_struct {
-    char FilePrefix[ FILENAME_MAX ], GroupDir[ FILENAME_MAX ],
-         FofFileName[ FILENAME_MAX ],
-         LogFile[ FILENAME_MAX ];
+    char FilePrefix[ MYFILENAME_MAX ],
+         FofFileName[ MYFILENAME_MAX ],
+         LogFile[ MYFILENAME_MAX ],
+         *ToolsPath;
+
     int StartSnapIndex, MpcFlag, ProjectDirection, KernelN,
         PicSize, PicSize2, NumFiles, HgeFlag, CrFlag, BFlag,
         GasState, GasDensity, GasTemperature, KernelInterpolation,
         ReadTemperature, FofMinLen, proj_i, proj_j, proj_k,
         TreePartType, ConvN, ConvFlag, GroupIndex;
+
     double SofteningTable[6], Alpha ,
            UnitTime_in_s,
            UnitMass_in_g,
@@ -249,6 +195,7 @@ extern struct global_parameters_struct {
            RedShift, HubbleParam, RhoCrit, G,
            Hubble, Omega0, OmegaLambda, OmegaBaryon,
            *ConvKernel, ConvSigma;
+
     long SliceStart[6], SliceEnd[6];
 }All;
 
@@ -291,6 +238,7 @@ extern struct NODE {
     double len;
     long suns[8], sibling, father;
     long nextnode;
+    int bitflags;
 } *Nodes, *Nodes_Base;
 extern long MaxNodes;
 extern long *NextNode;

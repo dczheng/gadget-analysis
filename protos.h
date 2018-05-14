@@ -12,7 +12,9 @@ void make_slice_img( int pt );
 void write_img( char *fn );
 void init_img();
 void free_img();
+
 void create_dir( char *s );
+double second();
 
 void analysis();
 double kernel( double q );

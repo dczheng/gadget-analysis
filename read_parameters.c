@@ -27,10 +27,6 @@ void read_parameters( char *fn ) {
         addr[nt] = All.FilePrefix;
         id[nt++] = STRING;
 
-        strcpy( tag[nt], "GroupDir" );
-        addr[nt] = All.GroupDir;
-        id[nt++] = STRING;
-
         strcpy( tag[nt], "NumFiles" );
         addr[nt] = &All.NumFiles;
         id[nt++] = INT;

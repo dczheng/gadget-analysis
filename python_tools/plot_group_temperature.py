@@ -8,8 +8,8 @@ import matplotlib.colors as mplc
 from matplotlib import cm
 import sys
 
-if ( len( sys.argv ) != 3 ):
-    print( "Please give data file and fig file!" )
+if ( len( sys.argv ) != 2 ):
+    print( "Please give data file!" )
     exit()
 
 
@@ -119,6 +119,7 @@ ax.set_yticklabels( TempList )
 cbar = fig.colorbar( img )
 cbar.set_label( "Temperature( K )\n%s direction"%(ProDire) )
 
-print( "save image to " +  ProDire + sys.argv[2] )
-plt.savefig( ProDire + sys.argv[2] )
+fn_png = sys.argv[1][:-4] + '_' + ProDire + '.png'
+print( "save image to " +  fn_png )
+plt.savefig( fn_png )
 #plt.show()
