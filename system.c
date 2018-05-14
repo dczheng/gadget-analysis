@@ -18,3 +18,15 @@ void create_dir( char *s ) {
 double second() {
     return ( (double) clock() / CLOCKS_PER_SEC );
 }
+void endrun( int ierr ) {
+    fprintf( stderr, "EXIT CODE: %i\n", ierr );
+    MPI_Abort( MPI_COMM_WORLD, ierr );
+    exit( ierr );
+}
+
+void init_sep_str() {
+    memset( sep_str, '-', SEP_LEN-2 );
+    sep_str[ SEP_LEN-2 ] = '\n';
+    sep_str[ SEP_LEN-1 ] = '\0';
+}
+

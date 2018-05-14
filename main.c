@@ -1,17 +1,5 @@
 #include "allvars.h"
 
-void endrun( int ierr ) {
-    fprintf( stderr, "EXIT CODE: %i\n", ierr );
-    MPI_Abort( MPI_COMM_WORLD, ierr );
-    exit( ierr );
-}
-
-void init_sep_str() {
-    memset( sep_str, '-', SEP_LEN-2 );
-    sep_str[ SEP_LEN-2 ] = '\n';
-    sep_str[ SEP_LEN-1 ] = '\0';
-}
-
 void main( int argc, char *argv[] ){
     int i;
     time_t time1, time2;

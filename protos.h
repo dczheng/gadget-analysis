@@ -6,6 +6,7 @@ void free_group();
 void endrun( int ierr );
 void read_parameters();
 void set_units();
+void init_sep_str();
 
 void slice();
 void make_slice_img( int pt );
