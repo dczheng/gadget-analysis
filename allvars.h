@@ -173,7 +173,7 @@ extern struct global_parameters_struct {
          LogFile[ MYFILENAME_MAX ],
          *ToolsPath;
 
-    int StartSnapIndex, MpcFlag, ProjectDirection, KernelN, FoFRead,
+    int StartSnapIndex, MpcFlag, ProjectDirection, KernelN, FoFRead, GroupFlag,
         PicSize, PicSize2, NumFiles, HgeFlag, CrFlag, BFlag,
         GasState, GasDensity, GasTemperature, KernelInterpolation,
         ReadTemperature, FoFMinLen, proj_i, proj_j, proj_k,

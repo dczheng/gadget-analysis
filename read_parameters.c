@@ -51,6 +51,10 @@ void read_parameters( char *fn ) {
         addr[nt] = &All.MpcFlag;
         id[nt++] = INT;
 
+        strcpy( tag[nt], "GroupFlag" );
+        addr[nt] = &All.GroupFlag;
+        id[nt++] = INT;
+
         strcpy( tag[nt], "FoFRead" );
         addr[nt] = &All.FoFRead;
         id[nt++] = INT;
