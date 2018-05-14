@@ -80,7 +80,7 @@ void main( int argc, char *argv[] ){
 
     writelog( "End At: %s", asctime(tb) );
 
-    writelog( "Total Time %i\n", time2-time1 );
+    writelog( "Total Time %i sec.\n", time2-time1 );
     writelog( sep_str );
 
     fclose( LogFileFd );

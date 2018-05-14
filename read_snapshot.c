@@ -716,7 +716,7 @@ void read_snapshot() {
 
     allocate_memory();
 
-    BufferBytes = header.npart[0] * sizeof( OutputFloat ) * 3;
+    BufferBytes = header.npart[1] * sizeof( OutputFloat ) * 3;
     mymalloc( CommBuffer, BufferBytes );
 
     for ( blk=0; blk<IO_NBLOCKS; blk++ ) {
