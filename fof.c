@@ -102,7 +102,7 @@ void fof_compute_group_properties() {
 
     qsort( FoFProps, Ngroups, sizeof( struct fof_properties ), fof_compare_len );
 
-    writelog( "The number of groups with at least %i particles: %li\n", All.FoFMinLen, Ngroups );
+    writelog( "The number of groups with at least %i particles: %i\n", All.FoFMinLen, Ngroups );
     writelog( "Largest group has %li particles\n", FoFProps[0].Len );
 
     for ( i=0; i<Ngroups; i++ ) {
@@ -158,7 +158,6 @@ void fof_test() {
 
 void fof_save() {
     hid_t hdf5_file, hdf5_dataset, hdf5_dataspace, hdf5_attribute, hdf5_type;
-    herr_t herr;
     long *buf1, i, j;
     double *buf2;
     int ndims;
@@ -290,13 +289,10 @@ void fof_save() {
 }
 
 void fof_read() {
-    hid_t hdf5_file, hdf5_dataset, hdf5_dataspace, hdf5_attribute, hdf5_type;
-    herr_t herr;
+    hid_t hdf5_file, hdf5_dataset, hdf5_attribute, hdf5_type;
     long *buf1, i, j;
     double *buf2;
-    int ndims;
     char fn[ FILENAME_MAX ];
-    hsize_t dims[2];
     timer_start();
     writelog( "read fof...\n" );
 
@@ -316,7 +312,7 @@ void fof_read() {
 
     hdf5_type = H5Tcopy( H5T_NATIVE_UINT64 );
     hdf5_dataset = H5Dopen( hdf5_file, "Next" );
-    herr = H5Dread( hdf5_dataset, hdf5_type, H5S_ALL, H5S_ALL, H5P_DEFAULT, FoFNext );
+    H5Dread( hdf5_dataset, hdf5_type, H5S_ALL, H5S_ALL, H5P_DEFAULT, FoFNext );
     H5Dclose( hdf5_dataset );
     H5Tclose( hdf5_type );
 
@@ -324,14 +320,14 @@ void fof_read() {
     hdf5_type = H5Tcopy( H5T_NATIVE_UINT64 );
 
     hdf5_dataset = H5Dopen( hdf5_file, "Head" );
-    herr = H5Dread( hdf5_dataset, hdf5_type, H5S_ALL, H5S_ALL, H5P_DEFAULT, buf1 );
+    H5Dread( hdf5_dataset, hdf5_type, H5S_ALL, H5S_ALL, H5P_DEFAULT, buf1 );
     H5Dclose( hdf5_dataset );
 
     for ( i=0; i<Ngroups; i++ )
         FoFProps[i].Head = buf1[i];
 
     hdf5_dataset = H5Dopen( hdf5_file, "Length" );
-    herr = H5Dread( hdf5_dataset, hdf5_type, H5S_ALL, H5S_ALL, H5P_DEFAULT, buf1 );
+    H5Dread( hdf5_dataset, hdf5_type, H5S_ALL, H5S_ALL, H5P_DEFAULT, buf1 );
     H5Dclose( hdf5_dataset );
 
     for ( i=0; i<Ngroups; i++ )
@@ -344,21 +340,21 @@ void fof_read() {
     hdf5_type = H5Tcopy( H5T_NATIVE_DOUBLE );
 
     hdf5_dataset = H5Dopen( hdf5_file, "Mass" );
-    herr = H5Dread( hdf5_dataset, hdf5_type, H5S_ALL, H5S_ALL, H5P_DEFAULT, buf2 );
+    H5Dread( hdf5_dataset, hdf5_type, H5S_ALL, H5S_ALL, H5P_DEFAULT, buf2 );
     H5Dclose( hdf5_dataset );
 
     for ( i=0; i<Ngroups; i++ )
         FoFProps[i].mass = buf2[i];
 
     hdf5_dataset = H5Dopen( hdf5_file, "VirialR200" );
-    herr = H5Dread( hdf5_dataset, hdf5_type, H5S_ALL, H5S_ALL, H5P_DEFAULT, buf2 );
+    H5Dread( hdf5_dataset, hdf5_type, H5S_ALL, H5S_ALL, H5P_DEFAULT, buf2 );
     H5Dclose( hdf5_dataset );
 
     for ( i=0; i<Ngroups; i++)
         FoFProps[i].vr200 = buf2[i];
 
     hdf5_dataset = H5Dopen( hdf5_file, "CenterOfMass" );
-    herr = H5Dread( hdf5_dataset, hdf5_type, H5S_ALL, H5S_ALL, H5P_DEFAULT, buf2 );
+    H5Dread( hdf5_dataset, hdf5_type, H5S_ALL, H5S_ALL, H5P_DEFAULT, buf2 );
     H5Dclose( hdf5_dataset );
 
     for ( i=0; i<Ngroups; i++ )
@@ -366,7 +362,7 @@ void fof_read() {
             FoFProps[i].cm[j] = buf2[i*3+j];
 
     hdf5_dataset = H5Dopen( hdf5_file, "CenterOfVelocity" );
-    herr = H5Dread( hdf5_dataset, hdf5_type, H5S_ALL, H5S_ALL, H5P_DEFAULT, buf2 );
+     H5Dread( hdf5_dataset, hdf5_type, H5S_ALL, H5S_ALL, H5P_DEFAULT, buf2 );
     H5Dclose( hdf5_dataset );
 
     for ( i=0; i<Ngroups; i++ )

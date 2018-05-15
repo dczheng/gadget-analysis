@@ -8,7 +8,7 @@ import matplotlib.colors as mplc
 from matplotlib import cm
 import sys
 
-if ( len( sys.argv ) != 3 ):
+if ( len( sys.argv ) != 2 ):
     print( "Please give data file and fig file!" )
     exit()
 
@@ -16,7 +16,7 @@ if ( len( sys.argv ) != 3 ):
 data = np.loadtxt( sys.argv[1] )
 data_info = data[ 0, : ]
 data = np.flipud(data[ 1:, : ])
-z = data_info[0]
+z = data_info[6]
 DensMin = data_info[1]
 DensMax = data_info[2]
 TempMin = data_info[3]
@@ -93,5 +93,7 @@ ax.set_yticklabels( TempList )
 cbar = fig.colorbar( img )
 cbar.set_label( "Probability" )
 
-plt.savefig( sys.argv[2] )
+fn_png = sys.argv[1][:-4] + '.png'
+print( 'save image to ' + fn_png )
+plt.savefig( fn_png )
 #plt.show()

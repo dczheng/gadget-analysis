@@ -43,7 +43,7 @@
         sprintf( ms.str, "%s Total %g Kb,", ms.str, ms.mem / 1024. );\
     }\
     else {\
-        sprintf( ms.str, "%s Total %lli b,", ms.str, ms.mem );\
+        sprintf( ms.str, "%s Total %li b,", ms.str, ms.mem );\
     }\
 \
     if ( ms.max_mem > CUBE( 1024 ) ) {\
@@ -56,10 +56,10 @@
         sprintf( ms.str, "%s Max %g Kb,", ms.str, ms.max_mem / 1024. );\
     }\
     else {\
-        sprintf( ms.str, "%s Max %lli b,", ms.str, ms.max_mem );\
+        sprintf( ms.str, "%s Max %li b,", ms.str, ms.max_mem );\
     }\
 \
-    sprintf( ms.str, "%s Nvars %lli.\n", ms.str, ms.nn );\
+    sprintf( ms.str, "%s Nvars %li.\n", ms.str, ms.nn );\
     writelog( ms.str ); \
 }
 
@@ -75,7 +75,7 @@
             writelog( "Failed to allocate memory for `%s` ( %g Kb )\n", #a, n /  1024. ); \
         }\
         else {\
-            writelog( "Failed to allocate memory for `%s` ( %lli b )\n", #a, n ); \
+            writelog( "Failed to allocate memory for `%s` ( %li b )\n", #a, n ); \
         }\
         endrun( 20180430 ); \
     }\
@@ -90,7 +90,7 @@
         writelog( "allocate memory for `%s` ( %g Kb )\n", #a, n /  1024. ); \
     }\
     else {\
-        writelog( "allocate memory for `%s` ( %lli b )\n", #a, n ); \
+        writelog( "allocate memory for `%s` ( %li b )\n", #a, n ); \
     }\
 \
     check_var_len( a );\
@@ -121,7 +121,7 @@
         writelog( "Free memory for `%s` ( %g Kb )\n", #a, ms.b /  1024. ); \
     }\
     else {\
-        writelog( "Free memory for `%s` ( %lli b )\n", #a, ms.b ); \
+        writelog( "Free memory for `%s` ( %li b )\n", #a, ms.b ); \
     }\
 \
     for ( ; ms.i<ms.nn-1; ms.i++ ) {\

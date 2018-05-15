@@ -5,6 +5,7 @@ void init_analysis() {
     All.proj_k = All.ProjectDirection;
     All.proj_i = ( All.ProjectDirection + 1 ) % 3;
     All.proj_j = ( All.ProjectDirection + 2 ) % 3;
+    All.Sproj = All.ProjectDirection + 'x';
     All.PicSize2 = SQR( All.PicSize );
     slice();
     if ( All.KernelInterpolation )
@@ -107,10 +108,10 @@ void calc_vl() {
     writelog( sep_str );
 }
 
-void syn( double v ) {
+void compute_radio( double v ) {
     long i, xi, yi, PicSize;
-    double B, Ub, vl, pmin, pmax, *img, dx, dy, d1, d2,
-           com_dis, ang_dis, lum_dis, BoxSize, C, imgmax, imgmin, V,
+    double B, Ub, vl, pmin, pmax, *img, dx, dy,
+           ang_dis, lum_dis, BoxSize, C, V,
            h, tmp, ang, beam;
     writelog( "compute synchrotron radiation ...\n" );
     pmin = DBL_MAX;
@@ -136,7 +137,7 @@ void syn( double v ) {
     mymalloc( img, sizeof( double ) * SQR( PicSize ) );
     memset( img, 0, sizeof( double ) * SQR( PicSize ) );
 
-    com_dis = comoving_distance( header.time ) * ( g2c.cm );
+    //com_dis = comoving_distance( header.time ) * ( g2c.cm );
     ang_dis = angular_distance( header.time ) * ( g2c.cm );
     lum_dis = luminosity_distance( header.time ) * ( g2c.cm );
     dy = dx = BoxSize / PicSize;
@@ -200,7 +201,7 @@ void output_rho() {
 }
 
 void compute_temperature() {
-    double yhelium, u, ne, mu, XH, rho;
+    double yhelium, u, ne, mu, XH;
     int i;
     writelog( "compute gas temprature...\n" );
     XH = HYDROGEN_MASSFRAC;
@@ -219,7 +220,7 @@ void gas_state() {
     double TempMin, TempMax, DensMin, DensMax,
            LogTempMin, LogTempMax, LogDensMin, LogDensMax,
            *img, DLogTemp, DLogDens, LogDens, LogTemp, sum;
-    int num, i, j, k, PicSize, N;
+    int i, j, k, PicSize;
     char buf[200];
     TempMin = DensMin = DBL_MAX;
     TempMax = DensMax = DBL_MIN;
@@ -243,6 +244,9 @@ void gas_state() {
     LogDensMax = log10( DensMax );
     LogTempMin = log10( TempMin );
     LogTempMax = log10( TempMax );
+
+    //LogTempMax = 7;
+
     DLogTemp = ( LogTempMax - LogTempMin ) / PicSize;
     DLogDens = ( LogDensMax - LogDensMin ) / PicSize;
     writelog( "DensMin: %g, DensMax: %g, TempMin: %g, TempMax: %g\n"
@@ -256,6 +260,9 @@ void gas_state() {
         if ( LogTemp < 0 )
             endrun( 20180514 );
         LogTemp = ( LogTemp == 0 ) ? LogTempMin : log10( LogTemp );
+
+        //if ( LogTemp > LogTempMax )
+        //    continue;
 
         LogDens = SphP[k].Density / All.RhoBaryon;
         if ( LogDens < 0 )
@@ -298,10 +305,9 @@ void gas_state() {
 
 void gas_temperature_slice() {
 
-    int num, i, PicSize, PicSize2;
+    int num, i, PicSize2;
     char buf[100];
     writelog( "gas temperature silce ...\n" );
-    PicSize = All.PicSize;
     PicSize2 = All.PicSize2;
     num = All.SliceEnd[0] - All.SliceStart[0];
     mymalloc( image.data, sizeof( double ) * num );
@@ -332,7 +338,7 @@ void gas_temperature_slice() {
 }
 
 void group_analysis() {
-    long index, i, j, p, PicSize, x, y, ii, jj,
+    long index, i, p, PicSize, x, y, ii, jj,
          xo, yo, PicSize2, npart[6];
     struct fof_properties g;
     double *img, *m, L, dL, mass[6], B;
@@ -424,6 +430,7 @@ void group_analysis() {
         check_picture_index( ii );
         check_picture_index( jj );
         img[ ii*PicSize + jj ] += SphP[p].Temp * P[p].Mass;
+        printf( "%g\n", SphP[p].Temp );
     }
 
     for ( i=0; i<PicSize2; i++ ) {
@@ -438,7 +445,7 @@ void group_analysis() {
         conv( dL );
 
     create_dir( "./group" );
-    sprintf( buf, "./group/%s_Temperature_%.2f.dat", All.FilePrefix, All.RedShift );
+    sprintf( buf, "./group/%s_Temperature_%.2f_%c.dat", All.FilePrefix, All.RedShift, All.Sproj );
     write_img( buf );
 
     writelog( "group temperature ... done.\n" );
@@ -476,7 +483,7 @@ void group_analysis() {
         conv( dL );
 
     create_dir( "./group" );
-    sprintf( buf, "./group/%s_MagneticField_%.2f.dat", All.FilePrefix, All.RedShift );
+    sprintf( buf, "./group/%s_MagneticField_%.2f_%c.dat", All.FilePrefix, All.RedShift, All.Sproj );
     write_img( buf );
 
 
@@ -511,7 +518,7 @@ void group_analysis() {
         conv( dL );
 
     create_dir( "./group" );
-    sprintf( buf, "./group/%s_MachNumber_%.2f.dat", All.FilePrefix, All.RedShift );
+    sprintf( buf, "./group/%s_MachNumber_%.2f_%c.dat", All.FilePrefix, All.RedShift, All.Sproj );
     write_img( buf );
 
     writelog( "group Mach Number ... done.\n" );
@@ -544,16 +551,15 @@ void analysis(){
 
     if ( All.GasTemperature )
         gas_temperature_slice();
+
     if ( All.GroupFlag )
         group_analysis();
+
     //tree_build();
     //tree_free();
-    //fof_save_groups();
     //output_rho();
     //vel_value();
     //sort_gas_rho();
     //calc_vl();
-    //syn( 1.4e9 );
-    //radio_halo();
     free_analysis();
 }

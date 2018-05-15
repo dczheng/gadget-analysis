@@ -1,10 +1,9 @@
 #include "allvars.h"
 
-void main( int argc, char *argv[] ){
-    int i;
+int main( int argc, char *argv[] ){
     time_t time1, time2;
+    long dtime;
     struct tm *tb;
-    char buf[100];
     MPI_Init( &argc, &argv );
     MPI_Comm_rank( MPI_COMM_WORLD, &ThisTask );
     MPI_Comm_size( MPI_COMM_WORLD, &NumTask );
@@ -68,10 +67,12 @@ void main( int argc, char *argv[] ){
 
     writelog( "End At: %s", asctime(tb) );
 
-    writelog( "Total Time %i sec.\n", time2-time1 );
+    dtime = (long) ( difftime( time2, time1 ) );
+    writelog( "Total Time %li sec.\n", dtime );
     writelog( sep_str );
 
     fclose( LogFileFd );
     MPI_Finalize();
+    return 0;
 }
 

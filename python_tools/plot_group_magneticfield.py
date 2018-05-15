@@ -121,7 +121,7 @@ ax.set_yticklabels( TempList )
 cbar = fig.colorbar( img )
 cbar.set_label( "MagnetidField( " + r"$\mu G$"  + " )\n%s direction"%(ProDire) )
 
-fn_png = sys.argv[1][:-4] + '_' + ProDire + '.png'
+fn_png = sys.argv[1][:-4] + '.png'
 print( "save image to " +  fn_png )
 plt.savefig( fn_png )
 #plt.show()

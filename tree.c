@@ -3,7 +3,6 @@
 long last, parent, father, npart;
 
 void tree_allocate() {
-    size_t bytes;
     MaxNodes = npart * All.TreeAllocFactor;
     writelog( "TreeAllocateFactor = %g, MaxNodes = %ld\n",
             All.TreeAllocFactor, MaxNodes );
@@ -44,7 +43,7 @@ void tree_build_single() {
         len = ( max[i] - min[i] > len ) ? ( max[i] - min[i] ) : len;
     }
     for ( i=0; i<3; i++ ) {
-        writelog( "min[%i]=%g, max[%i]=%g\n",
+        writelog( "min[%li]=%g, max[%li]=%g\n",
                 i, min[i], i, max[i] );
     }
     len *= 1.001;
@@ -154,9 +153,8 @@ void tree_walk_recursive( long n, long sib, long father ) {
 
 void tree_walk_test(){
     FILE *fd;
-    long n, signal;
+    long n;
     n = NumPart;
-    signal = 0;
     fd = fopen( "walk.txt", "w" );
     while ( n>=0 ) {
         if ( n<NumPart ){
@@ -171,7 +169,7 @@ void tree_walk_test(){
 }
 
 void tree_build() {
-    long i, j;
+    long i;
     /*
     npart = 30;
     All.TreeAllocFactor = 2;

@@ -4,7 +4,7 @@ void group_analysis();
 void read_group();
 void free_group();
 void endrun( int ierr );
-void read_parameters();
+void read_parameters( char *fn );
 void set_units();
 void init_sep_str();
 
@@ -43,4 +43,5 @@ void fof_read();
 int ngb_fof(  double *searchcenter, double h );
 
 void conv( double ds );
-
+void init_conv_kernel();
+void free_conv_kernel();

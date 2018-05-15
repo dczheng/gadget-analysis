@@ -25,14 +25,21 @@ int blockpresent( enum iofields blk, int pt ) {
         case IO_TEMP:
             if ( All.ReadTemperature == 0 )
                 return 0;
+
         case IO_NE:
         case IO_U:
-        case IO_MN:
         case IO_RHO:
             if (( pt == 0 ) && ( header.npart[0] != 0 ))
                 return 1;
             else
                 return 0;
+
+        case IO_MN:
+            if (( pt == 0 ) && ( header.npart[0] != 0 ) && All.MachFlag == 1 )
+                return 1;
+            else
+                return 0;
+
         case IO_MAG:
         case IO_DIVB:
         case IO_DBDT:
@@ -40,6 +47,7 @@ int blockpresent( enum iofields blk, int pt ) {
                 return 1;
             else
                 return 0;
+
         case IO_CRE_C0:
         case IO_CRE_Q0:
         case IO_CRE_E0:
@@ -48,6 +56,7 @@ int blockpresent( enum iofields blk, int pt ) {
                 return 1;
             else
                 return 0;
+
         case IO_CR_Q0:
         case IO_CR_C0:
         case IO_CR_E0:
@@ -56,6 +65,7 @@ int blockpresent( enum iofields blk, int pt ) {
                 return 1;
             else
                 return 0;
+
         case IO_POT:
         case IO_ACCEL:
             return 0;
@@ -223,7 +233,7 @@ void get_hdf5_native_type( enum iofields blk, hid_t *hdf5_type ) {
 }
 
 void empty_buffer( enum iofields blk, int offset, int pt ) {
-    int i, j, t;
+    int i, j;
     long n;
     OutputFloat *fp;
     MyIDType *ip;
@@ -419,7 +429,7 @@ void show_header( struct io_header header ) {
 
     writelog( "%-25s: ", "npart" );
     for ( i=0; i<6; i++ )
-        writelog(  "%li ", header.npart[i] );
+        writelog(  "%i ", header.npart[i] );
     writelog( "\n" );
 
     writelog(  "%-25s: ", "mass" );
@@ -578,8 +588,6 @@ void write_header( char *fn, struct io_header header ) {
 }
 
 void allocate_memory() {
-    double bytes_tot = 0;
-    size_t bytes;
     ms.max_mem = ms.mem = ms.nn = 0;
     mymalloc( P, NumPart * sizeof( struct particle_data ) );
     mymalloc( SphP, N_Gas * sizeof( struct sph_particle_data ) );
@@ -635,7 +643,6 @@ void find_id() {
 
 void construct_id_to_index() {
     long idmax, idmin, i, idn, N;
-    size_t bytes;
     timer_start();
     writelog( "construct id to index ...\n" );
     idmax = -1;
@@ -676,8 +683,8 @@ void construct_id_to_index() {
 }
 
 void read_snapshot() {
-    int pt, blk, nbytes, rank;
-    long i, file, pc, offset, num;
+    int pt, blk, nbytes;
+    long i, file, offset, num;
     char file_name[MYFILENAME_MAX], buf[200], buf1[200];
     size_t BufferBytes;
     timer_start();
@@ -725,7 +732,7 @@ void read_snapshot() {
                 if ( All.NumFiles < 2 )
                     sprintf( file_name, "%s_%03d.hdf5", All.FilePrefix, All.StartSnapIndex + ThisTask );
                 else
-                    sprintf( file_name, "%s_%03d.%3i.hdf5",
+                    sprintf( file_name, "%s_%03d.%3li.hdf5",
                             All.FilePrefix, All.StartSnapIndex + ThisTask, file );
                     read_header( file_name );
                     if ( blockpresent( blk, pt ) ) {

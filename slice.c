@@ -1,7 +1,6 @@
 #include "allvars.h"
 
 void slice() {
-    char buf[200];
     int pt;
     long offset, num, index, i;
     struct particle_data p_tmp;
@@ -55,7 +54,7 @@ void slice() {
                  P[i].Pos[2] <= All.End[2] ) {
                 p_tmp = P[index];
                 P[index] = P[i];
-                P[i] = P[index];
+                P[i] = p_tmp;
                 if ( pt == 0 ) {
                     sphp_tmp = SphP[ index ];
                     SphP[index] = SphP[i];
@@ -84,7 +83,7 @@ void slice() {
 
 void make_slice_img( int pt ) {
     double *img, dx, dy, x, y, h, dh, lx, ly, v;
-    int i, j, xi, yi, N, Nhalf, i1, i2, j1, j2, li, lj, PicSize;
+    int i, xi, yi, N, Nhalf, i1, i2, j1, j2, li, lj, PicSize;
     PicSize = All.PicSize;
     writelog( "make slice imgage  ...\n" );
     img = image.img;

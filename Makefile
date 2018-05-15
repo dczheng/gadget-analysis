@@ -8,10 +8,10 @@ OBJS    = main.o read_snapshot.o allvars.o analysis.o debug.o read_parameters.o\
 OPT     = -Wall
 
 DEBUG ?=
-CC      = mpicc $(DEBUG)
+CC      = mpicc $(DEBUG) $(OPT)
 
 $(EXEC): $(OBJS)
-	$(CC) $(OPT) $(OBJS) $(CLIBS) -o $(EXEC)
+	$(CC) $(OBJS) $(CLIBS) -o $(EXEC)
 $(OBJS): allvars.h protos.h macros.h
 
 clean: 
