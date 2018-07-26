@@ -48,6 +48,6 @@ void compute_cosmo_quantities() {
     writelog( "%-35s: %g\n", "RhoBaryon", All.RhoBaryon );
     writelog( "%-35s: %g\n", "RhoCrit", All.RhoCrit );
     writelog( "compute cosmology quantities ... done.\n" );
-    writelog( sep_str );
+    put_block_line;
 }
 

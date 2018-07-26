@@ -1,6 +1,6 @@
 #define writelog( fmt, ... ) { \
     fprintf( LogFileFd, fmt, ##__VA_ARGS__ ); \
-    if ( ThisTask == 0 ) { \
+    if ( ThisTask == (NTask - 1) ) { \
         printf( fmt, ##__VA_ARGS__ ); \
     }\
 }
@@ -10,6 +10,8 @@
 #define check_picture_index( i )  i = ( ( i<0 || i>=All.PicSize ) ? ( (i<0) ? 0 : All.PicSize-1 ) : i )
 #define PERIODIC( x ) ( ( x > All.HalfBoxSize || x < -All.HalfBoxSize ) ? ( ( x > All.HalfBoxSize ) ? ( x - All.BoxSize ) : ( x + All.BoxSize )  ) : x )
 #define NGB_PERIODIC( x ) ( (fabs(x) > All.HalfBoxSize) ? ( All.BoxSize-fabs(x) ) : fabs(x) )
+
+#define put_block_line    writelog( sep_str )
 
 #define find_global_value( a, A, type, op ) { \
     MPI_Reduce( &a, &A, 1, type, op, 0, MPI_COMM_WORLD ); \

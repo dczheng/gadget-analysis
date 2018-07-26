@@ -16,11 +16,17 @@ if ( len( sys.argv ) != 2 ):
 data = np.loadtxt( sys.argv[1] )
 data_info = data[ 0, : ]
 data = np.flipud(data[ 1:, : ])
-z = data_info[6]
 DensMin = data_info[1]
 DensMax = data_info[2]
 TempMin = data_info[3]
 TempMax = data_info[4]
+GlobDensMin = data_info[5]
+GlobDensMax = data_info[6]
+GlobTempMin = data_info[7]
+GlobTempMax = data_info[8]
+z = data_info[10]
+vmax = data.max()
+data[ data < 1e-3 * vmax ] = 0
 #print( data_info )
 m,n = data.shape
 print( "PicSize: (%i,%i)"%( m, n ) )
@@ -97,3 +103,4 @@ fn_png = sys.argv[1][:-4] + '.png'
 print( 'save image to ' + fn_png )
 plt.savefig( fn_png )
 #plt.show()
+

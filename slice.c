@@ -137,4 +137,6 @@ void make_slice_img( int pt ) {
     img_ymin = All.Start[ All.proj_j ];
     img_ymax = All.End[ All.proj_j ];
     writelog( "make slice image ... done\n" );
+    put_block_line;
+
 }

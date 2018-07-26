@@ -16,16 +16,21 @@ if ( len( sys.argv ) != 2 ):
 data = np.loadtxt( sys.argv[1] )
 data_info = data[ 0, : ]
 data = np.flipud(data[ 1:, : ])
-z = data_info[6]
 XMin = data_info[1] / 1000.0
 XMax = data_info[2] / 1000.0
 YMin = data_info[3] / 1000.0
 YMax = data_info[4] / 1000.0
-proj = int( data_info[5] )
-mgas = data_info[ 11+0 ]
-mdm = data_info[ 11+1 ]
-ms = data_info[ 11+4 ]
-mbh = data_info[ 11+5 ]
+GlobXMin = data_info[5] / 1000.0
+GlobXMax = data_info[6] / 1000.0
+GlobYMin = data_info[7] / 1000.0
+GlobYMax = data_info[8] / 1000.0
+proj = int( data_info[9] )
+z = data_info[10]
+mgas = data_info[ 15+0 ]
+mdm = data_info[ 15+1 ]
+ms = data_info[ 15+4 ]
+mbh = data_info[ 15+5 ]
+
 if ( proj == 0 ):
     ProDire = 'x'
 if ( proj == 1 ):

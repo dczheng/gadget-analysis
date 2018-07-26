@@ -187,6 +187,14 @@ void read_parameters( char *fn ) {
         addr[nt] = &All.ConvFlag;
         id[nt++] = INT;
 
+        strcpy( tag[nt], "FoF" );
+        addr[nt] = &All.FoF;
+        id[nt++] = INT;
+
+        strcpy( tag[nt], "MF" );
+        addr[nt] = &All.MF;
+        id[nt++] = INT;
+
         strcpy( tag[nt], "ConvSigma" );
         addr[nt] = &All.ConvSigma;
         id[nt++] = REAL;
@@ -245,6 +253,6 @@ void read_parameters( char *fn ) {
     }
     MPI_Barrier( MPI_COMM_WORLD );
     MPI_Bcast( &All, sizeof( struct global_parameters_struct ), MPI_BYTE, 0, MPI_COMM_WORLD );
-    writelog( sep_str );
+    put_block_line;
 }
 

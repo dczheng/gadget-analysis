@@ -3,18 +3,18 @@
 double LinkL, rhodm;
 
 void fof_allocate( long N ) {
-    mymalloc( FoFProps, N * sizeof( struct fof_properties ) );
+    mymalloc( Gprops, N * sizeof( struct group_properties ) );
     mymalloc( FoFNext, NumPart * sizeof( long ) );
-    writelog( sep_str );
+    put_block_line;
 }
 
 void fof_free() {
-    myfree( FoFProps );
+    myfree( Gprops );
     myfree( FoFNext );
 }
 
 int fof_compare_len( const void *a, const void *b ) {
-    return ( ( ( ( struct fof_properties *)a )->Len < ( ( struct fof_properties * )b )->Len ) ? 1 : -1 );
+    return ( ( ( ( struct group_properties *)a )->Len < ( ( struct group_properties * )b )->Len ) ? 1 : -1 );
 }
 
 void fof_find_groups() {
@@ -24,7 +24,7 @@ void fof_find_groups() {
         *Head, *Tail,*Len;
     timer_start();
     ngbmax = 0;
-    writelog( sep_str );
+    put_block_line;
     writelog( "Start FoF find groups ...\n" );
 
     mymalloc( Head, NumPart * sizeof( long ) );
@@ -48,6 +48,7 @@ void fof_find_groups() {
         ngbmax = ( ngbnum > ngbmax ) ? ngbnum : ngbmax;
         for ( k=0; k<ngbnum; k++ ) {
             j = Ngblist[k];
+            //printf( "%i\n", P[j].Type );
             if ( Head[i] != Head[j] ) {
                 if ( Len[Head[i]] > Len[Head[j]] ) {
                     p = i;
@@ -71,9 +72,9 @@ void fof_find_groups() {
     }
 
     for ( i=0; i<NumPart; i++ ) {
-        FoFProps[i].Head = Head[i];
-        FoFProps[i].Tail = Tail[i];
-        FoFProps[i].Len = Len[i];
+        Gprops[i].Head = Head[i];
+        Gprops[i].Tail = Tail[i];
+        Gprops[i].Len = Len[i];
     }
 
     myfree( Head );
@@ -84,7 +85,7 @@ void fof_find_groups() {
     writelog( "the maximum number of ngb: %i\n", ngbmax );
     writelog( "FoF find groups ... done\n" );
     timer_end();
-    writelog( sep_str );
+    put_block_line;
 }
 
 void fof_compute_group_properties() {
@@ -95,47 +96,53 @@ void fof_compute_group_properties() {
 
     Ngroups = 0;
     for ( i=0; i<NumPart; i++ ) {
-        if ( FoFProps[i].Len >= All.FoFMinLen ) {
-            FoFProps[ Ngroups++ ] = FoFProps[i];
+        if ( Gprops[i].Len >= All.FoFMinLen ) {
+            Gprops[ Ngroups++ ] = Gprops[i];
         }
     }
 
-    qsort( FoFProps, Ngroups, sizeof( struct fof_properties ), fof_compare_len );
+    qsort( Gprops, Ngroups, sizeof( struct group_properties ), fof_compare_len );
 
     writelog( "The number of groups with at least %i particles: %i\n", All.FoFMinLen, Ngroups );
-    writelog( "Largest group has %li particles\n", FoFProps[0].Len );
+    writelog( "Largest group has %li particles\n", Gprops[0].Len );
 
     for ( i=0; i<Ngroups; i++ ) {
-        p0 = p = FoFProps[i].Head;
-        FoFProps[i].mass = 0;
+        p0 = p = Gprops[i].Head;
+        Gprops[i].mass = 0;
         for ( k=0; k<3; k++ ){
-            FoFProps[i].cm[k] = 0;
-            FoFProps[i].vel[k] = 0;
+            Gprops[i].cm[k] = 0;
+            Gprops[i].vel[k] = 0;
         }
-        FoFProps[i].vr200 = 0;
-        for ( j=0; j<FoFProps[i].Len; j++ ) {
-            FoFProps[i].mass += P[p].Mass;
+        Gprops[i].vr200 = 0;
+        for ( j=0; j<Gprops[i].Len; j++ ) {
+            //printf( "%i %g\n", P[p].Type, P[p].Mass );
+            Gprops[i].mass += P[p].Mass;
             for ( k=0; k<3; k++ ){
-                FoFProps[i].cm[k] += P[p].Mass *
+                Gprops[i].cm[k] += P[p].Mass *
                     ( PERIODIC( P[p].Pos[k]-P[p0].Pos[k] ) + P[p0].Pos[k] );
-                FoFProps[i].vel[k] += P[p].Mass * P[p].Vel[k];
+                Gprops[i].vel[k] += P[p].Mass * P[p].Vel[k];
             }
             p = FoFNext[p];
         }
-        if ( FoFProps[i].mass == 0 ) {
-            printf( "FoFProps[%li] is zeros !!!\n", i );
+        if ( Gprops[i].mass == 0 ) {
+            printf( "Gprops[%li] is zeros!!! Len: %li\n", i, Gprops[i].Len );
+            p = Gprops[i].Head;
+            for ( j=0; j<Gprops[i].Len; j++ ) {
+                printf( "%g, %i\n", P[p].Mass, P[p].Type );
+                p = FoFNext[p];
+            }
             endrun( 20180507 );
         }
         for ( k=0; k<3; k++ ){
-            FoFProps[i].cm[k] /= FoFProps[i].mass;
-            FoFProps[i].vel[k] /= FoFProps[i].mass;
+            Gprops[i].cm[k] /= Gprops[i].mass;
+            Gprops[i].vel[k] /= Gprops[i].mass;
         }
-        FoFProps[i].vr200 = pow( FoFProps[i].mass /
+        Gprops[i].vr200 = pow( Gprops[i].mass /
             ( All.RhoCrit * 200 * 4.0 / 3.0 * PI ), 1.0/3.0 );
     }
     writelog( "FoF compute groups properties ... done\n" );
     timer_end();
-    writelog( sep_str );
+    put_block_line;
 
 }
 
@@ -145,8 +152,8 @@ void fof_test() {
     FILE *fd;
     index = 0;
     fd = fopen( "fof.txt", "w" );
-    p = FoFProps[index].Head;
-    for ( i=0; i<FoFProps[index].Len; i++ ){
+    p = Gprops[index].Head;
+    for ( i=0; i<Gprops[index].Len; i++ ){
         fprintf( fd, "%g %g %g\n",
                 P[p].Pos[0],
                 P[p].Pos[1],
@@ -207,14 +214,14 @@ void fof_save() {
     hdf5_type = H5Tcopy( H5T_NATIVE_UINT64 );
     /*************************************/
     for ( i=0; i<Ngroups; i++ ) {
-        buf1[i] = FoFProps[i].Head;
+        buf1[i] = Gprops[i].Head;
     }
     hdf5_dataset = H5Dcreate( hdf5_file, "Head", hdf5_type, hdf5_dataspace, H5P_DEFAULT );
     H5Dwrite( hdf5_dataset, hdf5_type, hdf5_dataspace, H5S_ALL, H5P_DEFAULT, buf1 );
     H5Dclose( hdf5_dataset );
 
     for ( i=0; i<Ngroups; i++ ) {
-        buf1[i] = FoFProps[i].Len;
+        buf1[i] = Gprops[i].Len;
     }
     hdf5_dataset = H5Dcreate( hdf5_file, "Length", hdf5_type, hdf5_dataspace, H5P_DEFAULT );
     H5Dwrite( hdf5_dataset, hdf5_type, hdf5_dataspace, H5S_ALL, H5P_DEFAULT, buf1 );
@@ -235,7 +242,7 @@ void fof_save() {
     hdf5_dataspace = H5Screate_simple( ndims, dims, NULL );
 
     for ( i=0; i<Ngroups; i++ ) {
-        buf2[i] = FoFProps[i].mass;
+        buf2[i] = Gprops[i].mass;
     }
 
     hdf5_dataset = H5Dcreate( hdf5_file, "Mass", hdf5_type, hdf5_dataspace, H5P_DEFAULT );
@@ -243,7 +250,7 @@ void fof_save() {
     H5Dclose( hdf5_dataset );
 
     for ( i=0; i<Ngroups; i++ ) {
-        buf2[i] = FoFProps[i].vr200;
+        buf2[i] = Gprops[i].vr200;
     }
 
     hdf5_dataset = H5Dcreate( hdf5_file, "VirialR200", hdf5_type, hdf5_dataspace, H5P_DEFAULT );
@@ -260,7 +267,7 @@ void fof_save() {
 
     for ( i=0; i<Ngroups; i++ ) {
         for ( j=0; j<3; j++ )
-        buf2[i*3+j] = FoFProps[i].cm[j];
+        buf2[i*3+j] = Gprops[i].cm[j];
     }
 
     hdf5_dataset = H5Dcreate( hdf5_file, "CenterOfMass", hdf5_type, hdf5_dataspace, H5P_DEFAULT );
@@ -269,7 +276,7 @@ void fof_save() {
 
     for ( i=0; i<Ngroups; i++ ) {
         for ( j=0; j<3; j++ )
-            buf2[i*3+j] = FoFProps[i].vel[j];
+            buf2[i*3+j] = Gprops[i].vel[j];
     }
 
     hdf5_dataset = H5Dcreate( hdf5_file, "CenterOfVelocity", hdf5_type, hdf5_dataspace, H5P_DEFAULT );
@@ -285,7 +292,7 @@ void fof_save() {
     H5Fclose( hdf5_file );
     writelog( "FoF save groups ... done\n" );
     timer_end();
-    writelog( sep_str );
+    put_block_line;
 }
 
 void fof_read() {
@@ -324,14 +331,14 @@ void fof_read() {
     H5Dclose( hdf5_dataset );
 
     for ( i=0; i<Ngroups; i++ )
-        FoFProps[i].Head = buf1[i];
+        Gprops[i].Head = buf1[i];
 
     hdf5_dataset = H5Dopen( hdf5_file, "Length" );
     H5Dread( hdf5_dataset, hdf5_type, H5S_ALL, H5S_ALL, H5P_DEFAULT, buf1 );
     H5Dclose( hdf5_dataset );
 
     for ( i=0; i<Ngroups; i++ )
-        FoFProps[i].Len = buf1[i];
+        Gprops[i].Len = buf1[i];
 
     H5Tclose( hdf5_type );
     myfree( buf1 );
@@ -344,14 +351,14 @@ void fof_read() {
     H5Dclose( hdf5_dataset );
 
     for ( i=0; i<Ngroups; i++ )
-        FoFProps[i].mass = buf2[i];
+        Gprops[i].mass = buf2[i];
 
     hdf5_dataset = H5Dopen( hdf5_file, "VirialR200" );
     H5Dread( hdf5_dataset, hdf5_type, H5S_ALL, H5S_ALL, H5P_DEFAULT, buf2 );
     H5Dclose( hdf5_dataset );
 
     for ( i=0; i<Ngroups; i++)
-        FoFProps[i].vr200 = buf2[i];
+        Gprops[i].vr200 = buf2[i];
 
     hdf5_dataset = H5Dopen( hdf5_file, "CenterOfMass" );
     H5Dread( hdf5_dataset, hdf5_type, H5S_ALL, H5S_ALL, H5P_DEFAULT, buf2 );
@@ -359,7 +366,7 @@ void fof_read() {
 
     for ( i=0; i<Ngroups; i++ )
         for ( j=0; j<3; j++ )
-            FoFProps[i].cm[j] = buf2[i*3+j];
+            Gprops[i].cm[j] = buf2[i*3+j];
 
     hdf5_dataset = H5Dopen( hdf5_file, "CenterOfVelocity" );
      H5Dread( hdf5_dataset, hdf5_type, H5S_ALL, H5S_ALL, H5P_DEFAULT, buf2 );
@@ -367,7 +374,7 @@ void fof_read() {
 
     for ( i=0; i<Ngroups; i++ )
         for ( j=0; j<3; j++ )
-            FoFProps[i].vel[j] = buf2[i*3+j];
+            Gprops[i].vel[j] = buf2[i*3+j];
 
     H5Tclose( hdf5_type );
     myfree( buf2 );
@@ -375,7 +382,7 @@ void fof_read() {
     H5Fclose( hdf5_file );
     writelog( "read fof... done.\n" );
     timer_end();
-    writelog( sep_str );
+    put_block_line;
 }
 
 void fof() {
@@ -417,5 +424,5 @@ void fof() {
     fof_save();
     writelog( "FoF ... done\n" );
     timer_end();
-    writelog( sep_str );
+    put_block_line;
 }

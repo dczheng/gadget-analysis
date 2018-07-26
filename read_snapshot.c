@@ -260,6 +260,14 @@ void empty_buffer( enum iofields blk, int offset, int pt ) {
         case IO_MASS:
             for ( i=0; i<n; i++ )
                 P[offset+i].Mass = *fp++;
+
+            /*
+            for ( i=0; i<n; i++ ) {
+                if ( pt == 5 )
+                    printf( "%g\n", P[offset+i].Mass );
+            }
+            */
+
             break;
         case IO_POT:
             for ( i=0; i<n; i++ )
@@ -424,7 +432,7 @@ void read_header( char *fn ) {
 void show_header( struct io_header header ) {
     int i;
 
-    writelog( sep_str );
+    put_block_line;
     writelog( "header Info:\n" );
 
     writelog( "%-25s: ", "npart" );
@@ -461,7 +469,7 @@ void show_header( struct io_header header ) {
     writelog( "%-25s: %i\n", "flag_doubleprecision",   header.flag_doubleprecision );
     writelog( "%-25s: %i\n", "flag_ic_info",           header.flag_ic_info );
     writelog( "%-25s: %f\n", "lpt_scalingfactor",      header.lpt_scalingfactor );
-    writelog( sep_str );
+    put_block_line;
 }
 
 void write_header( char *fn, struct io_header header ) {
@@ -600,7 +608,7 @@ void free_memory() {
     id_to_index++;
     myfree( id_to_index );
     writelog( "free memory ... done.\n" );
-    writelog( sep_str );
+    put_block_line;
 }
 
 void find_id() {
@@ -616,29 +624,32 @@ void find_id() {
         P[i].ID <<= bits;
         P[i].ID >>= bits;
     }
+
     num = get_particle_num( 4 );
     offset = get_particle_offset( 4 );
-    writelog( "Star Particle Offset: %li\n", offset );
     if ( num != 0 ) {
+        writelog( "Star Particle Offset: %li\n", offset );
         writelog( "find star id ...\n" );
         for ( i=0; i<num; i++ ) {
             P[offset+i].ID <<= bits;
             P[offset+i].ID >>= bits;
         }
     }
+
     num = get_particle_num( 5 );
     offset = get_particle_offset( 5 );
-    writelog( "Black Hole Particle Offset: %li\n", offset );
     if ( num != 0 ) {
-        writelog( "find star id ...\n" );
+        writelog( "Black Hole Particle Offset: %li\n", offset );
+        writelog( "find Black Hole id ...\n" );
         for ( i=0; i<num; i++ ) {
             P[offset+i].ID <<= bits;
             P[offset+i].ID >>= bits;
         }
     }
+
     writelog( "find id ... done.\n" );
     timer_end();
-    writelog( sep_str );
+    put_block_line;
 }
 
 void construct_id_to_index() {
@@ -647,16 +658,18 @@ void construct_id_to_index() {
     writelog( "construct id to index ...\n" );
     idmax = -1;
     idmin = LONG_MAX;
+
     for ( i=0; i<NumPart; i++ ) {
         idmax = vmax( idmax, P[i].ID );
         idmin = vmin( idmin, P[i].ID, 0 );
     }
+
     idn = idmax - idmin + 1;
     writelog( "Min ID: %li, Max ID: %li, ID Num: %li\n", idmin, idmax, idn );
 
     mymalloc( id_to_index, idn * sizeof( long ) );
 
-    memset( id_to_index, 0, sizeof( long ) *  idn );
+    memset( id_to_index, -1, sizeof( long ) *  idn );
 
     id_to_index--;
 
@@ -679,7 +692,141 @@ void construct_id_to_index() {
 
     writelog( "construct id to index ... done.\n" );
     timer_end();
-    writelog( sep_str );
+    put_block_line;
+}
+
+void attach_some_Star_BH_to_Gas() {
+    long i, num1, offset1, id, index, n, flag,
+         offset2, num2;
+
+    writelog( "attach some star and bh to gas...\n" );
+
+    writelog( "npart: " );
+    for( i=0; i<6; i++ )
+        writelog( "%li ", get_particle_num( i ) );
+    writelog( "\n" );
+    writelog( "Total: %li\n", NumPart );
+
+    flag = 0;
+
+    offset1 = get_particle_offset( 4 );
+    num1 = get_particle_num( 4 );
+    if ( num1 != 0 ) {
+
+        flag = 1;
+        for ( i=offset1, n=0; i<offset1+num1; i++ ) {
+            id = P[i].ID;
+            index = id_to_index[ id ];
+
+            if ( index < 0 )
+                continue;
+
+            if ( P[index].Type != 0 ){
+                writelog( "some error appear.\n" );
+                endrun( 20180518 );
+            }
+
+            SphP[index].Star_Mass += P[i].Mass;
+            n++;
+            P[i] = P[ offset1+num1-1 ];
+            num1--;
+            i--;
+        }
+
+        writelog( "attach %li star particle to gas...\n", n );
+
+        NumPart -= n;
+        header.npartTotal[4] = ( (num1 << 32) >> 32);
+        header.npartTotalHighWord[4] = ( num1 >> 32);
+
+    }
+
+
+    offset2 = get_particle_offset( 5 );
+    num2 = get_particle_num( 5 );
+    if ( num2 != 0 ) {
+
+        flag = 1;
+        for ( i=offset2, n=0; i<offset2+num2; i++ ) {
+            id = P[i].ID;
+            index = id_to_index[ id ];
+
+            if ( index < 0 )
+                continue;
+
+            if ( P[index].Type != 0 ){
+                writelog( "some error appear.\n" );
+                endrun( 20180518 );
+            }
+
+            SphP[index].BH_Mass += P[i].Mass;
+            n++;
+            P[i] = P[ offset2+num2-1 ];
+            num2--;
+            i--;
+        }
+
+        writelog( "attach %li black hole particle to gas...\n", n );
+
+        NumPart -= n;
+        header.npartTotal[5] = ( (num2 << 32) >> 32);
+        header.npartTotalHighWord[5] = ( num2 >> 32);
+
+        for ( i=offset2, index=offset1+num1; i<offset2+num2; i++, index++ )
+            P[index] = P[i];
+
+    }
+
+
+
+    if ( flag == 1 ) {
+        writelog( "npart: " );
+        for( i=0; i<6; i++ )
+            writelog( "%li ", get_particle_num( i ) );
+        writelog( "\n" );
+        writelog( "Total: %li\n", NumPart );
+    }
+    else {
+        writelog( "there is no star or bh particle to attach gas\n" );
+    }
+
+    writelog( "attach some star and bh to gas... done.\n" );
+    put_block_line;
+
+}
+
+void check_data( int err ) {
+
+    long i, offset, num;
+
+    writelog( "Check data ...\n" );
+
+    offset = get_particle_offset( 4 );
+    num = get_particle_num( 4 );
+    printf( "type: 4, offset: %li, num: %li\n", offset, num );
+
+    for ( i=offset; i<offset+num; i++ )
+        printf( "%g\n", P[i].Mass );
+
+    offset = get_particle_offset( 5 );
+    num = get_particle_num( 5 );
+    printf( "type: 5, offset: %li, num: %li\n", offset, num );
+
+    /*
+    for ( i=offset; i<offset+num; i++ )
+        printf( "%g\n", P[i].Mass );
+    */
+
+    for ( i=0; i<NumPart; i++ )
+        if ( P[i].Mass == 0 ) {
+            //printf( "P[%li].Mass = 0 !!!, Type: %i\n", i, P[i].Type );
+            endrun( err );
+        }
+
+
+    writelog( "Check data ... done.\n" );
+    put_block_line;
+
 }
 
 void read_snapshot() {
@@ -735,6 +882,7 @@ void read_snapshot() {
                     sprintf( file_name, "%s_%03d.%3li.hdf5",
                             All.FilePrefix, All.StartSnapIndex + ThisTask, file );
                     read_header( file_name );
+
                     if ( blockpresent( blk, pt ) ) {
                         nbytes = get_block_nbytes( blk );
                         if ( nbytes * header.npart[pt] > BufferBytes ){
@@ -743,23 +891,28 @@ void read_snapshot() {
                             BufferBytes = nbytes * header.npart[pt];
                             mymalloc( CommBuffer, BufferBytes );
                         }
+
                         hdf5_file = H5Fopen( file_name, H5F_ACC_RDWR, H5P_DEFAULT );
                         get_dataset_name( blk, buf );
                         get_hdf5_native_type( blk, &hdf5_type );
-                        writelog( "[%i] reading %s ...\n", pt, buf );
+                        writelog( "[%i] %8li reading %s ...\n", pt, offset, buf );
                         sprintf( buf1, "PartType%i/%s", pt, buf );
                         hdf5_dataset = H5Dopen( hdf5_file, buf1 );
                         herr = H5Dread( hdf5_dataset, hdf5_type, H5S_ALL, H5S_ALL, H5P_DEFAULT, CommBuffer );
                         empty_buffer( blk, offset, pt );
-                        offset += header.npart[pt];
                         H5Dclose( hdf5_dataset );
                         H5Tclose( hdf5_type );
                         H5Fclose( hdf5_file );
                 }
+
+                offset += header.npart[pt];
             }
         }
     }
     myfree( CommBuffer );
+
+    //check_data( 212121 );
+
     for ( pt=0, offset=0; pt<6; pt++ ) {
         num = header.npartTotal[pt] + ( ( ( long )header.npartTotalHighWord[pt] ) << 32 );
         if ( num != 0 && header.mass[pt] != 0 ){
@@ -769,10 +922,17 @@ void read_snapshot() {
         }
         offset += num;
     }
+
+    for ( i=0; i<N_Gas; i++ )
+        SphP[i].BH_Mass = SphP[i].Star_Mass = 0;
+
     writelog( "read data ... done. \n" );
     timer_end();
-    writelog( sep_str );
+    put_block_line;
     find_id();
     construct_id_to_index();
+    attach_some_Star_BH_to_Gas();
+
+    //endrun( 2121 );
 }
 

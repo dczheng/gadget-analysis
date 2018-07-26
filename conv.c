@@ -28,6 +28,7 @@ void free_conv_kernel() {
     writelog( "free conv kernel ....\n" );
     myfree( All.ConvKernel );
 }
+
 void conv( double ds ) {
     int PicSize, i, j, ii, jj, N, PicSize2, k, l;
     double *img;

@@ -11,18 +11,18 @@ void tree_allocate() {
     Nodes = Nodes_Base - NumPart;
 
     mymalloc( NextNode, NumPart * sizeof( long ) );
-    writelog( sep_str );
+    put_block_line;
 }
 
 void tree_free() {
     writelog( "free memory for tree\n" );
     myfree( Nodes_Base );
     myfree( NextNode );
-    writelog( sep_str );
+    put_block_line;
 }
 
 void tree_build_single() {
-    long i, j, subnode, bits, nfree, n, nn;
+    long i, j, subnode, bits, nfree, n, nn, tn;
     struct NODE *nfreep;
     double max[3], min[3], len, lenhalf;
     writelog( "tree build ...\n" );
@@ -66,6 +66,7 @@ void tree_build_single() {
     for ( i=0; i<NumPart; i++ ) {
         if ( !( ( 1 << P[i].Type ) & All.TreePartType ) )
             continue;
+        //printf( "%i %g\n", P[i].Type, P[i].Mass );
         //printf( "%li\n", i );
         //continue;
         n = NumPart;
@@ -85,6 +86,7 @@ void tree_build_single() {
                 }
             }
             else {
+
                 Nodes[parent].suns[subnode] = nfree;
                 nfreep->len = 0.5 * Nodes[parent].len;
                 nfreep -> bitflags = 0;
@@ -96,11 +98,15 @@ void tree_build_single() {
                 for ( j=0, subnode=0, bits=1; j<3; j++, bits<<=1 )
                     subnode += (( P[n].Pos[j] > nfreep->center[j] ) ? bits : 0);
                 nfreep->suns[subnode] = n;
+                tn = n;
                 n = nfree;
                 nfree++;
                 nfreep++;
                 if ( nfree-NumPart >= MaxNodes ){
-                    printf( "Max number of tree nodes reached.\n" );
+                    printf( "( %.10f, %.10f, %.10f ), ( %.10f, %.10f, %.10f )\n ",
+                            P[tn].Pos[0], P[tn].Pos[1], P[tn].Pos[2],
+                            P[i].Pos[0], P[i].Pos[1], P[i].Pos[2] );
+                    printf( "Task: %i, Max number of tree nodes reached.\n", ThisTask );
                     endrun( 20171225 );
                 }
             }
@@ -213,5 +219,5 @@ void tree_build() {
     //tree_walk_test();
     writelog( "tree walk ... done.\n" );
     timer_end();
-    writelog( sep_str );
+    put_block_line;
 }

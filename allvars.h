@@ -157,12 +157,14 @@ extern struct sph_particle_data {
     MyFloat dBdt;
     MyFloat elec;
     MyFloat Temp;
+    MyFloat BH_Mass;
+    MyFloat Star_Mass;
     double vL;
     double P;
 } *SphP;
 
 extern char sep_str[ SEP_LEN ];
-extern int ThisTask, NumTask;
+extern int ThisTask, NTask;
 extern long *id_to_index, NumPart, N_Gas;
 extern FILE *LogFileFd;
 extern struct io_header header;
@@ -174,7 +176,8 @@ extern struct global_parameters_struct {
          *ToolsPath, Sproj;
 
     int StartSnapIndex, ProjectDirection, KernelN, FoFRead,
-        HgeFlag, CrFlag, BFlag, GroupFlag, MpcFlag, MachFlag,
+        HgeFlag, CrFlag, BFlag, GroupFlag, MpcFlag, MachFlag, FoF,
+        MF,
         PicSize, PicSize2, NumFiles,
         GasState, GasDensity, GasTemperature, KernelInterpolation,
         ReadTemperature, FoFMinLen, proj_i, proj_j, proj_k,
@@ -200,19 +203,23 @@ extern struct global_parameters_struct {
     long SliceStart[6], SliceEnd[6];
 }All;
 
-#define IMG_PROPS_START 11
+#define IMG_PROPS_START 15
 #define IMG_PROPS_OTHERS ( All.PicSize - IMG_PROPS_START )
 #define img_nprops     ( images.nprops[0] )
 #define img_xmin       ( image.props[1] )
 #define img_xmax       ( image.props[2] )
 #define img_ymin       ( image.props[3] )
 #define img_ymax       ( image.props[4] )
-#define img_proj       ( image.props[5] )
-#define img_z          ( image.props[6] )
-#define img_min        ( image.props[7] )
-#define img_max        ( image.props[8] )
-#define img_globmin    ( image.props[9] )
-#define img_globmax    ( image.props[10] )
+#define img_globxmin   ( image.props[5] )
+#define img_globxmax   ( image.props[6] )
+#define img_globymin   ( image.props[7] )
+#define img_globymax   ( image.props[8] )
+#define img_proj       ( image.props[9] )
+#define img_z          ( image.props[10] )
+#define img_min        ( image.props[11] )
+#define img_max        ( image.props[12] )
+#define img_globmin    ( image.props[13] )
+#define img_globmax    ( image.props[14] )
 #define img_props(i)   ( image.props[ IMG_PROPS_START+i ] )
 struct image_struct{
     double *data, *img,
@@ -223,13 +230,17 @@ struct image_struct{
      *      2 xmax
      *      3 ymin
      *      4 ymax
-     *      5 projctdirection
-     *      6 redshift
-     *      7 min_i
-     *      8 max_i
-     *      9 globmin_i
-     *      10 globmax_i
-     *      11 ~ end others ... */
+     *      5 globxmin
+     *      6 globxmax
+     *      7 globymin
+     *      8 globymax
+     *      9 projctdirection
+     *      10 redshift
+     *      11 min_i
+     *      12 max_i
+     *      13 globmin_i
+     *      14 globmax_i
+     *      15 ~ end others ... */
 
 };
 extern struct image_struct image;
@@ -245,12 +256,12 @@ extern long MaxNodes;
 extern long *NextNode;
 extern long *Ngblist;
 
-struct fof_properties{
+struct group_properties{
     double mass, cm[3], vr200, vel[3];
     long Head, Tail, Len;
 };
 
-extern struct fof_properties *FoFProps;
+extern struct group_properties *Gprops;
 extern long *FoFNext;
 extern int Ngroups;
 

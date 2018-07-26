@@ -27,12 +27,14 @@ TreeAllocFactor               1.8
 TreePartType                  51
 %TreePartType                  2
 LinkLength                    0.2
+FoF                           1
 FoFMinLen                     128
 FoFPrefix                    ./group/snapshot_fof
-FoFRead                       1
+FoFRead                       0
 HgeFlag                       0
 CrFlag                        0
 BFlag                         1
+MachFlag                      0
 GasDensity                    0
 GasTemperature                0
 GasState                      0
@@ -41,4 +43,6 @@ ConvN                         3
 ConvSigma                     0
 ConvFlag                      0
 GroupIndex                    0
-GroupFlag                     0
+GroupFlag                     1
+MF                            0
+CheckData                     0

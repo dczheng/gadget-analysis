@@ -4,14 +4,22 @@ int main( int argc, char *argv[] ){
     time_t time1, time2;
     long dtime;
     struct tm *tb;
+
     MPI_Init( &argc, &argv );
     MPI_Comm_rank( MPI_COMM_WORLD, &ThisTask );
-    MPI_Comm_size( MPI_COMM_WORLD, &NumTask );
-    if ( ThisTask == 0 )
+    MPI_Comm_size( MPI_COMM_WORLD, &NTask );
+
+    if ( ThisTask == 0 ) {
         if ( argc < 2 ) {
-            fprintf( stderr, "Parameter file is required on command line!\n " );
+            printf( "Parameters file is required on command line!\n " );
             endrun( 1 );
         }
+        if ( access( argv[1], 0 ) == -1 ) {
+            printf( "Parameters file `%s` is invalid!\n", argv[1] );
+            endrun( 20180516 );
+        }
+    }
+
     time1 = time( NULL );
     tb = localtime( &time1 );
 
@@ -26,6 +34,7 @@ int main( int argc, char *argv[] ){
             }
         }
     }
+
     MPI_Barrier( MPI_COMM_WORLD );
     sprintf( All.LogFile, "./gadget-analysis.log/gadget-analysis-%03d.log", ThisTask );
     LogFileFd = fopen( All.LogFile, "w" );
@@ -39,21 +48,22 @@ int main( int argc, char *argv[] ){
     init_sig();
 #endif
 
-    writelog( sep_str );
+    put_block_line;
     All.ToolsPath = getenv( "GADGET_TOOLS" );
     if ( strcmp( All.ToolsPath, "" ) == 0 ){
         writelog( "Please set `GADGET_TOOLS` evironment variable.\n" );
-        writelog( sep_str );
+        put_block_line;
         endrun( 20180513 );
     }
     writelog( "GADGET_TOOLS: %s\n", All.ToolsPath );
-    writelog( sep_str );
+    put_block_line;
 
     read_parameters( argv[1] );
+    check_flags();
     read_snapshot();
     set_units();
     compute_cosmo_quantities();
-    //group_analysis();
+
     /******************analysis***********************/
     analysis();
     MPI_Barrier( MPI_COMM_WORLD );
@@ -69,7 +79,7 @@ int main( int argc, char *argv[] ){
 
     dtime = (long) ( difftime( time2, time1 ) );
     writelog( "Total Time %li sec.\n", dtime );
-    writelog( sep_str );
+    put_block_line;
 
     fclose( LogFileFd );
     MPI_Finalize();

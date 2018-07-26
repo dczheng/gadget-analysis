@@ -15,7 +15,7 @@ void init_analysis() {
         init_conv_kernel();
     init_img();
     writelog( "initialize analysis... done.\n" );
-    writelog( sep_str );
+    put_block_line;
 }
 
 void free_analysis() {
@@ -27,7 +27,7 @@ void free_analysis() {
         free_conv_kernel();
     free_img();
     writelog( "free analysis ... done.\n" );
-    writelog( sep_str );
+    put_block_line;
 }
 
 void gas_density_slice() {
@@ -44,7 +44,7 @@ void gas_density_slice() {
     }
 
     create_dir( "./gas_density" );
-    sprintf( buf, "./gas_density/%s_%.2f.dat", All.FilePrefix, All.RedShift );
+    sprintf( buf, "./gas_density/%s_%03i_%.2f.dat", All.FilePrefix, ThisTask, All.RedShift );
 
     make_slice_img( 0 );
 
@@ -58,7 +58,7 @@ void gas_density_slice() {
     myfree( image.img );
 
     writelog( "gas density silce ... done.\n" );
-    writelog( sep_str );
+    put_block_line;
 }
 
 int compare_gas_rho( const void *a, const void *b ){
@@ -78,6 +78,7 @@ void sort_gas_rho(){
 }
 
 void vel_value() {
+
     writelog( "velocities value analysis ...\n" );
     FILE *fd;
     char buf[20];
@@ -93,19 +94,21 @@ void vel_value() {
     }
     fclose( fd );
     writelog( "velocities value analysis ... done\n" );
-    writelog( sep_str );
+    put_block_line;
 }
 
 void calc_vl() {
     long i;
     double B;
+
     writelog( "compute Larmor frequency ...\n" );
     for ( i=0; i<N_Gas; i++ ) {
         B = sqrt( pow( SphP[i].B[0], 2 ) + pow( SphP[i].B[1], 2 ) + pow( SphP[i].B[2], 2 ) );
         SphP[i].vL = ELECTRON_CHARGE * B / ( 2 * PI * ELECTRON_MASS * LIGHT_SPEED );
     }
     writelog( "compute Larmor frequency ... done.\n" );
-    writelog( sep_str );
+    put_block_line;
+
 }
 
 void compute_radio( double v ) {
@@ -113,11 +116,9 @@ void compute_radio( double v ) {
     double B, Ub, vl, pmin, pmax, *img, dx, dy,
            ang_dis, lum_dis, BoxSize, C, V,
            h, tmp, ang, beam;
+
     writelog( "compute synchrotron radiation ...\n" );
-    pmin = DBL_MAX;
-    pmax = DBL_MIN;
-    PicSize = All.PicSize;
-    BoxSize = All.BoxSize;
+
     for ( i=0; i<N_Gas; i++ ) {
         C = SphP[i].CRE_C0 * pow( SphP[i].Density, (All.Alpha-2)/3.0 );
         C = C * SphP[i].Density / ( ELECTRON_MASS /(g2c.g) );
@@ -132,7 +133,15 @@ void compute_radio( double v ) {
         pmin = ( SphP[i].P < pmin && SphP[i].P > 0 ) ? SphP[i].P : pmin;
         pmax = ( SphP[i].P > pmax ) ? SphP[i].P : pmax;
     }
+
     writelog( "pmin = %g, pmax = %g\n", pmin, pmax );
+
+    return;
+
+    pmin = DBL_MAX;
+    pmax = DBL_MIN;
+    PicSize = All.PicSize;
+    BoxSize = All.BoxSize;
 
     mymalloc( img, sizeof( double ) * SQR( PicSize ) );
     memset( img, 0, sizeof( double ) * SQR( PicSize ) );
@@ -161,11 +170,13 @@ void compute_radio( double v ) {
     }
     myfree( img );
     writelog( "img_max = %g, img_min = %g\n", img_max, img_min );
+
 }
 
 void magnetic() {
     long i;
     double B, Bmin, Bmax;
+
     Bmax = -DBL_MAX;
     Bmin = DBL_MAX;
     for ( i=0; i<N_Gas; i++ ) {
@@ -178,12 +189,14 @@ void magnetic() {
     }
     printf( "Bmin: %g, Bmax: %g\n",
             Bmin, Bmax );
+
 }
 
 void output_rho() {
     long i;
     FILE *fd;
     double rho_max, rho_min;
+
     fd = fopen( "./rho.txt", "w" );
     rho_max = -DBL_MAX;
     rho_min = DBL_MAX;
@@ -198,11 +211,13 @@ void output_rho() {
     }
     printf( "rho_max = %g, rho_min = %g \n", rho_max, rho_min );
     fclose( fd );
+
 }
 
 void compute_temperature() {
     double yhelium, u, ne, mu, XH;
     int i;
+
     writelog( "compute gas temprature...\n" );
     XH = HYDROGEN_MASSFRAC;
     yhelium = ( 1 - XH ) / ( 4 * XH );
@@ -213,15 +228,19 @@ void compute_temperature() {
         SphP[i].Temp = GAMMA_MINUS1 / BOLTZMANN * u * PROTONMASS * mu;
     }
     writelog( "compute gas temprature... done.\n" );
-    writelog( sep_str );
+    put_block_line;
+
 }
 
 void gas_state() {
+
     double TempMin, TempMax, DensMin, DensMax,
            LogTempMin, LogTempMax, LogDensMin, LogDensMax,
-           *img, DLogTemp, DLogDens, LogDens, LogTemp, sum;
+           *img, DLogTemp, DLogDens, LogDens, LogTemp, sum,
+           GlobLogTempMin, GlobLogTempMax, GlobLogDensMin, GlobLogDensMax;
     int i, j, k, PicSize;
     char buf[200];
+
     TempMin = DensMin = DBL_MAX;
     TempMax = DensMax = DBL_MIN;
     writelog( "plot gas state...\n" );
@@ -244,15 +263,21 @@ void gas_state() {
     LogDensMax = log10( DensMax );
     LogTempMin = log10( TempMin );
     LogTempMax = log10( TempMax );
+    find_global_value( LogDensMin, GlobLogDensMin, MPI_DOUBLE, MPI_MIN );
+    find_global_value( LogDensMax, GlobLogDensMax, MPI_DOUBLE, MPI_MAX );
+    find_global_value( LogTempMin, GlobLogTempMin, MPI_DOUBLE, MPI_MIN );
+    find_global_value( LogTempMax, GlobLogTempMax, MPI_DOUBLE, MPI_MAX );
 
     //LogTempMax = 7;
 
     DLogTemp = ( LogTempMax - LogTempMin ) / PicSize;
     DLogDens = ( LogDensMax - LogDensMin ) / PicSize;
     writelog( "DensMin: %g, DensMax: %g, TempMin: %g, TempMax: %g\n"
-            "LogDensMin: %g, LogDensMax: %g, LogTempMIn: %g, LogTempMax: %g\n",
+            "LogDensMin: %g, LogDensMax: %g, LogTempMIn: %g, LogTempMax: %g\n"
+            "GlobLogDensMin: %g, GlobLogDensMax: %g,\nGlobLogTempMIn: %g, GlobLogTempMax: %g\n",
             DensMin, DensMax, TempMin, TempMax,
-            LogDensMin, LogDensMax, LogTempMin, LogTempMax );
+            LogDensMin, LogDensMax, LogTempMin, LogTempMax,
+            GlobLogDensMin, GlobLogDensMax, GlobLogTempMin, GlobLogTempMax );
 
     ZSPRINTF( 0, "1" );
     for ( k=0; k<N_Gas; k++ ) {
@@ -288,7 +313,7 @@ void gas_state() {
         img[i] /= sum;
 
     create_dir( "./gas_state" );
-    sprintf( buf, "./gas_state/%s_%.2f.dat", All.FilePrefix, All.RedShift );
+    sprintf( buf, "./gas_state/%s_%03i_%.2f.dat", All.FilePrefix, ThisTask, All.RedShift );
 
     ZSPRINTF( 0, "3" );
     image.img = img;
@@ -300,7 +325,8 @@ void gas_state() {
     myfree( img );
 
     //All.PicSize = PicSize_tmp;
-    writelog( sep_str );
+    put_block_line;
+
 }
 
 void gas_temperature_slice() {
@@ -320,7 +346,7 @@ void gas_temperature_slice() {
     }
 
     create_dir( "./gas_temperature" );
-    sprintf( buf, "./gas_temperature/%s_%.2f.dat", All.FilePrefix, All.RedShift );
+    sprintf( buf, "./gas_temperature/%s_%03i_%.2f.dat", All.FilePrefix, ThisTask, All.RedShift );
 
     make_slice_img( 0 );
 
@@ -333,21 +359,89 @@ void gas_temperature_slice() {
     myfree( image.data );
     myfree( image.img );
     writelog( "gas Temperature silce ... done.\n" );
-    writelog( sep_str );
+    put_block_line;
 
 }
 
+void mass_function() {
+
+    int g, *num, i, i_m_min, i_m_max;
+    double m_min, m_max;
+    char buf[100];
+    FILE *fd;
+    writelog( "compute mass function ...\n" );
+
+    m_min = DBL_MAX;
+    m_max = -DBL_MAX;
+
+    for ( g=0; g<Ngroups; g++ ) {
+        m_min = vmin( m_min, Gprops[g].mass, 0 );
+        m_max = vmax( m_max, Gprops[g].mass );
+    }
+
+    m_min *= 1e10;
+    m_max *= 1e10;
+
+    writelog( "m_min: %g, m_max: %g\n", m_min, m_max );
+
+    i_m_min = floor( log10(m_min) );
+    i_m_max = floor( log10(m_max) );
+
+    writelog( "i_m_min: %i, i_m_max: %i\n", i_m_min, i_m_max );
+
+    if ( i_m_min == i_m_max ) {
+        printf( "some error appear!\n" );
+        endrun( 20180724 );
+    }
+
+    mymalloc( num, sizeof(int) * ( i_m_max - i_m_min + 1 ) );
+    memset( num, 0, sizeof( int ) * ( i_m_max - i_m_min + 1 ) );
+
+    for ( g=0; g<Ngroups; g++ ) {
+        num[ ( int ) ( floor( log10( Gprops[g].mass * 1e10 ) ) - i_m_min ) ] ++;
+    }
+
+    for ( i=i_m_max-1; i>=i_m_min; i-- ) {
+        num[i-i_m_min] += num[i-i_m_min+1];
+    }
+
+    /*
+    for ( i=m_min; i<=m_max; i++ ) {
+        writelog( "%i\n", num[i] );
+    }
+    */
+
+    create_dir( "./mf" );
+    sprintf( buf, "./mf/%s_mf_%.2f.dat", All.FilePrefix, All.RedShift );
+
+    fd = fopen( buf, "w" );
+
+    for ( i=i_m_min; i<=i_m_max; i++ ) {
+
+        fprintf( fd, "%i %g\n", i, num[i-i_m_min] / CUBE( All.BoxSize / All.MpcFlag ) );
+
+    }
+
+    fclose( fd );
+
+    myfree( num );
+
+    writelog( "compute mass function ... done.\n" );
+    put_block_line;
+}
+
+
 void group_analysis() {
+
     long index, i, p, PicSize, x, y, ii, jj,
          xo, yo, PicSize2, npart[6];
-    struct fof_properties g;
+    struct group_properties g;
     double *img, *m, L, dL, mass[6], B;
     char buf[100];
 
-    if ( All.FoFRead )
-        fof_read();
-    else {
-        fof();
+    if ( All.FoF == 0 ) {
+        printf( "FoF is required by Group Analysis!\n" );
+        endrun( 20180724 );
     }
 
     index = All.GroupIndex;
@@ -359,7 +453,7 @@ void group_analysis() {
     y = All.proj_j;
     xo = PicSize / 2;
     yo = PicSize / 2;
-    g = FoFProps[index];
+    g = Gprops[index];
     mymalloc( img, PicSize2 * sizeof( double ) );
     mymalloc( m, PicSize2 * sizeof( double ) );
 
@@ -375,11 +469,18 @@ void group_analysis() {
 
     for ( i=0, L=0; i<g.Len; i++, p=FoFNext[p] ){
         npart[ P[p].Type ] ++;
-        mass[ P[p].Type] += P[i].Mass;
+        mass[ P[p].Type] += P[p].Mass;
+
+        if ( P[p].Type == 0 ) {
+            //printf( "%g\n", SphP[p].Star_Mass );
+            mass[4] += SphP[p].Star_Mass;
+            mass[5] += SphP[p].BH_Mass;
+        }
+
         if ( P[p].Type != 0 )
             continue;
-            L = vmax( NGB_PERIODIC( P[p].Pos[x] - g.cm[x] ), L );
-            L = vmax( NGB_PERIODIC( P[p].Pos[y] - g.cm[y] ), L );
+        L = vmax( NGB_PERIODIC( P[p].Pos[x] - g.cm[x] ), L );
+        L = vmax( NGB_PERIODIC( P[p].Pos[y] - g.cm[y] ), L );
     }
 
     dL = 2 * L / PicSize;
@@ -430,7 +531,7 @@ void group_analysis() {
         check_picture_index( ii );
         check_picture_index( jj );
         img[ ii*PicSize + jj ] += SphP[p].Temp * P[p].Mass;
-        printf( "%g\n", SphP[p].Temp );
+        //printf( "%g\n", SphP[p].Temp );
     }
 
     for ( i=0; i<PicSize2; i++ ) {
@@ -445,7 +546,7 @@ void group_analysis() {
         conv( dL );
 
     create_dir( "./group" );
-    sprintf( buf, "./group/%s_Temperature_%.2f_%c.dat", All.FilePrefix, All.RedShift, All.Sproj );
+    sprintf( buf, "./group/%s_%03i_Temperature_%.2f_%c.dat", All.FilePrefix, ThisTask, All.RedShift, All.Sproj );
     write_img( buf );
 
     writelog( "group temperature ... done.\n" );
@@ -453,75 +554,81 @@ void group_analysis() {
 /********************temperture*************************/
 
 /********************magnetic field*************************/
-    writelog( "\ngroup magnetic field ...\n" );
-    memset( img, 0, PicSize2 * sizeof( double ) );
-    p = g.Head;
-    for ( i=0; i<g.Len; i++, p=FoFNext[p] ) {
-        if ( P[p].Type != 0 )
-            continue;
-        ii = PERIODIC( P[p].Pos[x] - g.cm[x] ) / dL + xo;
-        jj = PERIODIC( P[p].Pos[y] - g.cm[y] ) / dL + yo;
-        //printf( "%li, %li\n", ii, jj );
-        check_picture_index( ii );
-        check_picture_index( jj );
-        B = sqrt( SQR( SphP[p].B[0] ) +
-                  SQR( SphP[p].B[1] ) +
-                  SQR( SphP[p].B[2] ) );
-        B *= 1e6;  // convert G to muG
-        img[ ii*PicSize + jj ] += B * P[p].Mass;
+    if ( All.BFlag ) {
+        writelog( "\ngroup magnetic field ...\n" );
+
+        memset( img, 0, PicSize2 * sizeof( double ) );
+        p = g.Head;
+        for ( i=0; i<g.Len; i++, p=FoFNext[p] ) {
+            if ( P[p].Type != 0 )
+                continue;
+            ii = PERIODIC( P[p].Pos[x] - g.cm[x] ) / dL + xo;
+            jj = PERIODIC( P[p].Pos[y] - g.cm[y] ) / dL + yo;
+            //printf( "%li, %li\n", ii, jj );
+            check_picture_index( ii );
+            check_picture_index( jj );
+            B = sqrt( SQR( SphP[p].B[0] ) +
+                      SQR( SphP[p].B[1] ) +
+                      SQR( SphP[p].B[2] ) );
+            B *= 1e6;  // convert G to muG
+            img[ ii*PicSize + jj ] += B * P[p].Mass;
+        }
+
+        for ( i=0; i<PicSize2; i++ ) {
+            if ( m[i] == 0 )
+                continue;
+            img[i] /= m[i];
+        }
+
+        image.img = img;
+
+        if ( All.ConvFlag )
+            conv( dL );
+
+        create_dir( "./group" );
+        sprintf( buf, "./group/%s_%03i_MagneticField_%.2f_%c.dat", All.FilePrefix, ThisTask, All.RedShift, All.Sproj );
+        write_img( buf );
+
+
+        writelog( "group magnetic field ... done.\n" );
     }
-
-    for ( i=0; i<PicSize2; i++ ) {
-        if ( m[i] == 0 )
-            continue;
-        img[i] /= m[i];
-    }
-
-    image.img = img;
-
-    if ( All.ConvFlag )
-        conv( dL );
-
-    create_dir( "./group" );
-    sprintf( buf, "./group/%s_MagneticField_%.2f_%c.dat", All.FilePrefix, All.RedShift, All.Sproj );
-    write_img( buf );
-
-
-    writelog( "group magnetic field ... done.\n" );
 
 /********************magnetic field*************************/
 
 /********************mach number*************************/
-    writelog( "\ngroup mach number ...\n" );
-    memset( img, 0, PicSize2 * sizeof( double ) );
-    p = g.Head;
-    for ( i=0; i<g.Len; i++, p=FoFNext[p] ) {
-        if ( P[p].Type != 0 )
-            continue;
-        ii = PERIODIC( P[p].Pos[x] - g.cm[x] ) / dL + xo;
-        jj = PERIODIC( P[p].Pos[y] - g.cm[y] ) / dL + yo;
-        //printf( "%li, %li\n", ii, jj );
-        check_picture_index( ii );
-        check_picture_index( jj );
-        img[ ii*PicSize + jj ] += SphP[p].MachNumber * P[p].Mass;
+    if ( All.MachFlag ) {
+        writelog( "\ngroup mach number ...\n" );
+
+        memset( img, 0, PicSize2 * sizeof( double ) );
+        p = g.Head;
+        for ( i=0; i<g.Len; i++, p=FoFNext[p] ) {
+            if ( P[p].Type != 0 )
+                continue;
+            ii = PERIODIC( P[p].Pos[x] - g.cm[x] ) / dL + xo;
+            jj = PERIODIC( P[p].Pos[y] - g.cm[y] ) / dL + yo;
+            //printf( "%li, %li\n", ii, jj );
+            check_picture_index( ii );
+            check_picture_index( jj );
+            img[ ii*PicSize + jj ] += SphP[p].MachNumber * P[p].Mass;
+        }
+
+        for ( i=0; i<PicSize2; i++ ) {
+            if ( m[i] == 0 )
+                continue;
+            img[i] /= m[i];
+        }
+
+        image.img = img;
+
+        if ( All.ConvFlag )
+            conv( dL );
+
+        create_dir( "./group" );
+        sprintf( buf, "./group/%s_%03i_MachNumber_%.2f_%c.dat", All.FilePrefix, ThisTask, All.RedShift, All.Sproj );
+        write_img( buf );
+
+        writelog( "group Mach Number ... done.\n" );
     }
-
-    for ( i=0; i<PicSize2; i++ ) {
-        if ( m[i] == 0 )
-            continue;
-        img[i] /= m[i];
-    }
-
-    image.img = img;
-
-    if ( All.ConvFlag )
-        conv( dL );
-
-    create_dir( "./group" );
-    sprintf( buf, "./group/%s_MachNumber_%.2f_%c.dat", All.FilePrefix, All.RedShift, All.Sproj );
-    write_img( buf );
-
-    writelog( "group Mach Number ... done.\n" );
 
 /********************mach number*************************/
 
@@ -529,7 +636,7 @@ void group_analysis() {
     myfree( m );
 
     writelog( "analysis group: %li ... done.\n", index );
-    writelog( sep_str );
+    put_block_line;
 
     fof_free();
 
@@ -539,8 +646,9 @@ void analysis(){
     init_analysis();
 
     if ( (All.GasTemperature ||
-         All.GasState) && All.ReadTemperature == 0  )
+                All.GasState || All.GroupFlag ) && All.ReadTemperature == 0  ) {
         compute_temperature();
+    }
 
     if ( All.GasState ) {
         gas_state();
@@ -551,6 +659,16 @@ void analysis(){
 
     if ( All.GasTemperature )
         gas_temperature_slice();
+
+    if ( All.FoF ) {
+        if ( All.FoFRead )
+            fof_read();
+        else
+            fof();
+    }
+
+    if ( All.MF )
+        mass_function();
 
     if ( All.GroupFlag )
         group_analysis();

@@ -45,3 +45,5 @@ int ngb_fof(  double *searchcenter, double h );
 void conv( double ds );
 void init_conv_kernel();
 void free_conv_kernel();
+
+void check_flags();
