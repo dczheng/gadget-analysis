@@ -191,8 +191,20 @@ void read_parameters( char *fn ) {
         addr[nt] = &All.FoF;
         id[nt++] = INT;
 
-        strcpy( tag[nt], "MF" );
-        addr[nt] = &All.MF;
+        strcpy( tag[nt], "MFFlag" );
+        addr[nt] = &All.MFFlag;
+        id[nt++] = INT;
+
+        strcpy( tag[nt], "RadioFlag" );
+        addr[nt] = &All.RadioFlag;
+        id[nt++] = INT;
+
+        strcpy( tag[nt], "SfrFlag" );
+        addr[nt] = &All.SfrFlag;
+        id[nt++] = INT;
+
+        strcpy( tag[nt], "HgeNumDensFlag" );
+        addr[nt] = &All.HgeNumDensFlag;
         id[nt++] = INT;
 
         strcpy( tag[nt], "ConvSigma" );

@@ -31,7 +31,7 @@ mdm = data_info[ 15+1 ]
 ms = data_info[ 15+4 ]
 mbh = data_info[ 15+5 ]
 
-data[ data < 2 ] = 0
+data[ data < data.max() * 1e-5 ] = 0
 
 if ( proj == 0 ):
     ProDire = 'x'
@@ -125,8 +125,9 @@ ax.set_xticklabels( DensList )
 ax.set_yticks( np.linspace( 0, m, NY ) )
 ax.set_yticklabels( TempList )
 '''
+
 cbar = fig.colorbar( img )
-cbar.set_label( "Mach Number\n%s direction"%(ProDire) )
+cbar.set_label( "Radio\n%s direction"%(ProDire) )
 
 fn_png = sys.argv[1][:-4] + '.png'
 print( "save image to " +  fn_png )

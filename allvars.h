@@ -121,6 +121,7 @@ enum iofields {
     IO_CRE_n0,
     IO_DIVB,
     IO_DBDT,
+    IO_SFR,
     IO_TEMP
 };
 
@@ -159,8 +160,7 @@ extern struct sph_particle_data {
     MyFloat Temp;
     MyFloat BH_Mass;
     MyFloat Star_Mass;
-    double vL;
-    double P;
+    MyFloat sfr;
 } *SphP;
 
 extern char sep_str[ SEP_LEN ];
@@ -177,7 +177,7 @@ extern struct global_parameters_struct {
 
     int StartSnapIndex, ProjectDirection, KernelN, FoFRead,
         HgeFlag, CrFlag, BFlag, GroupFlag, MpcFlag, MachFlag, FoF,
-        MF,
+        MFFlag, RadioFlag, SfrFlag, HgeNumDensFlag,
         PicSize, PicSize2, NumFiles,
         GasState, GasDensity, GasTemperature, KernelInterpolation,
         ReadTemperature, FoFMinLen, proj_i, proj_j, proj_k,

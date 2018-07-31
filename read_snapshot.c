@@ -48,6 +48,12 @@ int blockpresent( enum iofields blk, int pt ) {
             else
                 return 0;
 
+        case IO_SFR:
+            if (( pt == 0 ) && ( header.npart[0] != 0 ) && All.SfrFlag == 1)
+                return 1;
+            else
+                return 0;
+
         case IO_CRE_C0:
         case IO_CRE_Q0:
         case IO_CRE_E0:
@@ -83,6 +89,7 @@ int get_block_nbytes( enum iofields blk ) {
         case IO_MAG:
             block_nbytes = 3 * sizeof( OutputFloat );
             break;
+        case IO_SFR:
         case IO_DIVB:
         case IO_DBDT:
         case IO_MASS:
@@ -118,6 +125,7 @@ void get_block_dims( int pt, enum iofields blk, hsize_t (*dims)[2] ) {
             (*dims)[0] = header.npart[pt];
             (*dims)[1] = 3;
             break;
+        case IO_SFR:
         case IO_DIVB:
         case IO_DBDT:
         case IO_MASS:
@@ -152,6 +160,9 @@ void get_dataset_name( enum iofields blk, char *buf ) {
             break;
         case IO_ACCEL:
             strcpy( buf, "Acceleration" );
+            break;
+        case IO_SFR:
+            strcpy( buf, "StarFormationRate" );
             break;
         case IO_MAG:
             strcpy( buf, "MagneticField" );
@@ -281,6 +292,10 @@ void empty_buffer( enum iofields blk, int offset, int pt ) {
         case IO_RHO:
             for ( i=0; i<n; i++ )
                 SphP[offset+i].Density = *fp++;
+            break;
+        case IO_SFR:
+            for ( i=0; i<n; i++ )
+                SphP[offset+i].sfr = *fp++;
             break;
         case IO_MAG:
             for ( i=0; i<n; i++ )

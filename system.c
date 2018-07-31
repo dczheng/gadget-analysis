@@ -18,6 +18,7 @@ void create_dir( char *s ) {
 double second() {
     return ( (double) clock() / CLOCKS_PER_SEC );
 }
+
 void endrun( int ierr ) {
     fprintf( stderr, "EXIT CODE: %i\n", ierr );
     MPI_Abort( MPI_COMM_WORLD, ierr );
