@@ -203,6 +203,10 @@ void read_parameters( char *fn ) {
         addr[nt] = &All.SfrFlag;
         id[nt++] = INT;
 
+        strcpy( tag[nt], "SpecFlag" );
+        addr[nt] = &All.SpecFlag;
+        id[nt++] = INT;
+
         strcpy( tag[nt], "HgeNumDensFlag" );
         addr[nt] = &All.HgeNumDensFlag;
         id[nt++] = INT;
@@ -211,12 +215,36 @@ void read_parameters( char *fn ) {
         addr[nt] = &All.ConvSigma;
         id[nt++] = REAL;
 
-        strcpy( tag[nt], "FoFPrefix" );
-        addr[nt] = &All.FoFPrefix;
+        strcpy( tag[nt], "NuMin" );
+        addr[nt] = &All.NuMin;
+        id[nt++] = REAL;
+
+        strcpy( tag[nt], "NuMax" );
+        addr[nt] = &All.NuMax;
+        id[nt++] = REAL;
+
+        strcpy( tag[nt], "NuNum" );
+        addr[nt] = &All.NuNum;
+        id[nt++] = INT;
+
+        strcpy( tag[nt], "FoFDir" );
+        addr[nt] = &All.FoFDir;
         id[nt++] = STRING;
 
-        strcpy( tag[nt], "GroupIndex" );
-        addr[nt] = &All.GroupIndex;
+        strcpy( tag[nt], "GroupDir" );
+        addr[nt] = &All.GroupDir;
+        id[nt++] = STRING;
+
+        strcpy( tag[nt], "GroupMassMin" );
+        addr[nt] = &All.GroupMassMin;
+        id[nt++] = REAL;
+
+        strcpy( tag[nt], "GroupIndexMin" );
+        addr[nt] = &All.GroupIndexMin;
+        id[nt++] = INT;
+
+        strcpy( tag[nt], "GroupIndexMax" );
+        addr[nt] = &All.GroupIndexMax;
         id[nt++] = INT;
 
         while( !feof( fd ) ) {

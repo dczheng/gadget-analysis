@@ -171,17 +171,18 @@ extern struct io_header header;
 
 extern struct global_parameters_struct {
     char FilePrefix[ MYFILENAME_MAX ],
-         FoFPrefix[ MYFILENAME_MAX ],
+         FoFDir[ MYFILENAME_MAX ],
+         GroupDir[ MYFILENAME_MAX ],
          LogFile[ MYFILENAME_MAX ],
          *ToolsPath, Sproj;
 
     int StartSnapIndex, ProjectDirection, KernelN, FoFRead,
         HgeFlag, CrFlag, BFlag, GroupFlag, MpcFlag, MachFlag, FoF,
-        MFFlag, RadioFlag, SfrFlag, HgeNumDensFlag,
+        MFFlag, RadioFlag, SfrFlag, HgeNumDensFlag, NuNum, SpecFlag,
         PicSize, PicSize2, NumFiles,
         GasState, GasDensity, GasTemperature, KernelInterpolation,
         ReadTemperature, FoFMinLen, proj_i, proj_j, proj_k,
-        TreePartType, ConvN, ConvFlag, GroupIndex;
+        TreePartType, ConvN, ConvFlag, GroupIndexMin, GroupIndexMax;
 
     double SofteningTable[6], Alpha ,
            UnitTime_in_s,
@@ -198,7 +199,7 @@ extern struct global_parameters_struct {
            Time, Hubble_a, RhoBaryon,
            RedShift, HubbleParam, RhoCrit, G,
            Hubble, Omega0, OmegaLambda, OmegaBaryon,
-           *ConvKernel, ConvSigma;
+           *ConvKernel, ConvSigma, NuMin, NuMax, GroupMassMin;
 
     long SliceStart[6], SliceEnd[6];
 }All;
@@ -257,8 +258,8 @@ extern long *NextNode;
 extern long *Ngblist;
 
 struct group_properties{
-    double mass, cm[3], vr200, vel[3];
-    long Head, Tail, Len;
+    double mass, cm[3], vr200, vel[3], mass_table[6], size;
+    long Head, Tail, Len, npart[6];
 };
 
 extern struct group_properties *Gprops;

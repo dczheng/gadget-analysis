@@ -102,6 +102,7 @@ double particle_radio( double v, long i ) {
     double C, B, Ub, vl, P;
 
     C = SphP[i].CRE_C0 * pow( SphP[i].Density, (All.Alpha-1)/3.0 );
+    //printf( "%g\n", C );
     C = C * SphP[i].Density / ( ELECTRON_MASS /(g2c.g) );
     C /= CUBE( g2c.cm );
     B = sqrt( pow( SphP[i].B[0], 2 ) + pow( SphP[i].B[1], 2 ) + pow( SphP[i].B[2], 2 ) );
@@ -110,6 +111,7 @@ double particle_radio( double v, long i ) {
     P = C * 2.0 / 3.0 * LIGHT_SPEED * Ub * THOMSON_CROSS_SECTION *
         pow( v / vl-1, (1-All.Alpha) / 2 ) / vl;
     //printf( "%g\n", P );
+
     return P;
 
 }
@@ -124,15 +126,54 @@ double particle_hge_num_dens( long i ) {
 
 }
 
+double group_luminosity( double nu, long index ) {
+
+    long p;
+    double F, h;
+    struct group_properties *g;
+
+    g = &Gprops[index];
+    h = All.SofteningTable[0] * g2c.cm;
+
+    p = g->Head;
+    F = 0;
+
+    while( p >= 0 ) {
+
+        if ( P[p].Type == 0 )
+            F += particle_radio( nu, p );
+        p = FoFNext[p];
+
+    }
+
+    F = F * ( 4.0 / 3.0 * PI * CUBE( h ) );
+
+    return F;
+
+}
+
+double group_flux( double nu, long index ) {
+
+    double com_dis, lum_dis;
+    struct group_properties *g;
+
+    g = &Gprops[index];
+    com_dis = comoving_distance( header.time );
+    lum_dis = luminosity_distance( header.time ) * g2c.cm;
+
+    return group_luminosity( nu, index ) /
+        ( 4.0 * PI * SQR(lum_dis) ) /
+        ( SQR( g->size * 2 / com_dis ) );
+
+
+}
+
 /*
 void compute_radio( double v ) {
 
     mymalloc( img, sizeof( double ) * SQR( PicSize ) );
     memset( img, 0, sizeof( double ) * SQR( PicSize ) );
 
-    //com_dis = comoving_distance( header.time ) * ( g2c.cm );
-    ang_dis = angular_distance( header.time ) * ( g2c.cm );
-    lum_dis = luminosity_distance( header.time ) * ( g2c.cm );
     dy = dx = BoxSize / PicSize;
     h = All.SofteningTable[0] * ( g2c.cm );
     V = 4.0 / 3.0 * PI * pow( h, 3 );
@@ -410,133 +451,154 @@ void mass_function() {
     put_block_line;
 }
 
+int group_present( long index ) {
+
+    if ( ( index >= All.GroupIndexMin ) &&
+         ( index <= All.GroupIndexMax ) &&
+         ( Gprops[index].mass * 1e10 >= All.GroupMassMin) )
+            return 1;
+    else
+        return 0;
+
+}
+
+void group_spectrum() {
+
+    long index;
+    int vN, i, signal;
+    double *v, *p, vmin, vmax, dv;
+    char buf[100];
+    FILE *fd;
+
+    writelog( "group spectrum ...\n" );
+
+    vN = All.NuNum;
+    signal = vN / 10;
+    vmin = All.NuMin;
+    vmax = All.NuMax;
+    dv = log( vmax/vmin) / vN;
+
+    v = malloc( sizeof( double ) * vN );
+    p = malloc( sizeof( double ) * vN );
+
+    sprintf( buf, "%s/Spectrum", All.GroupDir );
+    create_dir( buf );
+    sprintf( buf, "%s/Spectrum/%s_%03i_spec_%.2f.dat",
+            All.GroupDir, All.FilePrefix, ThisTask, All.RedShift );
+    fd = fopen( buf, "w" );
+
+    fprintf( fd, "0  0  " );
+    for ( i=0; i<vN; i++ ) {
+        v[i] = exp(log(vmin) + i * dv);
+        fprintf( fd, "%g  ", v[i] );
+    }
+    fprintf( fd, "\n" );
+
+
+    for ( index=0; index<Ngroups; index++ ) {
+
+        if ( !group_present( index ) )
+            break;
+
+        for ( i=0; i<vN; i++ ) {
+
+            if ( ( i % signal == 0 ) || ( i == vN - 1 ) )
+                writelog( "[%i]: %g MHz ...\n", i, v[i] );
+
+            p[i] = group_flux( v[i] * 1e6, index );
+              //p[i] = group_luminosity( v[i] * 1e6, index ) * v[i] * 1e6;
+              //p[i] = group_luminosity( v[i] * 1e6, index );
+        }
+
+
+
+        fprintf( fd, "%li  %g  ", index, Gprops[index].mass * 1e10 );
+        for ( i=0; i<vN; i++ )
+            fprintf( fd, "%g  ", p[i] );
+        fprintf( fd, "\n" );
+
+    }
+
+    fclose( fd );
+
+    free( v );
+    free( p );
+
+    writelog( "group spectrum ... done.\n" );
+
+}
+
 void group_analysis() {
 
     long index, i, p, PicSize, x, y, ii, jj,
-         xo, yo, PicSize2, npart[6];
+         xo, yo, PicSize2, *npart;
     struct group_properties g;
-    double *img, *m, L, dL, mass[6], B, PP, nu, n;
+    double *img, *Dens, L, dL, *mass, B, PP, nu, n;
     char buf[100];
 
-    if ( All.FoF == 0 ) {
-        printf( "FoF is required by Group Analysis!\n" );
-        endrun( 20180724 );
-    }
-
-    index = All.GroupIndex;
-    writelog( "analysis group: %li ...\n", index );
 
     PicSize = All.PicSize;
     PicSize2 = All.PicSize2;
+    mymalloc( img, PicSize2 * sizeof( double ) );
+    mymalloc( Dens, PicSize2 * sizeof( double ) );
     x = All.proj_i;
     y = All.proj_j;
     xo = PicSize / 2;
     yo = PicSize / 2;
-    g = Gprops[index];
-    mymalloc( img, PicSize2 * sizeof( double ) );
-    mymalloc( m, PicSize2 * sizeof( double ) );
 
-    create_dir( "./group" );
+    for ( index=0; index<Ngroups; index++ ) {
 
-    writelog( "center of mass: %g %g %g\n",
-            g.cm[0], g.cm[1], g.cm[2] );
+        if ( !group_present( index ) )
+            break;
 
-    p = g.Head;
+        writelog( "analysis group: %li ...\n", index );
 
-    for ( i=0; i<6; i++ ) {
-        npart[i] = 0;
-        mass[i] = 0;
-    }
+        g = Gprops[index];
+        writelog( "center of mass: %g %g %g\n",
+                g.cm[0], g.cm[1], g.cm[2] );
 
-    for ( i=0, L=0; i<g.Len; i++, p=FoFNext[p] ){
-        npart[ P[p].Type ] ++;
-        mass[ P[p].Type] += P[p].Mass;
+        p = g.Head;
+        mass = g.mass_table;
+        npart = g.npart;
+        L = g.size;
 
-        if ( P[p].Type == 0 ) {
-            //printf( "%g\n", SphP[p].Star_Mass );
-            mass[4] += SphP[p].Star_Mass;
-            mass[5] += SphP[p].BH_Mass;
+        dL = 2 * L / PicSize;
+        writelog( "npart: " );
+        for ( i=0; i<6; i++ )
+            writelog( "%li ", npart[i] );
+        writelog( "\n" );
+
+        writelog( "mass: " );
+        for ( i=0; i<6; i++ ) {
+            mass[i] *= 1e10;
+            writelog( "%g ", mass[i] );
         }
 
-        if ( P[p].Type != 0 )
-            continue;
-        L = vmax( NGB_PERIODIC( P[p].Pos[x] - g.cm[x] ), L );
-        L = vmax( NGB_PERIODIC( P[p].Pos[y] - g.cm[y] ), L );
-    }
+        writelog( "\n" );
+        writelog( "L: %g, dL:%g\n", 2*L, dL );
 
-    dL = 2 * L / PicSize;
-    writelog( "npart: " );
-    for ( i=0; i<6; i++ )
-        writelog( "%li ", npart[i] );
-    writelog( "\n" );
+        for ( i=0; i<6; i++ )
+            img_props(i) = mass[i];
+        img_xmin =  -L;
+        img_xmax =  L;
+        img_ymin =  -L;
+        img_ymax =  L;
 
-    writelog( "mass: " );
-    for ( i=0; i<6; i++ ) {
-        mass[i] *= 1e10;
-        writelog( "%g ", mass[i] );
-    }
+        memset( Dens, 0, PicSize2 * sizeof( double ) );
+        p = g.Head;
+        for ( i=0; i<g.Len; i++, p=FoFNext[p] ) {
+            if ( P[p].Type != 0 )
+                continue;
+            ii = PERIODIC( P[p].Pos[x] - g.cm[x] ) / dL + xo;
+            jj = PERIODIC( P[p].Pos[y] - g.cm[y] ) / dL + yo;
+            //printf( "%li, %li\n", ii, jj );
+            check_picture_index( ii );
+            check_picture_index( jj );
+            Dens[ ii*PicSize + jj ] += SphP[p].Density;
+        }
 
-    writelog( "\n" );
-    writelog( "L: %g, dL:%g\n", 2*L, dL );
-
-    for ( i=0; i<6; i++ )
-        img_props(i) = mass[i];
-    img_xmin =  -L;
-    img_xmax =  L;
-    img_ymin =  -L;
-    img_ymax =  L;
-
-    memset( m, 0, PicSize2 * sizeof( double ) );
-    p = g.Head;
-    for ( i=0; i<g.Len; i++, p=FoFNext[p] ) {
-        if ( P[p].Type != 0 )
-            continue;
-        ii = PERIODIC( P[p].Pos[x] - g.cm[x] ) / dL + xo;
-        jj = PERIODIC( P[p].Pos[y] - g.cm[y] ) / dL + yo;
-        //printf( "%li, %li\n", ii, jj );
-        check_picture_index( ii );
-        check_picture_index( jj );
-        m[ ii*PicSize + jj ] += P[p].Mass;
-    }
-
-/********************temperture*************************/
-    writelog( "\ngroup temperature ...\n" );
-    memset( img, 0, PicSize2 * sizeof( double ) );
-    p = g.Head;
-    for ( i=0; i<g.Len; i++, p=FoFNext[p] ) {
-        if ( P[p].Type != 0 )
-            continue;
-        ii = PERIODIC( P[p].Pos[x] - g.cm[x] ) / dL + xo;
-        jj = PERIODIC( P[p].Pos[y] - g.cm[y] ) / dL + yo;
-        //printf( "%li, %li\n", ii, jj );
-        check_picture_index( ii );
-        check_picture_index( jj );
-        img[ ii*PicSize + jj ] += SphP[p].Temp * P[p].Mass;
-        //printf( "%g\n", SphP[p].Temp );
-    }
-
-    for ( i=0; i<PicSize2; i++ ) {
-        if ( m[i] == 0 )
-            continue;
-        img[i] /= m[i];
-    }
-
-    image.img = img;
-
-    if ( All.ConvFlag )
-        conv( dL );
-
-    create_dir( "./group/Temperature" );
-    sprintf( buf, "./group/Temperature/%s_%03i_Temperature_%.2f_%c.dat", All.FilePrefix, ThisTask, All.RedShift, All.Sproj );
-    write_img( buf );
-
-    writelog( "group temperature ... done.\n" );
-
-/********************temperture*************************/
-
-/********************SFR*************************/
-    if ( All.SfrFlag ) {
-        writelog( "\ngroup SFR ...\n" );
+    /********************temperture*************************/
+        writelog( "\ngroup temperature ...\n" );
         memset( img, 0, PicSize2 * sizeof( double ) );
         p = g.Head;
         for ( i=0; i<g.Len; i++, p=FoFNext[p] ) {
@@ -547,14 +609,14 @@ void group_analysis() {
             //printf( "%li, %li\n", ii, jj );
             check_picture_index( ii );
             check_picture_index( jj );
-            img[ ii*PicSize + jj ] += SphP[p].sfr * P[p].Mass;
+            img[ ii*PicSize + jj ] += SphP[p].Temp * SphP[p].Density;
             //printf( "%g\n", SphP[p].Temp );
         }
 
         for ( i=0; i<PicSize2; i++ ) {
-            if ( m[i] == 0 )
+            if ( Dens[i] == 0 )
                 continue;
-            img[i] /= m[i];
+            img[i] /= Dens[i];
         }
 
         image.img = img;
@@ -562,201 +624,355 @@ void group_analysis() {
         if ( All.ConvFlag )
             conv( dL );
 
-        create_dir( "./group/SFR" );
-        sprintf( buf, "./group/SFR/%s_%03i_SFR_%.2f_%c.dat", All.FilePrefix, ThisTask, All.RedShift, All.Sproj );
+        sprintf( buf, "%s/Temperature", All.GroupDir );
+        create_dir( buf );
+
+        sprintf( buf, "%s/Temperature/%s_%03i_Temperature_%.2f_%c_%04li.dat",
+                All.GroupDir, All.FilePrefix, ThisTask, All.RedShift, All.Sproj, index );
+
         write_img( buf );
 
-        writelog( "group SFR ... done.\n" );
-    }
+        writelog( "group temperature ... done.\n" );
 
-/********************temperture*************************/
+    /********************temperture*************************/
 
-/********************magnetic field*************************/
+    /********************SFR*************************/
+        if ( All.SfrFlag ) {
+            writelog( "\ngroup SFR ...\n" );
+            memset( img, 0, PicSize2 * sizeof( double ) );
+            p = g.Head;
+            for ( i=0; i<g.Len; i++, p=FoFNext[p] ) {
+                if ( P[p].Type != 0 )
+                    continue;
+                ii = PERIODIC( P[p].Pos[x] - g.cm[x] ) / dL + xo;
+                jj = PERIODIC( P[p].Pos[y] - g.cm[y] ) / dL + yo;
+                //printf( "%li, %li\n", ii, jj );
+                check_picture_index( ii );
+                check_picture_index( jj );
+                img[ ii*PicSize + jj ] += SphP[p].sfr * SphP[p].Density;
+                //printf( "%g\n", SphP[p].Temp );
+            }
 
-    if ( All.BFlag ) {
-        writelog( "\ngroup magnetic field ...\n" );
+            for ( i=0; i<PicSize2; i++ ) {
+                if ( Dens[i] == 0 )
+                    continue;
+                img[i] /= Dens[i];
+            }
 
-        memset( img, 0, PicSize2 * sizeof( double ) );
-        p = g.Head;
-        for ( i=0; i<g.Len; i++, p=FoFNext[p] ) {
-            if ( P[p].Type != 0 )
-                continue;
-            ii = PERIODIC( P[p].Pos[x] - g.cm[x] ) / dL + xo;
-            jj = PERIODIC( P[p].Pos[y] - g.cm[y] ) / dL + yo;
-            //printf( "%li, %li\n", ii, jj );
-            check_picture_index( ii );
-            check_picture_index( jj );
-            B = sqrt( SQR( SphP[p].B[0] ) +
-                      SQR( SphP[p].B[1] ) +
-                      SQR( SphP[p].B[2] ) );
-            B *= 1e6;  // convert G to muG
-            img[ ii*PicSize + jj ] += B * P[p].Mass;
+            image.img = img;
+
+            if ( All.ConvFlag )
+                conv( dL );
+
+            sprintf( buf, "%s/SFR", All.GroupDir );
+            create_dir( buf );
+
+            sprintf( buf, "%s/SFR/%s_%03i_SFR_%.2f_%c_%04li.dat",
+                    All.GroupDir, All.FilePrefix, ThisTask, All.RedShift, All.Sproj, index );
+
+            write_img( buf );
+
+            writelog( "group SFR ... done.\n" );
         }
 
-        for ( i=0; i<PicSize2; i++ ) {
-            if ( m[i] == 0 )
-                continue;
-            img[i] /= m[i];
+    /********************temperture*************************/
+
+    /********************magnetic field*************************/
+
+        if ( All.BFlag ) {
+            writelog( "\ngroup magnetic field ...\n" );
+
+            memset( img, 0, PicSize2 * sizeof( double ) );
+            p = g.Head;
+            for ( i=0; i<g.Len; i++, p=FoFNext[p] ) {
+                if ( P[p].Type != 0 )
+                    continue;
+                ii = PERIODIC( P[p].Pos[x] - g.cm[x] ) / dL + xo;
+                jj = PERIODIC( P[p].Pos[y] - g.cm[y] ) / dL + yo;
+                //printf( "%li, %li\n", ii, jj );
+                check_picture_index( ii );
+                check_picture_index( jj );
+                B = sqrt( SQR( SphP[p].B[0] ) +
+                          SQR( SphP[p].B[1] ) +
+                          SQR( SphP[p].B[2] ) );
+                B *= 1e6;  // convert G to muG
+                img[ ii*PicSize + jj ] += B * SphP[p].Density;
+            }
+
+            for ( i=0; i<PicSize2; i++ ) {
+                if ( Dens[i] == 0 )
+                    continue;
+                img[i] /= Dens[i];
+            }
+
+            image.img = img;
+
+            if ( All.ConvFlag )
+                conv( dL );
+
+            sprintf( buf, "%s/MagneticField", All.GroupDir );
+            create_dir( buf );
+
+            sprintf( buf, "%s/MagneticField/%s_%03i_MagneticField_%.2f_%c_%04li.dat",
+                    All.GroupDir, All.FilePrefix, ThisTask, All.RedShift, All.Sproj, index );
+
+            write_img( buf );
+
+
+            writelog( "group magnetic field ... done.\n" );
         }
 
-        image.img = img;
+    /********************magnetic field*************************/
 
-        if ( All.ConvFlag )
-            conv( dL );
+    /********************mach number*************************/
 
-        create_dir( "./group/MagneticField" );
-        sprintf( buf, "./group/MagneticField/%s_%03i_MagneticField_%.2f_%c.dat", All.FilePrefix, ThisTask, All.RedShift, All.Sproj );
-        write_img( buf );
+        if ( All.MachFlag ) {
+            writelog( "\ngroup mach number ...\n" );
 
+            memset( img, 0, PicSize2 * sizeof( double ) );
+            p = g.Head;
+            for ( i=0; i<g.Len; i++, p=FoFNext[p] ) {
 
-        writelog( "group magnetic field ... done.\n" );
-    }
+                if ( P[p].Type != 0 )
+                    continue;
 
-/********************magnetic field*************************/
+                ii = PERIODIC( P[p].Pos[x] - g.cm[x] ) / dL + xo;
+                jj = PERIODIC( P[p].Pos[y] - g.cm[y] ) / dL + yo;
+                //printf( "%li, %li\n", ii, jj );
+                check_picture_index( ii );
+                check_picture_index( jj );
+                img[ ii*PicSize + jj ] += SphP[p].MachNumber * SphP[p].Density;
+            }
 
-/********************mach number*************************/
+            for ( i=0; i<PicSize2; i++ ) {
+                if ( Dens[i] == 0 )
+                    continue;
+                img[i] /= Dens[i];
+            }
 
-    if ( All.MachFlag ) {
-        writelog( "\ngroup mach number ...\n" );
+            image.img = img;
 
-        memset( img, 0, PicSize2 * sizeof( double ) );
-        p = g.Head;
-        for ( i=0; i<g.Len; i++, p=FoFNext[p] ) {
+            if ( All.ConvFlag )
+                conv( dL );
 
-            if ( P[p].Type != 0 )
-                continue;
+            sprintf( buf, "%s/MachNumber", All.GroupDir );
+            create_dir( buf );
 
-            ii = PERIODIC( P[p].Pos[x] - g.cm[x] ) / dL + xo;
-            jj = PERIODIC( P[p].Pos[y] - g.cm[y] ) / dL + yo;
-            //printf( "%li, %li\n", ii, jj );
-            check_picture_index( ii );
-            check_picture_index( jj );
-            img[ ii*PicSize + jj ] += SphP[p].MachNumber * P[p].Mass;
+            sprintf( buf, "%s/MachNumber/%s_%03i_MachNumber_%.2f_%c_%04li.dat",
+                    All.GroupDir, All.FilePrefix, ThisTask, All.RedShift, All.Sproj, index );
+            write_img( buf );
+
+            writelog( "group Mach Number ... done.\n" );
         }
 
-        for ( i=0; i<PicSize2; i++ ) {
-            if ( m[i] == 0 )
-                continue;
-            img[i] /= m[i];
-        }
+    /********************mach number*************************/
 
-        image.img = img;
+    /********************Hge Number Density*************************/
 
-        if ( All.ConvFlag )
-            conv( dL );
+        if ( All.HgeNumDensFlag ) {
 
-        create_dir( "./group/MachNumber" );
-        sprintf( buf, "./group/MachNumber/%s_%03i_MachNumber_%.2f_%c.dat", All.FilePrefix, ThisTask, All.RedShift, All.Sproj );
-        write_img( buf );
+            writelog( "\ngroup Hge Number Density ...\n" );
 
-        writelog( "group Mach Number ... done.\n" );
-    }
+            if ( All.HgeFlag == 0 ) {
 
-/********************mach number*************************/
+                printf( "HgeFlag is required by computing radio!\n" );
+                endrun( 20180730 );
 
-/********************Radio*************************/
+            }
 
-    if ( All.RadioFlag ) {
+            memset( img, 0, PicSize2 * sizeof( double ) );
+            p = g.Head;
 
-        writelog( "\ngroup radio ...\n" );
+            nu = 120 * 1e6;
 
-        if ( All.HgeFlag == 0 ) {
+            for ( i=0; i<g.Len; i++, p=FoFNext[p] ) {
 
-            printf( "HgeFlag is required by computing radio!\n" );
-            endrun( 20180730 );
+                if ( P[p].Type != 0 )
+                    continue;
 
-        }
+                n = particle_hge_num_dens( p );
+                ii = PERIODIC( P[p].Pos[x] - g.cm[x] ) / dL + xo;
+                jj = PERIODIC( P[p].Pos[y] - g.cm[y] ) / dL + yo;
+                check_picture_index( ii );
+                check_picture_index( jj );
+                img[ ii*PicSize + jj ] += n * SphP[p].Density;
+            }
 
-        memset( img, 0, PicSize2 * sizeof( double ) );
-        p = g.Head;
+            for ( i=0; i<PicSize2; i++ ) {
+                if ( Dens[i] == 0 )
+                    continue;
+                img[i] /= Dens[i];
+            }
 
-        nu = 120 * 1e6;
+            if ( All.ConvFlag )
+                conv( dL );
 
-        for ( i=0; i<g.Len; i++, p=FoFNext[p] ) {
+            sprintf( buf, "%s/HgeNumDens", All.GroupDir );
+            create_dir( buf );
 
-            if ( P[p].Type != 0 )
-                continue;
+            sprintf( buf, "%s/HgeNumDens/%s_%03i_HgeNumDens_%.2f_%c_%04li.dat",
+                    All.GroupDir, All.FilePrefix, ThisTask, All.RedShift, All.Sproj, index );
 
-            PP = particle_radio( nu, p );
-            ii = PERIODIC( P[p].Pos[x] - g.cm[x] ) / dL + xo;
-            jj = PERIODIC( P[p].Pos[y] - g.cm[y] ) / dL + yo;
-            check_picture_index( ii );
-            check_picture_index( jj );
-            img[ ii*PicSize + jj ] += PP * P[p].Mass;
-        }
+            write_img( buf );
 
-        for ( i=0; i<PicSize2; i++ ) {
-            if ( m[i] == 0 )
-                continue;
-            img[i] /= m[i];
-        }
-
-        if ( All.ConvFlag )
-            conv( dL );
-
-        create_dir( "./group/Radio" );
-        sprintf( buf, "./group/Radio/%s_%03i_radio_%.2f_%c.dat", All.FilePrefix, ThisTask, All.RedShift, All.Sproj );
-        write_img( buf );
-
-        writelog( "\ngroup radio ... done.\n" );
-
-    }
-
-/********************Radio*************************/
-
-/********************Hge Number Density*************************/
-
-    if ( All.HgeNumDensFlag ) {
-
-        writelog( "\ngroup Hge Number Density ...\n" );
-
-        if ( All.HgeFlag == 0 ) {
-
-            printf( "HgeFlag is required by computing radio!\n" );
-            endrun( 20180730 );
+            writelog( "\ngroup Hge Number Density ... done.\n" );
 
         }
 
-        memset( img, 0, PicSize2 * sizeof( double ) );
-        p = g.Head;
+    /********************Hge Number Density*************************/
 
-        nu = 120 * 1e6;
+    /********************Radio*************************/
 
-        for ( i=0; i<g.Len; i++, p=FoFNext[p] ) {
+        if ( All.RadioFlag ) {
 
-            if ( P[p].Type != 0 )
-                continue;
+            writelog( "\ngroup radio ...\n" );
 
-            n = particle_hge_num_dens( p );
-            ii = PERIODIC( P[p].Pos[x] - g.cm[x] ) / dL + xo;
-            jj = PERIODIC( P[p].Pos[y] - g.cm[y] ) / dL + yo;
-            check_picture_index( ii );
-            check_picture_index( jj );
-            img[ ii*PicSize + jj ] += n * P[p].Mass;
+            if ( All.HgeFlag == 0 ) {
+
+                printf( "HgeFlag is required by computing radio!\n" );
+                endrun( 20180730 );
+
+            }
+
+            memset( img, 0, PicSize2 * sizeof( double ) );
+            p = g.Head;
+
+            nu = 120 * 1e6;
+
+            for ( i=0; i<g.Len; i++, p=FoFNext[p] ) {
+
+                if ( P[p].Type != 0 )
+                    continue;
+
+                PP = particle_radio( nu, p );
+                ii = PERIODIC( P[p].Pos[x] - g.cm[x] ) / dL + xo;
+                jj = PERIODIC( P[p].Pos[y] - g.cm[y] ) / dL + yo;
+                check_picture_index( ii );
+                check_picture_index( jj );
+                img[ ii*PicSize + jj ] += PP * SphP[p].Density;
+            }
+
+            for ( i=0; i<PicSize2; i++ ) {
+                if ( Dens[i] == 0 )
+                    continue;
+                img[i] /= Dens[i];
+            }
+
+            if ( All.ConvFlag )
+                conv( dL );
+
+            sprintf( buf, "%s/Radio", All.GroupDir );
+            create_dir( buf );
+
+            sprintf( buf, "%s/Radio/%s_%03i_radio_%.2f_%c_%04li.dat",
+                    All.GroupDir, All.FilePrefix, ThisTask, All.RedShift, All.Sproj, index );
+
+            write_img( buf );
+
+
+            double lum_dis, com_dis;// com_dis, lum_dis, h, ang;
+
+            if ( All.RedShift > 1e-10 ) {
+                lum_dis = luminosity_distance( header.time ) * ( g2c.cm );
+                com_dis = comoving_distance( header.time );
+     //           printf( "z:%g lum_dis: %g\n", All.RedShift, lum_dis);
+                /*
+                ang_dis = angular_distance( header.time );
+                h = All.SofteningTable[0];
+                ang = h / com_dis / PI * 180;
+                */
+                for ( ii=0; ii<SQR(PicSize); ii++ ) {
+                    img[ ii ] = img[ii] / ( 4 * PI * SQR( lum_dis ) ) * 1e23 * CUBE( KPC ) * 1e3;
+                }
+
+                img_xmin =  -L / com_dis / PI * 180 * 60;
+                img_xmax =  L / com_dis / PI * 180 * 60;
+                img_ymin =  -L / com_dis / PI * 180 * 60;
+                img_ymax =  L / com_dis / PI * 180 * 60;
+
+            if ( All.ConvFlag )
+                conv( dL );
+
+
+            }
+            sprintf( buf, "%s/RadioP", All.GroupDir );
+            create_dir( buf );
+
+            sprintf( buf, "%s/RadioP/%s_%03i_radio_proj_%.2f_%c_%04li.dat",
+                    All.GroupDir, All.FilePrefix, ThisTask, All.RedShift, All.Sproj, index );
+
+            write_img( buf );
+
+            writelog( "\ngroup radio ... done.\n" );
+
         }
 
-        for ( i=0; i<PicSize2; i++ ) {
-            if ( m[i] == 0 )
-                continue;
-            img[i] /= m[i];
-        }
+    /********************Radio*************************/
 
-        if ( All.ConvFlag )
-            conv( dL );
+    /********************Density*************************/
 
-        create_dir( "./group/HgeNumDens" );
-        sprintf( buf, "./group/HgeNumDens/%s_%03i_HgeNumDens_%.2f_%c.dat", All.FilePrefix, ThisTask, All.RedShift, All.Sproj );
-        write_img( buf );
+            writelog( "\ngroup density ...\n" );
 
-        writelog( "\ngroup Hge Number Density ... done.\n" );
+            if ( All.HgeFlag == 0 ) {
 
-    }
+                printf( "HgeFlag is required by computing radio!\n" );
+                endrun( 20180730 );
 
-/********************Hge Number Density*************************/
+            }
+
+            memset( img, 0, PicSize2 * sizeof( double ) );
+            memset( Dens, 0, PicSize2 * sizeof( double ) );
+            p = g.Head;
+
+            nu = 120 * 1e6;
+
+            for ( i=0; i<g.Len; i++, p=FoFNext[p] ) {
+
+                if ( P[p].Type != 0 )
+                    continue;
+
+                PP = particle_radio( nu, p );
+                ii = PERIODIC( P[p].Pos[x] - g.cm[x] ) / dL + xo;
+                jj = PERIODIC( P[p].Pos[y] - g.cm[y] ) / dL + yo;
+                check_picture_index( ii );
+                check_picture_index( jj );
+                img[ ii*PicSize + jj ] +=  SphP[p].Density * ( g2c.g ) / CUBE( g2c.cm ) / CUBE( header.time );
+                Dens[ ii*PicSize +jj ] ++;
+            }
+
+            for ( i=0; i<PicSize2; i++ ) {
+                if ( Dens[i] == 0 )
+                    continue;
+                img[i] /= Dens[i];
+            }
+
+            if ( All.ConvFlag )
+                conv( dL );
+
+           img_xmin =  -L;
+           img_xmax =  L ;
+           img_ymin =  -L;
+           img_ymax =  L ;
+
+           sprintf( buf, "%s/Dens", All.GroupDir );
+           create_dir( buf );
+
+           sprintf( buf, "%s/Dens/%s_%03i_Dens_%.2f_%c_%04li.dat",
+                    All.GroupDir, All.FilePrefix, ThisTask, All.RedShift, All.Sproj, index );
+           write_img( buf );
+
+           writelog( "\ngroup density ... done.\n" );
+    /********************Density*************************/
+
+        writelog( "analysis group: %li ... done.\n", index );
+    } // for index
+
     myfree( img );
     myfree( m );
 
-    writelog( "analysis group: %li ... done.\n", index );
+    if ( All.SpecFlag )
+        group_spectrum();
+
     put_block_line;
 
     fof_free();
@@ -791,8 +1007,16 @@ void analysis(){
     if ( All.MFFlag )
         mass_function();
 
-    if ( All.GroupFlag )
+    if ( All.GroupFlag ) {
+
+        if ( All.FoF == 0 ) {
+            printf( "FoF is required by Group Analysis!\n" );
+            endrun( 20180724 );
+        }
+
+        create_dir( All.GroupDir );
         group_analysis();
+    }
 
     //tree_build();
     //tree_free();

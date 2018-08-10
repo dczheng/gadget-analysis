@@ -30,6 +30,7 @@ mgas = data_info[ 15+0 ]
 mdm = data_info[ 15+1 ]
 ms = data_info[ 15+4 ]
 mbh = data_info[ 15+5 ]
+mtot = mgas + mdm + ms + mbh
 
 data[ data < 2 ] = 0
 
@@ -102,16 +103,19 @@ ax.xaxis.set_major_formatter( xfmt )
 ax.yaxis.set_major_locator( yloc )
 ax.yaxis.set_major_formatter( yfmt )
 
-pt1y = 0.1
-pt2y = pt1y + pt1y * 0.5
-pt3y = pt1y + pt1y * 1
-pt4y = pt1y + pt1y * 1.5
+pt0y = 0.1
+pt1y = pt0y + pt0y * 0.5
+pt2y = pt0y + pt0y * 1
+pt3y = pt0y + pt0y * 1.5
+pt4y = pt0y + pt0y * 2
 
-pt1x = pt1y
-pt2x = pt1x
-pt3x = pt1x
-pt4x = pt1x
+pt0x = pt0y
+pt1x = pt0x
+pt2x = pt0x
+pt3x = pt0x
+pt4x = pt0x
 
+ax.text( m * pt0x, n * pt0y, r"$ M_{tot}: %.2e$"%( mtot) )
 ax.text( m * pt1x, n * pt1y, r"$ M_{gas}: %.2e$"%( mgas) )
 ax.text( m * pt2x, n * pt2y, r"$ M_{dm} : %.2e$"%( mdm ) )
 ax.text( m * pt3x, n * pt3y, r"$ M_{s}  : %.2e$"%( ms  ) )

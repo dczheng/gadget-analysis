@@ -31,6 +31,8 @@ mdm = data_info[ 15+1 ]
 ms = data_info[ 15+4 ]
 mbh = data_info[ 15+5 ]
 mtot = mgas + mdm + ms + mbh
+
+
 if ( proj == 0 ):
     ProDire = 'x'
 if ( proj == 1 ):
@@ -85,14 +87,7 @@ else:
 fig = plt.figure()
 ax = fig.add_subplot( 111 )
 norm = mplc.LogNorm()
-
-data_max = data.max()
-data[ data < data_max * 1e-6 ] = 0
-
-ax.contour( data, norm=norm )
 img = ax.imshow( data, norm=norm, cmap=cm.jet )
-#data[ data == 0 ] = np.nan
-#img = ax.imshow( data, cmap=cm.jet )
 
 ax.set_xlabel( "Mpc" )
 ax.set_ylabel( "" )
@@ -124,6 +119,7 @@ ax.text( m * pt1x, n * pt1y, r"$ M_{gas}: %.2e$"%( mgas) )
 ax.text( m * pt2x, n * pt2y, r"$ M_{dm} : %.2e$"%( mdm ) )
 ax.text( m * pt3x, n * pt3y, r"$ M_{s}  : %.2e$"%( ms  ) )
 ax.text( m * pt4x, n * pt4y, r"$ M_{bh} : %.2e$"%( mbh ) )
+
 ax.grid()
 
 '''
@@ -133,7 +129,7 @@ ax.set_yticks( np.linspace( 0, m, NY ) )
 ax.set_yticklabels( TempList )
 '''
 cbar = fig.colorbar( img )
-cbar.set_label( "MagnetidField( " + r"$\mu G$"  + " )\n%s direction"%(ProDire) )
+cbar.set_label( r"$ Density\;(%s)[ g\,cm^{-3} ]$"%(ProDire) )
 
 fn_png = sys.argv[1][:-4] + '.png'
 print( "save image to " +  fn_png )
