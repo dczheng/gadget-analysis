@@ -3,6 +3,7 @@
 double t0, t1;
 
 void create_dir( char *s ) {
+
     if ( ThisTask == 0 ){
         if ( access( s, 0 ) == -1 ){
             writelog( "create directory `%s` by task 0\n", s );
@@ -13,6 +14,7 @@ void create_dir( char *s ) {
         }
     }
     MPI_Barrier( MPI_COMM_WORLD );
+
 }
 
 double second() {
@@ -23,4 +25,12 @@ void endrun( int ierr ) {
     fprintf( stderr, "EXIT CODE: %i\n", ierr );
     MPI_Abort( MPI_COMM_WORLD, ierr );
     exit( ierr );
+}
+
+void task_sync_test() {
+
+    sleep( 2 );
+    MPI_Barrier( MPI_COMM_WORLD );
+    printf( "%i\n", ThisTask );
+
 }

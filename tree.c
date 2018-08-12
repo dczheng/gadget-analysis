@@ -7,10 +7,10 @@ void tree_allocate() {
     writelog( "TreeAllocateFactor = %g, MaxNodes = %ld\n",
             All.TreeAllocFactor, MaxNodes );
     writelog( "allocate memory for tree\n" );
-    mymalloc( Nodes_Base, ( MaxNodes+1 ) * sizeof( struct NODE ) );
+    mymalloc1( Nodes_Base, ( MaxNodes+1 ) * sizeof( struct NODE ) );
     Nodes = Nodes_Base - NumPart;
 
-    mymalloc( NextNode, NumPart * sizeof( long ) );
+    mymalloc1( NextNode, NumPart * sizeof( long ) );
     put_block_line;
 }
 

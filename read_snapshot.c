@@ -612,8 +612,8 @@ void write_header( char *fn, struct io_header header ) {
 
 void allocate_memory() {
     ms.max_mem = ms.mem = ms.nn = 0;
-    mymalloc( P, NumPart * sizeof( struct particle_data ) );
-    mymalloc( SphP, N_Gas * sizeof( struct sph_particle_data ) );
+    mymalloc1( P, NumPart * sizeof( struct particle_data ) );
+    mymalloc1( SphP, N_Gas * sizeof( struct sph_particle_data ) );
 }
 
 void free_memory() {
@@ -682,9 +682,7 @@ void construct_id_to_index() {
     idn = idmax - idmin + 1;
     writelog( "Min ID: %li, Max ID: %li, ID Num: %li\n", idmin, idmax, idn );
 
-    mymalloc( id_to_index, idn * sizeof( long ) );
-
-    memset( id_to_index, -1, sizeof( long ) *  idn );
+    mymalloc3( id_to_index, idn * sizeof( long ), -1 );
 
     id_to_index--;
 
@@ -886,7 +884,7 @@ void read_snapshot() {
     allocate_memory();
 
     BufferBytes = header.npart[1] * sizeof( OutputFloat ) * 3;
-    mymalloc( CommBuffer, BufferBytes );
+    mymalloc1( CommBuffer, BufferBytes );
 
     for ( blk=0; blk<IO_NBLOCKS; blk++ ) {
         for ( pt=0, offset=0; pt<6; pt++ ) {
@@ -904,7 +902,7 @@ void read_snapshot() {
                             writelog( "CommBuffer IS TOO SMALL.\n" );
                             myfree( CommBuffer );
                             BufferBytes = nbytes * header.npart[pt];
-                            mymalloc( CommBuffer, BufferBytes );
+                            mymalloc1( CommBuffer, BufferBytes );
                         }
 
                         hdf5_file = H5Fopen( file_name, H5F_ACC_RDWR, H5P_DEFAULT );

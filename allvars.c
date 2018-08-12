@@ -4,7 +4,7 @@ char sep_str[ SEP_LEN ];
 long *id_to_index, NumPart, N_Gas;
 int ThisTask, NTask;
 gsl_integration_workspace *inte_ws;
-FILE *LogFileFd;
+FILE *LogFileFd, *MemUseFileFd;
 
 struct NODE *Nodes, *Nodes_Base;
 long MaxNodes;

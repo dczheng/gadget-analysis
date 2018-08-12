@@ -13,7 +13,7 @@ void init_conv_kernel( double ds ) {
         printf( "Even ConvN is not supported!\n" );
         endrun( 20180508 );
     }
-    mymalloc( All.ConvKernel, SQR( All.ConvN ) * sizeof( double ) );
+    mymalloc1( All.ConvKernel, SQR( All.ConvN ) * sizeof( double ) );
     N = All.ConvN;
     c = N / 2 + 1;
     for ( i=0; i<N; i++ )
@@ -36,8 +36,7 @@ void conv( double ds ) {
     PicSize2 = All.PicSize2;
     writelog( "conv ...\n" );
     N = All.ConvN;
-    mymalloc( img, PicSize2 * sizeof( double ) );
-    memset( img, 0, PicSize2 * sizeof( double ) );
+    mymalloc2( img, PicSize2 * sizeof( double ) );
     for ( i=0; i<PicSize; i++ )
         for ( j=0; j<PicSize; j++ )
             for ( ii=0; ii<N; ii++ )

@@ -47,6 +47,10 @@ void read_parameters( char *fn ) {
         addr[nt] = &All.UnitVelocity_in_cm_per_s;
         id[nt++] = REAL;
 
+        strcpy( tag[nt], "Freq" );
+        addr[nt] = &All.Freq;
+        id[nt++] = REAL;
+
         strcpy( tag[nt], "MpcFlag" );
         addr[nt] = &All.MpcFlag;
         id[nt++] = INT;
@@ -57,6 +61,14 @@ void read_parameters( char *fn ) {
 
         strcpy( tag[nt], "MachFlag" );
         addr[nt] = &All.MachFlag;
+        id[nt++] = INT;
+
+        strcpy( tag[nt], "TempFlag" );
+        addr[nt] = &All.TempFlag;
+        id[nt++] = INT;
+
+        strcpy( tag[nt], "MagFlag" );
+        addr[nt] = &All.MagFlag;
         id[nt++] = INT;
 
         strcpy( tag[nt], "FoFRead" );
@@ -181,10 +193,6 @@ void read_parameters( char *fn ) {
 
         strcpy( tag[nt], "ConvN" );
         addr[nt] = &All.ConvN;
-        id[nt++] = INT;
-
-        strcpy( tag[nt], "ConvFlag" );
-        addr[nt] = &All.ConvFlag;
         id[nt++] = INT;
 
         strcpy( tag[nt], "FoF" );

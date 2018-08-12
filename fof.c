@@ -3,8 +3,8 @@
 double LinkL, rhodm;
 
 void fof_allocate( long N ) {
-    mymalloc( Gprops, N * sizeof( struct group_properties ) );
-    mymalloc( FoFNext, NumPart * sizeof( long ) );
+    mymalloc1( Gprops, N * sizeof( struct group_properties ) );
+    mymalloc1( FoFNext, NumPart * sizeof( long ) );
     put_block_line;
 }
 
@@ -27,10 +27,10 @@ void fof_find_groups() {
     put_block_line;
     writelog( "Start FoF find groups ...\n" );
 
-    mymalloc( Head, NumPart * sizeof( long ) );
-    mymalloc( Tail, NumPart * sizeof( long ) );
-    mymalloc( Len, NumPart * sizeof( long ) );
-    mymalloc( Ngblist, NumPart * sizeof( long ) );
+    mymalloc1( Head, NumPart * sizeof( long ) );
+    mymalloc1( Tail, NumPart * sizeof( long ) );
+    mymalloc1( Len, NumPart * sizeof( long ) );
+    mymalloc1( Ngblist, NumPart * sizeof( long ) );
 
     for ( i=0; i<NumPart; i++ ) {
         Head[i] = Tail[i] = i;
@@ -241,10 +241,10 @@ void fof_save() {
 
 
     if ( sizeof( double ) > sizeof( long ) ) {
-        mymalloc( buf, Ngroups * sizeof( double ) * 6 );
+        mymalloc1( buf, Ngroups * sizeof( double ) * 6 );
     }
     else {
-        mymalloc( buf, Ngroups * sizeof( long ) * 6 );
+        mymalloc1( buf, Ngroups * sizeof( long ) * 6 );
     }
 
     buf1 = (long *)buf;
@@ -402,10 +402,10 @@ void fof_read() {
     writelog( "Ngroups: %i, MinLength: %i\n", Ngroups, All.FoFMinLen );
 
     if ( sizeof( double ) > sizeof( long ) ) {
-        mymalloc( buf, Ngroups * sizeof( double ) * 6 );
+        mymalloc1( buf, Ngroups * sizeof( double ) * 6 );
     }
     else {
-        mymalloc( buf, Ngroups * sizeof( long ) * 6 );
+        mymalloc1( buf, Ngroups * sizeof( long ) * 6 );
     }
 
     buf1 = (long *)buf;

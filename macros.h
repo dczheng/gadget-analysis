@@ -62,10 +62,10 @@
     }\
 \
     sprintf( ms.str, "%s Nvars %li.\n", ms.str, ms.nn );\
-    writelog( ms.str ); \
+    fprintf( MemUseFileFd, ms.str ); \
 }
 
-#define mymalloc( a, n ) {\
+#define mymalloc( a, n, flag, b ) {\
     if ( !(a = malloc( n )) ) { \
         if ( n > CUBE( 1024 ) ) {\
             writelog( "Failed to allocate memory for `%s` ( %g Gb )\n", #a, n / CUBE( 1024. ) ); \
@@ -83,18 +83,22 @@
     }\
 \
     if ( n > CUBE( 1024 ) ) {\
-        writelog( "allocate memory for `%s` ( %g Gb )\n", #a, n / CUBE( 1024. ) ); \
+        fprintf( MemUseFileFd, "allocate memory for `%s` ( %g Gb )\n", #a, n / CUBE( 1024. ) ); \
     }\
     else if ( n > SQR( 1024 ) ) {\
-        writelog( "allocate memory for `%s` ( %g Mb )\n", #a, n / SQR(  1024. ) ); \
+        fprintf( MemUseFileFd, "allocate memory for `%s` ( %g Mb )\n", #a, n / SQR(  1024. ) ); \
     }\
     else if( n > 1024 ) {\
-        writelog( "allocate memory for `%s` ( %g Kb )\n", #a, n /  1024. ); \
+        fprintf( MemUseFileFd, "allocate memory for `%s` ( %g Kb )\n", #a, n /  1024. ); \
     }\
     else {\
-        writelog( "allocate memory for `%s` ( %li b )\n", #a, n ); \
+        fprintf( MemUseFileFd, "allocate memory for `%s` ( %li b )\n", #a, n ); \
     }\
 \
+    if ( flag == 1 ){\
+        fprintf( MemUseFileFd, "initialize `%s` ...\n", #a ); \
+        memset( a, b, n ); \
+    }\
     check_var_len( a );\
     sprintf( ms.var[ms.nn], "%s", #a );\
     ms.var_bytes[ms.nn] = n;\
@@ -103,7 +107,12 @@
     ms.max_mem = vmax( ms.max_mem, ms.mem ); \
     check_var_num();\
     malloc_report(); \
+    fprintf( MemUseFileFd, sep_str ); \
 }
+
+#define mymalloc1( a, n )  mymalloc( a, n, 0, 0 )
+#define mymalloc2( a, n )  mymalloc( a, n, 1, 0 )
+#define mymalloc3( a, n, b )  mymalloc( a, n, 1, b )
 
 #define myfree( a ) {\
     for ( ms.i=0; ms.i<ms.nn; ms.i++ ) {\
@@ -114,16 +123,16 @@
     }\
 \
     if ( ms.b > CUBE( 1024 ) ) {\
-        writelog( "Free memory for `%s` ( %g Gb )\n", #a, ms.b / CUBE( 1024. ) ); \
+        fprintf( MemUseFileFd, "Free memory for `%s` ( %g Gb )\n", #a, ms.b / CUBE( 1024. ) ); \
     }\
     else if ( ms.b > SQR( 1024 ) ) {\
-        writelog( "Free memory for `%s` ( %g Mb )\n", #a, ms.b / SQR(  1024. ) ); \
+        fprintf( MemUseFileFd, "Free memory for `%s` ( %g Mb )\n", #a, ms.b / SQR(  1024. ) ); \
     }\
     else if( ms.b > 1024 ) {\
-        writelog( "Free memory for `%s` ( %g Kb )\n", #a, ms.b /  1024. ); \
+        fprintf( MemUseFileFd, "Free memory for `%s` ( %g Kb )\n", #a, ms.b /  1024. ); \
     }\
     else {\
-        writelog( "Free memory for `%s` ( %li b )\n", #a, ms.b ); \
+        fprintf( MemUseFileFd, "Free memory for `%s` ( %li b )\n", #a, ms.b ); \
     }\
 \
     for ( ; ms.i<ms.nn-1; ms.i++ ) {\
@@ -133,6 +142,7 @@
     ms.nn--; \
     ms.mem -= ms.b; \
     malloc_report(); \
+    fprintf( MemUseFileFd, sep_str ); \
 }
 
 #define timer_start() \

@@ -4,6 +4,7 @@ int main( int argc, char *argv[] ){
     time_t time1, time2;
     long dtime;
     struct tm *tb;
+    char buf[100];
 
     MPI_Init( &argc, &argv );
     MPI_Comm_rank( MPI_COMM_WORLD, &ThisTask );
@@ -36,8 +37,12 @@ int main( int argc, char *argv[] ){
     }
 
     MPI_Barrier( MPI_COMM_WORLD );
-    sprintf( All.LogFile, "./gadget-analysis.log/gadget-analysis-%03d.log", ThisTask );
-    LogFileFd = fopen( All.LogFile, "w" );
+    sprintf( buf, "./gadget-analysis.log/gadget-analysis-%03d.log", ThisTask );
+    LogFileFd = fopen( buf, "w" );
+
+
+    sprintf( buf, "./gadget-analysis.log/memuse-%03d.txt", ThisTask );
+    MemUseFileFd = fopen( buf, "w" );
 
     writelog( "open log file\n" );
     writelog( "Start At: %s", asctime(tb) );
@@ -82,6 +87,8 @@ int main( int argc, char *argv[] ){
     put_block_line;
 
     fclose( LogFileFd );
+    fclose( MemUseFileFd );
+
     MPI_Finalize();
     return 0;
 }

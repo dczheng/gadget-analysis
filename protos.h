@@ -10,9 +10,13 @@ void init_sep_str();
 
 void slice();
 void make_slice_img( int pt );
-void write_img( char *fn );
+
 void init_img();
 void free_img();
+void write_img( char *fn, char *s, int mode );
+#define write_img1( fn, s )  write_img( fn, s, 0 )
+#define write_img2( fn, s )  write_img( fn, s, 1 )
+
 
 void create_dir( char *s );
 double second();
@@ -47,3 +51,4 @@ void init_conv_kernel();
 void free_conv_kernel();
 
 void check_flags();
+void task_sync_test();

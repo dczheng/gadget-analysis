@@ -166,23 +166,23 @@ extern struct sph_particle_data {
 extern char sep_str[ SEP_LEN ];
 extern int ThisTask, NTask;
 extern long *id_to_index, NumPart, N_Gas;
-extern FILE *LogFileFd;
+extern FILE *LogFileFd, *MemUseFileFd;
 extern struct io_header header;
 
 extern struct global_parameters_struct {
     char FilePrefix[ MYFILENAME_MAX ],
          FoFDir[ MYFILENAME_MAX ],
          GroupDir[ MYFILENAME_MAX ],
-         LogFile[ MYFILENAME_MAX ],
          *ToolsPath, Sproj;
 
     int StartSnapIndex, ProjectDirection, KernelN, FoFRead,
         HgeFlag, CrFlag, BFlag, GroupFlag, MpcFlag, MachFlag, FoF,
         MFFlag, RadioFlag, SfrFlag, HgeNumDensFlag, NuNum, SpecFlag,
+        TempFlag, MagFlag,
         PicSize, PicSize2, NumFiles,
         GasState, GasDensity, GasTemperature, KernelInterpolation,
         ReadTemperature, FoFMinLen, proj_i, proj_j, proj_k,
-        TreePartType, ConvN, ConvFlag, GroupIndexMin, GroupIndexMax;
+        TreePartType, ConvN, GroupIndexMin, GroupIndexMax;
 
     double SofteningTable[6], Alpha ,
            UnitTime_in_s,
@@ -199,7 +199,7 @@ extern struct global_parameters_struct {
            Time, Hubble_a, RhoBaryon,
            RedShift, HubbleParam, RhoCrit, G,
            Hubble, Omega0, OmegaLambda, OmegaBaryon,
-           *ConvKernel, ConvSigma, NuMin, NuMax, GroupMassMin;
+           *ConvKernel, ConvSigma, NuMin, NuMax, GroupMassMin, Freq;
 
     long SliceStart[6], SliceEnd[6];
 }All;
