@@ -571,21 +571,21 @@ void group_analysis() {
 
     if ( All.TempFlag ) {
 
-        mymalloc2( temp, PicSize2 * sizeof( double ) );
+        mymalloc1( temp, PicSize2 * sizeof( double ) );
         sprintf( buf, "%s/%s", All.GroupDir, temp_str );
         create_dir( buf );
 
     }
     if ( All.SfrFlag ) {
 
-        mymalloc2( sfr, PicSize2 * sizeof( double ) );
+        mymalloc1( sfr, PicSize2 * sizeof( double ) );
         sprintf( buf, "%s/%s", All.GroupDir, sfr_str );
         create_dir( buf );
     }
 
     if ( All.MagFlag ) {
 
-        mymalloc2( mag, PicSize2 * sizeof( double ) );
+        mymalloc1( mag, PicSize2 * sizeof( double ) );
         sprintf( buf, "%s/%s", All.GroupDir, mag_str );
         create_dir( buf );
 
@@ -593,7 +593,7 @@ void group_analysis() {
 
     if ( All.MachFlag ) {
 
-        mymalloc2( mach, PicSize2 * sizeof( double ) );
+        mymalloc1( mach, PicSize2 * sizeof( double ) );
         sprintf( buf, "%s/%s", All.GroupDir, mach_str );
         create_dir( buf );
 
@@ -607,7 +607,7 @@ void group_analysis() {
             endrun( 20180813 );
         }
 
-        mymalloc2( hgen, PicSize2 * sizeof( double ) );
+        mymalloc1( hgen, PicSize2 * sizeof( double ) );
         sprintf( buf, "%s/%s", All.GroupDir, hgen_str );
         create_dir( buf );
 
@@ -620,8 +620,8 @@ void group_analysis() {
             endrun( 20180813 );
         }
 
-        mymalloc2( radio, PicSize2 * sizeof( double ) );
-        mymalloc2( radiop, PicSize2 * sizeof( double ) );
+        mymalloc1( radio, PicSize2 * sizeof( double ) );
+        mymalloc1( radiop, PicSize2 * sizeof( double ) );
         sprintf( buf, "%s/%s", All.GroupDir, radio_str );
         create_dir( buf );
         sprintf( buf, "%s/%s", All.GroupDir, radiop_str );
@@ -633,6 +633,29 @@ void group_analysis() {
 
         if ( !group_present( index ) ) {
             break;
+        }
+
+        memset( dens, 0, PicSize2 * sizeof( double ) );
+        memset( num, 0, PicSize2 * sizeof( int ) );
+
+        if ( All.TempFlag )
+            memset( temp, 0, PicSize2 * sizeof( double ) );
+
+        if ( All.SfrFlag )
+            memset( sfr, 0, PicSize2 * sizeof( double ) );
+
+        if ( All.MagFlag )
+            memset( mag, 0, PicSize2 * sizeof( double ) );
+
+        if ( All.MachFlag )
+            memset( mach, 0, PicSize2 * sizeof( double ) );
+
+        if ( All.HgeNumDensFlag )
+            memset( hgen, 0, PicSize2 * sizeof( double ) );
+
+        if ( All.RadioFlag ) {
+            memset( radio, 0, PicSize2 * sizeof( double ) );
+            memset( radiop, 0, PicSize2 * sizeof( double ) );
         }
 
         writelog( "analysis group: %li ...\n", index );
