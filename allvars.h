@@ -8,6 +8,7 @@
 #include "dirent.h"
 #include "gsl/gsl_integration.h"
 #include "gsl/gsl_sf_gamma.h"
+#include "gsl/gsl_fit.h"
 #include "mpi.h"
 #include "signal.h"
 #include "limits.h"
@@ -178,7 +179,7 @@ extern struct global_parameters_struct {
     int StartSnapIndex, ProjectDirection, KernelN, FoFRead,
         HgeFlag, CrFlag, BFlag, GroupFlag, MpcFlag, MachFlag, FoF,
         MFFlag, RadioFlag, SfrFlag, HgeNumDensFlag, NuNum, SpecFlag,
-        TempFlag, MagFlag,
+        TempFlag, MagFlag, SpecIndexFlag, TotSpecFlag,
         PicSize, PicSize2, NumFiles,
         GasState, GasDensity, GasTemperature, KernelInterpolation,
         ReadTemperature, FoFMinLen, proj_i, proj_j, proj_k,

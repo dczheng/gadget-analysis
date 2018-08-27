@@ -1,5 +1,11 @@
 #include "allvars.h"
 
+#define make_output_filename( buf, s, index ) \
+    sprintf( buf, "%s/%s/%s_%s_%03i_%.2f_%04li_%c.dat",\
+            All.GroupDir, s, All.FilePrefix, s, ThisTask,\
+            All.RedShift, index, All.Sproj );
+
+
 void init_analysis() {
     writelog( "initialize analysis...\n" );
     All.proj_k = All.ProjectDirection;
@@ -148,19 +154,18 @@ double group_luminosity( double nu, long index ) {
 
 }
 
-double group_flux( double nu, long index ) {
+void group_flux( double nu, long index, double *flux, double *flux_nosr ) {
 
-    double com_dis, lum_dis;
+    double com_dis, lum_dis, L;
     struct group_properties *g;
 
     g = &Gprops[index];
     com_dis = comoving_distance( header.time );
     lum_dis = luminosity_distance( header.time ) * g2c.cm;
 
-    return group_luminosity( nu, index ) /
-        ( 4.0 * PI * SQR(lum_dis) ) /
-        ( SQR( g->size * 2 / com_dis ) );
-
+    L = group_luminosity( nu, index );
+    *flux_nosr = L / ( 4.0 * PI * SQR( lum_dis ) );
+    *flux = *flux_nosr / ( SQR( g->size * 2  / com_dis ) );
 
 }
 
@@ -467,9 +472,9 @@ void group_spectrum() {
 
     long index;
     int vN, i, signal;
-    double *v, *p, vmin, vmax, dv;
+    double *v, *flux, vmin, vmax, dv, *flux_nosr;
     char buf[100];
-    FILE *fd;
+    FILE *fd1, *fd2;
 
     writelog( "group spectrum ...\n" );
 
@@ -479,21 +484,31 @@ void group_spectrum() {
     vmax = All.NuMax;
     dv = log( vmax/vmin) / vN;
 
-    v = malloc( sizeof( double ) * vN );
-    p = malloc( sizeof( double ) * vN );
+    mymalloc1( v, sizeof( double ) * vN );
+    mymalloc1( flux, sizeof( double ) * vN );
+    mymalloc1( flux_nosr, sizeof( double ) * vN );
 
     sprintf( buf, "%s/Spectrum", All.GroupDir );
     create_dir( buf );
+
     sprintf( buf, "%s/Spectrum/%s_%03i_spec_%.2f.dat",
             All.GroupDir, All.FilePrefix, ThisTask, All.RedShift );
-    fd = fopen( buf, "w" );
+    fd1 = fopen( buf, "w" );
 
-    fprintf( fd, "0  0  " );
+    sprintf( buf, "%s/Spectrum/%s_%03i_spec_%.2f_nosr.dat",
+            All.GroupDir, All.FilePrefix, ThisTask, All.RedShift );
+    fd2 = fopen( buf, "w" );
+
+    fprintf( fd1, "0  0  " );
+    fprintf( fd2, "0  0  " );
+
     for ( i=0; i<vN; i++ ) {
         v[i] = exp(log(vmin) + i * dv);
-        fprintf( fd, "%g  ", v[i] );
+        fprintf( fd1, "%g  ", v[i] );
+        fprintf( fd2, "%g  ", v[i] );
     }
-    fprintf( fd, "\n" );
+    fprintf( fd1, "\n" );
+    fprintf( fd2, "\n" );
 
 
     for ( index=0; index<Ngroups; index++ ) {
@@ -504,36 +519,155 @@ void group_spectrum() {
         for ( i=0; i<vN; i++ ) {
 
             if ( ( i % signal == 0 ) || ( i == vN - 1 ) )
-                writelog( "[%i]: %g MHz ...\n", i, v[i] );
+                writelog( "group: %li, [%i]: %g MHz ...\n", index, i, v[i] );
 
-            p[i] = group_flux( v[i] * 1e6, index );
-              //p[i] = group_luminosity( v[i] * 1e6, index ) * v[i] * 1e6;
+            group_flux( v[i] * 1e6, index, flux+i, flux_nosr+i );
               //p[i] = group_luminosity( v[i] * 1e6, index );
         }
 
 
 
-        fprintf( fd, "%li  %g  ", index, Gprops[index].mass * 1e10 );
-        for ( i=0; i<vN; i++ )
-            fprintf( fd, "%g  ", p[i] );
-        fprintf( fd, "\n" );
+        fprintf( fd1, "%li  %g  ", index, Gprops[index].mass * 1e10 );
+        fprintf( fd2, "%li  %g  ", index, Gprops[index].mass * 1e10 );
+
+        for ( i=0; i<vN; i++ ) {
+            fprintf( fd1, "%g  ", flux[i] );
+            fprintf( fd2, "%g  ", flux_nosr[i] );
+        }
+        fprintf( fd1, "\n" );
+        fprintf( fd2, "\n" );
 
     }
 
-    fclose( fd );
+    fclose( fd1 );
+    fclose( fd2 );
 
-    free( v );
-    free( p );
+    myfree( v );
+    myfree( flux );
+    myfree( flux_nosr );
 
     writelog( "group spectrum ... done.\n" );
 
 }
 
-#define make_output_filename( buf, s, index ) \
-    sprintf( buf, "%s/%s/%s_%s_%03i_%.2f_%04li_%c.dat",\
-            All.GroupDir, s, All.FilePrefix, s, ThisTask,\
-            All.RedShift, index, All.Sproj );
+void group_spectrum_index() {
 
+    long index, p;
+    double *spec, *v, vmin, vmax, dv, cov00, cov01, cov11, c0,
+           *spec_index, *spec_index_err, nu, L, dL, h, *mass;
+    int vN, k, PicS, PicS2, ii, jj, i, j, x, y, xo, yo, flag;
+    struct group_properties g;
+    char buf[100],
+         *spec_index_str="Spectrum_index",
+         *spec_index_err_str="Spectrum_index_err";
+
+    writelog( "group spectrum index... \n" );
+    vN = All.NuNum;
+    vmin = All.NuMin;
+    vmax = All.NuMax;
+    PicS = All.PicSize;
+    PicS2 = SQR( PicS );
+    x = All.proj_i;
+    y = All.proj_j;
+    xo = PicS / 2;
+    yo = PicS / 2;
+    h = All.SofteningTable[0] * g2c.cm;
+
+    dv = log10( vmax/vmin) / vN;
+
+    sprintf( buf, "%s/%s", All.GroupDir, spec_index_str );
+    create_dir( buf );
+
+    mymalloc1( v, sizeof( double ) * vN );
+    mymalloc1( spec, sizeof( double ) * vN * PicS2 );
+    mymalloc1( spec_index, sizeof( double ) * PicS2 );
+    mymalloc1( spec_index_err, sizeof( double ) * PicS2 );
+
+    for ( i=0; i<vN; i++ )
+        v[i] = log10(vmin) + i * dv;
+
+    for ( index=0; index<Ngroups; index++ ) {
+
+        if ( !group_present( index ) ) {
+            break;
+        }
+
+        g = Gprops[index];
+        memset( spec, 0, sizeof( double ) * vN * PicS2 );
+        memset( spec_index, 0, sizeof( double ) * PicS2 );
+        memset( spec_index_err, 0, sizeof( double ) * PicS2 );
+
+        L = g.size;
+        dL = 2 * L / PicS;
+
+        for ( k=0; k<vN; k++ ) {
+
+            nu = pow( 10, v[k] ) * 1e6;
+            p = g.Head;
+            for ( i=0; i<g.Len; i++, p=FoFNext[p] ) {
+
+                if ( P[p].Type != 0 )
+                    continue;
+
+                ii = PERIODIC( P[p].Pos[x] - g.cm[x] ) / dL + xo;
+                jj = PERIODIC( P[p].Pos[y] - g.cm[y] ) / dL + yo;
+                check_picture_index( ii );
+                check_picture_index( jj );
+                spec[ii*PicS*vN + jj * vN + k] +=
+                    particle_radio( nu, p ) * SphP[p].Density * ( 4.0 / 3.0 * PI * CUBE( h ) );
+
+            }
+        }
+
+        for ( i=0; i<vN * PicS2; i++ )
+            if ( spec[i] != 0 )
+                spec[i] = log10( spec[i] );
+
+        for ( i=0; i<PicS; i++ )
+            for ( j=0; j<PicS; j++ ) {
+                flag = 0;
+                for ( k=0; k<vN; k++ )
+                    if ( spec[ i*PicS*vN + j*vN + k ] != 0 ){
+                        flag = 1;
+                        break;
+                    }
+                if ( flag ) {
+                    gsl_fit_linear( v, 1, &spec[ i*PicS*vN + j*vN], 1,
+                            vN, &c0, &spec_index[i*PicS + j],
+                            &cov00, &cov01, &cov11,
+                            &spec_index_err[i*PicS+j] );
+                }
+            }
+        mass = g.mass_table;
+        for ( i=0; i<6; i++ ) {
+            mass[i] *= 1e10;
+        }
+        for ( i=0; i<6; i++ )
+            img_props(i) = mass[i];
+        img_xmin =  -L;
+        img_xmax =  L;
+        img_ymin =  -L;
+        img_ymax =  L;
+
+        image.img = spec_index;
+        make_output_filename( buf, spec_index_str, index )
+        write_img1( buf, spec_index_str );
+
+        image.img = spec_index_err;
+        sprintf( buf, "%s/%s/%s_%s_%03i_%.2f_%04li_%c.dat",
+            All.GroupDir, spec_index_str, All.FilePrefix, spec_index_err_str, ThisTask,
+            All.RedShift, index, All.Sproj );
+        write_img1( buf, spec_index_err_str );
+
+    }
+
+    myfree( v );
+    myfree( spec );
+    myfree( spec_index );
+    myfree( spec_index_err );
+    writelog( "group spectrum index... done.\n" );
+
+}
 
 void group_analysis() {
 
@@ -546,14 +680,14 @@ void group_analysis() {
     int *num;
     char buf[100];
 
-    char *dens_str = "Dens";
-    char *temp_str = "Temperature";
-    char *sfr_str = "SFR";
-    char *mag_str = "MagneticField";
-    char *mach_str = "Mach";
-    char *hgen_str = "HgeNumDens";
-    char *radio_str = "Radio";
-    char *radiop_str = "RadioP";
+    char *dens_str = "Dens",
+     *temp_str = "Temperature",
+     *sfr_str = "SFR",
+     *mag_str = "MagneticField",
+     *mach_str = "Mach",
+     *hgen_str = "HgeNumDens",
+     *radio_str = "Radio",
+     *radiop_str = "RadioP";
 
 
     PicSize = All.PicSize;
@@ -850,7 +984,7 @@ void group_analysis() {
                 ang = h / com_dis / PI * 180;
                 */
                 for ( i=0; i<SQR(PicSize); i++ ) {
-                    radiop[ i ] = radio[ii] / ( 4 * PI * SQR( lum_dis ) ) * 1e23 * CUBE( KPC ) * 1e3;
+                    radiop[ i ] = radio[i] / ( 4 * PI * SQR( lum_dis ) ) * 1e23 * CUBE( KPC ) * 1e3;
                 }
 
                 img_xmin =  -L / com_dis / PI * 180 * 60;
@@ -892,12 +1026,76 @@ void group_analysis() {
         myfree( radio );
         myfree( radiop );
     }
+    put_block_line;
     if ( All.SpecFlag )
         group_spectrum();
 
     put_block_line;
+    if ( All.SpecIndexFlag )
+        group_spectrum_index();
+
+    put_block_line;
 
     fof_free();
+
+}
+
+void total_radio_spectrum() {
+
+    long index;
+    int Nnu, i, signal;
+    double *nu, *flux, numin, numax, dnu, h, temp,
+           com_dis, lum_dis;
+    char buf[100];
+    FILE *fd;
+
+    writelog( "total radio spectrum ...\n" );
+
+    Nnu = All.NuNum;
+    signal = Nnu / 10;
+    numin = All.NuMin;
+    numax = All.NuMax;
+    dnu = log( numax/numin) / Nnu;
+    h = All.SofteningTable[0] * g2c.cm;
+
+    mymalloc1( nu, sizeof( double ) * Nnu );
+    mymalloc2( flux, sizeof( double ) * Nnu );
+
+    com_dis = comoving_distance( header.time );
+    lum_dis = luminosity_distance( header.time ) * g2c.cm;
+
+    for ( i=0; i<Nnu; i++ ) {
+        nu[i] = exp(log(numin) + i * dnu);
+    }
+
+    temp = 4.0 / 3.0 * PI * CUBE( h );
+
+    if ( All.RedShift > 1e-10 )
+        for ( i=0; i<Nnu; i++ ) {
+            if ( ( i % signal == 0 ) || ( i == Nnu - 1 ) )
+                writelog( "total spectrum [%i]: %g MHz ...\n", i, nu[i] );
+
+            for ( index=0; index<N_Gas; index++ ) {
+                flux[i] += particle_radio( nu[i]*1e6, index ) * temp;
+            }
+        }
+
+    temp = 1.0 / ( ( 4.0 * PI * SQR( lum_dis ) ) * ( SQR( All.BoxSize / com_dis ) ) );
+    for ( i=0; i<Nnu; i++ )
+        flux[i] *= temp;
+
+    create_dir( "TotalSpec" );
+    sprintf( buf, "./TotalSpec/%s_%.2f.dat", All.FilePrefix, All.RedShift );
+    fd = fopen( buf, "w" );
+
+    for ( i=0; i<Nnu; i++ )
+        fprintf( fd, "%g %g\n", nu[i], flux[i] );
+
+    fclose( fd );
+    myfree( nu );
+    myfree( flux );
+
+    writelog( "total radio spectrum ... done.\n" );
 
 }
 
@@ -938,6 +1136,10 @@ void analysis(){
 
         create_dir( All.GroupDir );
         group_analysis();
+    }
+
+    if ( All.TotSpecFlag ) {
+        total_radio_spectrum();
     }
 
     //tree_build();

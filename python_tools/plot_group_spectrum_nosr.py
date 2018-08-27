@@ -21,6 +21,7 @@ for i in range( 1, m ):
     m = data[ i, 1 ]
     index = data[ i, 0 ]
     p = data[ i, 2:-1 ]
+    p = p * 1e23 * 1000
     if i % 2:
         ss = '.-'
     else:
@@ -30,7 +31,7 @@ for i in range( 1, m ):
 plt.xscale( 'log' )
 plt.yscale( 'log' )
 plt.xlabel( r'$\nu \; [MHz]$' )
-plt.ylabel( r'$ I_{\nu}\; [erg \, cm^{-2} \, sr^{-1} \, Hz^{-1} ]$' )
+plt.ylabel( r'$ I_{\nu}\; [mJy]$' )
 plt.legend()
 plt.title( 'z = ' + sys.argv[1][-8:-4] )
 png_fn = sys.argv[1][:-4] + '.png'

@@ -199,6 +199,14 @@ void read_parameters( char *fn ) {
         addr[nt] = &All.FoF;
         id[nt++] = INT;
 
+        strcpy( tag[nt], "SpecIndexFlag" );
+        addr[nt] = &All.SpecIndexFlag;
+        id[nt++] = INT;
+
+        strcpy( tag[nt], "TotSpecFlag" );
+        addr[nt] = &All.TotSpecFlag;
+        id[nt++] = INT;
+
         strcpy( tag[nt], "MFFlag" );
         addr[nt] = &All.MFFlag;
         id[nt++] = INT;

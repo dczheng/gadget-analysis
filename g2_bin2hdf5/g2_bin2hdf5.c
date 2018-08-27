@@ -183,7 +183,6 @@ int load_snapshot(char *fname, int files) {
     }
 }
 
-
 void read_parameter_file(char *fname) {
 #define DOUBLE 1
 #define STRING 2
