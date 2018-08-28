@@ -1043,9 +1043,9 @@ void group_analysis() {
 void total_radio_spectrum() {
 
     long index;
-    int Nnu, i, signal;
-    double *nu, *flux, numin, numax, dnu, h, temp,
-           com_dis, lum_dis;
+    int Nnu, i, signal, j, k;
+    double *nu, *flux, numin, numax, dnu, h, tmp,
+           com_dis, lum_dis, *zlist, *fluxlist, *dislist;
     char buf[100];
     FILE *fd;
 
@@ -1068,7 +1068,7 @@ void total_radio_spectrum() {
         nu[i] = exp(log(numin) + i * dnu);
     }
 
-    temp = 4.0 / 3.0 * PI * CUBE( h );
+    tmp = 4.0 / 3.0 * PI * CUBE( h );
 
     if ( All.RedShift > 1e-10 )
         for ( i=0; i<Nnu; i++ ) {
@@ -1076,13 +1076,13 @@ void total_radio_spectrum() {
                 writelog( "total spectrum [%i]: %g MHz ...\n", i, nu[i] );
 
             for ( index=0; index<N_Gas; index++ ) {
-                flux[i] += particle_radio( nu[i]*1e6, index ) * temp;
+                flux[i] += particle_radio( nu[i]*1e6, index ) * tmp;
             }
         }
 
-    temp = 1.0 / ( ( 4.0 * PI * SQR( lum_dis ) ) * ( SQR( All.BoxSize / com_dis ) ) );
+    tmp = 1.0 / ( ( 4.0 * PI * SQR( lum_dis ) ) * ( SQR( All.BoxSize / com_dis ) ) );
     for ( i=0; i<Nnu; i++ )
-        flux[i] *= temp;
+        flux[i] *= tmp;
 
     create_dir( "TotalSpec" );
     sprintf( buf, "./TotalSpec/%s_%.2f.dat", All.FilePrefix, All.RedShift );
@@ -1090,8 +1090,38 @@ void total_radio_spectrum() {
 
     for ( i=0; i<Nnu; i++ )
         fprintf( fd, "%g %g\n", nu[i], flux[i] );
-
     fclose( fd );
+
+    MPI_Barrier( MPI_COMM_WORLD );
+    mymalloc1( zlist, sizeof( double ) * NTask );
+    mymalloc1( dislist, sizeof( double ) * NTask );
+    mymalloc1( fluxlist, sizeof( double ) * NTask * Nnu );
+
+    MPI_Gather( &All.RedShift, 1, MPI_DOUBLE, zlist, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD );
+    MPI_Gather( flux, Nnu, MPI_DOUBLE, fluxlist, Nnu, MPI_DOUBLE, 0, MPI_COMM_WORLD );
+
+    for ( i=0; i<NTask-1; i++ )
+        for ( j=i; j<NTask; j++ ) {
+            if ( zlist[i] > zlist[j] ) {
+
+                    tmp = zlist[i];
+                    zlist[i] = zlist[j];
+                    zlist[j] = tmp;
+
+                    for ( k=0; k<Nnu; k++ ) {
+                        tmp = fluxlist[ i*Nnu + k ];
+                        fluxlist[ i*Nnu + k ] = fluxlist[ j*Nnu + k ];
+                        fluxlist[ j*Nnu + k ] = tmp;
+                    }
+
+
+            }
+        }
+
+    for ( i=0; i<NTask-1; i++ )
+    myfree( zlist );
+    myfree( dislist );
+    myfree( fluxlist );
     myfree( nu );
     myfree( flux );
 
