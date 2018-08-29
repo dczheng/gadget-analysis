@@ -37,16 +37,36 @@ double luminosity_distance( double a ) {
     return comoving_distance( a ) / a;
 }
 
+
+#define writelog1( a, b ) writelog( "%-35s: %g\n", a, b )
 void compute_cosmo_quantities() {
     writelog( "compute cosmology quantities ...\n" );
-    All.Time = 1 / ( All.RedShift + 1 );
+
+    All.Time = header.time;
+    All.Time2 = SQR( All.Time );
+    All.Time3 = CUBE( All.Time );
     All.Hubble_a = hubble_function( All.Time );
     All.RhoCrit = 3 * SQR( All.Hubble_a ) / ( 8*PI*All.G );
     All.RhoBaryon = All.OmegaBaryon * All.RhoCrit;
-    writelog( "%-35s: %g\n", "Time", All.Time );
-    writelog( "%-35s: %g\n", "Hubble_a", All.Hubble_a );
-    writelog( "%-35s: %g\n", "RhoBaryon", All.RhoBaryon );
-    writelog( "%-35s: %g\n", "RhoCrit", All.RhoCrit );
+
+    if ( All.Time > 1e-10 ){
+        All.ComDis = comoving_distance( All.Time );
+        All.AngDis = angular_distance( All.Time );
+        All.LumDis = luminosity_distance( All.Time );
+    }
+    else
+        All.ComDis = All.AngDis = All.LumDis = 0;
+
+    writelog1( "Time", All.Time );
+    writelog1( "Time2", All.Time2 );
+    writelog1( "Time3", All.Time3 );
+    writelog1( "Comoving Distance", All.ComDis );
+    writelog1( "Angular Distance", All.AngDis );
+    writelog1( "Luminosity Distance", All.LumDis );
+    writelog1( "Hubble_a", All.Hubble_a );
+    writelog1( "RhoBaryon", All.RhoBaryon );
+    writelog1( "RhoCrit", All.RhoCrit );
+
     writelog( "compute cosmology quantities ... done.\n" );
     put_block_line;
 }

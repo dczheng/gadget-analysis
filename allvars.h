@@ -197,7 +197,8 @@ extern struct global_parameters_struct {
            TreeAllocFactor, LinkLength,
            BoxSize, HalfBoxSize,
            *KernelMat2D[6], *KernelMat3D[6],
-           Time, Hubble_a, RhoBaryon,
+           Time, Time2, Time3, Hubble_a, RhoBaryon,
+           ComDis, AngDis, LumDis,
            RedShift, HubbleParam, RhoCrit, G,
            Hubble, Omega0, OmegaLambda, OmegaBaryon,
            *ConvKernel, ConvSigma, NuMin, NuMax, GroupMassMin, Freq;

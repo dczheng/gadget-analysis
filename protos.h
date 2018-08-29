@@ -1,5 +1,5 @@
 void read_snapshot();
-void free_memory();
+void free_particle_memory();
 void group_analysis();
 void read_group();
 void free_group();

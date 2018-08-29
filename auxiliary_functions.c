@@ -17,32 +17,6 @@ double get_B( long i ) {
     return sqrt( SQR(SphP[i].B[0]) + SQR(SphP[i].B[1]) + SQR(SphP[i].B[2]) );
 }
 
-void check_flags() {
-
-    return;
-    if ( ThisTask != 0 )
-        return;
-    int errflag;
-    if ( All.GroupFlag == 1 ) {
-
-        errflag = 0;
-
-        if ( All.BFlag == 0 ) {
-            writelog( "Group Analysis: `BFlag` is missing in parameters ...\n" );
-            errflag = 1;
-        }
-
-
-        if ( All.MachFlag == 0 ) {
-            writelog( "Group Analysis: `MachFlag` is missing in parameters ...\n" );
-            errflag = 1;
-        }
-        if ( errflag )
-            endrun( 20180516 );
-    }
-
-}
-
 void init_sep_str() {
     memset( sep_str, '-', SEP_LEN-2 );
     sep_str[ SEP_LEN-2 ] = '\n';

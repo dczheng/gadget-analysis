@@ -5,7 +5,6 @@
             All.GroupDir, s, All.FilePrefix, s, ThisTask,\
             All.RedShift, index, All.Sproj );
 
-
 void init_analysis() {
     writelog( "initialize analysis...\n" );
     All.proj_k = All.ProjectDirection;
@@ -16,7 +15,6 @@ void init_analysis() {
     slice();
     if ( All.KernelInterpolation )
         init_kernel_matrix();
-    inte_ws = gsl_integration_workspace_alloc( GSL_INTE_WS_LEN );
     init_conv_kernel();
     init_img();
     writelog( "initialize analysis... done.\n" );
@@ -25,7 +23,6 @@ void init_analysis() {
 
 void free_analysis() {
     writelog( "free analysis ...\n" );
-    gsl_integration_workspace_free( inte_ws );
     if ( All.KernelInterpolation )
         free_kernel_matrix();
     free_conv_kernel();
@@ -99,25 +96,6 @@ void vel_value() {
     put_block_line;
 }
 
-double particle_radio( double v, long i ) {
-
-    double C, B, Ub, vl, P;
-
-    C = SphP[i].CRE_C0 * pow( SphP[i].Density, (All.Alpha-1)/3.0 );
-    //printf( "%g\n", C );
-    C = C * SphP[i].Density / ( ELECTRON_MASS /(g2c.g) );
-    C /= CUBE( g2c.cm );
-    B = sqrt( pow( SphP[i].B[0], 2 ) + pow( SphP[i].B[1], 2 ) + pow( SphP[i].B[2], 2 ) );
-    Ub = B * B / ( 8 * PI );
-    vl = ELECTRON_CHARGE * B / ( 2 * PI * ELECTRON_MASS * LIGHT_SPEED );
-    P = C * 2.0 / 3.0 * LIGHT_SPEED * Ub * THOMSON_CROSS_SECTION *
-        pow( v / vl-1, (1-All.Alpha) / 2 ) / vl;
-    //printf( "%g\n", P );
-
-    return P;
-
-}
-
 double particle_hge_num_dens( long i ) {
 
     double n;
@@ -125,47 +103,6 @@ double particle_hge_num_dens( long i ) {
     n = n * SphP[i].Density / ( ( ELECTRON_MASS / ( g2c.g ) ) );
     n /= CUBE( g2c.cm );
     return n;
-
-}
-
-double group_luminosity( double nu, long index ) {
-
-    long p;
-    double F, h;
-    struct group_properties *g;
-
-    g = &Gprops[index];
-    h = All.SofteningTable[0] * g2c.cm;
-
-    p = g->Head;
-    F = 0;
-
-    while( p >= 0 ) {
-
-        if ( P[p].Type == 0 )
-            F += particle_radio( nu, p );
-        p = FoFNext[p];
-
-    }
-
-    F = F * ( 4.0 / 3.0 * PI * CUBE( h ) );
-
-    return F;
-
-}
-
-void group_flux( double nu, long index, double *flux, double *flux_nosr ) {
-
-    double com_dis, lum_dis, L;
-    struct group_properties *g;
-
-    g = &Gprops[index];
-    com_dis = comoving_distance( header.time );
-    lum_dis = luminosity_distance( header.time ) * g2c.cm;
-
-    L = group_luminosity( nu, index );
-    *flux_nosr = L / ( 4.0 * PI * SQR( lum_dis ) );
-    *flux = *flux_nosr / ( SQR( g->size * 2  / com_dis ) );
 
 }
 
@@ -468,6 +405,70 @@ int group_present( long index ) {
 
 }
 
+double particle_radio( double v, long i ) {
+
+    double C, B, Ub, vl, P;
+
+    C = SphP[i].CRE_C0 * pow( SphP[i].Density, (All.Alpha-1)/3.0 );
+    //printf( "%g\n", C );
+    C = C * SphP[i].Density / ( ELECTRON_MASS /(g2c.g) );
+    C /= CUBE( g2c.cm );
+
+    B = sqrt( pow( SphP[i].B[0], 2 ) + pow( SphP[i].B[1], 2 ) + pow( SphP[i].B[2], 2 ) );
+    Ub = B * B / ( 8 * PI );
+
+    vl = ELECTRON_CHARGE * B / ( 2 * PI * ELECTRON_MASS * LIGHT_SPEED );
+
+    P = C * 2.0 / 3.0 * LIGHT_SPEED * Ub * THOMSON_CROSS_SECTION *
+        pow( v / vl-1, (1-All.Alpha) / 2 ) / vl;
+    //printf( "%g\n", P );
+    //
+    P = P * ( 4.0/3.0 * PI * CUBE( All.SofteningTable[0] * g2c.cm ) );
+
+    // Unit: erg / Hz / s
+
+    return P;
+
+}
+
+double group_luminosity( double nu, long index ) {
+
+    long p;
+    double F;
+    struct group_properties *g;
+
+    g = &Gprops[index];
+
+    p = g->Head;
+    F = 0;
+
+    while( p >= 0 ) {
+
+        if ( P[p].Type == 0 )
+            F += particle_radio( nu, p );
+        p = FoFNext[p];
+
+    }
+
+    return F;
+
+}
+
+void group_flux( double nu, long index, double *flux, double *flux_nosr ) {
+
+    double com_dis, lum_dis, L;
+    struct group_properties *g;
+
+    g = &Gprops[index];
+    com_dis = comoving_distance( All.Time );
+    lum_dis = luminosity_distance( All.Time ) * g2c.cm;
+
+    L = group_luminosity( nu, index );
+    *flux_nosr = L / ( 4.0 * PI * SQR( lum_dis ) );
+    *flux = *flux_nosr / ( SQR( g->size * 2  / com_dis ) );
+
+}
+
 void group_spectrum() {
 
     long index;
@@ -509,7 +510,6 @@ void group_spectrum() {
     }
     fprintf( fd1, "\n" );
     fprintf( fd2, "\n" );
-
 
     for ( index=0; index<Ngroups; index++ ) {
 
@@ -554,7 +554,7 @@ void group_spectrum_index() {
 
     long index, p;
     double *spec, *v, vmin, vmax, dv, cov00, cov01, cov11, c0,
-           *spec_index, *spec_index_err, nu, L, dL, h, *mass;
+           *spec_index, *spec_index_err, nu, L, dL, *mass;
     int vN, k, PicS, PicS2, ii, jj, i, j, x, y, xo, yo, flag;
     struct group_properties g;
     char buf[100],
@@ -571,7 +571,6 @@ void group_spectrum_index() {
     y = All.proj_j;
     xo = PicS / 2;
     yo = PicS / 2;
-    h = All.SofteningTable[0] * g2c.cm;
 
     dv = log10( vmax/vmin) / vN;
 
@@ -613,8 +612,7 @@ void group_spectrum_index() {
                 jj = PERIODIC( P[p].Pos[y] - g.cm[y] ) / dL + yo;
                 check_picture_index( ii );
                 check_picture_index( jj );
-                spec[ii*PicS*vN + jj * vN + k] +=
-                    particle_radio( nu, p ) * SphP[p].Density * ( 4.0 / 3.0 * PI * CUBE( h ) );
+                spec[ii*PicS*vN + jj * vN + k] += particle_radio( nu, p );
 
             }
         }
@@ -904,7 +902,7 @@ void group_analysis() {
             if ( num[i] == 0 )
                 continue;
             dens[i] /= num[i];
-            dens[i]  = dens[i] * ( g2c.g ) / CUBE( g2c.cm ) / CUBE( header.time );
+            dens[i]  = dens[i] * ( g2c.g ) / CUBE( g2c.cm ) / CUBE( All.Time );
         }
 
 
@@ -975,11 +973,11 @@ void group_analysis() {
             write_img1( buf, radio_str );
 
             if ( All.RedShift > 1e-10 ) {
-                lum_dis = luminosity_distance( header.time ) * ( g2c.cm );
-                com_dis = comoving_distance( header.time );
+                lum_dis = luminosity_distance( All.Time ) * ( g2c.cm );
+                com_dis = comoving_distance( All.Time );
      //           printf( "z:%g lum_dis: %g\n", All.RedShift, lum_dis);
                 /*
-                ang_dis = angular_distance( header.time );
+                ang_dis = angular_distance( All.Time );
                 h = All.SofteningTable[0];
                 ang = h / com_dis / PI * 180;
                 */
@@ -1044,8 +1042,8 @@ void total_radio_spectrum() {
 
     long index;
     int Nnu, i, signal, j, k;
-    double *nu, *flux, numin, numax, dnu, h, tmp,
-           com_dis, lum_dis, *zlist, *fluxlist, *dislist;
+    double *nu, *flux, numin, numax, dnu, tmp,
+           *alist, *fluxlist, *dislist;
     char buf[100];
     FILE *fd;
 
@@ -1056,19 +1054,13 @@ void total_radio_spectrum() {
     numin = All.NuMin;
     numax = All.NuMax;
     dnu = log( numax/numin) / Nnu;
-    h = All.SofteningTable[0] * g2c.cm;
 
     mymalloc1( nu, sizeof( double ) * Nnu );
     mymalloc2( flux, sizeof( double ) * Nnu );
 
-    com_dis = comoving_distance( header.time );
-    lum_dis = luminosity_distance( header.time ) * g2c.cm;
-
     for ( i=0; i<Nnu; i++ ) {
         nu[i] = exp(log(numin) + i * dnu);
     }
-
-    tmp = 4.0 / 3.0 * PI * CUBE( h );
 
     if ( All.RedShift > 1e-10 )
         for ( i=0; i<Nnu; i++ ) {
@@ -1076,50 +1068,65 @@ void total_radio_spectrum() {
                 writelog( "total spectrum [%i]: %g MHz ...\n", i, nu[i] );
 
             for ( index=0; index<N_Gas; index++ ) {
-                flux[i] += particle_radio( nu[i]*1e6, index ) * tmp;
+                flux[i] += particle_radio( nu[i]*1e6 / All.Time, index );
             }
         }
 
-    tmp = 1.0 / ( ( 4.0 * PI * SQR( lum_dis ) ) * ( SQR( All.BoxSize / com_dis ) ) );
+    tmp = 1.0 / ( All.Time * ( 4.0 * PI * SQR( All.ComDis * g2c.cm ) ) * ( SQR( All.BoxSize / All.ComDis ) ) );
+
     for ( i=0; i<Nnu; i++ )
         flux[i] *= tmp;
 
     create_dir( "TotalSpec" );
-    sprintf( buf, "./TotalSpec/%s_%.2f.dat", All.FilePrefix, All.RedShift );
-    fd = fopen( buf, "w" );
-
-    for ( i=0; i<Nnu; i++ )
-        fprintf( fd, "%g %g\n", nu[i], flux[i] );
-    fclose( fd );
 
     MPI_Barrier( MPI_COMM_WORLD );
-    mymalloc1( zlist, sizeof( double ) * NTask );
+    mymalloc1( alist, sizeof( double ) * NTask );
     mymalloc1( dislist, sizeof( double ) * NTask );
     mymalloc1( fluxlist, sizeof( double ) * NTask * Nnu );
 
-    MPI_Gather( &All.RedShift, 1, MPI_DOUBLE, zlist, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD );
+    MPI_Gather( &All.Time, 1, MPI_DOUBLE, alist, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD );
     MPI_Gather( flux, Nnu, MPI_DOUBLE, fluxlist, Nnu, MPI_DOUBLE, 0, MPI_COMM_WORLD );
 
-    for ( i=0; i<NTask-1; i++ )
-        for ( j=i; j<NTask; j++ ) {
-            if ( zlist[i] > zlist[j] ) {
+    if ( ThisTask == 0 ) {
+        for ( i=0; i<NTask-1; i++ )
+            for ( j=i; j<NTask; j++ ) {
+                if ( alist[i] < alist[j] ) {
 
-                    tmp = zlist[i];
-                    zlist[i] = zlist[j];
-                    zlist[j] = tmp;
+                        tmp = alist[i];
+                        alist[i] = alist[j];
+                        alist[j] = tmp;
 
-                    for ( k=0; k<Nnu; k++ ) {
-                        tmp = fluxlist[ i*Nnu + k ];
-                        fluxlist[ i*Nnu + k ] = fluxlist[ j*Nnu + k ];
-                        fluxlist[ j*Nnu + k ] = tmp;
-                    }
+                        for ( k=0; k<Nnu; k++ ) {
+                            tmp = fluxlist[ i*Nnu + k ];
+                            fluxlist[ i*Nnu + k ] = fluxlist[ j*Nnu + k ];
+                            fluxlist[ j*Nnu + k ] = tmp;
+                        }
 
-
+                }
             }
-        }
 
-    for ( i=0; i<NTask-1; i++ )
-    myfree( zlist );
+        for ( i=0; i<NTask-1; i++ )
+            dislist[i] = comoving_distance( alist[i] );
+
+        for ( i=0; i<NTask*Nnu; i++ )
+            fluxlist[i] /= All.BoxSize;
+
+        memset( flux, 0, sizeof(double)*Nnu );
+
+        for ( i=0; i<Nnu; i++ )
+            for ( j=0; j<NTask-1; j++) {
+                flux[i] += 0.5 * ( fluxlist[j*Nnu+i] + fluxlist[(j+1)*Nnu+i] ) * ( dislist[j+1] - dislist[j] );
+            }
+
+        sprintf( buf, "./TotalSpec/%s_Spec_Tot.dat", All.FilePrefix );
+        fd = fopen( buf, "w" );
+
+        for ( i=0; i<Nnu; i++ )
+            fprintf( fd, "%g %g\n", nu[i], flux[i] );
+        fclose( fd );
+    }
+
+    myfree( alist );
     myfree( dislist );
     myfree( fluxlist );
     myfree( nu );

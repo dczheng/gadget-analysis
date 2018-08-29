@@ -616,7 +616,7 @@ void allocate_memory() {
     mymalloc1( SphP, N_Gas * sizeof( struct sph_particle_data ) );
 }
 
-void free_memory() {
+void free_particle_memory() {
     writelog( "free memory ...\n" );
     myfree( P );
     myfree( SphP );

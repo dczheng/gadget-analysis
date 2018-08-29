@@ -1,5 +1,14 @@
 #include "allvars.h"
 
+void global_init() {
+    init_sep_str();
+    inte_ws = gsl_integration_workspace_alloc( GSL_INTE_WS_LEN );
+}
+
+void global_free() {
+    gsl_integration_workspace_free( inte_ws );
+}
+
 int main( int argc, char *argv[] ){
     time_t time1, time2;
     long dtime;
@@ -24,7 +33,8 @@ int main( int argc, char *argv[] ){
     time1 = time( NULL );
     tb = localtime( &time1 );
 
-    init_sep_str();
+    global_init();
+
     if ( ThisTask == 0 ){
         printf( "%s", sep_str );
         if ( access( "./gadget-analysis.log/", 0 ) == -1 ) {
@@ -63,18 +73,21 @@ int main( int argc, char *argv[] ){
     writelog( "GADGET_TOOLS: %s\n", All.ToolsPath );
     put_block_line;
 
+    /******************read***********************/
     read_parameters( argv[1] );
-    check_flags();
     read_snapshot();
+    /******************read***********************/
+
     set_units();
     compute_cosmo_quantities();
 
     /******************analysis***********************/
     analysis();
+    /******************analysis***********************/
     MPI_Barrier( MPI_COMM_WORLD );
-    /*************************************************/
 
-    free_memory();
+    free_particle_memory();
+
     MPI_Barrier( MPI_COMM_WORLD );
 
     time2 = time( NULL );
@@ -88,6 +101,8 @@ int main( int argc, char *argv[] ){
 
     fclose( LogFileFd );
     fclose( MemUseFileFd );
+
+    global_free();
 
     MPI_Finalize();
     return 0;
