@@ -14,5 +14,5 @@ $(EXEC): $(OBJS)
 	$(CC) $(OBJS) $(CLIBS) -o $(EXEC)
 $(OBJS): allvars.h protos.h macros.h
 
-clean: 
+clean:
 	rm -f $(EXEC)  $(OBJS)

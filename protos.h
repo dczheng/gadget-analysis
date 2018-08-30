@@ -3,7 +3,6 @@ void free_particle_memory();
 void group_analysis();
 void read_group();
 void free_group();
-void endrun( int ierr );
 void read_parameters( char *fn );
 void set_units();
 void init_sep_str();

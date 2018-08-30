@@ -157,7 +157,7 @@ void fof_compute_group_properties() {
                 printf( "%g, %i\n", P[p].Mass, P[p].Type );
                 p = FoFNext[p];
             }
-            endrun( 20180507 );
+            endrun();
         }
 
         for ( k=0; k<3; k++ ){
@@ -252,7 +252,7 @@ void fof_save() {
 
     /*
     printf( "%i\n", Ngroups );
-    endrun( 20180514 );
+    endrun();
     */
 
     hdf5_type = H5Tcopy( H5T_NATIVE_UINT64 );

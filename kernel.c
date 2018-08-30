@@ -22,10 +22,10 @@ void init_kernel_matrix() {
             All.KernelMat3D[pt] = malloc( sizeof( double ) * N * N * N );
             memset( All.KernelMat2D[pt], 0, sizeof( double ) * N * N );
             memset( All.KernelMat3D[pt], 0, sizeof( double ) * N * N * N );
-            if ( All.SofteningTable[pt] == 0 ) {
-                printf( "SofteningTable[%d] is zeros !!!\n", pt );
-                endrun( 20171207 );
-            }
+
+            if ( All.SofteningTable[pt] == 0 )
+                endrun1( "SofteningTable[%d] is zeros !!!\n", pt );
+
             h = All.SofteningTable[pt];
             dh = h / Nhalf;
             for ( i=0; i<N; i++ )

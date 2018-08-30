@@ -20,14 +20,12 @@ int main( int argc, char *argv[] ){
     MPI_Comm_size( MPI_COMM_WORLD, &NTask );
 
     if ( ThisTask == 0 ) {
-        if ( argc < 2 ) {
-            printf( "Parameters file is required on command line!\n " );
-            endrun( 1 );
-        }
-        if ( access( argv[1], 0 ) == -1 ) {
-            printf( "Parameters file `%s` is invalid!\n", argv[1] );
-            endrun( 20180516 );
-        }
+
+        if ( argc < 2 )
+            endrun( "Parameters file is required on command line! " );
+
+        if ( access( argv[1], 0 ) == -1 )
+            endrun1( "Parameters file `%s` is invalid!\n", argv[1] );
     }
 
     time1 = time( NULL );
@@ -39,10 +37,9 @@ int main( int argc, char *argv[] ){
         printf( "%s", sep_str );
         if ( access( "./gadget-analysis.log/", 0 ) == -1 ) {
             printf( "create directory ./gadget-analysis.log/ by task 0\n" );
-            if ( mkdir( "./gadget-analysis.log/", 0755 ) == -1 ) {
-                printf( "failed create directory ./gadget-analysis.log/\n" );
-                endrun( 20171203 );
-            }
+
+            if ( mkdir( "./gadget-analysis.log/", 0755 ) == -1 )
+                endrun( "failed create directory `./gadget-analysis.log/`" );
         }
     }
 
@@ -68,7 +65,7 @@ int main( int argc, char *argv[] ){
     if ( strcmp( All.ToolsPath, "" ) == 0 ){
         writelog( "Please set `GADGET_TOOLS` evironment variable.\n" );
         put_block_line;
-        endrun( 20180513 );
+        endrun();
     }
     writelog( "GADGET_TOOLS: %s\n", All.ToolsPath );
     put_block_line;

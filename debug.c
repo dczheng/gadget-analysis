@@ -22,7 +22,7 @@ void signal_hander( int s )
     }
     printf( "\nSTOP: %s\n", sig.stop );
     fclose( LogFileFd );
-    endrun( 20180507 );
+    endrun();
 }
 
 void empty_sig_buf() {

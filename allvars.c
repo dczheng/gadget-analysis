@@ -14,6 +14,7 @@ long *Ngblist;
 struct group_properties *Gprops;
 long  *FoFNext;
 int Ngroups;
+char global_buffer[1024];
 
 struct global_parameters_struct All;
 struct particle_data *P;

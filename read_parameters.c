@@ -1,267 +1,99 @@
 #include "allvars.h"
 
-void read_parameters( char *fn ) {
 #define MAXTAGS 300
 #define REAL 1
 #define STRING 2
 #define INT 3
+
+#define ADD_PARA( a, b, c ) {\
+    strcpy( tag[nt], a );\
+    addr[nt] = b;\
+    id[nt++] = c;\
+}
+
+void read_parameters( char *fn ) {
+
     FILE *fd;
     void *addr[MAXTAGS];
     char tag[MAXTAGS][50], buf[200], buf1[200], buf2[200], buf3[200];
         int id[MAXTAGS], nt, i, j, errflag=0;;
         writelog( "read parameter...\n" );
     if ( ThisTask == 0 ) {
+
         fd = fopen( fn, "r" );
-        if ( NULL == fd ) {
-            fprintf( stderr, "Faile to Open Parameter file %s\n", fn );
-            endrun( 1 );
+
+        if ( NULL == fd ){
+            endrun1( "Faile to Open Parameter file %s\n", fn );
         }
 
-        if ( sizeof( long ) != 8 ) {
-            printf( "Type `long` is no 64 bit on this platform. Stopping. \n" );
-            endrun( 20171207 );
-        }
+        if ( sizeof( long ) != 8 )
+            endrun( "Type `long` is no 64 bit on this platform. Stopping." );
 
         nt = 0;
-        strcpy( tag[nt], "FilePrefix" );
-        addr[nt] = All.FilePrefix;
-        id[nt++] = STRING;
 
-        strcpy( tag[nt], "NumFiles" );
-        addr[nt] = &All.NumFiles;
-        id[nt++] = INT;
+        ADD_PARA( "FilePrefix",                 All.FilePrefix,                  STRING );
+        ADD_PARA( "FoFDir",                     All.FoFDir,                      STRING );
+        ADD_PARA( "GroupDir",                   All.GroupDir,                    STRING );
 
-        strcpy( tag[nt], "PicSize" );
-        addr[nt] = &All.PicSize;
-        id[nt++] = INT;
+        ADD_PARA( "UnitMass_in_g",              &All.UnitMass_in_g,              REAL );
+        ADD_PARA( "UnitLength_in_cm",           &All.UnitLength_in_cm,           REAL );
+        ADD_PARA( "UnitVelocity_in_cm_per_s",   &All.UnitVelocity_in_cm_per_s,   REAL );
+        ADD_PARA( "Freq",                       &All.Freq,                       REAL );
+        ADD_PARA( "SofteningGas",               &All.SofteningTable[0],          REAL );
+        ADD_PARA( "SofteningHalo",              &All.SofteningTable[1],          REAL );
+        ADD_PARA( "SofteningDisk",              &All.SofteningTable[2],          REAL );
+        ADD_PARA( "SofteningBulge",             &All.SofteningTable[3],          REAL );
+        ADD_PARA( "SofteningStar",              &All.SofteningTable[4],          REAL );
+        ADD_PARA( "SofteningBndry",             &All.SofteningTable[5],          REAL );
+        ADD_PARA( "Alpha",                      &All.Alpha,                      REAL );
+        ADD_PARA( "StartX",                     &All.Start[0],                   REAL );
+        ADD_PARA( "StartY",                     &All.Start[1],                   REAL );
+        ADD_PARA( "StartZ",                     &All.Start[2],                   REAL );
+        ADD_PARA( "EndX",                       &All.End[0],                     REAL );
+        ADD_PARA( "EndY",                       &All.End[1],                     REAL );
+        ADD_PARA( "EndZ",                       &All.End[2],                     REAL );
+        ADD_PARA( "TreeAllocFactor",            &All.TreeAllocFactor,            REAL );
+        ADD_PARA( "LinkLength",                 &All.LinkLength,                 REAL );
+        ADD_PARA( "OmegaBaryon",                &All.OmegaBaryon,                REAL );
+        ADD_PARA( "ConvSigma",                  &All.ConvSigma,                  REAL );
+        ADD_PARA( "NuMin",                      &All.NuMin,                      REAL );
+        ADD_PARA( "NuMax",                      &All.NuMax,                      REAL );
+        ADD_PARA( "GroupMassMin",               &All.GroupMassMin,               REAL );
 
-        strcpy( tag[nt], "UnitMass_in_g" );
-        addr[nt] = &All.UnitMass_in_g;
-        id[nt++] = REAL;
+        ADD_PARA( "NumFiles",                   &All.NumFiles,                   INT );
+        ADD_PARA( "PicSize",                    &All.PicSize,                    INT );
+        ADD_PARA( "StartSnapIndex",             &All.StartSnapIndex,             INT  );
+        ADD_PARA( "ProjectDirection",           &All.ProjectDirection,           INT  );
+        ADD_PARA( "KernelN",                    &All.KernelN,                    INT  );
+        ADD_PARA( "FoFRead",                    &All.FoFRead,                    INT  );
+        ADD_PARA( "FoFMinLen",                  &All.FoFMinLen,                  INT  );
+        ADD_PARA( "TreePartType",               &All.TreePartType,               INT  );
+        ADD_PARA( "ConvN",                      &All.ConvN,                      INT  );
+        ADD_PARA( "FoF",                        &All.FoF,                        INT  );
+        ADD_PARA( "NuNum",                      &All.NuNum,                      INT  );
+        ADD_PARA( "GroupIndexMin",              &All.GroupIndexMin,              INT  );
+        ADD_PARA( "GroupIndexMax",              &All.GroupIndexMax,              INT  );
 
-        strcpy( tag[nt], "UnitLength_in_cm" );
-        addr[nt] = &All.UnitLength_in_cm;
-        id[nt++] = REAL;
-
-        strcpy( tag[nt], "UnitVelocity_in_cm_per_s" );
-        addr[nt] = &All.UnitVelocity_in_cm_per_s;
-        id[nt++] = REAL;
-
-        strcpy( tag[nt], "Freq" );
-        addr[nt] = &All.Freq;
-        id[nt++] = REAL;
-
-        strcpy( tag[nt], "MpcFlag" );
-        addr[nt] = &All.MpcFlag;
-        id[nt++] = INT;
-
-        strcpy( tag[nt], "GroupFlag" );
-        addr[nt] = &All.GroupFlag;
-        id[nt++] = INT;
-
-        strcpy( tag[nt], "MachFlag" );
-        addr[nt] = &All.MachFlag;
-        id[nt++] = INT;
-
-        strcpy( tag[nt], "TempFlag" );
-        addr[nt] = &All.TempFlag;
-        id[nt++] = INT;
-
-        strcpy( tag[nt], "MagFlag" );
-        addr[nt] = &All.MagFlag;
-        id[nt++] = INT;
-
-        strcpy( tag[nt], "FoFRead" );
-        addr[nt] = &All.FoFRead;
-        id[nt++] = INT;
-
-        strcpy( tag[nt], "SofteningGas" );
-        addr[nt] = &All.SofteningTable[0];
-        id[nt++] = REAL;
-
-        strcpy( tag[nt], "SofteningHalo" );
-        addr[nt] = &All.SofteningTable[1];
-        id[nt++] = REAL;
-
-        strcpy( tag[nt], "SofteningDisk" );
-        addr[nt] = &All.SofteningTable[2];
-        id[nt++] = REAL;
-
-        strcpy( tag[nt], "SofteningBulge" );
-        addr[nt] = &All.SofteningTable[3];
-        id[nt++] = REAL;
-
-        strcpy( tag[nt], "SofteningStar" );
-        addr[nt] = &All.SofteningTable[4];
-        id[nt++] = REAL;
-
-        strcpy( tag[nt], "SofteningBndry" );
-        addr[nt] = &All.SofteningTable[5];
-        id[nt++] = REAL;
-
-        strcpy( tag[nt], "Alpha" );
-        addr[nt] = &All.Alpha;
-        id[nt++] = REAL;
-
-        strcpy( tag[nt], "StartSnapIndex" );
-        addr[nt] = &All.StartSnapIndex;
-        id[nt++] = INT;
-
-        strcpy( tag[nt], "ProjectDirection" );
-        addr[nt] = &All.ProjectDirection;
-        id[nt++] = INT;
-
-        strcpy( tag[nt], "KernelN" );
-        addr[nt] = &All.KernelN;
-        id[nt++] = INT;
-
-        strcpy( tag[nt], "StartX" );
-        addr[nt] = &All.Start[0];
-        id[nt++] = REAL;
-
-        strcpy( tag[nt], "EndX" );
-        addr[nt] = &All.End[0];
-        id[nt++] = REAL;
-
-        strcpy( tag[nt], "StartY" );
-        addr[nt] = &All.Start[1];
-        id[nt++] = REAL;
-
-        strcpy( tag[nt], "EndY" );
-        addr[nt] = &All.End[1];
-        id[nt++] = REAL;
-
-        strcpy( tag[nt], "StartZ" );
-        addr[nt] = &All.Start[2];
-        id[nt++] = REAL;
-
-        strcpy( tag[nt], "EndZ" );
-        addr[nt] = &All.End[2];
-        id[nt++] = REAL;
-
-        strcpy( tag[nt], "HgeFlag" );
-        addr[nt] = &All.HgeFlag;
-        id[nt++] = INT;
-
-        strcpy( tag[nt], "CrFlag" );
-        addr[nt] = &All.CrFlag;
-        id[nt++] = INT;
-
-        strcpy( tag[nt], "BFlag" );
-        addr[nt] = &All.BFlag;
-        id[nt++] = INT;
-
-        strcpy( tag[nt], "GasState" );
-        addr[nt] = &All.GasState;
-        id[nt++] = INT;
-
-        strcpy( tag[nt], "ReadTemperature" );
-        addr[nt] = &All.ReadTemperature;
-        id[nt++] = INT;
-
-        strcpy( tag[nt], "GasDensity" );
-        addr[nt] = &All.GasDensity;
-        id[nt++] = INT;
-
-        strcpy( tag[nt], "GasTemperature" );
-        addr[nt] = &All.GasTemperature;
-        id[nt++] = INT;
-
-        strcpy( tag[nt], "KernelInterpolation" );
-        addr[nt] = &All.KernelInterpolation;
-        id[nt++] = INT;
-
-        strcpy( tag[nt], "TreeAllocFactor" );
-        addr[nt] = &All.TreeAllocFactor;
-        id[nt++] = REAL;
-
-        strcpy( tag[nt], "LinkLength" );
-        addr[nt] = &All.LinkLength;
-        id[nt++] = REAL;
-
-        strcpy( tag[nt], "FoFMinLen" );
-        addr[nt] = &All.FoFMinLen;
-        id[nt++] = INT;
-
-        strcpy( tag[nt], "TreePartType" );
-        addr[nt] = &All.TreePartType;
-        id[nt++] = INT;
-
-        strcpy( tag[nt], "OmegaBaryon" );
-        addr[nt] = &All.OmegaBaryon;
-        id[nt++] = REAL;
-
-        strcpy( tag[nt], "ConvN" );
-        addr[nt] = &All.ConvN;
-        id[nt++] = INT;
-
-        strcpy( tag[nt], "FoF" );
-        addr[nt] = &All.FoF;
-        id[nt++] = INT;
-
-        strcpy( tag[nt], "SpecIndexFlag" );
-        addr[nt] = &All.SpecIndexFlag;
-        id[nt++] = INT;
-
-        strcpy( tag[nt], "TotSpecFlag" );
-        addr[nt] = &All.TotSpecFlag;
-        id[nt++] = INT;
-
-        strcpy( tag[nt], "MFFlag" );
-        addr[nt] = &All.MFFlag;
-        id[nt++] = INT;
-
-        strcpy( tag[nt], "RadioFlag" );
-        addr[nt] = &All.RadioFlag;
-        id[nt++] = INT;
-
-        strcpy( tag[nt], "SfrFlag" );
-        addr[nt] = &All.SfrFlag;
-        id[nt++] = INT;
-
-        strcpy( tag[nt], "SpecFlag" );
-        addr[nt] = &All.SpecFlag;
-        id[nt++] = INT;
-
-        strcpy( tag[nt], "HgeNumDensFlag" );
-        addr[nt] = &All.HgeNumDensFlag;
-        id[nt++] = INT;
-
-        strcpy( tag[nt], "ConvSigma" );
-        addr[nt] = &All.ConvSigma;
-        id[nt++] = REAL;
-
-        strcpy( tag[nt], "NuMin" );
-        addr[nt] = &All.NuMin;
-        id[nt++] = REAL;
-
-        strcpy( tag[nt], "NuMax" );
-        addr[nt] = &All.NuMax;
-        id[nt++] = REAL;
-
-        strcpy( tag[nt], "NuNum" );
-        addr[nt] = &All.NuNum;
-        id[nt++] = INT;
-
-        strcpy( tag[nt], "FoFDir" );
-        addr[nt] = &All.FoFDir;
-        id[nt++] = STRING;
-
-        strcpy( tag[nt], "GroupDir" );
-        addr[nt] = &All.GroupDir;
-        id[nt++] = STRING;
-
-        strcpy( tag[nt], "GroupMassMin" );
-        addr[nt] = &All.GroupMassMin;
-        id[nt++] = REAL;
-
-        strcpy( tag[nt], "GroupIndexMin" );
-        addr[nt] = &All.GroupIndexMin;
-        id[nt++] = INT;
-
-        strcpy( tag[nt], "GroupIndexMax" );
-        addr[nt] = &All.GroupIndexMax;
-        id[nt++] = INT;
+        ADD_PARA( "GasState",                   &All.GasState,                   INT  );
+        ADD_PARA( "GasDensity",                 &All.GasDensity,                 INT  );
+        ADD_PARA( "GasTemperature",             &All.GasTemperature,             INT  );
+        ADD_PARA( "ReadTemperature",            &All.ReadTemperature,            INT  );
+        ADD_PARA( "KernelInterpolation",        &All.KernelInterpolation,        INT  );
+        ADD_PARA( "MpcFlag",                    &All.MpcFlag,                    INT  );
+        ADD_PARA( "GroupFlag",                  &All.GroupFlag,                  INT  );
+        ADD_PARA( "MachFlag",                   &All.MachFlag,                   INT  );
+        ADD_PARA( "TempFlag",                   &All.TempFlag,                   INT  );
+        ADD_PARA( "MagFlag",                    &All.MagFlag,                    INT  );
+        ADD_PARA( "HgeNumDensFlag",             &All.HgeNumDensFlag,             INT  );
+        ADD_PARA( "HgeFlag",                    &All.HgeFlag,                    INT  );
+        ADD_PARA( "CrFlag",                     &All.CrFlag,                     INT  );
+        ADD_PARA( "BFlag",                      &All.BFlag,                      INT  );
+        ADD_PARA( "SpecIndexFlag",              &All.SpecIndexFlag,              INT  );
+        ADD_PARA( "TotSpecFlag",                &All.TotSpecFlag,                INT  );
+        ADD_PARA( "MFFlag",                     &All.MFFlag,                     INT  );
+        ADD_PARA( "RadioFlag",                  &All.RadioFlag,                  INT  );
+        ADD_PARA( "SfrFlag",                    &All.SfrFlag,                    INT  );
+        ADD_PARA( "SpecFlag",                   &All.SpecFlag,                   INT  );
 
         while( !feof( fd ) ) {
             *buf = 0;
@@ -304,7 +136,7 @@ void read_parameters( char *fn ) {
             }
         }
         if ( errflag )
-            endrun( 0 );
+            endrun();
         fclose( fd );
     }
     MPI_Barrier( MPI_COMM_WORLD );

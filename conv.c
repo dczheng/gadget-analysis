@@ -9,10 +9,9 @@ void init_conv_kernel( double ds ) {
     int i, j, c, N;
     double r;
     writelog( "init conv kernel ...\n" );
-    if ( All.ConvN % 2 == 0 ){
-        printf( "Even ConvN is not supported!\n" );
-        endrun( 20180508 );
-    }
+    if ( All.ConvN % 2 == 0 )
+        endrun( "Even ConvN is not supported!" );
+
     mymalloc1( All.ConvKernel, SQR( All.ConvN ) * sizeof( double ) );
     N = All.ConvN;
     c = N / 2 + 1;

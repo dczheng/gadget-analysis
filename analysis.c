@@ -241,7 +241,7 @@ void gas_state() {
     for ( k=0; k<N_Gas; k++ ) {
         LogTemp = SphP[k].Temp;
         if ( LogTemp < 0 )
-            endrun( 20180514 );
+            endrun();
         LogTemp = ( LogTemp == 0 ) ? LogTempMin : log10( LogTemp );
 
         //if ( LogTemp > LogTempMax )
@@ -249,7 +249,7 @@ void gas_state() {
 
         LogDens = SphP[k].Density / All.RhoBaryon;
         if ( LogDens < 0 )
-            endrun( 20180514 );
+            endrun();
         LogDens = ( LogDens == 0 ) ? LogDensMin : log10( LogDens );
 
         i = ( LogTemp - LogTempMin ) / DLogTemp;
@@ -346,8 +346,7 @@ void mass_function() {
     writelog( "i_m_min: %i, i_m_max: %i\n", i_m_min, i_m_max );
 
     if ( i_m_min == i_m_max ) {
-        printf( "some error appear!\n" );
-        endrun( 20180724 );
+        endrun( "some error appear!" );
     }
 
     mymalloc2( num, sizeof(int) * ( i_m_max - i_m_min + 1 ) );
@@ -392,13 +391,6 @@ int group_present( long index ) {
          ( Gprops[index].mass * 1e10 >= All.GroupMassMin) )
             return 1;
     else {
-
-        /*
-        if ( index == 0 ) {
-            printf( "Task %i has no group to satisfy the condition\n", ThisTask );
-            endrun( 20180812 );
-        }
-        */
 
         return 0;
     }
@@ -734,10 +726,8 @@ void group_analysis() {
 
     if ( All.HgeNumDensFlag ) {
 
-        if ( All.HgeFlag == 0 ) {
-            printf( "HgeFlag is required by computing hge number density!\n" );
-            endrun( 20180813 );
-        }
+        if ( All.HgeFlag == 0 )
+            endrun( "HgeFlag is required by computing hge number density!" );
 
         mymalloc1( hgen, PicSize2 * sizeof( double ) );
         sprintf( buf, "%s/%s", All.GroupDir, hgen_str );
@@ -747,10 +737,8 @@ void group_analysis() {
 
     if ( All.RadioFlag ) {
 
-        if ( All.HgeFlag == 0 ) {
-            printf( "HgeFlag is required by computing radio!\n" );
-            endrun( 20180813 );
-        }
+        if ( All.HgeFlag == 0 )
+            endrun( "HgeFlag is required by computing radio!" );
 
         mymalloc1( radio, PicSize2 * sizeof( double ) );
         mymalloc1( radiop, PicSize2 * sizeof( double ) );
@@ -1166,10 +1154,8 @@ void analysis(){
 
     if ( All.GroupFlag ) {
 
-        if ( All.FoF == 0 ) {
-            printf( "FoF is required by Group Analysis!\n" );
-            endrun( 20180724 );
-        }
+        if ( All.FoF == 0 )
+            endrun( "FoF is required by Group Analysis!" );
 
         create_dir( All.GroupDir );
         group_analysis();

@@ -169,6 +169,7 @@ extern int ThisTask, NTask;
 extern long *id_to_index, NumPart, N_Gas;
 extern FILE *LogFileFd, *MemUseFileFd;
 extern struct io_header header;
+extern char global_buffer[1024];
 
 extern struct global_parameters_struct {
     char FilePrefix[ MYFILENAME_MAX ],

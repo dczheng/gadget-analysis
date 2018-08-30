@@ -106,8 +106,7 @@ void tree_build_single() {
                     printf( "( %.10f, %.10f, %.10f ), ( %.10f, %.10f, %.10f )\n ",
                             P[tn].Pos[0], P[tn].Pos[1], P[tn].Pos[2],
                             P[i].Pos[0], P[i].Pos[1], P[i].Pos[2] );
-                    printf( "Task: %i, Max number of tree nodes reached.\n", ThisTask );
-                    endrun( 20171225 );
+                    endrun1( "Task: %i, Max number of tree nodes reached.", ThisTask );
                 }
             }
         }
@@ -185,10 +184,8 @@ void tree_build() {
         if ( ( 1 << P[i].Type ) & All.TreePartType )
             npart ++;
 
-    if ( npart == 0 ) {
-        printf( "particle number is zero !!!\n" );
-        endrun( 20171225 );
-    }
+    if ( npart == 0 )
+        endrun( "particle number is zero !!!" );
 
     writelog( "partcle type: ` " );
     for ( i=0; i<6; i++ )

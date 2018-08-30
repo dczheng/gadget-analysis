@@ -8,10 +8,8 @@ void slice() {
     writelog( "determine slice info ...\n" );
 
     if ( All.End[All.proj_i] - All.Start[All.proj_i] !=
-            All.End[All.proj_j] - All.Start[All.proj_j] ) {
-        printf( "Projection Region Must Be Square!...\n" );
-        endrun( 20180424 );
-    }
+            All.End[All.proj_j] - All.Start[All.proj_j] )
+        endrun( "Projection Region Must Be Square!..." );
 
     if ( All.End[0] == 0 ){
         All.Start[0] = 0;
