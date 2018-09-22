@@ -60,14 +60,14 @@ if ( xmin > xmax ):
 else:
     xLocList = np.linspace( xmin, xmax, xmax - xmin + 1 )
     xFmtList = xLocList
-    xLocList = ( xLocList - DensMin ) / xl * n
+    xLocList = ( xLocList - DensMin ) / xl * (n-1)
     print( "xticks: ", xFmtList )
 if ( ymin > ymax ):
     pass
 else:
     yLocList = np.linspace( ymin, ymax, ymax - ymin + 1 )
     yFmtList = yLocList
-    yLocList = m - ( yLocList - TempMin ) / yl * m
+    yLocList = m - ( yLocList - TempMin ) / yl * (m-1)
     print( "yticks: ", yFmtList )
 
 
