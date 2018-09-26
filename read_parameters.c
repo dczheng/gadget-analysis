@@ -45,7 +45,6 @@ void read_parameters( char *fn ) {
         ADD_PARA( "SofteningBulge",             &All.SofteningTable[3],          REAL );
         ADD_PARA( "SofteningStar",              &All.SofteningTable[4],          REAL );
         ADD_PARA( "SofteningBndry",             &All.SofteningTable[5],          REAL );
-        ADD_PARA( "Alpha",                      &All.Alpha,                      REAL );
         ADD_PARA( "StartX",                     &All.Start[0],                   REAL );
         ADD_PARA( "StartY",                     &All.Start[1],                   REAL );
         ADD_PARA( "StartZ",                     &All.Start[2],                   REAL );
@@ -77,23 +76,25 @@ void read_parameters( char *fn ) {
         ADD_PARA( "GasState",                   &All.GasState,                   INT  );
         ADD_PARA( "GasDensity",                 &All.GasDensity,                 INT  );
         ADD_PARA( "GasTemperature",             &All.GasTemperature,             INT  );
-        ADD_PARA( "ReadTemperature",            &All.ReadTemperature,            INT  );
         ADD_PARA( "KernelInterpolation",        &All.KernelInterpolation,        INT  );
         ADD_PARA( "MpcFlag",                    &All.MpcFlag,                    INT  );
-        ADD_PARA( "GroupFlag",                  &All.GroupFlag,                  INT  );
-        ADD_PARA( "MachFlag",                   &All.MachFlag,                   INT  );
-        ADD_PARA( "TempFlag",                   &All.TempFlag,                   INT  );
-        ADD_PARA( "MagFlag",                    &All.MagFlag,                    INT  );
-        ADD_PARA( "HgeNumDensFlag",             &All.HgeNumDensFlag,             INT  );
-        ADD_PARA( "HgeFlag",                    &All.HgeFlag,                    INT  );
-        ADD_PARA( "CrFlag",                     &All.CrFlag,                     INT  );
-        ADD_PARA( "BFlag",                      &All.BFlag,                      INT  );
-        ADD_PARA( "SpecIndexFlag",              &All.SpecIndexFlag,              INT  );
-        ADD_PARA( "TotSpecFlag",                &All.TotSpecFlag,                INT  );
-        ADD_PARA( "MFFlag",                     &All.MFFlag,                     INT  );
-        ADD_PARA( "RadioFlag",                  &All.RadioFlag,                  INT  );
-        ADD_PARA( "SfrFlag",                    &All.SfrFlag,                    INT  );
-        ADD_PARA( "SpecFlag",                   &All.SpecFlag,                   INT  );
+        ADD_PARA( "Group",                      &All.Group,                      INT  );
+        ADD_PARA( "GroupSfr",                   &All.GroupSfr,                   INT  );
+        ADD_PARA( "GroupTemp",                  &All.GroupTemp,                  INT  );
+        ADD_PARA( "GroupB",                     &All.GroupB,                     INT  );
+        ADD_PARA( "GroupMach",                  &All.GroupMach,                  INT  );
+        ADD_PARA( "GroupHgen",                  &All.GroupHgen,                  INT  );
+        ADD_PARA( "GroupRad",                   &All.GroupRad,                   INT  );
+        ADD_PARA( "GroupSpecIndex",             &All.GroupSpecIndex,             INT  );
+        ADD_PARA( "GroupSpec",                  &All.GroupSpec,                  INT  );
+        ADD_PARA( "ReadMach",                   &All.ReadMach,                   INT  );
+        ADD_PARA( "ReadTemp",                   &All.ReadTemp,                   INT  );
+        ADD_PARA( "ReadHge",                    &All.ReadHge,                    INT  );
+        ADD_PARA( "ReadCr",                     &All.ReadCr,                     INT  );
+        ADD_PARA( "ReadB",                      &All.ReadB,                      INT  );
+        ADD_PARA( "TotSpec",                    &All.TotSpec,                    INT  );
+        ADD_PARA( "MF",                         &All.MF,                         INT  );
+        ADD_PARA( "ReadSfr",                    &All.ReadSfr,                    INT  );
 
         while( !feof( fd ) ) {
             *buf = 0;

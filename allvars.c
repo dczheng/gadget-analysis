@@ -17,8 +17,8 @@ int Ngroups;
 char global_buffer[1024];
 
 struct global_parameters_struct All;
-struct particle_data *P;
-struct sph_particle_data *SphP;
+struct Particle_Data *P;
+struct Sph_Particle_Data *SphP;
 struct io_header header;
 struct image_struct image;
 struct gadget_2_cgs_unit g2c;

@@ -23,7 +23,7 @@ int blockpresent( enum iofields blk, int pt ) {
             else
                 return 0;
         case IO_TEMP:
-            if ( All.ReadTemperature == 0 )
+            if ( All.ReadTemp == 0 )
                 return 0;
 
         case IO_NE:
@@ -35,7 +35,7 @@ int blockpresent( enum iofields blk, int pt ) {
                 return 0;
 
         case IO_MN:
-            if (( pt == 0 ) && ( header.npart[0] != 0 ) && All.MachFlag == 1 )
+            if (( pt == 0 ) && ( header.npart[0] != 0 ) && All.ReadMach == 1 )
                 return 1;
             else
                 return 0;
@@ -43,22 +43,24 @@ int blockpresent( enum iofields blk, int pt ) {
         case IO_MAG:
         case IO_DIVB:
         case IO_DBDT:
-            if (( pt == 0 ) && ( header.npart[0] != 0 ) && All.BFlag == 1)
+            if (( pt == 0 ) && ( header.npart[0] != 0 ) && All.ReadB == 1)
                 return 1;
             else
                 return 0;
 
         case IO_SFR:
-            if (( pt == 0 ) && ( header.npart[0] != 0 ) && All.SfrFlag == 1)
+            if (( pt == 0 ) && ( header.npart[0] != 0 ) && All.ReadSfr == 1)
                 return 1;
             else
                 return 0;
 
-        case IO_CRE_C0:
-        case IO_CRE_Q0:
-        case IO_CRE_E0:
-        case IO_CRE_n0:
-            if (( pt == 0 ) && ( header.npart[0] != 0 ) && All.HgeFlag == 1)
+        case IO_CRE_C:
+        case IO_CRE_ALPHA:
+        case IO_CRE_Q:
+        case IO_CRE_N:
+        case IO_CRE_E:
+        case IO_CRE_P:
+            if (( pt == 0 ) && ( header.npart[0] != 0 ) && All.ReadHge == 1)
                 return 1;
             else
                 return 0;
@@ -67,7 +69,7 @@ int blockpresent( enum iofields blk, int pt ) {
         case IO_CR_C0:
         case IO_CR_E0:
         case IO_CR_n0:
-            if (( pt == 0 ) && ( header.npart[0] != 0 ) && All.CrFlag == 1)
+            if (( pt == 0 ) && ( header.npart[0] != 0 ) && All.ReadCr == 1)
                 return 1;
             else
                 return 0;
@@ -103,10 +105,12 @@ int get_block_nbytes( enum iofields blk ) {
         case IO_CR_Q0:
         case IO_CR_E0:
         case IO_CR_n0:
-        case IO_CRE_C0:
-        case IO_CRE_Q0:
-        case IO_CRE_E0:
-        case IO_CRE_n0:
+        case IO_CRE_C:
+        case IO_CRE_ALPHA:
+        case IO_CRE_Q:
+        case IO_CRE_N:
+        case IO_CRE_E:
+        case IO_CRE_P:
             block_nbytes = sizeof( OutputFloat );
             break;
         case IO_ID:
@@ -140,10 +144,12 @@ void get_block_dims( int pt, enum iofields blk, hsize_t (*dims)[2] ) {
         case IO_CR_Q0:
         case IO_CR_E0:
         case IO_CR_n0:
-        case IO_CRE_C0:
-        case IO_CRE_Q0:
-        case IO_CRE_E0:
-        case IO_CRE_n0:
+        case IO_CRE_C:
+        case IO_CRE_ALPHA:
+        case IO_CRE_Q:
+        case IO_CRE_N:
+        case IO_CRE_E:
+        case IO_CRE_P:
             (*dims)[0] = header.npart[pt];
             (*dims)[1] = 1;
             break;
@@ -209,17 +215,23 @@ void get_dataset_name( enum iofields blk, char *buf ) {
         case IO_CR_n0:
             strcpy( buf, "CR_n0" );
             break;
-        case IO_CRE_C0:
-            strcpy( buf, "CRE_C0" );
+        case IO_CRE_C:
+            strcpy( buf, "CRE_C" );
             break;
-        case IO_CRE_Q0:
-            strcpy( buf, "CRE_q0" );
+        case IO_CRE_ALPHA:
+            strcpy( buf, "CRE_Alpha" );
             break;
-        case IO_CRE_E0:
-            strcpy( buf, "CRE_E0" );
+        case IO_CRE_Q:
+            strcpy( buf, "CRE_q" );
             break;
-        case IO_CRE_n0:
-            strcpy( buf, "CRE_n0" );
+        case IO_CRE_N:
+            strcpy( buf, "CRE_n" );
+            break;
+        case IO_CRE_E:
+            strcpy( buf, "CRE_e" );
+            break;
+        case IO_CRE_P:
+            strcpy( buf, "CRE_P" );
             break;
     }
 }
@@ -342,21 +354,29 @@ void empty_buffer( enum iofields blk, int offset, int pt ) {
             for ( i=0; i<n; i++ )
                 SphP[offset+i].CR_n0 = *fp++;
             break;
-        case IO_CRE_C0:
+        case IO_CRE_C:
             for ( i=0; i<n; i++ )
-                SphP[offset+i].CRE_C0 = *fp++;
+                SphP[offset+i].CRE_C = *fp++;
             break;
-        case IO_CRE_Q0:
+        case IO_CRE_ALPHA:
             for ( i=0; i<n; i++ )
-                SphP[offset+i].CRE_Q0 = *fp++;
+                SphP[offset+i].CRE_Alpha = *fp++;
             break;
-        case IO_CRE_E0:
+        case IO_CRE_Q:
             for ( i=0; i<n; i++ )
-                SphP[offset+i].CRE_E0 = *fp++;
+                SphP[offset+i].CRE_q = *fp++;
             break;
-        case IO_CRE_n0:
+        case IO_CRE_N:
             for ( i=0; i<n; i++ )
-                SphP[offset+i].CRE_n0 = *fp++;
+                SphP[offset+i].CRE_n = *fp++;
+            break;
+        case IO_CRE_E:
+            for ( i=0; i<n; i++ )
+                SphP[offset+i].CRE_e = *fp++;
+            break;
+        case IO_CRE_P:
+            for ( i=0; i<n; i++ )
+                SphP[offset+i].CRE_P = *fp++;
             break;
         default:
             break;
@@ -612,8 +632,8 @@ void write_header( char *fn, struct io_header header ) {
 
 void allocate_memory() {
     ms.max_mem = ms.mem = ms.nn = 0;
-    mymalloc1( P, NumPart * sizeof( struct particle_data ) );
-    mymalloc1( SphP, N_Gas * sizeof( struct sph_particle_data ) );
+    mymalloc1( P, NumPart * sizeof( struct Particle_Data ) );
+    mymalloc1( SphP, N_Gas * sizeof( struct Sph_Particle_Data ) );
 }
 
 void free_particle_memory() {

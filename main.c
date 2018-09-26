@@ -72,6 +72,8 @@ int main( int argc, char *argv[] ){
 
     /******************read***********************/
     read_parameters( argv[1] );
+    if ( All.Group )
+        check_group_flag();
     read_snapshot();
     /******************read***********************/
 

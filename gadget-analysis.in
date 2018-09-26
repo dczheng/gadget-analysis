@@ -1,19 +1,17 @@
 FilePrefix                snapshot
-StartSnapIndex                20
+StartSnapIndex                44
 NumFiles                      1
 PicSize                       128
 UnitLength_in_cm              3.085678e21
 UnitMass_in_g                 1.989e43
 UnitVelocity_in_cm_per_s      1e5
 OmegaBaryon                   0.04751
-MpcFlag                       0
-SofteningGas                  10
+SofteningGas                  5
 SofteningHalo                 10
-SofteningDisk                 1
-SofteningBulge                1
-SofteningStar                 1
+SofteningDisk                 0
+SofteningBulge                0
+SofteningStar                 5
 SofteningBndry                1
-Alpha                         3.1
 StartX                        0
 EndX                          0
 StartY                        0
@@ -29,22 +27,42 @@ TreePartType                  51
 LinkLength                    0.2
 FoF                           1
 FoFMinLen                     8
-FoFPrefix                    ./group/snapshot_fof
+FoFDir                        ./fof
 FoFRead                       1
-HgeFlag                       1
-CrFlag                        0
-BFlag                         1
-MachFlag                      1
+
 GasDensity                    1
 GasTemperature                1
 GasState                      1
-ReadTemperature               1
 ConvN                         3
 ConvSigma                     0
-ConvFlag                      0
-GroupIndex                    0
-GroupFlag                     1
-MFFlag                        1
-RadioFlag                     1
-SfrFlag                       1
-HgeNumDensFlag                1
+GroupIndexMin                 0
+GroupIndexMax                 10
+GroupMassMin                  1e14
+GroupDir                      ./group
+MF                            0
+MpcFlag                       0
+NuMin                         10
+NuMax                         1000
+NuNum                         100
+
+ReadSfr                       1
+ReadCr                        0
+ReadTemp                      1
+ReadHge                       1
+ReadB                         1
+ReadMach                      1
+
+Freq                          100
+
+Group                         1
+
+GroupHgen                     1
+GroupRad                      1
+GroupMach                     1
+GroupSfr                      0
+GroupTemp                     1
+GroupB                        1
+
+GroupSpec                     1
+GroupSpecIndex                1
+TotSpec                       0

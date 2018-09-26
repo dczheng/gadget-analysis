@@ -51,3 +51,5 @@ void free_conv_kernel();
 
 void check_flags();
 void task_sync_test();
+
+void check_group_flag();

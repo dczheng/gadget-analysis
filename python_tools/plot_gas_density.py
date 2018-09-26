@@ -4,16 +4,17 @@ mpl.use( 'agg' )
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.ticker as tik
+import matplotlib.colors as mplc
 import sys
 
-if ( len( sys.argv ) != 3 ):
-    print( "Please give data file and fig file!" )
+if ( len( sys.argv ) != 2 ):
+    print( "Please give data file!" )
     exit()
 
 
 data = np.loadtxt( sys.argv[1] )
 data_info = data[ 0, : ]
-data = np.flipud(data[ 1:, : ])
+data = data[ 1:,: ]
 z = data_info[0]
 XMin = data_info[1]
 XMax = data_info[2]
@@ -33,12 +34,14 @@ XList = []
 YList = []
 for i in np.linspace( XMin, XMax, NX ):
     XList.append( "%.f"%(i/1000) )
-for i in np.flip( np.linspace( YMin, YMax, NY ), 0 ):
+for i in np.linspace( YMin, YMax, NY ):
     YList.append( "%.f"%(i/1000) )
 
 fig = plt.figure()
 ax = fig.add_subplot( 111 )
-img = ax.imshow( data )
+
+norm = mplc.LogNorm()
+img = ax.imshow( data, norm=norm )
 
 ax.set_xlabel( "Mpc" )
 ax.set_ylabel( "" )
@@ -53,14 +56,12 @@ ax.xaxis.set_major_formatter( xfmt )
 ax.yaxis.set_major_locator( yloc )
 ax.yaxis.set_major_formatter( yfmt )
 
-'''
-ax.set_xticks( np.linspace( 0, n, NX ) )
-ax.set_xticklabels( XList )
-ax.set_yticks( np.linspace( 0, m, NY ) )
-ax.set_yticklabels( YList )
-'''
-cbar = fig.colorbar( img )
-cbar.set_label( r"$10^x gcm^{-2}$" )
+ax.invert_yaxis()
 
-plt.savefig( sys.argv[2] )
+cbar = fig.colorbar( img )
+cbar.set_label( r"$gcm^{-2}$" )
+
+fn_png = sys.argv[1][:-4] + '.png'
+print( 'save image to ' + fn_png )
+plt.savefig( fn_png )
 #plt.show()

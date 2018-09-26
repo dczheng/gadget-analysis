@@ -23,7 +23,6 @@
 #define MYPATHNAME_MAX   FILENAME_MAX
 
 #define SEP_LEN 80
-#define IO_NBLOCKS 100
 #define GENERATIONS 8
 
 #define SFR
@@ -100,6 +99,7 @@ struct io_header{
   char names[15][2];
 };
 
+#define IO_NBLOCKS 1000
 enum iofields {
     IO_ID,
     IO_POS,
@@ -116,19 +116,33 @@ enum iofields {
     IO_CR_Q0,
     IO_CR_E0,
     IO_CR_n0,
-    IO_CRE_C0,
-    IO_CRE_Q0,
-    IO_CRE_E0,
-    IO_CRE_n0,
+    IO_CRE_C,
+    IO_CRE_ALPHA,
+    IO_CRE_Q,
+    IO_CRE_N,
+    IO_CRE_E,
+    IO_CRE_P,
     IO_DIVB,
     IO_DBDT,
     IO_SFR,
     IO_TEMP
 };
 
+#define GROUP_FILED_NBLOCKS 1000
+enum group_fields {
+    GROUP_DENS,
+    GROUP_TEMP,
+    GROUP_SFR,
+    GROUP_MAG,
+    GROUP_MACH,
+    GROUP_HGEN,
+    GROUP_RAD,
+    GROUP_RADP
+};
 
 
-extern struct particle_data {
+
+extern struct Particle_Data {
     MyFloat Pos[3];
     MyFloat Mass;
     MyFloat Vel[3];
@@ -138,7 +152,7 @@ extern struct particle_data {
     int Type;
 } *P;
 
-extern struct sph_particle_data {
+extern struct Sph_Particle_Data {
     MyFloat u;
     MyFloat Density;
     MyFloat Hsml;
@@ -150,10 +164,12 @@ extern struct sph_particle_data {
     MyFloat CR_Q0;
     MyFloat CR_n0;
     MyFloat CR_E0;
-    MyFloat CRE_C0;
-    MyFloat CRE_Q0;
-    MyFloat CRE_E0;
-    MyFloat CRE_n0;
+    MyFloat CRE_C;
+    MyFloat CRE_Alpha;
+    MyFloat CRE_q;
+    MyFloat CRE_n;
+    MyFloat CRE_e;
+    MyFloat CRE_P;
     MyFloat B[3];
     MyFloat divB;
     MyFloat dBdt;
@@ -177,16 +193,22 @@ extern struct global_parameters_struct {
          GroupDir[ MYFILENAME_MAX ],
          *ToolsPath, Sproj;
 
-    int StartSnapIndex, ProjectDirection, KernelN, FoFRead,
-        HgeFlag, CrFlag, BFlag, GroupFlag, MpcFlag, MachFlag, FoF,
-        MFFlag, RadioFlag, SfrFlag, HgeNumDensFlag, NuNum, SpecFlag,
-        TempFlag, MagFlag, SpecIndexFlag, TotSpecFlag,
-        PicSize, PicSize2, NumFiles,
-        GasState, GasDensity, GasTemperature, KernelInterpolation,
-        ReadTemperature, FoFMinLen, proj_i, proj_j, proj_k,
-        TreePartType, ConvN, GroupIndexMin, GroupIndexMax;
+    int FoF, FoFRead,
+        ReadHge, ReadCr, ReadB, ReadMach, ReadSfr, ReadTemp,
+        MpcFlag,
+        Group, MF,
+        GroupDens, GroupTemp, GroupSfr, GroupB, GroupMach, GroupHgen,
+        GroupRad, GroupSpec, GroupSpecIndex, TotSpec,
+        GasState, GasDensity, GasTemperature,
+        KernelInterpolation,
+        ConvN,
 
-    double SofteningTable[6], Alpha ,
+        NuNum, FoFMinLen, proj_i, proj_j, proj_k,
+        TreePartType, GroupIndexMin, GroupIndexMax,
+        StartSnapIndex, ProjectDirection, KernelN,
+        PicSize, PicSize2, NumFiles;
+
+    double SofteningTable[6],
            UnitTime_in_s,
            UnitMass_in_g,
            UnitLength_in_cm,

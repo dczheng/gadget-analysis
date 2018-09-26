@@ -3,8 +3,8 @@
 void slice() {
     int pt;
     long offset, num, index, i;
-    struct particle_data p_tmp;
-    struct sph_particle_data sphp_tmp;
+    struct Particle_Data p_tmp;
+    struct Sph_Particle_Data sphp_tmp;
     writelog( "determine slice info ...\n" );
 
     if ( All.End[All.proj_i] - All.Start[All.proj_i] !=

@@ -12,12 +12,12 @@ void free_img() {
     myfree( image.props );
 }
 
-void write_img( char *fn, char *s, int mode ) {
+void write_img( char *fn, char *nstr, int mode ) {
     FILE *fd;
     fd = fopen( fn, "w" );
     double v;
     int i, j;
-    writelog( "write `%s` data ...\n", s );
+    writelog( "write `%s` data ...\n", nstr );
     img_min = DBL_MAX;
     img_max = -DBL_MAX;
 
