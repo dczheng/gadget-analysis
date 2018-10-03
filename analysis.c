@@ -68,10 +68,13 @@ int compare_gas_rho( const void *a, const void *b ){
 void sort_gas_rho(){
     int i;
     qsort( (void*)SphP, N_Gas, sizeof( struct Sph_Particle_Data ), &compare_gas_rho );
+
     for ( i=0; i<10; i++ ) {
         printf( "%g\n", SphP[i].Density * ( g2c.g / CUBE(g2c.cm) ) );
     }
+
     printf( "\n" );
+
     for ( i=0; i<10; i++ ) {
         printf( "%g\n", SphP[N_Gas-10+i].Density * ( g2c.g / CUBE(g2c.cm) ) );
     }
@@ -405,8 +408,13 @@ double particle_radio( double v, long i ) {
 
     vl = ELECTRON_CHARGE * B / ( 2 * PI * ELECTRON_MASS * LIGHT_SPEED );
 
+    if ( sqrt( v/vl-1 ) < SphP[i].CRE_qmin ||
+         sqrt( v/vl-1 ) > SphP[i].CRE_qmax )
+        return 0;
+
     P = C * 2.0 / 3.0 * LIGHT_SPEED * Ub * THOMSON_CROSS_SECTION *
         pow( v / vl-1, (1-SphP[i].CRE_Alpha) / 2 ) / vl;
+
     //printf( "%g\n", P );
     //
     P = P * ( 4.0/3.0 * PI * CUBE( All.SofteningTable[0] * g2c.cm ) );
@@ -544,8 +552,8 @@ void group_spectrum_index() {
         index, p;
     struct group_properties g;
     char buf[100],
-         *spec_index_str="Spectrum_index",
-         *spec_index_err_str="Spectrum_index_err";
+         *spec_index_str="SpectrumIndex",
+         *spec_index_err_str="SpectrumIndex_err";
 
     writelog( "group spectrum index... \n" );
     vN = All.NuNum;
@@ -853,35 +861,35 @@ void group_analysis() {
             num[ pic_index ] ++;
 
             if ( group_filed_present( GROUP_DENS ) )
-                data[GROUP_DENS][pic_index]       += SphP[p].Density;
+                data[GROUP_DENS][pic_index] += SphP[p].Density;
 
             if ( group_filed_present( GROUP_TEMP ) )
-                data[GROUP_TEMP][pic_index]       += SphP[p].Temp * SphP[p].Density;
+                data[GROUP_TEMP][pic_index] += SphP[p].Temp * SphP[p].Density;
 
             if ( group_filed_present( GROUP_SFR ) )
-                data[GROUP_SFR][pic_index]        += SphP[p].sfr * SphP[p].Density;
+                data[GROUP_SFR][pic_index] += SphP[p].sfr * SphP[p].Density;
 
             if ( group_filed_present( GROUP_MAG ) ) {
                 B = sqrt( SQR( SphP[p].B[0] ) +
                           SQR( SphP[p].B[1] ) +
                           SQR( SphP[p].B[2] ) );
                 B *= 1e6;  // convert G to muG
-                data[GROUP_MAG][pic_index]        += B * SphP[p].Density;
+                data[GROUP_MAG][pic_index] += B * SphP[p].Density;
             }
 
             if ( group_filed_present( GROUP_MACH ) )
-                data[GROUP_MACH][pic_index]       += SphP[p].MachNumber * SphP[p].Density;
+                data[GROUP_MACH][pic_index] += SphP[p].MachNumber * SphP[p].Density;
 
             if ( group_filed_present( GROUP_HGEN ) ) {
                 n = SphP[p].CRE_n *  SphP[p].Density / ( ( ELECTRON_MASS / ( g2c.g ) ) );
                 n /= CUBE( g2c.cm );
-                data[GROUP_HGEN][pic_index]      += n * SphP[p].Density;
+                data[GROUP_HGEN][pic_index] += n * SphP[p].Density;
             }
 
             if ( group_filed_present( GROUP_HGEN ) ) {
                 nu = All.Freq * 1e6;
                 PP = particle_radio( nu, p );
-                data[GROUP_RAD][pic_index]        += PP * SphP[p].Density;
+                data[GROUP_RAD][pic_index] += PP * SphP[p].Density;
             }
 
         }

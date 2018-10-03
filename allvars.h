@@ -118,7 +118,8 @@ enum iofields {
     IO_CR_n0,
     IO_CRE_C,
     IO_CRE_ALPHA,
-    IO_CRE_Q,
+    IO_CRE_QMIN,
+    IO_CRE_QMAX,
     IO_CRE_N,
     IO_CRE_E,
     IO_CRE_P,
@@ -166,7 +167,8 @@ extern struct Sph_Particle_Data {
     MyFloat CR_E0;
     MyFloat CRE_C;
     MyFloat CRE_Alpha;
-    MyFloat CRE_q;
+    MyFloat CRE_qmin;
+    MyFloat CRE_qmax;
     MyFloat CRE_n;
     MyFloat CRE_e;
     MyFloat CRE_P;

@@ -70,11 +70,12 @@ print( 'xLocFmt:', xFmtList )
 print( 'yLocList:', yLocList )
 print( 'yLocFmt:', yFmtList )
 
+xloc = tik.FixedLocator( xLocList )
+xfmt = tik.FixedFormatter( xFmtList )
+yloc = tik.FixedLocator( yLocList )
+yfmt = tik.FixedFormatter( yFmtList )
+
 def set_global_pic_params( ax ):
-    xloc = tik.FixedLocator( xLocList )
-    xfmt = tik.FixedFormatter( xFmtList )
-    yloc = tik.FixedLocator( yLocList )
-    yfmt = tik.FixedFormatter( yFmtList )
 
     ax.xaxis.set_major_locator( xloc )
     ax.xaxis.set_major_formatter( xfmt )
@@ -100,7 +101,6 @@ cbar.set_label( r'$\frac{\alpha_{calc}-\alpha_0}{\alpha_0}$' )
 set_global_pic_params( ax )
 ax.set_xlabel( r'$q_{0}$' )
 ax.set_ylabel( r'$\alpha_{0}$' )
-
 
 
 plt.savefig( './find_root_alpha_err.png' )

@@ -56,7 +56,8 @@ int blockpresent( enum iofields blk, int pt ) {
 
         case IO_CRE_C:
         case IO_CRE_ALPHA:
-        case IO_CRE_Q:
+        case IO_CRE_QMIN:
+        case IO_CRE_QMAX:
         case IO_CRE_N:
         case IO_CRE_E:
         case IO_CRE_P:
@@ -107,7 +108,8 @@ int get_block_nbytes( enum iofields blk ) {
         case IO_CR_n0:
         case IO_CRE_C:
         case IO_CRE_ALPHA:
-        case IO_CRE_Q:
+        case IO_CRE_QMIN:
+        case IO_CRE_QMAX:
         case IO_CRE_N:
         case IO_CRE_E:
         case IO_CRE_P:
@@ -146,7 +148,8 @@ void get_block_dims( int pt, enum iofields blk, hsize_t (*dims)[2] ) {
         case IO_CR_n0:
         case IO_CRE_C:
         case IO_CRE_ALPHA:
-        case IO_CRE_Q:
+        case IO_CRE_QMIN:
+        case IO_CRE_QMAX:
         case IO_CRE_N:
         case IO_CRE_E:
         case IO_CRE_P:
@@ -221,8 +224,11 @@ void get_dataset_name( enum iofields blk, char *buf ) {
         case IO_CRE_ALPHA:
             strcpy( buf, "CRE_Alpha" );
             break;
-        case IO_CRE_Q:
-            strcpy( buf, "CRE_q" );
+        case IO_CRE_QMIN:
+            strcpy( buf, "CRE_qmin" );
+            break;
+        case IO_CRE_QMAX:
+            strcpy( buf, "CRE_qmax" );
             break;
         case IO_CRE_N:
             strcpy( buf, "CRE_n" );
@@ -362,9 +368,13 @@ void empty_buffer( enum iofields blk, int offset, int pt ) {
             for ( i=0; i<n; i++ )
                 SphP[offset+i].CRE_Alpha = *fp++;
             break;
-        case IO_CRE_Q:
+        case IO_CRE_QMIN:
             for ( i=0; i<n; i++ )
-                SphP[offset+i].CRE_q = *fp++;
+                SphP[offset+i].CRE_qmin = *fp++;
+            break;
+        case IO_CRE_QMAX:
+            for ( i=0; i<n; i++ )
+                SphP[offset+i].CRE_qmax = *fp++;
             break;
         case IO_CRE_N:
             for ( i=0; i<n; i++ )
