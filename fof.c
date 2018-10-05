@@ -506,8 +506,17 @@ void fof_read() {
 void fof() {
     long i, npart;
     double masstot, mass;
+    char fn[ FILENAME_MAX ];
     timer_start();
+
     writelog( "Start FoF ...\n" );
+    sprintf( fn, "%s/%s_%.2f.hdf5", All.FoFDir, All.FilePrefix, All.RedShift );
+
+    if ( access( fn, 0 ) != -1 ) {
+        fof_read();
+        return;
+    }
+
     for ( i=0, npart=0, masstot=0; i<NumPart; i++ )
         if ( ( 1 << P[i].Type ) & All.TreePartType ) {
             npart ++;

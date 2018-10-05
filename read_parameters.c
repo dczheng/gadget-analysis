@@ -64,7 +64,6 @@ void read_parameters( char *fn ) {
         ADD_PARA( "StartSnapIndex",             &All.StartSnapIndex,             INT  );
         ADD_PARA( "ProjectDirection",           &All.ProjectDirection,           INT  );
         ADD_PARA( "KernelN",                    &All.KernelN,                    INT  );
-        ADD_PARA( "FoFRead",                    &All.FoFRead,                    INT  );
         ADD_PARA( "FoFMinLen",                  &All.FoFMinLen,                  INT  );
         ADD_PARA( "TreePartType",               &All.TreePartType,               INT  );
         ADD_PARA( "ConvN",                      &All.ConvN,                      INT  );
@@ -83,9 +82,8 @@ void read_parameters( char *fn ) {
         ADD_PARA( "GroupTemp",                  &All.GroupTemp,                  INT  );
         ADD_PARA( "GroupB",                     &All.GroupB,                     INT  );
         ADD_PARA( "GroupMach",                  &All.GroupMach,                  INT  );
-        ADD_PARA( "GroupHgen",                  &All.GroupHgen,                  INT  );
+        ADD_PARA( "GroupHge",                   &All.GroupHge,                   INT  );
         ADD_PARA( "GroupRad",                   &All.GroupRad,                   INT  );
-        ADD_PARA( "GroupSpecIndex",             &All.GroupSpecIndex,             INT  );
         ADD_PARA( "GroupSpec",                  &All.GroupSpec,                  INT  );
         ADD_PARA( "ReadMach",                   &All.ReadMach,                   INT  );
         ADD_PARA( "ReadTemp",                   &All.ReadTemp,                   INT  );

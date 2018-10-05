@@ -27,6 +27,9 @@ void set_units() {
     g2c.g        = All.UnitMass_in_g / header.HubbleParam;
     g2c.s        = All.UnitTime_in_s / header.HubbleParam;
     g2c.erg      = g2c.g * SQR(g2c.cm) / SQR( g2c.s );
+
+    aux_c.e_mec = ELECTRON_CHARGE / ( ELECTRON_MASS * LIGHT_SPEED );
+
     put_block_line;
 }
 

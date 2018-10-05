@@ -17,11 +17,12 @@ int Ngroups;
 char global_buffer[1024];
 
 struct global_parameters_struct All;
-struct Particle_Data *P;
-struct Sph_Particle_Data *SphP;
+ParticleData *P;
+SphParticleData *SphP;
 struct io_header header;
 struct image_struct image;
 struct gadget_2_cgs_unit g2c;
+struct aux_constants aux_c;
 struct malloc_struct ms;
 
 #ifdef ZDEBUG

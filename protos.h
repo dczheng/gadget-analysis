@@ -53,3 +53,5 @@ void check_flags();
 void task_sync_test();
 
 void check_group_flag();
+
+void test_radio();

@@ -60,7 +60,6 @@ int blockpresent( enum iofields blk, int pt ) {
         case IO_CRE_QMAX:
         case IO_CRE_N:
         case IO_CRE_E:
-        case IO_CRE_P:
             if (( pt == 0 ) && ( header.npart[0] != 0 ) && All.ReadHge == 1)
                 return 1;
             else
@@ -112,7 +111,6 @@ int get_block_nbytes( enum iofields blk ) {
         case IO_CRE_QMAX:
         case IO_CRE_N:
         case IO_CRE_E:
-        case IO_CRE_P:
             block_nbytes = sizeof( OutputFloat );
             break;
         case IO_ID:
@@ -152,7 +150,6 @@ void get_block_dims( int pt, enum iofields blk, hsize_t (*dims)[2] ) {
         case IO_CRE_QMAX:
         case IO_CRE_N:
         case IO_CRE_E:
-        case IO_CRE_P:
             (*dims)[0] = header.npart[pt];
             (*dims)[1] = 1;
             break;
@@ -235,9 +232,6 @@ void get_dataset_name( enum iofields blk, char *buf ) {
             break;
         case IO_CRE_E:
             strcpy( buf, "CRE_e" );
-            break;
-        case IO_CRE_P:
-            strcpy( buf, "CRE_P" );
             break;
     }
 }
@@ -383,10 +377,6 @@ void empty_buffer( enum iofields blk, int offset, int pt ) {
         case IO_CRE_E:
             for ( i=0; i<n; i++ )
                 SphP[offset+i].CRE_e = *fp++;
-            break;
-        case IO_CRE_P:
-            for ( i=0; i<n; i++ )
-                SphP[offset+i].CRE_P = *fp++;
             break;
         default:
             break;

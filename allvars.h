@@ -8,6 +8,7 @@
 #include "dirent.h"
 #include "gsl/gsl_integration.h"
 #include "gsl/gsl_sf_gamma.h"
+#include "gsl/gsl_sf_bessel.h"
 #include "gsl/gsl_fit.h"
 #include "mpi.h"
 #include "signal.h"
@@ -47,7 +48,7 @@
 #define GAMMA                    ( 5.0 / 3.0 )
 #define GAMMA_MINUS1             ( GAMMA - 1 )
 
-#define GSL_INTE_WS_LEN 1000
+#define GSL_INTE_WS_LEN 10000
 #define GSL_INTE_ERR_ABS 0.0
 #define GSL_INTE_ERR_REL 1e-3
 #define GSL_INTE_KEY GSL_INTEG_GAUSS61
@@ -122,7 +123,6 @@ enum iofields {
     IO_CRE_QMAX,
     IO_CRE_N,
     IO_CRE_E,
-    IO_CRE_P,
     IO_DIVB,
     IO_DBDT,
     IO_SFR,
@@ -137,13 +137,17 @@ enum group_fields {
     GROUP_MAG,
     GROUP_MACH,
     GROUP_HGEN,
+    GROUP_HGEE,
+    GROUP_HGEALPHA,
+    GROUP_HGEQMIN,
+    GROUP_HGEQMAX,
     GROUP_RAD,
     GROUP_RADP
 };
 
 
 
-extern struct Particle_Data {
+typedef struct Particle_Data {
     MyFloat Pos[3];
     MyFloat Mass;
     MyFloat Vel[3];
@@ -151,9 +155,10 @@ extern struct Particle_Data {
     MyFloat Acc[3];
     MyIDType ID;
     int Type;
-} *P;
+} ParticleData;
+extern ParticleData  *P;
 
-extern struct Sph_Particle_Data {
+typedef struct Sph_Particle_Data {
     MyFloat u;
     MyFloat Density;
     MyFloat Hsml;
@@ -171,7 +176,7 @@ extern struct Sph_Particle_Data {
     MyFloat CRE_qmax;
     MyFloat CRE_n;
     MyFloat CRE_e;
-    MyFloat CRE_P;
+    MyFloat *P;
     MyFloat B[3];
     MyFloat divB;
     MyFloat dBdt;
@@ -180,7 +185,8 @@ extern struct Sph_Particle_Data {
     MyFloat BH_Mass;
     MyFloat Star_Mass;
     MyFloat sfr;
-} *SphP;
+} SphParticleData;
+extern SphParticleData *SphP;
 
 extern char sep_str[ SEP_LEN ];
 extern int ThisTask, NTask;
@@ -195,12 +201,12 @@ extern struct global_parameters_struct {
          GroupDir[ MYFILENAME_MAX ],
          *ToolsPath, Sproj;
 
-    int FoF, FoFRead,
+    int FoF,
         ReadHge, ReadCr, ReadB, ReadMach, ReadSfr, ReadTemp,
         MpcFlag,
         Group, MF,
-        GroupDens, GroupTemp, GroupSfr, GroupB, GroupMach, GroupHgen,
-        GroupRad, GroupSpec, GroupSpecIndex, TotSpec,
+        GroupDens, GroupTemp, GroupSfr, GroupB, GroupMach, GroupHge,
+        GroupRad, GroupSpec, TotSpec,
         GasState, GasDensity, GasTemperature,
         KernelInterpolation,
         ConvN,
@@ -296,6 +302,10 @@ extern int Ngroups;
 extern struct gadget_2_cgs_unit{
     double cm, g, s, erg;
 }g2c;
+
+extern struct aux_constants{
+    double e_mec;
+} aux_c;
 
 #define MALLOC_VAR_NUM 1000
 #define MALLOC_VAR_LEN 200
