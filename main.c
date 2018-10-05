@@ -71,7 +71,7 @@ int main( int argc, char *argv[] ){
     put_block_line;
 
     /******************read***********************/
-    //test_radio();
+    test_radio();
     read_parameters( argv[1] );
     if ( All.Group )
         check_group_flag();

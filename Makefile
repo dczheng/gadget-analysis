@@ -4,7 +4,8 @@ EXEC    =  ./gadget-analysis
 OBJS    =  main.o read_snapshot.o allvars.o analysis.o debug.o read_parameters.o\
 		   set_units.o slice.o kernel.o img.o\
 		   auxiliary_functions.o tree.o cosmology.o ngb.o fof.o system.o\
-		   conv.o
+		   conv.o gas_state.o gas_temp.o total_radio_spectrum.o\
+		   mf.o part_radio.o gas_density.o group_analysis.o
 OPT     =  -Wall # -O3
 
 DEBUG ?=

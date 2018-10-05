@@ -55,3 +55,13 @@ void task_sync_test();
 void check_group_flag();
 
 void test_radio();
+void gas_state();
+void gas_temperature();
+void gas_density();
+void mass_function();
+void total_radio_spectrum();
+void compute_temperature();
+void init_tab_radio_F();
+void free_tab_radio_F();
+double particle_radio( double nu, long i );
+
