@@ -48,9 +48,9 @@
 #define GAMMA                    ( 5.0 / 3.0 )
 #define GAMMA_MINUS1             ( GAMMA - 1 )
 
-#define GSL_INTE_WS_LEN 10000
-#define GSL_INTE_ERR_ABS 0.0
-#define GSL_INTE_ERR_REL 1e-3
+#define GSL_INTE_WS_LEN 1000
+#define GSL_INTE_ERR_ABS ((double)(0.0))
+#define GSL_INTE_ERR_REL ((double)(1e-3))
 #define GSL_INTE_KEY GSL_INTEG_GAUSS61
 extern gsl_integration_workspace *inte_ws;
 

@@ -13,7 +13,7 @@ void init_analysis() {
     init_conv_kernel();
     init_img();
     if ( All.TotSpec || All.GroupSpec )
-        init_tab_radio_F();
+        init_tab_F();
     writelog( "initialize analysis... done.\n" );
     put_block_line;
 }
@@ -25,15 +25,16 @@ void free_analysis() {
     free_conv_kernel();
     free_img();
     if ( All.TotSpec || All.GroupSpec )
-        free_tab_radio_F();
+        free_tab_F();
     writelog( "free analysis ... done.\n" );
     put_block_line;
 }
 
 
 void analysis(){
-    init_analysis();
 
+    init_analysis();
+    //printf( "%g\n", All.RedShift );
     if ( (All.GasTemperature ||
           All.GasState ||
           All.Group )

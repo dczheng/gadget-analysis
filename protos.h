@@ -61,7 +61,9 @@ void gas_density();
 void mass_function();
 void total_radio_spectrum();
 void compute_temperature();
-void init_tab_radio_F();
-void free_tab_radio_F();
+void init_tab_F();
+void free_tab_F();
 double particle_radio( double nu, long i );
 
+double qtrap( double (*func)( double, void* ),
+        void *params, double a, double b, double err );

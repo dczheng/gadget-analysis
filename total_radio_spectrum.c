@@ -12,10 +12,10 @@ void total_radio_spectrum() {
     writelog( "total radio spectrum ...\n" );
 
     Nnu = All.NuNum;
-    signal = Nnu / 10;
+    signal = N_Gas / 100;
     numin = All.NuMin;
     numax = All.NuMax;
-    dnu = log( numax/numin) / Nnu;
+    dnu = log( numax/numin) / (Nnu-1);
 
     mymalloc1( nu, sizeof( double ) * Nnu );
     mymalloc2( flux, sizeof( double ) * Nnu );
@@ -25,16 +25,20 @@ void total_radio_spectrum() {
     }
 
     if ( All.RedShift > 1e-10 )
-        for ( i=0; i<Nnu; i++ ) {
-            if ( ( i % signal == 0 ) || ( i == Nnu - 1 ) )
-                writelog( "total spectrum [%i]: %g MHz ...\n", i, nu[i] );
-
             for ( index=0; index<N_Gas; index++ ) {
-                flux[i] += particle_radio( nu[i]*1e6 / All.Time, index );
-            }
+                    if  ( index % signal == 0 )
+                        writelog( "total spectrum [%8li] [%8li] [%5.1f%%]\n",
+                               index, N_Gas, ( (double)index )/N_Gas * 100 );
+
+                    for ( i=0; i<Nnu; i++ ) {
+                        tmp = particle_radio( nu[i]*1e6 / All.Time, index );
+                        if ( tmp < 0 )
+                            endrun( 20181006 );
+                        flux[i] += tmp;
+                    }
         }
 
-    tmp = 1.0 / ( All.Time * ( 4.0 * PI * SQR( All.ComDis * g2c.cm ) ) * ( SQR( All.BoxSize / All.ComDis ) ) );
+    tmp = 1.0 / ( SQR(All.Time) * ( 4.0 * PI * SQR( All.ComDis * g2c.cm ) ) * ( SQR( All.BoxSize / All.ComDis ) ) );
 
     for ( i=0; i<Nnu; i++ )
         flux[i] *= tmp;

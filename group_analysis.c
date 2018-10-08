@@ -50,7 +50,7 @@ void group_particle_spectrum() {
         writelog( "group: %i ...\n", index );
         for ( l=0; l<len; l++, p = FoFNext[p]) {
             if ( l % signal == 0 )
-                printf( "[%8i] [%8i] [%3.1f%%]\n", l, len, ((double)(l))/len * 100);
+                writelog( "[%8i] [%8i] [%5.1f%%]\n", l, len, ((double)(l))/len * 100);
             if ( P[p].Type != 0 )
                 continue;
 
@@ -557,6 +557,7 @@ void group_analysis() {
                           SQR( SphP[p].B[1] ) +
                           SQR( SphP[p].B[2] ) );
                 B *= 1e6;  // convert G to muG
+               // printf( "%g\n", B );
                 data[GROUP_MAG][pic_index] += B * SphP[p].Density;
             }
 
@@ -619,7 +620,9 @@ void group_analysis() {
             if ( num[i] == 0 )
                 continue;
             data[GROUP_DENS][i] /= num[i];
-            data[GROUP_DENS][i]  *= (( g2c.g ) / CUBE( g2c.cm ) / CUBE( All.Time ));
+            data[GROUP_DENS][i] /= CUBE( All.Time );
+            data[GROUP_DENS][i] /= All.RhoBaryon;
+            //data[GROUP_DENS][i]  *= (( g2c.g ) / CUBE( g2c.cm ) / CUBE( All.Time ));
 
         }
 

@@ -2,6 +2,7 @@
 
 #define writelog1( a, b  ) writelog( "%-35s: %g\n", a, b )
 void set_units() {
+
     writelog( "Set Units...\n" );
     All.UnitTime_in_s = All.UnitLength_in_cm / All.UnitVelocity_in_cm_per_s;
     All.UnitDensity_in_cgs = All.UnitMass_in_g / pow( All.UnitLength_in_cm, 3 );
@@ -23,9 +24,10 @@ void set_units() {
     if ( All.MpcFlag != 1 ) {
         All.MpcFlag = 1000;
     }
-    g2c.cm       = All.UnitLength_in_cm / header.HubbleParam;
-    g2c.g        = All.UnitMass_in_g / header.HubbleParam;
-    g2c.s        = All.UnitTime_in_s / header.HubbleParam;
+
+    g2c.cm       = All.UnitLength_in_cm / All.HubbleParam;
+    g2c.g        = All.UnitMass_in_g / All.HubbleParam;
+    g2c.s        = All.UnitTime_in_s / All.HubbleParam;
     g2c.erg      = g2c.g * SQR(g2c.cm) / SQR( g2c.s );
 
     aux_c.e_mec = ELECTRON_CHARGE / ( ELECTRON_MASS * LIGHT_SPEED );

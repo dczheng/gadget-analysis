@@ -14,7 +14,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument( '-f',   type=str,    help='file name', required=True )
 parser.add_argument( '-log', help='log plot', action="store_true" )
 parser.add_argument( '-m',   help='mass', action="store_true" )
-parser.add_argument( '-ps',  help='save ps picture', action="store_true" )
+parser.add_argument( '-eps',  help='save eps picture', action="store_true" )
 parser.add_argument( '-cu',  type=float,  help='upper cutoff' )
 parser.add_argument( '-cd',  type=float,  help='lower cutoff' )
 parser.add_argument( '-cl',  type=str,    help='colorbar label' )
@@ -103,20 +103,20 @@ ax = fig.add_subplot( 111 )
 if args.log:
     if args.cu != None:
         cu = np.power( 10, args.cu )
-        data[data>cu] = 0
+        data[data>=cu] = 0
 
     if args.cd != None:
         cd = np.power( 10, args.cd )
-        data[data<cd] = 0
+        data[data<=cd] = 0
 
     norm = mplc.LogNorm()
     img = ax.imshow( data, norm=norm, cmap=cm.jet )
 else:
     if args.cu != None:
-        data[data<args.cu] = np.nan
+        data[data>=args.cu] = np.nan
 
     if args.cd != None:
-        data[data>args.cd] = np.nan
+        data[data<=args.cd] = np.nan
 
     img = ax.imshow( data, cmap=cm.jet )
 
@@ -132,7 +132,9 @@ ax.invert_yaxis()
 ax.grid()
 
 if args.cl:
-    clabel = args.cl +  r'$\ (%s)$'%(ProDire)
+    clabel = '$%s\ (%s)$'%( args.cl, ProDire )
+    #print( clabel )
+    #exit()
 else:
     clabel = r'$%s$'%(ProDire)
 
@@ -158,8 +160,8 @@ if args.m:
 
 fn_out = fn[:-4] + '.png'
 
-if args.ps:
-    fn_out = fn[:-4] + '.ps'
+if args.eps:
+    fn_out = fn[:-4] + '.eps'
 
 print( "save image to " +  fn_out )
 plt.savefig( fn_out )
