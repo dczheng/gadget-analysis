@@ -6,7 +6,7 @@ OBJS    =  main.o read_snapshot.o allvars.o analysis.o debug.o read_parameters.o
 		   auxiliary_functions.o tree.o cosmology.o ngb.o fof.o system.o\
 		   conv.o gas_state.o gas_temp.o total_radio_spectrum.o\
 		   mf.o part_radio.o gas_density.o group_analysis.o\
-		   mymath.o
+		   mymath.o radio.o
 OPT     =  -Wall # -O3
 
 DEBUG ?=

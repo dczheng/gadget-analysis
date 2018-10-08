@@ -48,6 +48,10 @@
 #define GAMMA                    ( 5.0 / 3.0 )
 #define GAMMA_MINUS1             ( GAMMA - 1 )
 
+#define BCMB0                    (3.24e-6) // gauss
+
+#define DISABLE_RADIO_F_TAB
+
 #define GSL_INTE_WS_LEN 1000
 #define GSL_INTE_ERR_ABS ((double)(0.0))
 #define GSL_INTE_ERR_REL ((double)(1e-3))
@@ -209,9 +213,9 @@ extern struct global_parameters_struct {
         GroupRad, GroupSpec, TotSpec,
         GasState, GasDensity, GasTemperature,
         KernelInterpolation,
-        ConvN,
+        ConvN, GroupEleSpec,
 
-        NuNum, FoFMinLen, proj_i, proj_j, proj_k,
+        QNum, NuNum, FoFMinLen, proj_i, proj_j, proj_k,
         TreePartType, GroupIndexMin, GroupIndexMax,
         StartSnapIndex, ProjectDirection, KernelN,
         PicSize, PicSize2, NumFiles;
@@ -232,7 +236,8 @@ extern struct global_parameters_struct {
            ComDis, AngDis, LumDis,
            RedShift, HubbleParam, RhoCrit, G,
            Hubble, Omega0, OmegaLambda, OmegaBaryon,
-           *ConvKernel, ConvSigma, NuMin, NuMax, GroupMassMin, Freq;
+           *ConvKernel, ConvSigma, NuMin, NuMax, GroupMassMin, Freq,
+           QMin, QMax;
 
     long SliceStart[6], SliceEnd[6];
 }All;

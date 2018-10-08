@@ -5,6 +5,8 @@
             All.GroupDir, nstr, All.FilePrefix, nstr, ThisTask,\
             All.RedShift, group_index, All.Sproj );
 
+#define PARTICLE_F( P, p )  ( ( (p<(P).CRE_qmin) || (p>(P).CRE_qmax) ) ? 0 : ( pow( p, -(P).CRE_Alpha ) ) )
+
 int group_present( long index ) {
 
     if ( ( index >= All.GroupIndexMin ) &&
@@ -128,11 +130,70 @@ void group_flux( int nu_index, long index, double *flux, double *flux_nosr ) {
 
 }
 
+void group_electron_spectrum() {
+
+    long p;
+    int i, qn, index;
+    double dlogq, qmin, qmax, *f, q;
+    char buf[100];
+    FILE *fd;
+
+    qn = All.QNum;
+    qmin = All.QMin;
+    qmax = All.QMax;
+
+    dlogq = log( qmax/qmin ) / ( qn-1 );
+
+    sprintf( buf, "%s/ElectronSpectrum", All.GroupDir );
+    create_dir( buf );
+
+    sprintf( buf, "%s/ElectronSpectrum/%s_%03i_elespec_%.2f.dat",
+            All.GroupDir, All.FilePrefix, ThisTask, All.RedShift );
+
+    fd = fopen( buf, "w" );
+
+    fprintf( fd, "0  0  " );
+    for ( i=0; i<qn; i++ ) {
+        q = exp(log(qmin) + i * dlogq);
+        fprintf( fd, "%g  ", q );
+    }
+    fprintf( fd, "\n" );
+
+    mymalloc2( f, sizeof(double) * qn );
+
+    for ( index=0; index<Ngroups; index++ ) {
+
+        if ( !group_present( index ) )
+            break;
+
+        p = Gprops[index].Head;
+        while( p >= 0 ) {
+            if ( P[p].Type == 0 ) {
+                for( i=0; i<qn; i++ ) {
+                    q = log( qmin ) + i * dlogq;
+                    q = exp(q);
+                    f[i] += PARTICLE_F( SphP[p], q );
+                }
+            }
+            p = FoFNext[p];
+        }
+
+        fprintf( fd, "%i  %g  ", index, Gprops[index].mass * 1e10 );
+        for ( i=0; i<qn; i++ ) {
+            fprintf( fd, "%g  ", f[i] );
+        }
+        fprintf( fd, "\n" );
+
+    }
+
+    myfree( f );
+
+}
+
 void group_spectrum() {
 
-    long index;
-    int vN, i;
-    double *v, *flux, vmin, vmax, dv, *flux_nosr;
+    int vN, i, index;
+    double v, *flux, vmin, vmax, dv, *flux_nosr;
     char buf[100];
     FILE *fd1, *fd2;
 
@@ -149,12 +210,12 @@ void group_spectrum() {
 
     sprintf( buf, "%s/Spectrum/%s_%03i_spec_%.2f.dat",
             All.GroupDir, All.FilePrefix, ThisTask, All.RedShift );
+
     fd1 = fopen( buf, "w" );
 
     sprintf( buf, "%s/Spectrum/%s_%03i_spec_%.2f_nosr.dat",
             All.GroupDir, All.FilePrefix, ThisTask, All.RedShift );
 
-    mymalloc1( v, sizeof(double) * vN );
     mymalloc1( flux, sizeof(double) * vN );
     mymalloc1( flux_nosr, sizeof(double) * vN );
 
@@ -164,9 +225,9 @@ void group_spectrum() {
     fprintf( fd2, "0  0  " );
 
     for ( i=0; i<vN; i++ ) {
-        v[i] = exp(log(vmin) + i * dv);
-        fprintf( fd1, "%g  ", v[i] );
-        fprintf( fd2, "%g  ", v[i] );
+        v = exp(log(vmin) + i * dv);
+        fprintf( fd1, "%g  ", v );
+        fprintf( fd2, "%g  ", v );
     }
     fprintf( fd1, "\n" );
     fprintf( fd2, "\n" );
@@ -179,8 +240,8 @@ void group_spectrum() {
         for ( i=0; i<vN; i++ )
             group_flux( i, index, flux+i, flux_nosr+i );
 
-        fprintf( fd1, "%li  %g  ", index, Gprops[index].mass * 1e10 );
-        fprintf( fd2, "%li  %g  ", index, Gprops[index].mass * 1e10 );
+        fprintf( fd1, "%i  %g  ", index, Gprops[index].mass * 1e10 );
+        fprintf( fd2, "%i  %g  ", index, Gprops[index].mass * 1e10 );
 
         for ( i=0; i<vN; i++ ) {
             fprintf( fd1, "%g  ", flux[i] );
@@ -195,12 +256,10 @@ void group_spectrum() {
     fclose( fd1 );
     fclose( fd2 );
 
-    myfree( v );
     myfree( flux );
     myfree( flux_nosr );
 
     writelog( "group spectrum ... done.\n" );
-    put_block_line;
 
 }
 
@@ -688,13 +747,17 @@ void group_analysis() {
 
     put_block_line;
 
+    if ( All.GroupEleSpec )
+        group_electron_spectrum();
+
+    put_block_line;
+
     if ( All.GroupSpec ) {
         group_particle_spectrum();
         group_spectrum();
         group_spectrum_index();
         free_group_particle_spectrum();
     }
-
 
     put_block_line;
 

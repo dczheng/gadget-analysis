@@ -55,8 +55,6 @@ void read_parameters( char *fn ) {
         ADD_PARA( "LinkLength",                 &All.LinkLength,                 REAL );
         ADD_PARA( "OmegaBaryon",                &All.OmegaBaryon,                REAL );
         ADD_PARA( "ConvSigma",                  &All.ConvSigma,                  REAL );
-        ADD_PARA( "NuMin",                      &All.NuMin,                      REAL );
-        ADD_PARA( "NuMax",                      &All.NuMax,                      REAL );
         ADD_PARA( "GroupMassMin",               &All.GroupMassMin,               REAL );
 
         ADD_PARA( "NumFiles",                   &All.NumFiles,                   INT );
@@ -68,7 +66,6 @@ void read_parameters( char *fn ) {
         ADD_PARA( "TreePartType",               &All.TreePartType,               INT  );
         ADD_PARA( "ConvN",                      &All.ConvN,                      INT  );
         ADD_PARA( "FoF",                        &All.FoF,                        INT  );
-        ADD_PARA( "NuNum",                      &All.NuNum,                      INT  );
         ADD_PARA( "GroupIndexMin",              &All.GroupIndexMin,              INT  );
         ADD_PARA( "GroupIndexMax",              &All.GroupIndexMax,              INT  );
 
@@ -84,7 +81,6 @@ void read_parameters( char *fn ) {
         ADD_PARA( "GroupMach",                  &All.GroupMach,                  INT  );
         ADD_PARA( "GroupHge",                   &All.GroupHge,                   INT  );
         ADD_PARA( "GroupRad",                   &All.GroupRad,                   INT  );
-        ADD_PARA( "GroupSpec",                  &All.GroupSpec,                  INT  );
         ADD_PARA( "ReadMach",                   &All.ReadMach,                   INT  );
         ADD_PARA( "ReadTemp",                   &All.ReadTemp,                   INT  );
         ADD_PARA( "ReadHge",                    &All.ReadHge,                    INT  );
@@ -93,6 +89,16 @@ void read_parameters( char *fn ) {
         ADD_PARA( "TotSpec",                    &All.TotSpec,                    INT  );
         ADD_PARA( "MF",                         &All.MF,                         INT  );
         ADD_PARA( "ReadSfr",                    &All.ReadSfr,                    INT  );
+
+        ADD_PARA( "GroupSpec",                  &All.GroupSpec,                  INT  );
+        ADD_PARA( "NuMin",                      &All.NuMin,                      REAL );
+        ADD_PARA( "NuMax",                      &All.NuMax,                      REAL );
+        ADD_PARA( "NuNum",                      &All.NuNum,                      INT  );
+
+        ADD_PARA( "GroupEleSpec",               &All.GroupEleSpec,               INT  );
+        ADD_PARA( "QMin",                       &All.QMin,                       REAL );
+        ADD_PARA( "QMax",                       &All.QMax,                       REAL );
+        ADD_PARA( "QNum",                       &All.QNum,                       INT  );
 
         while( !feof( fd ) ) {
             *buf = 0;
