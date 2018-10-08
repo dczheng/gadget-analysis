@@ -41,6 +41,7 @@ mgas = data_info[ 15+0 ]
 mdm = data_info[ 15+1 ]
 ms = data_info[ 15+4 ]
 mbh = data_info[ 15+5 ]
+mtot = mgas + mdm + ms + mbh
 
 if ( proj == 0 ):
     ProDire = 'x'
@@ -141,22 +142,39 @@ else:
 cbar = fig.colorbar( img )
 cbar.set_label( clabel )
 
+def put_text( ax, x, y, s, v ):
+    fmt = r'$%s: %s \times 10^{%s}$'
+    t = "%.2e"%v
+    t = t.split( 'e' )
+    if t[1][0] == '+':
+        t[1] = t[1][1:]
+    ax.text( x, y, fmt%(s, t[0], t[1]) )
+
 if args.m:
 
-    pt1y = 0.1
-    pt2y = pt1y + pt1y * 0.5
-    pt3y = pt1y + pt1y * 1
-    pt4y = pt1y + pt1y * 1.5
+    p0x = 0.01
+    p0y = 0.9
+    offset = 0.05
 
-    pt1x = pt1y
-    pt2x = pt1x
-    pt3x = pt1x
-    pt4x = pt1x
+    px = p0x
+    py = p0y
 
-    ax.text( m * pt1x, n * pt1y, r"$ M_{gas}: %.2e$"%( mgas) )
-    ax.text( m * pt2x, n * pt2y, r"$ M_{dm} : %.2e$"%( mdm ) )
-    ax.text( m * pt3x, n * pt3y, r"$ M_{s}  : %.2e$"%( ms  ) )
-    ax.text( m * pt4x, n * pt4y, r"$ M_{bh} : %.2e$"%( mbh ) )
+    put_text( ax, px*n, py*m, 'Total', mtot )
+    py = py - offset
+
+    put_text( ax, px*n, py*m, 'Dark', mdm )
+    py = py - offset
+
+    put_text( ax, px*n, py*m, 'Gas', mgas )
+    py = py - offset
+
+    put_text( ax, px*n, py*m, 'Star', ms )
+    py = py - offset
+
+    put_text( ax, px*n, py*m, 'BH', mbh )
+
+
+
 
 fn_out = fn[:-4] + '.png'
 

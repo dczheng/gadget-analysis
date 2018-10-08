@@ -5,8 +5,6 @@
             All.GroupDir, nstr, All.FilePrefix, nstr, ThisTask,\
             All.RedShift, group_index, All.Sproj );
 
-#define PARTICLE_F( P, p )  ( ( (p<(P).CRE_qmin) || (p>(P).CRE_qmax) ) ? 0 : ( pow( p, -(P).CRE_Alpha ) ) )
-
 int group_present( long index ) {
 
     if ( ( index >= All.GroupIndexMin ) &&
@@ -130,6 +128,20 @@ void group_flux( int nu_index, long index, double *flux, double *flux_nosr ) {
 
 }
 
+double particle_f( SphParticleData *part, double p ) {
+
+    double r;
+
+    if ( p < part->CRE_qmin || p > part->CRE_qmax )
+        return 0;
+
+    r = part->CRE_C * part->Density / ( ELECTRON_MASS/g2c.g ) * pow( p, -part->CRE_Alpha );
+    r /= CUBE( g2c.cm );
+
+    return r;
+
+}
+
 void group_electron_spectrum() {
 
     long p;
@@ -172,7 +184,7 @@ void group_electron_spectrum() {
                 for( i=0; i<qn; i++ ) {
                     q = log( qmin ) + i * dlogq;
                     q = exp(q);
-                    f[i] += PARTICLE_F( SphP[p], q );
+                    f[i] += particle_f( &SphP[p], q );
                 }
             }
             p = FoFNext[p];
