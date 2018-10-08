@@ -50,7 +50,7 @@
 
 #define BCMB0                    (3.24e-6) // gauss
 
-#define DISABLE_RADIO_F_TAB
+//#define RADIO_F_INTERP
 
 #define GSL_INTE_WS_LEN 1000
 #define GSL_INTE_ERR_ABS ((double)(0.0))

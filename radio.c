@@ -24,10 +24,8 @@ void F( double x, double *r, double *err ) {
             inte_ws, r, err );
     /*
     *err = 1e-1;
-
     x = 1e-5;
     printf( "x: %g\n", x );
-
     *r = qtrap( &F_integrand, NULL, x, F_INTE_UPPER_LIMIT, *err );
     */
 
@@ -40,10 +38,9 @@ void init_tab_F() {
     writelog( "initialize tab_F ...\n" );
 
     dlogx = log(F_X_MAX/F_X_MIN) / ( TAB_F_N - 1 );
-
     mymalloc1( tab_F_V, sizeof( double ) * ( TAB_F_N+1 ) );
-
     err_max = -1;
+
     for ( i=0; i<=TAB_F_N; i++ ) {
         if ( i % NTask != ThisTask )
             continue;
@@ -68,7 +65,7 @@ void init_tab_F() {
 
     MPI_Barrier( MPI_COMM_WORLD );
 
-    writelog( "initialize tab_F_V ... done.\n" );
+    writelog( "initialize tab_F ... done.\n" );
 
 }
 
@@ -110,7 +107,7 @@ double radio_inte( double p, void *params ) {
 
     double r, x, nu_c;
 
-#ifdef DISABLE_RADIO_F_TAB
+#ifndef RADIO_F_INTERP
         double err;
 #endif
 
@@ -119,17 +116,15 @@ double radio_inte( double p, void *params ) {
     ri = params;
 
     nu_c = 0.1875 * ( 1+p*p ) * ri->B * aux_c.e_mec ;  // 0.1875: 3/16
-
     x = ri->nu / nu_c;
 
-#ifdef DISABLE_RADIO_F_TAB
-    F( x, &r, &err );
-#else
+#ifdef RADIO_F_INTERP
     r = tab_F( x );
+#else
+    F( x, &r, &err );
 #endif
 
     r *= x;
-
     r *= (*(ri->f))( p, ri->params );
 
     return r;

@@ -132,7 +132,7 @@ void test_radio() {
     set_units();
     put_block_line;
 
-#ifndef DISABLE_TAB_F
+#ifdef RADIO_F_INTERP
     init_tab_F();
 #endif
 
@@ -144,7 +144,7 @@ void test_radio() {
     }
 
     MPI_Barrier( MPI_COMM_WORLD );
-#ifndef DISABLE_TAB_F
+#ifdef RADIO_F_INTERP
     free_tab_F();
 #endif
     endrun(20181004);

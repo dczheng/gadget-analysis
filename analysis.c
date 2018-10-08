@@ -13,7 +13,7 @@ void init_analysis() {
     init_conv_kernel();
     init_img();
 
-#ifndef DISABLE_RADIO_F_TAB
+#ifdef RADIO_F_INTERP
     if ( All.TotSpec || All.GroupSpec )
         init_tab_F();
 #endif
@@ -29,7 +29,7 @@ void free_analysis() {
     free_conv_kernel();
     free_img();
 
-#ifndef DISABLE_RADIO_F_TAB
+#ifdef RADIO_F_INTERP
     if ( All.TotSpec || All.GroupSpec )
         free_tab_F();
 #endif
