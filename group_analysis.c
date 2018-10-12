@@ -146,7 +146,7 @@ void group_electron_spectrum() {
 
     long p;
     int i, qn, index;
-    double dlogq, qmin, qmax, *f, q;
+    double dlogq, qmin, qmax, *f, q, rho, qmax_max;
     char buf[100];
     FILE *fd;
 
@@ -179,20 +179,34 @@ void group_electron_spectrum() {
             break;
 
         p = Gprops[index].Head;
+        rho = 0;
+        qmax_max = 0;
         while( p >= 0 ) {
             if ( P[p].Type == 0 ) {
                 for( i=0; i<qn; i++ ) {
                     q = log( qmin ) + i * dlogq;
                     q = exp(q);
-                    f[i] += particle_f( &SphP[p], q );
+                    f[i] += particle_f( &SphP[p], q ) * SphP[p].Density;
+                    rho += SphP[p].Density;
                 }
+                /*
+                if ( SphP[p].CRE_qmax > 1e4 )
+                    printf( "[%i] %g, %g, %g\n",
+                            index,
+                            SphP[p].CRE_Alpha,
+                            SphP[p].CRE_qmin,
+                            SphP[p].CRE_qmax);
+                            */
+                if ( SphP[p].CRE_qmax > qmax_max )
+                    qmax_max = SphP[p].CRE_qmax;
             }
             p = FoFNext[p];
         }
 
+        printf( "[%i] qmax_max: %g\n", index, qmax_max );
         fprintf( fd, "%i  %g  ", index, Gprops[index].mass * 1e10 );
         for ( i=0; i<qn; i++ ) {
-            fprintf( fd, "%g  ", f[i] );
+            fprintf( fd, "%g  ", f[i]/rho );
         }
         fprintf( fd, "\n" );
 

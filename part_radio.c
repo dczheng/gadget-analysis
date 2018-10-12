@@ -35,6 +35,8 @@ double particle_radio2( double nu,  SphParticleData *part ) {
     B += SQR( BCMB0 ) * pow( All.Time, -2 );
     B = sqrt( B );
 
+    //printf( "B: %g\n", B );
+
     r = radio( &particle_df, params, B, nu, params[2], params[3] );
 
     r = r * ( 4.0/3.0 * PI * CUBE( All.SofteningTable[0] * g2c.cm ) );
@@ -49,10 +51,10 @@ double particle_radio( double nu, long i ) {
 
 }
 
-void test_particle_radio() {
+void test_qmax() {
 
     SphParticleData part;
-    double nu_min, nu_max, nu, dlognu, P, qmax_min, qmax_max, dlogqmax;
+    double nu_min, nu_max, nu, dlognu, P, qmax_min, qmax_max, dlogqmax, B;
     int i, N, qmaxn, k;
     FILE *fd;
 
@@ -61,7 +63,8 @@ void test_particle_radio() {
     part.CRE_qmin = 1;
     part.CRE_qmax = 1e5;
     part.Density = 1;
-    part.B[0] = 1e-6;
+    B = BCMB0;
+    part.B[0] = sqrt( SQR(B) - SQR(BCMB0) * pow( All.Time, -2 ) );
     part.B[1] = part.B[2] = 0;
 
     N = 100;
@@ -74,9 +77,9 @@ void test_particle_radio() {
     qmax_max = 1e5;
     dlogqmax = log10( qmax_max/qmax_min ) / ( qmaxn-1 );
 
-    fd = fopen( "./particle_radio.dat", "w" );
+    fd = fopen( "./qmax_test.dat", "w" );
 
-    fprintf( fd, "0 0 0 0 0 " );
+    fprintf( fd, "0 " );
 
     for( i=0; i<N; i++ ) {
         nu = log10(nu_min) + i * dlognu;
@@ -92,12 +95,9 @@ void test_particle_radio() {
 
         //part.CRE_qmax = qmax_max;
 
-        fprintf( fd, "%g %g %g %g %g ",
-                part.CRE_C /( CUBE(g2c.cm) * ( ELECTRON_MASS/(g2c.g) )),
-                part.CRE_Alpha,
-                part.CRE_qmin,
-                part.CRE_qmax,
-                part.B[0] );
+        fprintf( fd, "%g ",
+                part.CRE_qmax );
+
         printf(  "%g %g %g %g %g\n",
                 part.CRE_C /( CUBE(g2c.cm) * ( ELECTRON_MASS/(g2c.g) )),
                 part.CRE_Alpha,
@@ -139,8 +139,8 @@ void test_radio() {
 
 
     if ( ThisTask == 0 ) {
-        //test_F();
-        test_particle_radio();
+        test_F();
+        //test_qmax();
     }
 
     MPI_Barrier( MPI_COMM_WORLD );

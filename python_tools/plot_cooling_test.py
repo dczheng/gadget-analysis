@@ -4,48 +4,75 @@ import matplotlib as mpl
 mpl.use( 'agg' )
 import matplotlib.pyplot as plt
 import numpy as np
-import sys
 
-data = np.loadtxt( sys.argv[1] )
-q = data[ :,0 ]
-df = data[ :,1 ]
-f = data[ :,2 ]
-ff = data[ :,3 ]
-df = np.abs( df )
+data = np.loadtxt( './cooling_test.dat' )
+q = data[0, 6:]
+f = data[1, 6:]
 
-qmin = q[-2]
-qmax = q[-1]
-fmin = f[-2]
-fmax = f[-1]
+data = data[2:, :]
 
-print( qmin, qmax, fmin, fmax )
+m, n = data.shape
 
-q = q[:-2]
-f = f[:-2]
-df = df[:-2]
-ff = ff[:-2]
+mm = m // 2
 
-t = sys.argv[1][:-4].split( '_' )
-rho = int( t[2] )
-a   = float( t[3] )
-c   = float( t[4] )
-B   = float( t[5] )
-print( "rho: %i, a: %g, c: %g, B: %g"%( rho, a, c, B ) )
+for i in range( mm ):
 
-plt.plot( q, df, '-.', label="df" )
-plt.plot( q, f, label="f" )
-plt.plot( q, f-df, '--', label="f-df" )
-plt.plot( q, ff, '.', label="ff" )
-plt.plot( qmin, fmin, '*', markersize=8 )
-plt.plot( qmax, fmax, '*', markersize=8 )
+    df_i = i * 2
+    ff_i = i * 2 + 1
 
-plt.title( '%i'%(rho) )
+    rho   = data[df_i, 0]
+    B     = data[df_i, 1]
+    qmin  = data[df_i, 2]
+    fqmin = data[df_i, 3]
+    qmax  = data[df_i, 4]
+    fqmax = data[df_i, 5]
+    df    = data[df_i, 6:]
+    ff    = data[ff_i, 6:]
 
-plt.xscale( 'log' )
-plt.yscale( 'log' )
-plt.legend()
-plt.grid()
+    plt.plot( q, f, label=r'$f_t(p)$' )
+    plt.plot( q, -df, '-.', label=r'$-df_t$' )
+    plt.plot( q, f+df, '--', label=r'$f_t+df_t$' )
+    plt.plot( q, ff, '.', label=r'$f_{t+\Delta t}$' )
+    plt.plot( [qmin], [fqmin], '*', markersize=10, label=r'$ q_{min}$' )
+    plt.plot( [qmax], [fqmax], '*', markersize=10, label=r'$ q_{max}$' )
 
-plt.savefig( sys.argv[1][:-4] + '.png' )
+    rho = "%.2e"%rho
+    rho = rho.split( 'e' )
 
+    if rho[1][0] == '-':
+        t = '-'
+    else:
+        t = ''
 
+    a = 1
+    while( rho[1][a] == '0' ):
+        a += 1
+    t = t + rho[1][a:]
+    rho[1] = t
+
+    B = "%.2e"%B
+    B = B.split( 'e' )
+    if ( B[1][0] == '-' ):
+        t = '-'
+    else:
+        t = ''
+
+    a = 1
+    while( B[1][a] == '0' ):
+        a += 1
+    t = t + B[1][a:]
+    B[1] = t
+
+    plt.text( 10, 1,
+             r'$\frac{\rho}{\rho_{Bar}}: %s \times 10^{%s}\quad B: %s \times 10^{%s}$'%( rho[0],rho[1], B[0], B[1] ) )
+
+    plt.xscale( 'log' )
+    plt.yscale( 'log' )
+    plt.xlabel( 'q' )
+
+    plt.legend()
+    plt.grid()
+
+    #plt.savefig( 'cooling_test_%i.png'%i )
+    plt.savefig( 'cooling_test_%i.eps'%i )
+    plt.close()

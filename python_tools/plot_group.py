@@ -15,6 +15,7 @@ parser.add_argument( '-f',   type=str,    help='file name', required=True )
 parser.add_argument( '-log', help='log plot', action="store_true" )
 parser.add_argument( '-m',   help='mass', action="store_true" )
 parser.add_argument( '-eps',  help='save eps picture', action="store_true" )
+parser.add_argument( '-ng',  help='negtive ', action="store_true" )
 parser.add_argument( '-cu',  type=float,  help='upper cutoff' )
 parser.add_argument( '-cd',  type=float,  help='lower cutoff' )
 parser.add_argument( '-cl',  type=str,    help='colorbar label' )
@@ -101,6 +102,9 @@ yfmt = tik.FixedFormatter(yFmtList)
 fig = plt.figure()
 ax = fig.add_subplot( 111 )
 
+if args.ng:
+    data = -data
+
 if args.log:
     if args.cu != None:
         cu = np.power( 10, args.cu )
@@ -133,7 +137,7 @@ ax.invert_yaxis()
 ax.grid()
 
 if args.cl:
-    clabel = '$%s\ (%s)$'%( args.cl, ProDire )
+    clabel = '$%s\ [%s]$'%( args.cl, ProDire )
     #print( clabel )
     #exit()
 else:

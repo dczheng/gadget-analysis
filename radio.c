@@ -142,12 +142,19 @@ double radio( double (*f)( double, void* ), double *params,
     ri.B = B;
     ri.nu = nu;
 
-    err = 1e-3;
+    err = 1e-2;
 
     t = sqrt( nu / BESSEL_UPPER_LIMIT / ( 0.1875 * B * aux_c.e_mec )-1 );
 
+    //printf( "pmin: %g, pmax: %g, B: %g\n", pmin, pmax, B );
+
     if ( pmin < t )
         pmin = t;
+
+    //printf( "pmin: %g\n", pmin );
+
+    if ( pmin > pmax )
+        return 0;
 
     r = qtrap( &radio_inte, &ri, pmin, pmax, err );
 
@@ -204,11 +211,13 @@ void test_F() {
     int logx_N, i;
     FILE *fd;
 
-    logx_min = -5;
+    logx_min = -3;
     logx_max = 1;
-    logx_N = 30;
+    logx_N = 100;
 
     dlogx = ( logx_max-logx_min ) / ( logx_N - 1 );
+
+    printf( "fac: %g\n", 0.1875 * aux_c.e_mec );
 
     fd = fopen( "F_x.dat", "w" );
 
