@@ -79,8 +79,8 @@ void gas_state() {
     for ( i=0; i<SQR(PicSize); i++ )
         img[i] /= sum;
 
-    create_dir( "./gas_state" );
-    sprintf( buf, "./gas_state/%s_gas_state_%03i_%.2f.dat", All.FilePrefix, ThisTask, All.RedShift );
+    create_dir( "./GasState" );
+    sprintf( buf, "./GasState/GasState_%.2f.dat", All.RedShift );
 
     ZSPRINTF( 0, "3" );
     image.img = img;

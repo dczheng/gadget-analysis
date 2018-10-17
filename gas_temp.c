@@ -32,8 +32,8 @@ void gas_temperature() {
         image.data[i] = SphP[i].Temp;
     }
 
-    create_dir( "./gas_temperature" );
-    sprintf( buf, "./gas_temperature/%s_gas_temperature_%03i_%.2f.dat", All.FilePrefix, ThisTask, All.RedShift );
+    create_dir( "./GasTemp" );
+    sprintf( buf, "./GasTemp/GasTemp_%.2f.dat", All.RedShift );
 
     make_slice_img( 0 );
 

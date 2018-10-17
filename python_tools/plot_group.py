@@ -11,7 +11,7 @@ from matplotlib import cm
 
 parser = argparse.ArgumentParser()
 
-parser.add_argument( '-f',   type=str,    help='file name', required=True )
+parser.add_argument( 'f' )
 parser.add_argument( '-log', help='log plot', action="store_true" )
 parser.add_argument( '-m',   help='mass', action="store_true" )
 parser.add_argument( '-eps',  help='save eps picture', action="store_true" )

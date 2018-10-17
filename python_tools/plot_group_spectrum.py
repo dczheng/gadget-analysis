@@ -9,7 +9,7 @@ import argparse
 
 parser = argparse.ArgumentParser()
 
-parser.add_argument( '-f', type=str, help='file name', required=True )
+parser.add_argument( 'f' )
 parser.add_argument( '-t', type=str, help='data type', required=True )
 parser.add_argument( '-fit', help='fitting', action='store_true' )
 parser.add_argument( '-eps', help='save eps', action='store_true' )

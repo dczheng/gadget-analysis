@@ -20,12 +20,13 @@ for i in range( mm ):
     df_i = i * 2
     ff_i = i * 2 + 1
 
-    rho   = data[df_i, 0]
-    B     = data[df_i, 1]
-    qmin  = data[df_i, 2]
-    fqmin = data[df_i, 3]
-    qmax  = data[df_i, 4]
-    fqmax = data[df_i, 5]
+    rho   = data[ff_i, 0]
+    B     = data[ff_i, 1]
+    qmin  = data[ff_i, 2]
+    fqmin = data[ff_i, 3]
+    qmax  = data[ff_i, 4]
+    fqmax = data[ff_i, 5]
+
     df    = data[df_i, 6:]
     ff    = data[ff_i, 6:]
 

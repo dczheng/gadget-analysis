@@ -1,9 +1,8 @@
 #include "allvars.h"
 
 #define make_group_output_filename( buf, nstr, group_index ) \
-    sprintf( buf, "%s/%s/%s_%s_%03i_%.2f_%04i_%c.dat",\
-            All.GroupDir, nstr, All.FilePrefix, nstr, ThisTask,\
-            All.RedShift, group_index, All.Sproj );
+    sprintf( buf, "%s/%s/%s_%.2f_%04i_%c.dat",\
+            All.GroupDir, nstr, nstr, All.RedShift, group_index, All.Sproj );
 
 int group_present( long index ) {
 
@@ -159,8 +158,8 @@ void group_electron_spectrum() {
     sprintf( buf, "%s/ElectronSpectrum", All.GroupDir );
     create_dir( buf );
 
-    sprintf( buf, "%s/ElectronSpectrum/%s_%03i_elespec_%.2f.dat",
-            All.GroupDir, All.FilePrefix, ThisTask, All.RedShift );
+    sprintf( buf, "%s/ElectronSpectrum/EleSpec_%.2f.dat",
+            All.GroupDir, All.RedShift );
 
     fd = fopen( buf, "w" );
 
@@ -234,13 +233,13 @@ void group_spectrum() {
     sprintf( buf, "%s/Spectrum", All.GroupDir );
     create_dir( buf );
 
-    sprintf( buf, "%s/Spectrum/%s_%03i_spec_%.2f.dat",
-            All.GroupDir, All.FilePrefix, ThisTask, All.RedShift );
+    sprintf( buf, "%s/Spectrum/Spec_%.2f.dat",
+            All.GroupDir, All.RedShift );
 
     fd1 = fopen( buf, "w" );
 
-    sprintf( buf, "%s/Spectrum/%s_%03i_spec_%.2f_nosr.dat",
-            All.GroupDir, All.FilePrefix, ThisTask, All.RedShift );
+    sprintf( buf, "%s/Spectrum/Spec_%.2f_nosr.dat",
+            All.GroupDir, All.RedShift );
 
     mymalloc1( flux, sizeof(double) * vN );
     mymalloc1( flux_nosr, sizeof(double) * vN );
@@ -394,8 +393,8 @@ void group_spectrum_index() {
         write_img1( buf, spec_index_str );
 
         image.img = spec_index_err;
-        sprintf( buf, "%s/%s/%s_%s_%03i_%.2f_%04i_%c.dat",
-            All.GroupDir, spec_index_str, All.FilePrefix, spec_index_err_str, ThisTask,
+        sprintf( buf, "%s/%s/%s_%.2f_%04i_%c.dat",
+            All.GroupDir, spec_index_str, spec_index_err_str,
             All.RedShift, index, All.Sproj );
         write_img1( buf, spec_index_err_str );
 

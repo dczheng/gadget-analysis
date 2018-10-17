@@ -54,6 +54,9 @@ void analysis(){
         gas_state();
     }
 
+    if ( All.PowSpec )
+        powerspec();
+
     if ( All.GasDensity )
         gas_density();
 

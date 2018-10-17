@@ -64,6 +64,7 @@ void compute_temperature();
 
 void init_tab_F();
 void free_tab_F();
+void test_F();
 double particle_radio( double nu, long i );
 double radio( double (*f)(double, void*), double *params,
         double B, double nu, double pmin, double pmax );
@@ -71,3 +72,5 @@ double radio( double (*f)(double, void*), double *params,
 double qtrap( double (*func)( double, void* ),
         void *params, double a, double b, double err );
 
+
+void powerspec();

@@ -100,6 +100,11 @@ void read_parameters( char *fn ) {
         ADD_PARA( "QMax",                       &All.QMax,                       REAL );
         ADD_PARA( "QNum",                       &All.QNum,                       INT  );
 
+        ADD_PARA( "PowSpec",                    &All.PowSpec,                    INT  );
+        ADD_PARA( "PowSpecNGrid",               &All.PowSpecNGrid,               INT  );
+        ADD_PARA( "PowSpecPartType",            &All.PowSpecPartType,            INT  );
+        ADD_PARA( "PowSpecBins",                &All.PowSpecBins,                INT  );
+
         while( !feof( fd ) ) {
             *buf = 0;
             fgets( buf, 200, fd );

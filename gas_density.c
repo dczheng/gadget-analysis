@@ -12,8 +12,8 @@ void gas_density() {
         image.data[i] = SphP[i].Density;
     }
 
-    create_dir( "./gas_density" );
-    sprintf( buf, "./gas_density/%s_gas_density_%03i_%.2f.dat", All.FilePrefix, ThisTask, All.RedShift );
+    create_dir( "./GasDens" );
+    sprintf( buf, "./GasDens/GasDens_%.2f.dat", All.RedShift );
 
     make_slice_img( 0 );
 

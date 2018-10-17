@@ -214,6 +214,7 @@ extern struct global_parameters_struct {
         GasState, GasDensity, GasTemperature,
         KernelInterpolation,
         ConvN, GroupEleSpec,
+        PowSpec, PowSpecNGrid, PowSpecPartType, PowSpecBins,
 
         QNum, NuNum, FoFMinLen, proj_i, proj_j, proj_k,
         TreePartType, GroupIndexMin, GroupIndexMax,
