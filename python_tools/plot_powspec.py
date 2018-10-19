@@ -26,29 +26,31 @@ if args.g:
     print( 'load gadget data ...' )
     data = np.loadtxt( args.f, skiprows=2008 )
     #print( data[0:2,:] )
-    k = data[:,0]
-    p = data[:,3]
 else:
     print( 'load gadget-tools data ...' )
     data = np.loadtxt( args.f )
-    k = data[:,0]
-    p = data[:,2]
+
+k = data[:,0]
+p = data[:,1]
 
 fig = plt.figure()
 ax = fig.add_subplot( 111 )
 
 if not( args.Mpc ):
     k = k * 1000
-    p = p / 1e9
+
+k = k[ p>0 ]
+p = p[ p>0 ]
 
 ax.plot( k, p, '.' )
+ax.plot( k, p, '-.' )
 
 if not(args.nolog):
     ax.set_xscale( 'log' )
     ax.set_yscale( 'log' )
 
 ax.set_xlabel( r'$k\,[h/Mpc]$' )
-ax.set_ylabel( r'$P(k)\,[(Mpc/h)^3]$' )
+ax.set_ylabel( r'$\Delta^2(k)\,[\frac{4 \pi k^3}{(2 \pi L)^3} P(k)]$' )
 
 if args.K0 or args.K1:
     klim = list(plt.xlim())

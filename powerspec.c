@@ -249,9 +249,10 @@ void powerspec() {
 
     for( i=0; i<bins; i++ ) {
         fprintf( fd, "%g %g %g %g %g %g\n",
-                Kbin[i], (double)CountModes[i],
-                PS[i], PSUncorr[i],
-                Delta[i], DeltaUncorr[i] );
+                Kbin[i],
+                Delta[i], DeltaUncorr[i],
+                (double)CountModes[i],
+                PS[i], PSUncorr[i] );
     }
 
     fclose( fd );
