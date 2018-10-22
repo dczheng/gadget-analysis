@@ -14,7 +14,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument( 'f' )
 parser.add_argument( '-log', help='log plot', action="store_true" )
 parser.add_argument( '-m',   help='mass', action="store_true" )
-parser.add_argument( '-eps',  help='save eps picture', action="store_true" )
+parser.add_argument( '-pdf',  help='save pdf picture', action="store_true" )
 parser.add_argument( '-ng',  help='negtive ', action="store_true" )
 parser.add_argument( '-cu',  type=float,  help='upper cutoff' )
 parser.add_argument( '-cd',  type=float,  help='lower cutoff' )
@@ -182,8 +182,8 @@ if args.m:
 
 fn_out = fn[:-4] + '.png'
 
-if args.eps:
-    fn_out = fn[:-4] + '.eps'
+if args.pdf:
+    fn_out = fn[:-4] + '.pdf'
 
 print( "save image to " +  fn_out )
 plt.savefig( fn_out )

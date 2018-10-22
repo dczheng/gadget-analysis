@@ -12,7 +12,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument( 'f' )
 parser.add_argument( '-t', type=str, help='data type', required=True )
 parser.add_argument( '-fit', help='fitting', action='store_true' )
-parser.add_argument( '-eps', help='save eps', action='store_true' )
+parser.add_argument( '-pdf', help='save pdf', action='store_true' )
 
 args = parser.parse_args()
 
@@ -25,6 +25,11 @@ if not(data_type in data_type_all):
     exit()
 
 data = np.loadtxt( fn )
+
+if len(data) == 0:
+    print( "No Group!" )
+    exit()
+
 m, n = data.shape
 
 #v = data[ 0, 2:-1 ]
@@ -57,7 +62,7 @@ for i in range( 1, m ):
         print( r )
         plt.plot( v, p, ss, label=r"$[%i]\ %s\times 10^{%s} \; , \alpha: %.2f$"%(index, t[0], t[1], np.abs( r[0][0] ) ) )
     else:
-        plt.plot( v, p, ss, label=r"$[%i]\ %s\times 10^{%s}$"%(index, t[0], t[1] ) )
+        plt.plot( v, p, ss, label=r"$[%i]\ %s\times 10^{%s}\,M_\odot$"%(index, t[0], t[1] ) )
 
 
 plt.xscale( 'log' )
@@ -76,8 +81,8 @@ plt.grid()
 
 plt.title( 'z = ' + fn[-8:-4] )
 
-if args.eps:
-    fn = fn[:-4] + '.eps'
+if args.pdf:
+    fn = fn[:-4] + '.pdf'
 else:
     fn = fn[:-4] + '.png'
 print( 'save fig to ' + fn )

@@ -2,6 +2,9 @@
 
 #define TAB_F_N 100000
 #define BESSEL_UPPER_LIMIT   ((double)700)
+    /*Knu function will give a very small value ( gsl_sf_bessel_Knu can not work )
+     * when x > BESSEL_UPPER_LIMIT */
+
 #define F_X_MAX              ((double)600)
 #define F_X_MIN              ((double)1e-5)
 
@@ -106,11 +109,6 @@ struct radio_inte_struct{
 double radio_inte( double p, void *params ) {
 
     double r, x, nu_c;
-
-#ifndef RADIO_F_INTERP
-        double err;
-#endif
-
     struct radio_inte_struct *ri;
 
     ri = params;
@@ -121,6 +119,7 @@ double radio_inte( double p, void *params ) {
 #ifdef RADIO_F_INTERP
     r = tab_F( x );
 #else
+    double err;
     F( x, &r, &err );
 #endif
 
@@ -153,9 +152,10 @@ double radio( double (*f)( double, void* ), double *params,
 
     //printf( "pmin: %g\n", pmin );
 
-    if ( pmin > pmax )
+    if ( pmin > pmax-5 )
         return 0;
 
+    //printf( "p: ( %g, %g )\n", pmin, pmax );
     r = qtrap( &radio_inte, &ri, pmin, pmax, err );
 
     fac = sqrt(3) * CUBE( ELECTRON_CHARGE ) * PI / ( 4.0 * ELECTRON_MASS * SQR(LIGHT_SPEED) );

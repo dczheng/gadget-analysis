@@ -19,7 +19,7 @@ void powerspec() {
 
     double K0, K1, fac, dis[3], mass, mass_tot, K[3], K2, k, BoxSize,
            f[3], ff, smth, po, ponorm, binfac, *SumPS, *PS, *SumPSUncorr,
-           *PSUncorr, *Kbin, *Delta, *DeltaUncorr;
+           *PSUncorr, *Kbin, *Delta, *DeltaUncorr, kmin, kmax;
     long p;
     int i, x, y, z, m, xyz[3], xyz1[3], NGrid, NGrid3, index,
         bins, *CountModes;;
@@ -57,7 +57,6 @@ void powerspec() {
         if ( !( (1<<P[p].Type) & All.PowSpecPartType ) )
             continue;
 
-        mass_tot += P[p].Mass;
         pos = P[p].Pos;
 
         for( i=0; i<3; i++ )
@@ -68,11 +67,13 @@ void powerspec() {
 
         for( i=0; i<3; i++ ) {
 
+            /*
             while( pos[i] < 0 )
                 pos[i] += BoxSize;
 
             while( pos[i] > BoxSize )
                 pos[i] -= BoxSize;
+                */
 
             dis[i] = pos[i] * fac;
             xyz[i] = dis[i];
@@ -81,20 +82,30 @@ void powerspec() {
             //printf( "%i, dis: %g, xyz: %i\n", i, dis[i], xyz[i] );
             xyz1[i] = xyz[i] + 1;
 
-            if ( xyz1[i] >= NGrid )
-                xyz1[i] -= NGrid;
+            xyz1[i] %= NGrid;
 
         }
 
         //printf( "( %i, %i, %i )\n", xyz[0], xyz[1], xyz[2] );
 
+        mass_tot += P[p].Mass;
         mass = P[p].Mass;
+
         if ( P[p].Type == 0 ) {
-            mass += SphP[p].Star_Mass;
-            mass += SphP[p].BH_Mass;
+
+            if ( 1<<4 & All.PowSpecPartType ) {
+                mass_tot += SphP[p].Star_Mass;
+                mass += SphP[p].Star_Mass;
+            }
+
+            if ( 1<<5 & All.PowSpecPartType ) {
+                mass += SphP[p].BH_Mass;
+                mass_tot += SphP[p].BH_Mass;
+            }
+
         }
 
-        //rhogrid[ NGrid3 * ( NGrid * xyz[0] + xyz[1] ) + xyz[2] ] += mass;
+//        rhogrid[ NGrid3 * ( NGrid * xyz[0] + xyz[1] ) + xyz[2] ] += mass;
         rhogrid[ NGrid3 * ( NGrid * xyz[0]  + xyz[1]  ) + xyz[2]  ]  += mass * ( 1-dis[0] ) * ( 1-dis[1] ) * ( 1-dis[2] );
         rhogrid[ NGrid3 * ( NGrid * xyz[0]  + xyz[1]  ) + xyz1[2] ]  += mass * ( 1-dis[0] ) * ( 1-dis[1] ) * dis[2];
         rhogrid[ NGrid3 * ( NGrid * xyz[0]  + xyz1[1] ) + xyz[2]  ]  += mass * ( 1-dis[0] ) * dis[1]       * ( 1-dis[2] );
@@ -127,9 +138,15 @@ void powerspec() {
 
     rfftwnd_one_real_to_complex( fft_plan, rhogrid, fft_of_rhogrid );   // in_place, so fftw_of_rhogrid is ignore.
 
+
     fac = 1.0 / mass_tot;
     K0 = 2 * M_PI / BoxSize;
     K1 = K0 * BoxSize / All.SofteningTable[1];
+
+    writelog( "mass tot: %g\n", mass_tot );
+    writelog( "K0: %g, K1: %g\n", K0, K1 );
+    //K1 = 2 * M_PI * BoxSize / NGrid;
+    //
     bins = All.PowSpecBins;
     binfac = bins / ( log(K1) - log(K0) );
     mymalloc2( PS, sizeof( double ) * bins );
@@ -142,9 +159,11 @@ void powerspec() {
     mymalloc2( DeltaUncorr, sizeof( double ) * bins );
     mymalloc2( CountModes, sizeof( int ) * bins );
 
+    kmin = 1e10;
+    kmax = -1;
     for( x=0; x<NGrid; x++ )
         for( y=0; y<NGrid; y++ )
-            for( z=0; z<NGrid3; z++ ) {
+            for( z=0; z<NGrid; z++ ) {
 
                 if ( x > NGrid / 2 )
                     K[0] = x - NGrid;
@@ -165,50 +184,58 @@ void powerspec() {
 
                 if ( K2 > 0 ) {
                     if ( K2 < ( NGrid / 2.0 ) * ( NGrid / 2.0 ) ) {
-                        // do deconvolution
+                            // do deconvolution
 
-                        f[0] = f[1] = f[2] = 1;
-                        for( m=0; m<3; m++ )
-                            if ( K[m] != 0 ) {
-                                f[m] = ( M_PI * K[m] ) / NGrid;
-                                f[m] = sin( f[m] ) / f[m];
+                            f[0] = f[1] = f[2] = 1;
+                            for( m=0; m<3; m++ )
+                                if ( K[m] != 0 ) {
+                                    f[m] = ( M_PI * K[m] ) / NGrid;
+                                    f[m] = sin( f[m] ) / f[m];
+                                }
+
+                            ff = 1 / ( f[0] * f[1] * f[2] );
+                            smth = ff * ff * ff * ff;
+                            // end deconvolution
+                        if ( z >= NGrid3/2 )
+                            index = (NGrid3/2) * ( x * NGrid + y ) + ( NGrid - z );
+                        else
+                            index = (NGrid3/2) * ( x * NGrid + y ) + z;
+
+                        po = ( SQR( fft_of_rhogrid[index].re ) + SQR( fft_of_rhogrid[index].im ) );
+
+                        po *= fac * fac * smth;
+
+                        k = sqrt( K2 ) * 2 * M_PI / BoxSize;
+
+                        if ( k > kmax )
+                            kmax = k;
+
+                        if ( k < kmin )
+                            kmin = k;
+
+                        if ( k >= K0 && k < K1 ) {
+
+                            i = log( k/K0 ) * binfac;
+
+                            ponorm = po / PowerSpec_Efstathiou( k );
+
+                            if ( isnan( ponorm ) || isinf( ponorm ) ) {
+                                printf( "#Error# k: %g, po: %g, Efs: %g, fft: ( %g, %g ), smth: %g, f: ( %g, %g, %g )\n",
+                                        k, po, PowerSpec_Efstathiou( k ),
+                                        fft_of_rhogrid[index].re,
+                                        fft_of_rhogrid[index].im,
+                                        smth, f[0], f[1], f[2]
+                                        );
+                                endrun( 20181016 );
                             }
 
-                        ff = 1 / ( f[0] * f[1] * f[2] );
-                        smth = ff * ff * ff * ff;
-                        // end deconvolution
-                    }
-                    if ( z >= NGrid3/2 )
-                        index = (NGrid3/2) * ( x * NGrid + y ) + ( NGrid - z );
-                    else
-                        index = (NGrid3/2) * ( x * NGrid + y ) + z;
-
-                    po = ( SQR( fft_of_rhogrid[index].re ) + SQR( fft_of_rhogrid[index].im ) );
-
-                    po *= fac * fac * smth;
-
-                    k = sqrt( K2 ) * 2 * M_PI / BoxSize;
-
-                    if ( k >= K0 && k < K1 ) {
-
-                        i = log( k/K0 ) * binfac;
-                        ponorm = po / PowerSpec_Efstathiou( k );
-
-                        if ( isnan( ponorm ) || isinf( ponorm ) ) {
-                            printf( "#Error# k: %g, po: %g, Efs: %g, fft: ( %g, %g ), smth: %g, f: ( %g, %g, %g )\n",
-                                    k, po, PowerSpec_Efstathiou( k ),
-                                    fft_of_rhogrid[index].re,
-                                    fft_of_rhogrid[index].im,
-                                    smth, f[0], f[1], f[2]
-                                    );
-                            endrun( 20181016 );
-                        }
-
-                        SumPS[i] += ponorm;
-                        SumPSUncorr[i] += po;
+                            //printf( "%g, %g\n", k, ponorm );
+                            SumPS[i] += ponorm;
+                            SumPSUncorr[i] += po;
 
                         CountModes[i] += 1;
 
+                        }
                     }
                 }
                 /*
@@ -219,6 +246,7 @@ void powerspec() {
                             */
             }
 
+    writelog( "[fft] kmin: %g, kmax: %g\n", kmin, kmax );
     for( i=0; i<bins; i++ ) {
 
         Kbin[i] = exp( (i+0.5) / binfac + log( K0 ) );

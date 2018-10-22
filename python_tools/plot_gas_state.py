@@ -5,15 +5,18 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.ticker as tik
 import matplotlib.colors as mplc
+import argparse
 from matplotlib import cm
-import sys
 
-if ( len( sys.argv ) != 2 ):
-    print( "Please give data file and fig file!" )
-    exit()
+parser = argparse.ArgumentParser()
 
+parser.add_argument( 'f' )
+parser.add_argument( '-pdf', help='save pdf', action='store_true' )
 
-data = np.loadtxt( sys.argv[1] )
+args = parser.parse_args()
+
+data = np.loadtxt( args.f)
+
 data_info = data[ 0, : ]
 data = np.flipud(data[ 1:, : ])
 DensMin = data_info[1]
@@ -99,8 +102,11 @@ ax.set_yticklabels( TempList )
 cbar = fig.colorbar( img )
 cbar.set_label( "Probability" )
 
-fn_png = sys.argv[1][:-4] + '.png'
-print( 'save image to ' + fn_png )
-plt.savefig( fn_png )
-#plt.show()
+if args.pdf:
+    fn = args.f[0:-4] + '.pdf'
+else:
+    fn = args.f[0:-4] + '.png'
+
+print( 'save image to ' + fn )
+plt.savefig( fn )
 

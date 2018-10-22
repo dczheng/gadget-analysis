@@ -24,7 +24,7 @@ $(EXEC): $(OBJS)
 	$(CC) $(OBJS) $(LIBS) -o $(EXEC)
 
 %.o:%.c $(MY_INCL)
-	$(CC) $(OPTS) $(DEBUG) $(INCL) -c $<
+	$(CC) $(OPTS) $(DEBUG) $(INCL) -c $< -o $@
 
 .PHONY: clean
 
