@@ -74,3 +74,4 @@ double qtrap( double (*func)( double, void* ),
 
 
 void powerspec();
+double PowerSpec_Efstathiou(double k);

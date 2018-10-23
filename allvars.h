@@ -235,8 +235,9 @@ extern struct global_parameters_struct {
            *KernelMat2D[6], *KernelMat3D[6],
            Time, Time2, Time3, Hubble_a, RhoBaryon,
            ComDis, AngDis, LumDis,
-           RedShift, HubbleParam, RhoCrit, G,
+           RedShift, HubbleParam, RhoCrit, RhoM, G,
            Hubble, Omega0, OmegaLambda, OmegaBaryon,
+           Sigma8, SigmaNorm,
            *ConvKernel, ConvSigma, NuMin, NuMax, GroupMassMin, Freq,
            QMin, QMax;
 

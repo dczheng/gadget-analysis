@@ -1,20 +1,6 @@
 #include "allvars.h"
 #include "srfftw.h"
 
-double PowerSpec_Efstathiou(double k) {
-
-  double AA, BB, CC, nu, ShapeGamma;
-
-  ShapeGamma = 0.21;
-  AA = 6.4 / ShapeGamma * (3.085678e24 / All.UnitLength_in_cm);
-  BB = 3.0 / ShapeGamma * (3.085678e24 / All.UnitLength_in_cm);
-  CC = 1.7 / ShapeGamma * (3.085678e24 / All.UnitLength_in_cm);
-  nu = 1.13;
-
-  return k / pow(1 + pow(AA * k + pow(BB * k, 1.5) + CC * CC * k * k, nu), 2 / nu);
-
-}
-
 void powerspec() {
 
     double K0, K1, fac, dis[3], mass, mass_tot, K[3], K2, k, BoxSize,
