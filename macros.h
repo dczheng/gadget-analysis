@@ -11,6 +11,12 @@
 #define PERIODIC( x ) ( ( x > All.HalfBoxSize || x < -All.HalfBoxSize ) ? ( ( x > All.HalfBoxSize ) ? ( x - All.BoxSize ) : ( x + All.BoxSize )  ) : x )
 #define NGB_PERIODIC( x ) ( (fabs(x) > All.HalfBoxSize) ? ( All.BoxSize-fabs(x) ) : fabs(x) )
 
+#define DATA_SWAP( a, b, tmp ) {\
+   tmp = a; \
+   a = b; \
+   b = t1; \
+}
+
 #define put_block_line    writelog( sep_str )
 
 #define find_global_value( a, A, type, op ) { \

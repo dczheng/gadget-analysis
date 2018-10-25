@@ -1,14 +1,86 @@
 #include "allvars.h"
 #include "srfftw.h"
 
+
+double *PS, binfac, Kmin, Kmax, BoxSize, *Kbin;
+int bins, KN;
+
+double powerspec_interp( double k ) {
+
+    int ki;
+    double dk;
+
+    if ( k < Kbin[0] || k > Kbin[KN-1] )
+        return 0;
+
+    if ( k == Kbin[0] )
+        //return PS[0];
+        return PS[0] * CUBE( BoxSize );
+
+    ki = 0;
+    while( Kbin[ki] < k )
+        ki++;
+    ki--;
+
+    dk = ( k - Kbin[ki] ) / ( Kbin[ki+1] - Kbin[ki] );
+
+    //return ( PS[ki] * ( 1-dk ) +  PS[ki+1] * dk );
+    return ( PS[ki] * ( 1-dk ) +  PS[ki+1] * dk ) * CUBE( BoxSize );
+
+}
+
+void test_powerspec_interp() {
+
+    double dlogk, k;
+    int N, i;
+    FILE *fd;
+
+    printf( "test powerspec_interp ...\n" );
+    N = 100;
+    dlogk = log( Kmax / Kmin ) / ( N-1 );
+    fd = fopen( "test_powerspec_interp.dat", "w" );
+
+    for ( i=0; i<N; i++ ) {
+
+        k = i * dlogk + log( Kmin );
+        k = exp( k );
+
+        fprintf( fd, "%g %g\n", k, powerspec_interp( k ) * CUBE( BoxSize ) );
+
+    }
+
+    fclose( fd );
+}
+
+void compute_sigma8() {
+
+    double R;
+    sigma_struct ss;
+
+    writelog( "compute sigma8 ...\n" );
+
+    R = 8000;
+
+    ss.P = &powerspec_interp;
+    ss.filter = &top_hat_filter;
+    ss.filter_k_limit = &top_hat_filter_k_limit;
+    ss.filter_params = &R;
+
+    All.Sigma8 = sigma( ss );
+
+    printf( "Sigma8: %g\n", All.Sigma8 );
+
+}
+
 void powerspec() {
 
-    double K0, K1, fac, dis[3], mass, mass_tot, K[3], K2, k, BoxSize,
-           f[3], ff, smth, po, ponorm, binfac, *SumPS, *PS, *SumPSUncorr,
-           *PSUncorr, *Kbin, *Delta, *DeltaUncorr, kmin, kmax;
+    double fac, dis[3], mass, mass_tot, K[3], K2, k,
+           f[3], ff, smth, po, ponorm,
+           *SumPS, *SumPSUncorr, ktmp,
+           *PSUncorr, *Delta, *DeltaUncorr, ComputedKmin, ComputedKmax;
     long p;
     int i, x, y, z, m, xyz[3], xyz1[3], NGrid, NGrid3, index,
-        bins, *CountModes;;
+        *CountModes;;
     MyFloat *pos;
     FILE *fd;
     char buf[100];
@@ -126,15 +198,16 @@ void powerspec() {
 
 
     fac = 1.0 / mass_tot;
-    K0 = 2 * M_PI / BoxSize;
-    K1 = K0 * BoxSize / All.SofteningTable[1];
+    Kmin = 2 * M_PI / BoxSize;
+    Kmax = Kmin * BoxSize / All.SofteningTable[1];
 
     writelog( "mass tot: %g\n", mass_tot );
-    writelog( "K0: %g, K1: %g\n", K0, K1 );
+    writelog( "[initial] Kmin: %g, Kmax: %g [h/Mpc]\n", Kmin*1000, Kmax*1000 );
+
     //K1 = 2 * M_PI * BoxSize / NGrid;
     //
     bins = All.PowSpecBins;
-    binfac = bins / ( log(K1) - log(K0) );
+    binfac = bins / ( log(Kmax) - log(Kmin) );
     mymalloc2( PS, sizeof( double ) * bins );
     mymalloc2( SumPS, sizeof( double ) * bins );
     mymalloc2( PSUncorr, sizeof( double ) * bins );
@@ -145,8 +218,8 @@ void powerspec() {
     mymalloc2( DeltaUncorr, sizeof( double ) * bins );
     mymalloc2( CountModes, sizeof( int ) * bins );
 
-    kmin = 1e10;
-    kmax = -1;
+    ComputedKmin = 1e10;
+    ComputedKmax = -1;
     for( x=0; x<NGrid; x++ )
         for( y=0; y<NGrid; y++ )
             for( z=0; z<NGrid; z++ ) {
@@ -193,15 +266,15 @@ void powerspec() {
 
                         k = sqrt( K2 ) * 2 * M_PI / BoxSize;
 
-                        if ( k > kmax )
-                            kmax = k;
+                        if ( k > ComputedKmax )
+                            ComputedKmax = k;
 
-                        if ( k < kmin )
-                            kmin = k;
+                        if ( k < ComputedKmin )
+                            ComputedKmin = k;
 
-                        if ( k >= K0 && k < K1 ) {
+                        if ( k >= Kmin && k < Kmax ) {
 
-                            i = log( k/K0 ) * binfac;
+                            i = log( k/Kmin ) * binfac;
 
                             ponorm = po / PowerSpec_Efstathiou( k );
 
@@ -232,46 +305,69 @@ void powerspec() {
                             */
             }
 
-    writelog( "[fft] kmin: %g, kmax: %g\n", kmin, kmax );
+    writelog( "[fft] kmin: %g, kmax: %g [h/Mpc]\n", ComputedKmin*1000, ComputedKmax*1000 );
+
+    index = 0;
+
+    ktmp = Kmin;
+
+    Kmin = 1e10;
+    Kmax= -1;
+
     for( i=0; i<bins; i++ ) {
 
-        Kbin[i] = exp( (i+0.5) / binfac + log( K0 ) );
+        k = exp( (i+0.5) / binfac + log( ktmp ) );
 
         if ( CountModes[i] > 0 ) {
-            PS[i] = PowerSpec_Efstathiou( Kbin[i] ) * SumPS[i] / CountModes[i];
-            PSUncorr[i] = SumPSUncorr[i] / CountModes[i];
+
+            PS[index] = PowerSpec_Efstathiou( k ) * SumPS[i] / CountModes[i];
+            PSUncorr[index] = SumPSUncorr[i] / CountModes[i];
+
+            Kbin[index] = k;
+
+            if ( k < Kmin )
+                Kmin = k;
+
+            if ( k > Kmax )
+                Kmax = k;
+
+            CountModes[index] = CountModes[i];
+            Delta[index] = 4 * M_PI * pow( k, 3 ) / pow( 2 * M_PI / BoxSize, 3 ) * PS[index];
+            DeltaUncorr[index] = 4 * M_PI * pow( k, 3 ) / pow( 2 * M_PI / BoxSize, 3 ) * PSUncorr[index];
+            index ++;
         }
-        else {
-            PS[i] = 0;
-            PSUncorr[i] = 0;
-        }
-
-        Delta[i] = 4 * M_PI * pow( Kbin[i], 3 ) / pow( 2 * M_PI / BoxSize, 3 ) * PS[i];
-        DeltaUncorr[i] = 4 * M_PI * pow( Kbin[i], 3 ) / pow( 2 * M_PI / BoxSize, 3 ) * PSUncorr[i];
-
-        /*
-        printf( "[%i] %g %g %g %g %g %g\n", i, (double)CountModes[i], SumPS[i], PS[i], SumPSUncorr[i],
-                Delta[i], DeltaUncorr[i] );
-                */
-
     }
+
+    KN = index;
+
+    writelog( "[final] Kmin: %g, Kmax: %g [h/Mpc]\n", Kmin*1000, Kmax*1000 );
 
     create_dir( "./PowSpec" );
     sprintf( buf, "./PowSpec/PowSpec_%.2f.dat", All.RedShift );
 
+
     fd = fopen( buf, "w" );
 
-    for( i=0; i<bins; i++ ) {
+    for( i=0; i<KN; i++ ) {
         fprintf( fd, "%g %g %g %g %g %g\n",
-                Kbin[i],
-                Delta[i], DeltaUncorr[i],
-                (double)CountModes[i],
-                PS[i], PSUncorr[i] );
+            Kbin[i],
+            Delta[i], DeltaUncorr[i],
+            (double)CountModes[i],
+            PS[i], PSUncorr[i] );
     }
 
     fclose( fd );
 
     rfftwnd_destroy_plan( fft_plan );
+
+    //test_powerspec_interp();
+    //
+    //
+    if ( Kmin*1000 > 1e-2 )
+        writelog( "Kmin is too small, sigma8 can't be computed!\n" )
+    else
+        compute_sigma8();
+
     myfree( PS );
     myfree( SumPS );
     myfree( PSUncorr );

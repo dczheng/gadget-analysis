@@ -14,7 +14,6 @@
 #include "signal.h"
 #include "limits.h"
 #include "sys/stat.h"
-#include "protos.h"
 #include "macros.h"
 #include "omp.h"
 
@@ -52,9 +51,9 @@
 
 //#define RADIO_F_INTERP
 
-#define GSL_INTE_WS_LEN 1000
+#define GSL_INTE_WS_LEN 10000
 #define GSL_INTE_ERR_ABS ((double)(0.0))
-#define GSL_INTE_ERR_REL ((double)(1e-3))
+#define GSL_INTE_ERR_REL ((double)(1e-4))
 #define GSL_INTE_KEY GSL_INTEG_GAUSS61
 extern gsl_integration_workspace *inte_ws;
 
@@ -237,7 +236,7 @@ extern struct global_parameters_struct {
            ComDis, AngDis, LumDis,
            RedShift, HubbleParam, RhoCrit, RhoM, G,
            Hubble, Omega0, OmegaLambda, OmegaBaryon,
-           Sigma8, SigmaNorm,
+           Sigma8,
            *ConvKernel, ConvSigma, NuMin, NuMax, GroupMassMin, Freq,
            QMin, QMax;
 
@@ -324,6 +323,17 @@ struct malloc_struct {
 };
 
 extern struct malloc_struct ms;
+
+typedef struct sigma_struct{
+
+    double (*P) ( double );
+    double (*filter) ( double, void* );
+    void (*filter_k_limit) ( double *, double *, void * );
+    void *filter_params;
+
+} sigma_struct;
+
+#include "protos.h"
 
 #ifdef ZDEBUG
 void signal_hander( int s );

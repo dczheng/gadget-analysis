@@ -75,3 +75,9 @@ double qtrap( double (*func)( double, void* ),
 
 void powerspec();
 double PowerSpec_Efstathiou(double k);
+
+double sigma( sigma_struct ss );
+
+double top_hat_filter( double k, void *params );
+void top_hat_filter_k_limit( double *k0, double *k1, void *params );
+void test_sigma();
