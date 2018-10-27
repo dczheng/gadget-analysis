@@ -1,6 +1,7 @@
 #include "allvars.h"
 
-sigma_struct global_ss;
+sigma_struct ps_ss;
+int init_ps_flag=1;
 
 double E_a ( double a ) {
 
@@ -84,15 +85,19 @@ double growth_factor0( double a ) {
 
 double PowerSpec_Efstathiou(double k) {
 
-  double AA, BB, CC, nu, ShapeGamma;
+  double AA, BB, CC, nu, ShapeGamma, p;
 
+  //ShapeGamma = 0.25;
   ShapeGamma = 0.21;
-  AA = 6.4 / ShapeGamma * (3.085678e24 / All.UnitLength_in_cm);
+  AA = 6.4 / ShapeGamma * (3.085678e24 / All.UnitLength_in_cm); // convert unit
   BB = 3.0 / ShapeGamma * (3.085678e24 / All.UnitLength_in_cm);
   CC = 1.7 / ShapeGamma * (3.085678e24 / All.UnitLength_in_cm);
+
   nu = 1.13;
 
-  return k / pow(1 + pow(AA * k + pow(BB * k, 1.5) + CC * CC * k * k, nu), 2 / nu);
+  p =  k / pow(1 + pow(AA * k + pow(BB * k, 1.5) + CC * CC * k * k, nu), 2 / nu);
+
+  return p;
 
 }
 
@@ -103,7 +108,6 @@ double top_hat_filter( double k, void *params ) {
     R = params;
 
     kR = *R * k;
-
 
     if ( kR < 1e-4 )
         w = 1;
@@ -122,20 +126,21 @@ void top_hat_filter_k_limit( double *k0, double *k1, void *params ) {
     R = params;
 
     *k0 = 1e-99 / *R;
-    *k1 = 400.0 / *R;
+    *k1 = 350.0 / *R;
+
 
 }
 
 double dsigma_dk( double k, void *params ) {
 
-    double p, kR, w;
+    double p, w;
 
     sigma_struct *ss;
     ss = params;
 
     p = (*(ss->P))( k );
 
-    w =(*(ss->filter))( k, ss->filter_params );
+    w =(*(ss->filter))( k, ss->FilterParams );
 
     //printf( "k: %e, p: %e, w: %e\n", k, p, w );
 
@@ -150,7 +155,7 @@ double sigma( sigma_struct ss ) {
     gsl_function F;
     F.function = &dsigma_dk;
     F.params = &ss;
-    ss.filter_k_limit( &k0, &k1, ss.filter_params );
+    ss.FilterKLimit( &k0, &k1, ss.FilterParams );
 
     /*
     for ( k0=1e-10; k0<1e2; k0*=5 )
@@ -161,11 +166,13 @@ double sigma( sigma_struct ss ) {
 
     //r = qtrap( &dsigma_dk, &ss, k0, k1, 0.01 );
     gsl_integration_qag( &F, k0, k1,
-            GSL_INTE_ERR_ABS, 1e-3, GSL_INTE_WS_LEN,
+            GSL_INTE_ERR_ABS, 1e-6, GSL_INTE_WS_LEN,
             GSL_INTE_KEY, inte_ws, &r, &err );
-    //printf( "err: %g\n", err );
 
-    return sqrt( r / ( 2 * SQR(M_PI) ) );
+    //printf( "[in sigma] k0: %g, k1: %g, r: %g, err: %g\n", k0, k1, r, err );
+    //printf( "dsigma_dk: %g %g\n", dsigma_dk( k0, &ss ), dsigma_dk( k1, &ss ) );
+
+    return sqrt( r ) * ss.norm;
 
 }
 
@@ -178,8 +185,8 @@ void test_sigma() {
 
     R = 8000.0;
     ss.filter = &top_hat_filter;
-    ss.filter_params = &R;
-    ss.filter_k_limit = &top_hat_filter_k_limit;
+    ss.FilterParams = &R;
+    ss.FilterKLimit = &top_hat_filter_k_limit;
     ss.P = &PowerSpec_Efstathiou;
 
     printf( "Sigma8: %g\n", sigma( ss ) );
@@ -190,12 +197,12 @@ void test_sigma() {
 
 double top_hat_dsigma2dmdk( double k, void *params) {
 
-    double p, w, dwdr, kR, *R, kR3, kR2, drdm, R2, d2fac;
+    double p, w, dwdr, kR, *R, kR3, kR2, drdm, R2;
 
     sigma_struct *ss;
     ss = params;
 
-    R = ss->filter_params;
+    R = ss->FilterParams;
 
     p = (*(ss->P))( k );
 
@@ -204,7 +211,7 @@ double top_hat_dsigma2dmdk( double k, void *params) {
     kR2 = kR * kR;
     kR3 = kR2 * kR;
 
-    w = (*(ss->filter))( k, ss->filter_params );
+    w = (*(ss->filter))( k, ss->FilterParams );
 
     if ( kR < 1e-10 )
         dwdr = 0;
@@ -213,42 +220,37 @@ double top_hat_dsigma2dmdk( double k, void *params) {
 
     drdm = 1 / ( 4 * M_PI * All.RhoM * R2 );
 
-    return 0;
-    //return SQR(k) * p * 2 * w * dwdr * drdm * d2fac;
+    return SQR(k) * p * 2 * w * dwdr * drdm;
 
 }
 
-double dsigma2dm( double M, sigma_struct ss ) {
 
-    /*
-    double R, d2fac, k0, k1, r, err, sigmaM;
+double dsigma2dm( sigma_struct ss ) {
 
-    R = 3 * M / pow( 3 * M_PI * All.RhoM, 1.0/3.0 );
-
-    ss.filter = &top_hat_filter;
-    ss.filter_params = &R;
-    ss.filter_k_limit = &top_hat_filter_k_limit;
-    ss.norm = All.SigmaNorm;
-    sigmaM = sigma( ss );
-
-    ss.dsigma2dmdk = &top_hat_dsigma2dmdk;
-    d2fac = M*1e4 / sigmaM;
-    ss.dsigma2dmdk_params = &d2fac;
+    double k0, k1, r, err;
 
     gsl_function F;
     F.function = ss.dsigma2dmdk;
     F.params = ss.dsigma2dmdk_params;
 
-    ss.filter_k_limit( &k0, &k1, ss.filter_params );
+    (*ss.FilterKLimit)( &k0, &k1, ss.FilterParams );
 
     gsl_integration_qag( &F, k0, k1,
-            GSL_INTE_ERR_ABS, GSL_INTE_ERR_REL, GSL_INTE_WS_LEN,
+            GSL_INTE_ERR_ABS, 1e-6, GSL_INTE_WS_LEN,
             GSL_INTE_KEY, inte_ws, &r, &err );
 
     return SQR(ss.norm) * r;
-    */
 
-    return 0;
+}
+
+void MtoFilterParams( double M, void *params ) {
+
+    double R, *p;
+    sigma_struct *ss;
+    ss = params;
+    R =  pow( 3.0 * M / (4 * M_PI * All.RhoM), 1.0/3.0 );
+    p = ss->FilterParams;
+    p[0] = R;
 
 }
 
@@ -256,44 +258,71 @@ void init_ps() {
 
     double R, sigma8;
 
-    writelog( "init ps norm\n" );
+    R = 8000.0;
 
-    R = 8.0 / All.HubbleParam;
+    writelog( "init ps ...\n" );
+    ps_ss.P = &PowerSpec_Efstathiou;
+    ps_ss.filter = &top_hat_filter;
+    ps_ss.FilterKLimit = &top_hat_filter_k_limit;
+    ps_ss.dsigma2dmdk = &top_hat_dsigma2dmdk;
+    ps_ss.dsigma2dmdk_params = &ps_ss;
+    ps_ss.MtoFilterParams = &MtoFilterParams;
 
-    global_ss.P = &PowerSpec_Efstathiou;
-    global_ss.filter = &top_hat_filter;
-    global_ss.filter_k_limit = &top_hat_filter_k_limit;
-    global_ss.filter_params = &R;
+    ps_ss.norm = 1;
+    ps_ss.FilterParams = &R;
 
-    /*
-    sigma8 = sigma( global_ss );
-    All.SigmaNorm = All.Sigma8 / sigma8;
-    global_ss.norm = All.SigmaNorm;
+    sigma8 = sigma( ps_ss );
+    ps_ss.norm = All.Sigma8 / sigma8;
 
-    global_ss.dsigma2dmdk = &top_hat_dsigma2dmdk;
-    global_ss.dsigma2dmdk_params = &global_ss;
-
-    writelog( "Sigma8: %g, SigmaNorm: %g\n", All.Sigma8, All.SigmaNorm );
-    */
+    writelog( "Sigma8: %g, sigma: %g, norm: %g\n", All.Sigma8,  sigma8, ps_ss.norm );
 
 }
 
-double dNdM( double a, double M ) {
+double PS_dndM( double a, double M ) {
 
-    /*
-    double sigma, dsig2dm, growth, Deltac;
+    double p[2];
+
+    if ( init_ps_flag ) {
+        init_ps();
+        init_ps_flag = 0;
+    }
+
+    double sigmaM, dsig2dm, growth, Deltac;
+
+    ps_ss.FilterParams = p;
+
+    (*ps_ss.MtoFilterParams)( M, &ps_ss );
+
+    //printf( "R: %g\n", *(double*)(ps_ss.FilterParams) );
 
     growth = growth_factor0( a );
-    sigma = sigmaM( M ) * growth;
-    dsig2dm = dsigma2dm( M ) * ( SQR(growth) / (2*sigma) );
+    sigmaM = sigma( ps_ss ) * growth;
+
+    dsig2dm =  dsigma2dm( ps_ss ) * ( SQR(growth) / (2*sigmaM) );
 
     Deltac = 1.68;
 
-    return ( -All.RhoM/M ) * sqrt( 2.0/M_PI ) * ( Deltac / ( SQR(sigma) ) ) *
-        dsig2dm * exp( -SQR(Deltac)/(2*SQR(sigma)) );
-        */
+    //printf( "growth: %g, sigmaM: %g, dsig2dm: %g\n", growth, sigmaM, dsigma2dm( ps_ss ) * All.RhoM / M );
 
-    return 0;
+    return ( -All.RhoM/M ) * sqrt( 2.0/M_PI ) * ( Deltac / ( SQR(sigmaM) ) ) *
+        dsig2dm * exp( -SQR(Deltac)/(2*SQR(sigmaM)) );
+
+}
+
+void test_ps() {
+
+    printf( "test ps ...\n" );
+
+    double M = 1e3, a = 1, m;
+
+
+    printf( "RhoM: %g\n", All.RhoM );
+    for( M=1e8; M<1e14; M*=1.1 ) {
+        m = M / 1e10;
+        printf( "M: %g, dNdM: %g\n", M, PS_dndM( a, m ) * 1e9 / 1e10 * ( CUBE(All.HubbleParam) * All.HubbleParam ) );
+    }
+
+    endrun( 20181026 );
 
 }
 

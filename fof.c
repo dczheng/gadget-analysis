@@ -212,7 +212,6 @@ void fof_save() {
     timer_start();
     writelog( "FoF save groups ...\n" );
 
-    create_dir( All.FoFDir );
     sprintf( fn, "%s/%s_%.2f.hdf5", All.FoFDir, All.FilePrefix, All.RedShift );
 
     hdf5_file = H5Fcreate( fn, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT );
@@ -505,6 +504,7 @@ void fof_read() {
 
 void fof() {
     long i, npart;
+    int flag, num;
     double masstot, mass;
     char fn[ FILENAME_MAX ];
     timer_start();
@@ -512,16 +512,43 @@ void fof() {
     writelog( "Start FoF ...\n" );
     sprintf( fn, "%s/%s_%.2f.hdf5", All.FoFDir, All.FilePrefix, All.RedShift );
 
+    flag = 1;
+
     if ( access( fn, 0 ) != -1 ) {
         fof_read();
-        return;
+        flag = 0;
     }
+
+    num = 0;
+
+    MPI_Reduce( &flag, &num, 1, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD );
+    MPI_Bcast( &num, 1, MPI_INT, 0, MPI_COMM_WORLD );
+
+    if ( num == NTask )
+        create_dir( All.FoFDir );
+
+    /*
+    printf( "%s\n", fn );
+    printf( "task: %i, flag: %i\n", ThisTask, flag );
+    */
+
+    writelog( "%i Task Need to do FoF ...\n", num );
+
+    if ( flag == 0 )
+        return;
+
+
+    /*
+    return;
+    endrun( 20181027 );
+    */
 
     for ( i=0, npart=0, masstot=0; i<NumPart; i++ )
         if ( ( 1 << P[i].Type ) & All.TreePartType ) {
             npart ++;
             masstot += P[i].Mass;
         }
+
     writelog( "particle type: ` " );
     for ( i=0; i<6; i++ )
         if ( ( 1 << i ) & All.TreePartType )
@@ -552,4 +579,5 @@ void fof() {
     writelog( "FoF ... done\n" );
     timer_end();
     put_block_line;
+
 }

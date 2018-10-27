@@ -63,17 +63,16 @@ void analysis(){
     if ( All.GasTemperature )
         gas_temperature();
 
-    if ( All.FoF )
+    if ( All.FoF ) {
         fof();
+        MPI_Barrier( MPI_COMM_WORLD );
+    }
 
     if ( All.MF )
         mass_function();
 
+
     if ( All.Group ) {
-
-        if ( All.FoF == 0 )
-            endrun( "FoF is required by Group Analysis!" );
-
         create_dir( All.GroupDir );
         group_analysis();
 
@@ -81,10 +80,13 @@ void analysis(){
 
     if ( All.TotSpec ) {
         total_radio_spectrum();
+    }
 
     if( All.FoF )
         fof_free();
-    }
+
+
+
 
     //tree_build();
     //tree_free();

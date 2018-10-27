@@ -71,17 +71,19 @@ int main( int argc, char *argv[] ){
     put_block_line;
 
     /******************read***********************/
+
     read_parameters( argv[1] );
+
+    check_flag();
     //test_radio();
     //test_sigma();
-
-    if ( All.Group )
-        check_group_flag();
     read_snapshot();
     /******************read***********************/
 
     set_units();
     compute_cosmo_quantities();
+
+    //test_ps();
 
     /******************analysis***********************/
     analysis();

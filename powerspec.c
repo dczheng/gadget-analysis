@@ -63,8 +63,9 @@ void compute_sigma8() {
 
     ss.P = &powerspec_interp;
     ss.filter = &top_hat_filter;
-    ss.filter_k_limit = &top_hat_filter_k_limit;
-    ss.filter_params = &R;
+    ss.FilterKLimit = &top_hat_filter_k_limit;
+    ss.FilterParams = &R;
+    ss.norm = 1 / (sqrt(2) * M_PI);
 
     All.Sigma8 = sigma( ss );
 

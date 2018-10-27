@@ -55,6 +55,7 @@ void read_parameters( char *fn ) {
         ADD_PARA( "LinkLength",                 &All.LinkLength,                 REAL );
         ADD_PARA( "OmegaBaryon",                &All.OmegaBaryon,                REAL );
         ADD_PARA( "ConvSigma",                  &All.ConvSigma,                  REAL );
+        ADD_PARA( "Sigma8",                     &All.Sigma8,                     REAL );
         ADD_PARA( "GroupMassMin",               &All.GroupMassMin,               REAL );
 
         ADD_PARA( "NumFiles",                   &All.NumFiles,                   INT );
@@ -88,6 +89,7 @@ void read_parameters( char *fn ) {
         ADD_PARA( "ReadB",                      &All.ReadB,                      INT  );
         ADD_PARA( "TotSpec",                    &All.TotSpec,                    INT  );
         ADD_PARA( "MF",                         &All.MF,                         INT  );
+        ADD_PARA( "MFBins",                     &All.MFBins,                     INT  );
         ADD_PARA( "ReadSfr",                    &All.ReadSfr,                    INT  );
 
         ADD_PARA( "GroupSpec",                  &All.GroupSpec,                  INT  );

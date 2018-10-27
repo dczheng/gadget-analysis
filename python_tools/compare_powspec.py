@@ -113,13 +113,13 @@ def calc_sigma8( k, p ):
 #sigma8 = 0.837
 
 
+sigma8 = 0.817
+
 if flag256:
-    sigma8 = 0.964479
     print( "*256*" )
     BoxSize = 100
     Nmesh  = 256
 else:
-    sigma8 = 1.02391
     print( "*128*" )
     BoxSize = 50
     Nmesh  = 128

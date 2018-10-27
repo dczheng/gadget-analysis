@@ -207,7 +207,7 @@ extern struct global_parameters_struct {
     int FoF,
         ReadHge, ReadCr, ReadB, ReadMach, ReadSfr, ReadTemp,
         MpcFlag,
-        Group, MF,
+        Group, MF, MFBins,
         GroupDens, GroupTemp, GroupSfr, GroupB, GroupMach, GroupHge,
         GroupRad, GroupSpec, TotSpec,
         GasState, GasDensity, GasTemperature,
@@ -326,10 +326,16 @@ extern struct malloc_struct ms;
 
 typedef struct sigma_struct{
 
+    double norm;
     double (*P) ( double );
     double (*filter) ( double, void* );
-    void (*filter_k_limit) ( double *, double *, void * );
-    void *filter_params;
+    void (*FilterKLimit) ( double *, double *, void * );
+    void *FilterParams;
+
+    void ( *MtoFilterParams ) ( double, void* );
+
+    double (*dsigma2dmdk) ( double, void* );
+    void *dsigma2dmdk_params;
 
 } sigma_struct;
 
