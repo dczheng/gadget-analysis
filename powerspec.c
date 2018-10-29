@@ -82,7 +82,7 @@ void powerspec() {
     long p;
     int i, x, y, z, m, xyz[3], xyz1[3], NGrid, NGrid3, index,
         *CountModes;;
-    MyFloat *pos;
+    double *pos;
     FILE *fd;
     char buf[100];
 

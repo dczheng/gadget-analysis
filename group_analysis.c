@@ -16,6 +16,7 @@ int group_present( long index ) {
     }
 
 }
+/*
 
 void group_particle_spectrum() {
 
@@ -88,6 +89,7 @@ void free_group_particle_spectrum() {
     }
 
 }
+*/
 
 double group_luminosity( int nu_index, long index ) {
 
@@ -778,10 +780,8 @@ void group_analysis() {
     put_block_line;
 
     if ( All.GroupSpec ) {
-        group_particle_spectrum();
         group_spectrum();
         group_spectrum_index();
-        free_group_particle_spectrum();
     }
 
     put_block_line;

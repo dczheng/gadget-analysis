@@ -86,3 +86,6 @@ void test_sigma();
 double PS_dndM( double a, double M );
 
 void check_flag();
+
+void compute_particle_radio();
+void free_particle_radio();

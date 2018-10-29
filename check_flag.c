@@ -10,7 +10,17 @@ void check_flag() {
         if ( All.FoF == 0 )
             endrun( "FoF is required by Group Analysis!" )
         check_group_flag();
+
     }
 
+    if ( All.RadSpec ) {
+
+        if ( All.ReadB == 0 )
+            endrun( "ReadB is required by Rad Analysis!" )
+
+        if ( All.ReadHge == 0 )
+            endrun( "ReadHge is required by Rad Analysis!" )
+
+    }
 
 }

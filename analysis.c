@@ -13,11 +13,6 @@ void init_analysis() {
     init_conv_kernel();
     init_img();
 
-#ifdef RADIO_F_INTERP
-    if ( All.TotSpec || All.GroupSpec )
-        init_tab_F();
-#endif
-
     writelog( "initialize analysis... done.\n" );
     put_block_line;
 }
@@ -29,10 +24,9 @@ void free_analysis() {
     free_conv_kernel();
     free_img();
 
-#ifdef RADIO_F_INTERP
-    if ( All.TotSpec || All.GroupSpec )
-        free_tab_F();
-#endif
+    if ( All.RadSpec ) {
+        free_particle_radio();
+    }
 
     writelog( "free analysis ... done.\n" );
     put_block_line;
@@ -67,6 +61,9 @@ void analysis(){
         fof();
         MPI_Barrier( MPI_COMM_WORLD );
     }
+
+    if ( All.RadSpec )
+        compute_particle_radio();
 
     if ( All.MF )
         mass_function();

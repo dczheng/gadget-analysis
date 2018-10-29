@@ -33,6 +33,7 @@ void read_parameters( char *fn ) {
 
         ADD_PARA( "FilePrefix",                 All.FilePrefix,                  STRING );
         ADD_PARA( "FoFDir",                     All.FoFDir,                      STRING );
+        ADD_PARA( "RadDir",                     All.RadDir,                      STRING );
         ADD_PARA( "GroupDir",                   All.GroupDir,                    STRING );
 
         ADD_PARA( "UnitMass_in_g",              &All.UnitMass_in_g,              REAL );
@@ -91,8 +92,9 @@ void read_parameters( char *fn ) {
         ADD_PARA( "MF",                         &All.MF,                         INT  );
         ADD_PARA( "MFBins",                     &All.MFBins,                     INT  );
         ADD_PARA( "ReadSfr",                    &All.ReadSfr,                    INT  );
-
         ADD_PARA( "GroupSpec",                  &All.GroupSpec,                  INT  );
+
+        ADD_PARA( "RadSpec",                    &All.RadSpec,                    INT  );
         ADD_PARA( "NuMin",                      &All.NuMin,                      REAL );
         ADD_PARA( "NuMax",                      &All.NuMax,                      REAL );
         ADD_PARA( "NuNum",                      &All.NuNum,                      INT  );

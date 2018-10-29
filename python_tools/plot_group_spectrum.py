@@ -13,6 +13,7 @@ parser.add_argument( 'f' )
 parser.add_argument( '-t', type=str, help='data type', required=True )
 parser.add_argument( '-fit', help='fitting', action='store_true' )
 parser.add_argument( '-pdf', help='save pdf', action='store_true' )
+parser.add_argument( '-nosr', help='no sr', action='store_true' )
 
 args = parser.parse_args()
 
@@ -44,6 +45,9 @@ for i in range( 1, m ):
     index = data[ i, 0 ]
     #p = data[ i, 2:-1 ]
     p = data[ i, 2: ]
+
+    if args.nosr:
+        p = p * 1e23 * 1000
     if i % 2:
         ss = '.-'
     else:
@@ -70,7 +74,11 @@ plt.yscale( 'log' )
 
 if ( data_type == 'rad' ):
     plt.xlabel( r'$\nu \; [MHz]$' )
-    plt.ylabel( r'$ I_{\nu}\; [erg \, cm^{-2} \, sr^{-1} \, Hz^{-1} ]$' )
+
+    if args.nosr:
+        plt.ylabel( r'$ I_{\nu}\; [mJy]$' )
+    else:
+        plt.ylabel( r'$ I_{\nu}\; [erg \, s^{-1} \, cm^{-2} \, sr^{-1} \, Hz^{-1} ]$' )
 
 if ( data_type == 'ele' ):
     plt.xlabel( r'$q$' )

@@ -24,6 +24,12 @@ double particle_radio2( double nu,  SphParticleData *part ) {
     params[2] = part->CRE_qmin;
     params[3] = part->CRE_qmax;
 
+    /*
+    printf( "c: %g, a: %g, qmin: %g, qmax: %g\n", params[0],
+            params[1], params[2], params[3] );
+            */
+
+
 
     if (  params[ 0] *
             params[1] *
@@ -50,6 +56,212 @@ double particle_radio( double nu, long i ) {
     return particle_radio2( nu, &SphP[i] );
 
 }
+
+void save_particle_radio() {
+
+    char fn[ FILENAME_MAX ];
+    double *buf;
+    int ndims, j;
+    long i;
+    hsize_t dims[2];
+
+    hid_t hdf5_file, hdf5_dataset, hdf5_dataspace, hdf5_attribute, hdf5_type;
+
+    sprintf( fn, "%s/rad_%.2f.hdf5", All.RadDir, All.RedShift );
+
+    hdf5_file = H5Fcreate( fn, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT );
+
+    hdf5_dataspace = H5Screate( H5S_SCALAR );
+    hdf5_attribute = H5Acreate( hdf5_file, "NuNum", H5T_NATIVE_INT, hdf5_dataspace, H5P_DEFAULT );
+    H5Awrite( hdf5_attribute, H5T_NATIVE_INT, &All.NuNum );
+    H5Aclose( hdf5_attribute );
+    H5Sclose( hdf5_dataspace );
+
+    hdf5_dataspace = H5Screate( H5S_SCALAR );
+    hdf5_attribute = H5Acreate( hdf5_file, "NuMin", H5T_NATIVE_INT, hdf5_dataspace, H5P_DEFAULT );
+    H5Awrite( hdf5_attribute, H5T_NATIVE_DOUBLE, &All.NuMin );
+    H5Aclose( hdf5_attribute );
+    H5Sclose( hdf5_dataspace );
+
+    hdf5_dataspace = H5Screate( H5S_SCALAR );
+    hdf5_attribute = H5Acreate( hdf5_file, "NuMax", H5T_NATIVE_INT, hdf5_dataspace, H5P_DEFAULT );
+    H5Awrite( hdf5_attribute, H5T_NATIVE_DOUBLE, &All.NuMax );
+    H5Aclose( hdf5_attribute );
+    H5Sclose( hdf5_dataspace );
+
+    ndims = 2;
+    dims[0] = N_Gas;
+    dims[1] = All.NuNum;
+
+    mymalloc1( buf, sizeof(double) * N_Gas * All.NuNum );
+
+    for ( i=0; i<N_Gas; i++ )
+        for ( j=0; j<All.NuNum; j++ )
+            buf[ i * All.NuNum + j ] = SphP[i].P[j];
+
+    hdf5_dataspace = H5Screate_simple( ndims, dims, NULL );
+    hdf5_type = H5Tcopy( H5T_NATIVE_DOUBLE );
+    hdf5_dataset = H5Dcreate( hdf5_file, "Radio", hdf5_type, hdf5_dataspace, H5P_DEFAULT );
+    H5Dwrite( hdf5_dataset, hdf5_type, hdf5_dataspace, H5S_ALL, H5P_DEFAULT, buf );
+    H5Dclose( hdf5_dataset );
+    H5Tclose( hdf5_type );
+    H5Sclose( hdf5_dataspace );
+
+    myfree( buf );
+
+    H5Fclose( hdf5_file );
+
+
+}
+
+int read_particle_radio() {
+
+    double *buf, NuMin, NuMax;
+    int nuN, j;
+    long i;
+    char fn[ FILENAME_MAX ];
+    hid_t hdf5_file, hdf5_dataset, hdf5_attribute, hdf5_type;
+
+    writelog( "read radio ...\n" );
+
+    sprintf( fn, "%s/rad_%.2f.hdf5", All.RadDir, All.RedShift );
+
+    hdf5_file = H5Fopen( fn, H5F_ACC_RDWR, H5P_DEFAULT );
+
+    hdf5_attribute = H5Aopen_name( hdf5_file, "NuNum" );
+    H5Aread( hdf5_attribute, H5T_NATIVE_INT, &nuN );
+    H5Aclose( hdf5_attribute );
+
+    if ( nuN != All.NuNum ) {
+        H5Fclose( hdf5_file );
+        return 0;
+    }
+
+    hdf5_attribute = H5Aopen_name( hdf5_file, "NuMin" );
+    H5Aread( hdf5_attribute, H5T_NATIVE_DOUBLE, &NuMin );
+    H5Aclose( hdf5_attribute );
+
+    if ( NuMin != All.NuMin ) {
+        H5Fclose( hdf5_file );
+        return 0;
+    }
+
+    hdf5_attribute = H5Aopen_name( hdf5_file, "NuMax" );
+    H5Aread( hdf5_attribute, H5T_NATIVE_DOUBLE, &NuMax );
+    H5Aclose( hdf5_attribute );
+
+    if ( NuMax != All.NuMax ) {
+        H5Fclose( hdf5_file );
+        return 0;
+    }
+
+    mymalloc1( buf, sizeof(double) * N_Gas * All.NuNum );
+
+    hdf5_type = H5Tcopy( H5T_NATIVE_DOUBLE );
+    hdf5_dataset = H5Dopen( hdf5_file, "Radio" );
+    H5Dread( hdf5_dataset, hdf5_type, H5S_ALL, H5S_ALL, H5P_DEFAULT, buf );
+    H5Dclose( hdf5_dataset );
+    H5Tclose( hdf5_type );
+
+    for( i=0; i<N_Gas; i++ ) {
+
+        SphP[i].P = malloc( sizeof( double ) * All.NuNum );
+        for( j=0; j<All.NuNum; j++ )
+            SphP[i].P[j] = buf[ i * All.NuNum +j ];
+
+    }
+
+    myfree( buf );
+
+    H5Fclose( hdf5_file );
+
+    return 1;
+
+}
+
+void compute_particle_radio() {
+
+    double numin, numax, dlognu, nu;
+    int nuN, signal, j, num;
+    long i, flag;
+    char fn[ FILENAME_MAX ];
+
+    writelog( "Start compute particle radio ... \n" )
+
+    sprintf( fn, "%s/rad_%.2f.hdf5", All.RadDir, All.RedShift );
+
+    flag = 1;
+
+    if ( access( fn, 0 ) != -1 ) {
+
+        if ( read_particle_radio() )
+            flag = 0;
+
+    }
+
+    MPI_Reduce( &flag, &num, 1, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD );
+    MPI_Bcast(  &num, 1, MPI_INT, 0, MPI_COMM_WORLD );
+
+
+    if ( num == NTask )
+        create_dir( All.RadDir );
+
+    writelog( "%i Task Need to compute radio.\n", num );
+
+    if ( flag == 0 )
+        return;
+
+
+#ifdef RADIO_F_INTERP
+        init_tab_F();
+#endif
+
+    nuN = All.NuNum;
+    numin = All.NuMin;
+    numax = All.NuMax;
+
+    dlognu = log( numax/numin ) / ( nuN - 1 );
+
+    signal = N_Gas / 10;
+
+    for( i=0; i<N_Gas; i++ ) {
+
+
+        if ( i % signal == 0 )
+            writelog( "[%10li] [%10li] [%5.1f%%]\n", i, N_Gas, ((double)(i)) / N_Gas * 100 );
+
+        SphP[i].P = malloc( sizeof( double ) * nuN );
+
+        for( j=0; j<nuN; j++ ) {
+
+            nu = exp( log(numin) + j * dlognu ) * 1e6;
+
+            //printf( "nu: %g\n", nu );
+
+            SphP[i].P[j] = particle_radio( nu, i );
+
+        }
+
+    }
+
+
+#ifdef RADIO_F_INTERP
+        free_tab_F();
+#endif
+
+    save_particle_radio();
+
+    //endrun( 20181027 );
+}
+
+void free_particle_radio() {
+
+    long i;
+    for( i=0; i<N_Gas; i++ )
+        free( SphP[i].P );
+
+}
+
 
 void test_qmax() {
 
@@ -213,4 +425,7 @@ double particle_radio( double nu, long i ) {
 
 }
 */
+
+
+
 

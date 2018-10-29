@@ -212,7 +212,7 @@ void fof_save() {
     timer_start();
     writelog( "FoF save groups ...\n" );
 
-    sprintf( fn, "%s/%s_%.2f.hdf5", All.FoFDir, All.FilePrefix, All.RedShift );
+    sprintf( fn, "%s/fof_%.2f.hdf5", All.FoFDir, All.RedShift );
 
     hdf5_file = H5Fcreate( fn, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT );
 
@@ -384,7 +384,7 @@ void fof_read() {
     timer_start();
     writelog( "read fof...\n" );
 
-    sprintf( fn, "%s/%s_%.2f.hdf5", All.FoFDir, All.FilePrefix, All.RedShift );
+    sprintf( fn, "%s/fof_%.2f.hdf5", All.FoFDir, All.RedShift );
 
     hdf5_file = H5Fopen( fn, H5F_ACC_RDWR, H5P_DEFAULT );
 
@@ -510,7 +510,7 @@ void fof() {
     timer_start();
 
     writelog( "Start FoF ...\n" );
-    sprintf( fn, "%s/%s_%.2f.hdf5", All.FoFDir, All.FilePrefix, All.RedShift );
+    sprintf( fn, "%s/fof_%.2f.hdf5", All.FoFDir, All.RedShift );
 
     flag = 1;
 

@@ -3,7 +3,7 @@
 void total_radio_spectrum() {
 
     long index;
-    int Nnu, i, signal, j, k;
+    int Nnu, i, signal, j, k, nu_i;
     double *nu, *flux, numin, numax, dnu, tmp,
            *alist, *fluxlist, *dislist;
     char buf[100];
@@ -12,7 +12,7 @@ void total_radio_spectrum() {
     writelog( "total radio spectrum ...\n" );
 
     Nnu = All.NuNum;
-    signal = N_Gas / 100;
+    signal = N_Gas / 10;
     numin = All.NuMin;
     numax = All.NuMax;
     dnu = log( numax/numin) / (Nnu-1);
@@ -24,6 +24,9 @@ void total_radio_spectrum() {
         nu[i] = exp(log(numin) + i * dnu);
     }
 
+    //tmp = 1.0 / ( SQR(All.Time) * ( 4.0 * PI * SQR( All.ComDis * g2c.cm ) ) * ( SQR( All.BoxSize / All.ComDis ) ) );
+    tmp = 1.0 / ( ( 4.0 * PI * SQR( All.LumDis * g2c.cm ) ) * ( SQR( All.BoxSize / All.ComDis ) ) );
+
     if ( All.RedShift > 1e-10 )
             for ( index=0; index<N_Gas; index++ ) {
                     if  ( index % signal == 0 )
@@ -31,21 +34,43 @@ void total_radio_spectrum() {
                                index, N_Gas, ( (double)index )/N_Gas * 100 );
 
                     for ( i=0; i<Nnu; i++ ) {
-                        tmp = particle_radio( nu[i]*1e6 / All.Time, index );
-                        if ( tmp < 0 )
-                            endrun( 20181006 );
-                        flux[i] += tmp;
+                        nu_i = log( nu[i]/All.Time / numin ) / dnu;
+                        //tmp = particle_radio( nu[i]*1e6 / All.Time, index );
+                        //if ( tmp < 0 )
+                         //   endrun( 20181006 );
+                         //
+                        if ( nu_i < 0 || nu_i >= Nnu )
+                            continue;
+
+                        flux[i] += SphP[index].P[nu_i];
+
+                        if ( SphP[index].P[nu_i] * tmp > 10 || SphP[index].P[nu_i] < 0 || flux[i] < 0 ) {
+                            printf( "%i, %g, %g, %g\n", nu_i, nu[ nu_i ], SphP[index].P[nu_i], flux[i] );
+                            endrun( 20181029 );
+                        }
+
                     }
         }
 
-    tmp = 1.0 / ( SQR(All.Time) * ( 4.0 * PI * SQR( All.ComDis * g2c.cm ) ) * ( SQR( All.BoxSize / All.ComDis ) ) );
 
     for ( i=0; i<Nnu; i++ )
         flux[i] *= tmp;
 
     create_dir( "TotalSpec" );
 
+    sprintf( buf, "./TotalSpec/Spec_Tot_%.2f.dat", All.RedShift );
+
+    fd = fopen( buf, "w" );
+
+    for( i=0; i<Nnu; i++ )
+        fprintf( fd, "%g %g\n", nu[i], flux[i] );
+
+    fclose( fd );
+
     MPI_Barrier( MPI_COMM_WORLD );
+
+    //endrun( 20181029 );
+
     mymalloc1( alist, sizeof( double ) * NTask );
     mymalloc1( dislist, sizeof( double ) * NTask );
     mymalloc1( fluxlist, sizeof( double ) * NTask * Nnu );
@@ -84,7 +109,7 @@ void total_radio_spectrum() {
                 flux[i] += 0.5 * ( fluxlist[j*Nnu+i] + fluxlist[(j+1)*Nnu+i] ) * ( dislist[j+1] - dislist[j] );
             }
 
-        sprintf( buf, "./TotalSpec/%s_Spec_Tot.dat", All.FilePrefix );
+        sprintf( buf, "./TotalSpec/Spec_Tot.dat" );
         fd = fopen( buf, "w" );
 
         for ( i=0; i<Nnu; i++ )

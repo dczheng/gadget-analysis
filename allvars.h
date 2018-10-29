@@ -49,7 +49,7 @@
 
 #define BCMB0                    (3.24e-6) // gauss
 
-//#define RADIO_F_INTERP
+#define RADIO_F_INTERP
 
 #define GSL_INTE_WS_LEN 10000
 #define GSL_INTE_ERR_ABS ((double)(0.0))
@@ -74,9 +74,6 @@ typedef double OutputFloat;
 #else
 typedef float OutputFloat;
 #endif
-
-typedef double MyFloat;
-//typedef float MyFloat;
 
 struct io_header{
   int npart[6];
@@ -151,43 +148,43 @@ enum group_fields {
 
 
 typedef struct Particle_Data {
-    MyFloat Pos[3];
-    MyFloat Mass;
-    MyFloat Vel[3];
-    MyFloat Pot;
-    MyFloat Acc[3];
+    double Pos[3];
+    double Mass;
+    double Vel[3];
+    double Pot;
+    double Acc[3];
     MyIDType ID;
     int Type;
 } ParticleData;
 extern ParticleData  *P;
 
 typedef struct Sph_Particle_Data {
-    MyFloat u;
-    MyFloat Density;
-    MyFloat Hsml;
-    MyFloat NumNgb;
-    MyFloat Pressure;
-    MyFloat HydroAccel[3];
-    MyFloat MachNumber;
-    MyFloat CR_C0;
-    MyFloat CR_Q0;
-    MyFloat CR_n0;
-    MyFloat CR_E0;
-    MyFloat CRE_C;
-    MyFloat CRE_Alpha;
-    MyFloat CRE_qmin;
-    MyFloat CRE_qmax;
-    MyFloat CRE_n;
-    MyFloat CRE_e;
-    MyFloat *P;
-    MyFloat B[3];
-    MyFloat divB;
-    MyFloat dBdt;
-    MyFloat elec;
-    MyFloat Temp;
-    MyFloat BH_Mass;
-    MyFloat Star_Mass;
-    MyFloat sfr;
+    double u;
+    double Density;
+    double Hsml;
+    double NumNgb;
+    double Pressure;
+    double HydroAccel[3];
+    double MachNumber;
+    double CR_C0;
+    double CR_Q0;
+    double CR_n0;
+    double CR_E0;
+    double CRE_C;
+    double CRE_Alpha;
+    double CRE_qmin;
+    double CRE_qmax;
+    double CRE_n;
+    double CRE_e;
+    double *P;
+    double B[3];
+    double divB;
+    double dBdt;
+    double elec;
+    double Temp;
+    double BH_Mass;
+    double Star_Mass;
+    double sfr;
 } SphParticleData;
 extern SphParticleData *SphP;
 
@@ -201,6 +198,7 @@ extern char global_buffer[1024];
 extern struct global_parameters_struct {
     char FilePrefix[ MYFILENAME_MAX ],
          FoFDir[ MYFILENAME_MAX ],
+         RadDir[ MYFILENAME_MAX ],
          GroupDir[ MYFILENAME_MAX ],
          *ToolsPath, Sproj;
 
@@ -212,7 +210,7 @@ extern struct global_parameters_struct {
         GroupRad, GroupSpec, TotSpec,
         GasState, GasDensity, GasTemperature,
         KernelInterpolation,
-        ConvN, GroupEleSpec,
+        ConvN, GroupEleSpec, RadSpec,
         PowSpec, PowSpecNGrid, PowSpecPartType, PowSpecBins,
 
         QNum, NuNum, FoFMinLen, proj_i, proj_j, proj_k,
