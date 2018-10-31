@@ -78,6 +78,9 @@ int main( int argc, char *argv[] ){
     //test_radio();
     //test_sigma();
     read_snapshot();
+
+    do_sync( "read data" );
+
     /******************read***********************/
 
     set_units();

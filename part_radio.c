@@ -182,8 +182,8 @@ int read_particle_radio() {
 void compute_particle_radio() {
 
     double numin, numax, dlognu, nu;
-    int nuN, signal, j, num;
-    long i, flag;
+    int nuN, signal, j, num, flag;
+    long i;
     char fn[ FILENAME_MAX ];
 
     writelog( "Start compute particle radio ... \n" )
@@ -210,6 +210,12 @@ void compute_particle_radio() {
 
     if ( flag == 0 )
         return;
+
+    printf( "%i\n", flag );
+    printf( "%i\n", flag );
+    printf( "%i\n", flag );
+    printf( "%i\n", flag );
+    printf( "%i\n", flag );
 
 
 #ifdef RADIO_F_INTERP

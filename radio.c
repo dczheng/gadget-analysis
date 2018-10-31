@@ -141,7 +141,7 @@ double radio( double (*f)( double, void* ), double *params,
     ri.B = B;
     ri.nu = nu;
 
-    err = 1e-2;
+    err = 1e-1;
 
     t = sqrt( nu / BESSEL_UPPER_LIMIT / ( 0.1875 * B * aux_c.e_mec )-1 );
 

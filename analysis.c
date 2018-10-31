@@ -59,8 +59,9 @@ void analysis(){
 
     if ( All.FoF ) {
         fof();
-        MPI_Barrier( MPI_COMM_WORLD );
+        do_sync( "fof" );
     }
+
 
     if ( All.RadSpec )
         compute_particle_radio();
@@ -77,6 +78,7 @@ void analysis(){
 
     if ( All.TotSpec ) {
         total_radio_spectrum();
+        do_sync( "total radio spectrum" );
     }
 
     if( All.FoF )

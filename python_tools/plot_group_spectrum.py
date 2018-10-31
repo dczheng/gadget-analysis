@@ -46,8 +46,8 @@ for i in range( 1, m ):
     #p = data[ i, 2:-1 ]
     p = data[ i, 2: ]
 
-    if args.nosr:
-        p = p * 1e23 * 1000
+    p = p * 1e23
+
     if i % 2:
         ss = '.-'
     else:
@@ -76,9 +76,9 @@ if ( data_type == 'rad' ):
     plt.xlabel( r'$\nu \; [MHz]$' )
 
     if args.nosr:
-        plt.ylabel( r'$ I_{\nu}\; [mJy]$' )
+        plt.ylabel( r'$ I_{\nu}\; [Jy]$' )
     else:
-        plt.ylabel( r'$ I_{\nu}\; [erg \, s^{-1} \, cm^{-2} \, sr^{-1} \, Hz^{-1} ]$' )
+        plt.ylabel( r'$ I_{\nu}\; [Jy/sr]$' )
 
 if ( data_type == 'ele' ):
     plt.xlabel( r'$q$' )
