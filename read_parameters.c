@@ -23,11 +23,11 @@ void read_parameters( char *fn ) {
         fd = fopen( fn, "r" );
 
         if ( NULL == fd ){
-            endrun1( "Faile to Open Parameter file %s\n", fn );
+            endrun0( "Faile to Open Parameter file %s\n", fn );
         }
 
         if ( sizeof( long ) != 8 )
-            endrun( "Type `long` is no 64 bit on this platform. Stopping." );
+            endruns( "Type `long` is no 64 bit on this platform. Stopping." );
 
         nt = 0;
 
@@ -156,7 +156,7 @@ void read_parameters( char *fn ) {
             }
         }
         if ( errflag )
-            endrun();
+            endrun(20181107);
         fclose( fd );
     }
     MPI_Barrier( MPI_COMM_WORLD );

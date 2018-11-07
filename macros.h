@@ -161,19 +161,20 @@
     fprintf( MemUseFileFd, sep_str ); \
 }
 
-#define endrun( ... ) {\
-    fprintf( stderr, "%s\n", #__VA_ARGS__ ); \
+#define endrun0( fmt, ... ) {\
+    fprintf( stderr, fmt, ##__VA_ARGS__ ); \
     fprintf( stderr, "END IN: ( %s %s %i )\n" , __FILE__, __FUNCTION__, __LINE__ ); \
     MPI_Abort( MPI_COMM_WORLD, 0 ); \
     exit( 0 ); \
 }
 
-#define endrun1( fmt, ... ) {\
-    sprintf( global_buffer, fmt, ##__VA_ARGS__ );\
-    endrun( global_buffer ); \
+#define endruns( s ) {\
+    endrun0( "%s\n", s ); \
 }
 
-
+#define endrun( i ) {\
+    endrun0( "%i\n", i ); \
+}
 
 
 #define timer_start() \

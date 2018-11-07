@@ -50,13 +50,13 @@ void gas_state() {
     for ( k=0; k<N_Gas; k++ ) {
         LogTemp = SphP[k].Temp;
         if ( LogTemp <= 0 )
-            endrun();
+            endrun(20181107);
         LogTemp = log10( LogTemp );
 
         LogDens = SphP[k].Density / All.RhoBaryon;
 
         if ( LogDens <= 0 )
-            endrun();
+            endrun(20181107);
         LogDens = log10( LogDens );
 
         i = ( LogTemp - LogTempMin ) / DLogTemp;

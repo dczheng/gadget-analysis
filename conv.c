@@ -10,7 +10,7 @@ void init_conv_kernel( double ds ) {
     double r;
     writelog( "init conv kernel ...\n" );
     if ( All.ConvN % 2 == 0 )
-        endrun( "Even ConvN is not supported!" );
+        endruns( "Even ConvN is not supported!" );
 
     mymalloc1( All.ConvKernel, SQR( All.ConvN ) * sizeof( double ) );
     N = All.ConvN;

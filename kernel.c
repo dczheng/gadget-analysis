@@ -24,7 +24,7 @@ void init_kernel_matrix() {
             memset( All.KernelMat3D[pt], 0, sizeof( double ) * N * N * N );
 
             if ( All.SofteningTable[pt] == 0 )
-                endrun1( "SofteningTable[%d] is zeros !!!\n", pt );
+                endrun0( "SofteningTable[%d] is zeros !!!\n", pt );
 
             h = All.SofteningTable[pt];
             dh = h / Nhalf;

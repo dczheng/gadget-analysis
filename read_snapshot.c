@@ -755,7 +755,7 @@ void attach_some_Star_BH_to_Gas() {
                 continue;
 
             if ( P[index].Type != 0 )
-                endrun( "some error appear." );
+                endruns( "some error appear." );
 
             SphP[index].Star_Mass += P[i].Mass;
             n++;
@@ -786,7 +786,7 @@ void attach_some_Star_BH_to_Gas() {
                 continue;
 
             if ( P[index].Type != 0 )
-                endrun( "some error appear." );
+                endruns( "some error appear." );
 
             SphP[index].BH_Mass += P[i].Mass;
             n++;
@@ -849,7 +849,7 @@ void check_data( int err ) {
     for ( i=0; i<NumPart; i++ )
         if ( P[i].Mass == 0 ) {
             //printf( "P[%li].Mass = 0 !!!, Type: %i\n", i, P[i].Type );
-            endrun();
+            endrun(20181107);
         }
 
 
@@ -881,7 +881,7 @@ void read_snapshot() {
     for ( i=0; i<6; i++ ) {
         printf( "%.20f\n", header.mass[i] );
     }
-    endrun();
+    endrun(20181107);
     */
     show_header( header );
     for ( i=0; i<6; i++ ){
@@ -962,6 +962,6 @@ void read_snapshot() {
     construct_id_to_index();
     attach_some_Star_BH_to_Gas();
 
-    //endrun();
+    //endrun(20181107);
 }
 

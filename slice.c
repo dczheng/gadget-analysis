@@ -9,7 +9,7 @@ void slice() {
 
     if ( All.End[All.proj_i] - All.Start[All.proj_i] !=
             All.End[All.proj_j] - All.Start[All.proj_j] )
-        endrun( "Projection Region Must Be Square!..." );
+        endruns( "Projection Region Must Be Square!..." );
 
     if ( All.End[0] == 0 ){
         All.Start[0] = 0;

@@ -22,10 +22,10 @@ int main( int argc, char *argv[] ){
     if ( ThisTask == 0 ) {
 
         if ( argc < 2 )
-            endrun( "Parameters file is required on command line! " );
+            endruns( "Parameters file is required on command line! " );
 
         if ( access( argv[1], 0 ) == -1 )
-            endrun1( "Parameters file `%s` is invalid!\n", argv[1] );
+            endrun0( "Parameters file `%s` is invalid!\n", argv[1] );
     }
 
     time1 = time( NULL );
@@ -39,7 +39,7 @@ int main( int argc, char *argv[] ){
             printf( "create directory ./gadget-analysis.log/ by task 0\n" );
 
             if ( mkdir( "./gadget-analysis.log/", 0755 ) == -1 )
-                endrun( "failed create directory `./gadget-analysis.log/`" );
+                endruns( "failed create directory `./gadget-analysis.log/`" );
         }
     }
 
@@ -65,7 +65,7 @@ int main( int argc, char *argv[] ){
     if ( strcmp( All.ToolsPath, "" ) == 0 ){
         writelog( "Please set `GADGET_TOOLS` evironment variable.\n" );
         put_block_line;
-        endrun();
+        endrun(20181107);
     }
     writelog( "GADGET_TOOLS: %s\n", All.ToolsPath );
     put_block_line;

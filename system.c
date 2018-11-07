@@ -9,7 +9,7 @@ void create_dir( char *s ) {
             writelog( "create directory `%s` by task 0\n", s );
 
             if ( mkdir( s, 0755) == -1 )
-                endrun1( "failed create directory %s.\n", s );
+                endrun0( "failed create directory %s.\n", s );
         }
     }
     MPI_Barrier( MPI_COMM_WORLD );

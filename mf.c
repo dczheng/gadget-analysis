@@ -30,7 +30,7 @@ void mass_function() {
     writelog( "m_min: %g, m_max: %g\n", m_min, m_max );
 
     if ( m_min == m_max ) {
-        endrun( "some error appear!" );
+        endruns( "some error appear!" );
     }
 
     m_split = All.MFMSplit;

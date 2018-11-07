@@ -77,7 +77,7 @@ void B_Pdf() {
 
         LogDens = SphP[k].Density / All.RhoBaryon;
         if ( LogDens <= 0 )
-            endrun();
+            endrun( 20181107 );
         LogDens = log10( LogDens );
 
         i = ( LogB - LogBMin ) / DLogB;
