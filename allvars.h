@@ -205,7 +205,7 @@ extern struct global_parameters_struct {
     int FoF,
         ReadHge, ReadCr, ReadB, ReadMach, ReadSfr, ReadTemp,
         MpcFlag,
-        Group, MF, MFBins,
+        Group, MF, MFBins, BPdf,
         GroupDens, GroupTemp, GroupSfr, GroupB, GroupMach, GroupHge,
         GroupRad, GroupSpec, TotSpec,
         GasState, GasDensity, GasTemperature,
@@ -236,7 +236,7 @@ extern struct global_parameters_struct {
            Hubble, Omega0, OmegaLambda, OmegaBaryon,
            Sigma8,
            *ConvKernel, ConvSigma, NuMin, NuMax, GroupMassMin, Freq,
-           QMin, QMax;
+           QMin, QMax, MFMmin, MFMmax, MFMSplit;
 
     long SliceStart[6], SliceEnd[6];
 }All;

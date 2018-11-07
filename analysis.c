@@ -48,6 +48,10 @@ void analysis(){
         gas_state();
     }
 
+    if ( All.BPdf ) {
+        B_Pdf();
+    }
+
     if ( All.PowSpec )
         powerspec();
 

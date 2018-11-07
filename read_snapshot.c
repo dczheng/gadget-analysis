@@ -867,9 +867,9 @@ void read_snapshot() {
     writelog( "read_data ...\n" );
 
 #ifdef OUTPUT_IN_DOUBLEPRECISION
-    writelog( "******Note: output precision is double ! ******\n" );
+    writelog( "****** Note: output precision is double ! ******\n" );
 #else
-    writelog( "******Note: output precision is float ! ******\n" );
+    writelog( "****** Note: output precision is float ! ******\n" );
 #endif
 
     sprintf( file_name, "%s_%03d.%3i.hdf5", All.FilePrefix, All.StartSnapIndex + ThisTask, 0 );

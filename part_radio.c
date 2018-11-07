@@ -211,13 +211,6 @@ void compute_particle_radio() {
     if ( flag == 0 )
         return;
 
-    printf( "%i\n", flag );
-    printf( "%i\n", flag );
-    printf( "%i\n", flag );
-    printf( "%i\n", flag );
-    printf( "%i\n", flag );
-
-
 #ifdef RADIO_F_INTERP
         init_tab_F();
 #endif

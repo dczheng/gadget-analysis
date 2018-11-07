@@ -37,44 +37,43 @@ void gas_state() {
 
     //LogTempMax = 7;
 
-    DLogTemp = ( LogTempMax - LogTempMin ) / PicSize;
-    DLogDens = ( LogDensMax - LogDensMin ) / PicSize;
+    DLogTemp = ( LogTempMax - LogTempMin ) / (PicSize-1);
+    DLogDens = ( LogDensMax - LogDensMin ) / (PicSize-1);
+
     writelog( "DensMin: %g, DensMax: %g, TempMin: %g, TempMax: %g\n"
-            "LogDensMin: %g, LogDensMax: %g, LogTempMIn: %g, LogTempMax: %g\n"
+            "LogDensMin: %g, LogDensMax: %g, LogTempMin: %g, LogTempMax: %g\n"
             "GlobLogDensMin: %g, GlobLogDensMax: %g,\nGlobLogTempMIn: %g, GlobLogTempMax: %g\n",
             DensMin, DensMax, TempMin, TempMax,
             LogDensMin, LogDensMax, LogTempMin, LogTempMax,
             GlobLogDensMin, GlobLogDensMax, GlobLogTempMin, GlobLogTempMax );
 
-    ZSPRINTF( 0, "1" );
     for ( k=0; k<N_Gas; k++ ) {
         LogTemp = SphP[k].Temp;
-        if ( LogTemp < 0 )
+        if ( LogTemp <= 0 )
             endrun();
-        LogTemp = ( LogTemp == 0 ) ? LogTempMin : log10( LogTemp );
-
-        //if ( LogTemp > LogTempMax )
-        //    continue;
+        LogTemp = log10( LogTemp );
 
         LogDens = SphP[k].Density / All.RhoBaryon;
-        if ( LogDens < 0 )
+
+        if ( LogDens <= 0 )
             endrun();
-        LogDens = ( LogDens == 0 ) ? LogDensMin : log10( LogDens );
+        LogDens = log10( LogDens );
 
         i = ( LogTemp - LogTempMin ) / DLogTemp;
         check_picture_index( i );
 
         j = ( LogDens - LogDensMin ) / DLogDens;
         check_picture_index( j );
-        if ( i < 0 || i >= All.PicSize || j < 0 || j >= All.PicSize)
-            printf( "%i, %i\n", i, j );
+
         img[ i*PicSize + j ]++;
      //  printf( "%g ", img[ i*PicSize +j ] ) ;
     }
-    ZSPRINTF( 0, "2" );
+
 
     for ( i=0, sum=0; i<SQR(PicSize); i++ )
         sum += img[i];
+
+    writelog( "sum: %g\n", sum );
 
     for ( i=0; i<SQR(PicSize); i++ )
         img[i] /= sum;
@@ -82,7 +81,6 @@ void gas_state() {
     create_dir( "./GasState" );
     sprintf( buf, "./GasState/GasState_%.2f.dat", All.RedShift );
 
-    ZSPRINTF( 0, "3" );
     image.img = img;
     img_xmin = LogDensMin;
     img_xmax = LogDensMax;

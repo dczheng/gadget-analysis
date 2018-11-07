@@ -11,6 +11,16 @@
 #define PERIODIC( x ) ( ( x > All.HalfBoxSize || x < -All.HalfBoxSize ) ? ( ( x > All.HalfBoxSize ) ? ( x - All.BoxSize ) : ( x + All.BoxSize )  ) : x )
 #define NGB_PERIODIC( x ) ( (fabs(x) > All.HalfBoxSize) ? ( All.BoxSize-fabs(x) ) : fabs(x) )
 
+#define do_sync( a ) { \
+    put_block_line; \
+    put_block_line; \
+    writelog( "synchronization after `%s` ... \n", a ); \
+    MPI_Barrier( MPI_COMM_WORLD ); \
+    put_block_line; \
+    put_block_line; \
+}
+
+
 #define DATA_SWAP( a, b, tmp ) {\
    tmp = a; \
    a = b; \

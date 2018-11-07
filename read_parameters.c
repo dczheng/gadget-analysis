@@ -89,10 +89,16 @@ void read_parameters( char *fn ) {
         ADD_PARA( "ReadCr",                     &All.ReadCr,                     INT  );
         ADD_PARA( "ReadB",                      &All.ReadB,                      INT  );
         ADD_PARA( "TotSpec",                    &All.TotSpec,                    INT  );
-        ADD_PARA( "MF",                         &All.MF,                         INT  );
-        ADD_PARA( "MFBins",                     &All.MFBins,                     INT  );
         ADD_PARA( "ReadSfr",                    &All.ReadSfr,                    INT  );
         ADD_PARA( "GroupSpec",                  &All.GroupSpec,                  INT  );
+
+        ADD_PARA( "BPdf",                       &All.BPdf,                       INT  );
+
+        ADD_PARA( "MF",                         &All.MF,                         INT  );
+        ADD_PARA( "MFBins",                     &All.MFBins,                     INT  );
+        ADD_PARA( "MFMmin",                     &All.MFMmin,                     REAL );
+        ADD_PARA( "MFMmax",                     &All.MFMmax,                     REAL );
+        ADD_PARA( "MFMSplit",                   &All.MFMSplit,                   REAL );
 
         ADD_PARA( "RadSpec",                    &All.RadSpec,                    INT  );
         ADD_PARA( "NuMin",                      &All.NuMin,                      REAL );

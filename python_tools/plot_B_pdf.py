@@ -21,40 +21,40 @@ data_info = data[ 0, : ]
 data = np.flipud(data[ 1:, : ])
 DensMin = data_info[1]
 DensMax = data_info[2]
-TempMin = data_info[3]
-TempMax = data_info[4]
+BMin = data_info[3]
+BMax = data_info[4]
 GlobDensMin = data_info[5]
 GlobDensMax = data_info[6]
-GlobTempMin = data_info[7]
-GlobTempMax = data_info[8]
+GlobBMin = data_info[7]
+GlobBMax = data_info[8]
 z = data_info[10]
 vmax = data.max()
-data[ data < 1e-3 * vmax ] = 0
+#data[ data < 1e-3 * vmax ] = 0
 #print( data_info )
 m,n = data.shape
 print( "PicSize: (%i,%i)"%( m, n ) )
-print( "DensMin: %g, DensMax: %g, TempMin: %g, TempMax: %g"%\
-        (DensMin, DensMax, TempMin, TempMax ) )
+print( "DensMin: %g, DensMax: %g, BMin: %g, BMax: %g"%\
+        (DensMin, DensMax, BMin, BMax ) )
 #print( data_info )
 
 NDens = 5
-NTemp = 5
+NB = 5
 
 '''
 DensList = []
-TempList = []
+BList = []
 for i in np.linspace( DensMin, DensMax, NDens ):
     DensList.append( "%.2f"%(i) )
-for i in np.flip( np.linspace( TempMin, TempMax, NTemp ), 0 ):
-    TempList.append( "%.2f"%(i) )
+for i in np.flip( np.linspace( BMin, BMax, NB ), 0 ):
+    BList.append( "%.2f"%(i) )
 '''
 
 xmin = int( DensMin )
 xmax = int( DensMax )
 xl = DensMax - DensMin
-ymin = int( TempMin ) + 1
-ymax = int( TempMax )
-yl = TempMax - TempMin
+ymin = int( BMin ) + 1
+ymax = int( BMax )
+yl = BMax - BMin
 
 print( "xmin: %i, xmax: %i, ymin: %i, ymax: %i"%( xmin, xmax, ymin ,ymax ) )
 
@@ -70,7 +70,7 @@ if ( ymin > ymax ):
 else:
     yLocList = np.linspace( ymin, ymax, ymax - ymin + 1 )
     yFmtList = yLocList
-    yLocList = m - ( yLocList - TempMin ) / yl * (m-1)
+    yLocList = m - ( yLocList - BMin ) / yl * (m-1)
     print( "yticks: ", yFmtList )
 
 
@@ -81,8 +81,8 @@ norm = mplc.LogNorm()
 img = ax.imshow( data, norm=norm, cmap=cm.jet )
 
 ax.set_xlabel( r"$log[\frac{\rho}{\rho_{Bar}}]$" )
-ax.set_ylabel( r"$log[T/K]$" )
-ax.set_title( "Gas State(z=%.2f)"%(z) )
+ax.set_ylabel( r"$log[B/\mu G]$" )
+ax.set_title( "z=%.2f"%(z) )
 
 xloc = tik.FixedLocator(xLocList)
 xfmt = tik.FixedFormatter(xFmtList)
@@ -96,8 +96,8 @@ ax.yaxis.set_major_formatter( yfmt )
 '''
 ax.set_xticks( np.linspace( 0, n, NDens ) )
 ax.set_xticklabels( DensList )
-ax.set_yticks( np.linspace( 0, m, NTemp ) )
-ax.set_yticklabels( TempList )
+ax.set_yticks( np.linspace( 0, m, NB ) )
+ax.set_yticklabels( BList )
 '''
 cbar = fig.colorbar( img )
 cbar.set_label( "Probability" )
