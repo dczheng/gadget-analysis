@@ -346,7 +346,7 @@ void merge_particle( int pt ) {
         endrun( 20181109 );
     }
 
-    writelog( "merge `%i` ...\n", pt );
+    writelog( "merge particle `%i` ...\n", pt );
 
     offset = get_particle_offset( pt );
     num0 = get_particle_num( pt );
@@ -391,7 +391,7 @@ void merge_particle( int pt ) {
         NumPart -= n;
     }
 
-    writelog( "merge `%i` ... done.\n", pt );
+    writelog( "merge particle `%i` ... done.\n", pt );
     put_block_line;
 
 }

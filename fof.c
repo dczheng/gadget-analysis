@@ -564,10 +564,13 @@ void fof() {
     writelog( "` used in FoF\n" )
     writelog( "total particle number is: %li\n", npart );
 
+    if ( flag == 0 )
+        return;
+
     fof_allocate( NumPart );
     tree_build();
 
-    if ( flag == 1 ) {
+    //if ( flag == 1 ) {
 
         rhodm = (All.Omega0-All.OmegaBaryon) * 3 *  SQR(All.Hubble) / ( 8 * PI * All.G );
         mass = masstot / npart;
@@ -586,7 +589,7 @@ void fof() {
         //fof_test();
         fof_save();
 
-    }
+    //}
 
     tree_free();
 

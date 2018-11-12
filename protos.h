@@ -92,3 +92,5 @@ void free_particle_radio();
 void B_Pdf();
 
 void pre_proc();
+
+void do_sync( char *s );

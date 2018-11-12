@@ -16,6 +16,31 @@ void create_dir( char *s ) {
 
 }
 
+void do_sync( char *s ) {
+
+    char buf[100];
+    int i, n;
+
+    if ( NTask == 1 )
+        return;
+
+    sprintf( buf, "* synchronization after `%s` *", s );
+
+    n = strlen( buf );
+
+    for( i=0; i<n; i++ )
+        writelog( "*" );
+    writelog( "\n" );
+    writelog( "%s\n", buf );
+    for( i=0; i<n; i++ )
+        writelog( "*" );
+    writelog( "\n" );
+
+    MPI_Barrier( MPI_COMM_WORLD );
+    //endrun( 20181112 );
+
+}
+
 double second() {
     return ( (double) clock() / CLOCKS_PER_SEC );
 }
