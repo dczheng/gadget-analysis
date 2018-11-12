@@ -40,7 +40,7 @@ void fof_find_groups() {
 
     for ( i=0; i<NumPart; i++ ) {
 
-        printf( "%li\n", i );
+        //printf( "%li\n", i );
 
         if ( !( ( 1 << P[i].Type ) & All.TreePartType ) )
             continue;
