@@ -159,12 +159,15 @@ typedef struct Particle_Data {
 extern ParticleData  *P;
 
 typedef struct Sph_Particle_Data {
-    double u;
     double Density;
+    double u;
+    /*
     double Hsml;
     double NumNgb;
-    double Pressure;
     double HydroAccel[3];
+    */
+
+    double Pressure;
     double MachNumber;
     double CR_C0;
     double CR_Q0;
@@ -182,8 +185,9 @@ typedef struct Sph_Particle_Data {
     double dBdt;
     double elec;
     double Temp;
-    double BH_Mass;
-    double Star_Mass;
+    int Star_BH_Num[2];
+    int Star_BH_MaxNum[2];
+    MyIDType *Star_BH_Index[2];
     double sfr;
 } SphParticleData;
 extern SphParticleData *SphP;

@@ -1,5 +1,6 @@
 #define writelog( fmt, ... ) { \
     fprintf( LogFileFd, fmt, ##__VA_ARGS__ ); \
+    fflush( LogFileFd ); \
     if ( ThisTask == (NTask - 1) ) { \
         printf( fmt, ##__VA_ARGS__ ); \
     }\
@@ -12,12 +13,14 @@
 #define NGB_PERIODIC( x ) ( (fabs(x) > All.HalfBoxSize) ? ( All.BoxSize-fabs(x) ) : fabs(x) )
 
 #define do_sync( a ) { \
-    put_block_line; \
-    put_block_line; \
-    writelog( "synchronization after `%s` ... \n", a ); \
-    MPI_Barrier( MPI_COMM_WORLD ); \
-    put_block_line; \
-    put_block_line; \
+    if ( NTask != 1 ) { \
+        put_block_line; \
+        put_block_line; \
+        writelog( "synchronization after `%s` ... \n", a ); \
+        MPI_Barrier( MPI_COMM_WORLD ); \
+        put_block_line; \
+        put_block_line; \
+    } \
 }
 
 
@@ -79,6 +82,7 @@
 \
     sprintf( ms.str, "%s Nvars %li.\n", ms.str, ms.nn );\
     fprintf( MemUseFileFd, ms.str ); \
+    fflush( MemUseFileFd ); \
 }
 
 #define mymalloc( a, n, flag, b ) {\
@@ -124,6 +128,7 @@
     check_var_num();\
     malloc_report(); \
     fprintf( MemUseFileFd, sep_str ); \
+    fflush( MemUseFileFd ); \
 }
 
 #define mymalloc1( a, n )  mymalloc( a, n, 0, 0 )
@@ -159,6 +164,7 @@
     ms.mem -= ms.b; \
     malloc_report(); \
     fprintf( MemUseFileFd, sep_str ); \
+    fflush( MemUseFileFd ); \
 }
 
 #define endrun0( fmt, ... ) {\
@@ -177,11 +183,18 @@
 }
 
 
-#define timer_start() \
-    double t0, t1; \
-    t0 = second();
+#define mytimer_start() \
+    double timer1, timer2;\
+    (void) timer1;\
+    (void) timer2;\
+writelog( "[Timer Start in `%s`]\n", __FUNCTION__ ); \
+    timer1 = second(); \
+    timer2 = timer1;
 
-#define timer_end() \
-    t1 = second(); \
-    writelog( "Time: %g sec\n", t1 - t0 );
+#define mytimer() \
+    writelog( "[Time in `%s`]: %g sec\n", __FUNCTION__, second() - timer2 ); \
+    timer2 = second();
+
+#define mytimer_end() \
+    writelog( "[Total Time in `%s`]: %g sec\n", __FUNCTION__, second() - timer1 ); \
 

@@ -90,3 +90,5 @@ void check_flag();
 void compute_particle_radio();
 void free_particle_radio();
 void B_Pdf();
+
+void pre_proc();

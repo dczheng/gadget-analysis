@@ -11,7 +11,6 @@ void tree_allocate() {
     Nodes = Nodes_Base - NumPart;
 
     mymalloc1( NextNode, NumPart * sizeof( long ) );
-    put_block_line;
 }
 
 void tree_free() {
@@ -21,15 +20,35 @@ void tree_free() {
     put_block_line;
 }
 
+void merge_start_or_bh( long i, long j ) {
+
+    long offset, num;
+
+    printf( "[%i] Merge %li and %li\n", ThisTask, i, j  );
+
+    P[i].Mass += P[j].Mass;
+    offset = get_particle_offset( P[i].Type );
+    num = get_particle_offset( P[i].Type );
+    P[j] = P[offset+num-1];
+    num --;
+    header.npartTotal[P[i].Type] = ( ( num<<32 ) >> 32 );
+    header.npartTotalHighWord[P[i].Type] = ( num>> 32 );
+    printf( "[%i] Merge %li and %li done.\n", ThisTask, i, j  );
+
+}
+
 void tree_build_single() {
+
     long i, j, subnode, bits, nfree, n, nn, tn;
     struct NODE *nfreep;
     double max[3], min[3], len, lenhalf;
+
     writelog( "tree build ...\n" );
     for ( j=0; j<3; j++ ) {
         max[j] = -DBL_MAX;
         min[j] = DBL_MAX;
     }
+
     for ( i=0; i<NumPart; i++ ) {
         if ( ( 1 << P[i].Type ) & All.TreePartType )
             for ( j=0; j<3; j++ ) {
@@ -39,13 +58,16 @@ void tree_build_single() {
     }
 
     len = DBL_MIN;
+
     for ( i=0; i<3; i++ ) {
         len = ( max[i] - min[i] > len ) ? ( max[i] - min[i] ) : len;
     }
+
     for ( i=0; i<3; i++ ) {
         writelog( "min[%li]=%g, max[%li]=%g\n",
                 i, min[i], i, max[i] );
     }
+
     len *= 1.001;
     writelog( "len=%g\n", len );
 
@@ -87,10 +109,30 @@ void tree_build_single() {
             }
             else {
 
+                if ( P[n].Pos[0] == P[i].Pos[0] &&
+                     P[n].Pos[1] == P[i].Pos[1] &&
+                     P[n].Pos[2] == P[i].Pos[2] ) {
+
+                    if ( P[n].Type != 0 ) {
+                        writelog( "%i %i\n", P[n].Type, P[i].Type );
+                        endruns( "Error1 !!!" );
+                    }
+
+                    if ( P[i].Type == 4 )
+                        continue;
+
+                    if ( P[i].Type == 5 )
+                        continue;
+
+                    endruns( "Error2 !!!" );
+
+                }
+
                 Nodes[parent].suns[subnode] = nfree;
                 nfreep->len = 0.5 * Nodes[parent].len;
                 nfreep -> bitflags = 0;
                 lenhalf = 0.25 * Nodes[parent].len;
+
                 for ( j=0, bits=1; j<3; j++, bits<<=1 )
                     nfreep->center[j] = Nodes[parent].center[j] + ( (subnode & bits) ? ( lenhalf ) : ( -lenhalf ) );
                 for ( j=0; j<8; j++ )
@@ -103,14 +145,20 @@ void tree_build_single() {
                 nfree++;
                 nfreep++;
                 if ( nfree-NumPart >= MaxNodes ){
-                    printf( "( %.10f, %.10f, %.10f ), ( %.10f, %.10f, %.10f )\n ",
+                    printf( "( %.10f, %.10f, %.10f ), ( %.10f, %.10f, %.10f )\ntype: (%i, %i), ID: (%i, %i)\n",
                             P[tn].Pos[0], P[tn].Pos[1], P[tn].Pos[2],
-                            P[i].Pos[0], P[i].Pos[1], P[i].Pos[2] );
+                            P[i].Pos[0], P[i].Pos[1], P[i].Pos[2],
+                            P[tn].Type, P[i].Type,
+                            P[tn].ID, P[i].ID );
                     endrun0( "Task: %i, Max number of tree nodes reached.\n", ThisTask );
                 }
             }
         }
     }
+
+
+    MPI_Barrier( MPI_COMM_WORLD );
+
     writelog( "total tree nodes number: %li\n", nfree );
     writelog( "tree build ... done.\n" );
 }
@@ -179,7 +227,8 @@ void tree_build() {
     npart = 30;
     All.TreeAllocFactor = 2;
     */
-    timer_start();
+    put_block_line;
+    mytimer_start();
     for ( i=0, npart=0; i<NumPart; i++ )
         if ( ( 1 << P[i].Type ) & All.TreePartType )
             npart ++;
@@ -214,7 +263,7 @@ void tree_build() {
         NextNode[last] = -1;
     }
     //tree_walk_test();
+    mytimer_end();
     writelog( "tree walk ... done.\n" );
-    timer_end();
     put_block_line;
 }

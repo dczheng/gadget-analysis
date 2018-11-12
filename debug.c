@@ -5,6 +5,9 @@ void signal_hander( int s )
 {
     int i, ii, k, kk;
     char buf[1000];
+
+    printf( "Task: %i\n", ThisTask );
+
     for ( i=0; i<ZDEBUG_NUM; i++ ) {
         kk = 0;
         for ( k=0; k<=strlen( sig.buf[i] ); k++ )
@@ -22,7 +25,8 @@ void signal_hander( int s )
     }
     printf( "\nSTOP: %s\n", sig.stop );
     fclose( LogFileFd );
-    endrun(20181107);
+
+    endrun( 21212121 );
 }
 
 void empty_sig_buf() {

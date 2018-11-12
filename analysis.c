@@ -95,6 +95,5 @@ void analysis(){
     //tree_free();
     //output_rho();
     //vel_value();
-    //sort_gas_rho();
     free_analysis();
 }

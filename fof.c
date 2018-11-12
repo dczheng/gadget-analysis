@@ -5,12 +5,12 @@ double LinkL, rhodm;
 void fof_allocate( long N ) {
     mymalloc1( Gprops, N * sizeof( struct group_properties ) );
     mymalloc1( FoFNext, NumPart * sizeof( long ) );
-    put_block_line;
 }
 
 void fof_free() {
     myfree( Gprops );
     myfree( FoFNext );
+    put_block_line;
 }
 
 int fof_compare_len( const void *a, const void *b ) {
@@ -22,10 +22,10 @@ void fof_find_groups() {
     double pos[3];
     long i, p, s, j, ss,
         *Head, *Tail,*Len;
-    timer_start();
     ngbmax = 0;
     put_block_line;
     writelog( "Start FoF find groups ...\n" );
+    mytimer_start();
 
     mymalloc1( Head, NumPart * sizeof( long ) );
     mymalloc1( Tail, NumPart * sizeof( long ) );
@@ -39,17 +39,26 @@ void fof_find_groups() {
     }
 
     for ( i=0; i<NumPart; i++ ) {
+
+        printf( "%li\n", i );
+
         if ( !( ( 1 << P[i].Type ) & All.TreePartType ) )
             continue;
+
         for( j=0; j<3; j++ )
             pos[j] = P[i].Pos[j];
+
         ngbnum = ngb_fof( pos, LinkL );
         if ( ngbnum > ngbmax ) ngbmax = ngbnum;
+
         ngbmax = ( ngbnum > ngbmax ) ? ngbnum : ngbmax;
+
         for ( k=0; k<ngbnum; k++ ) {
             j = Ngblist[k];
             //printf( "%i\n", P[j].Type );
+            //
             if ( Head[i] != Head[j] ) {
+
                 if ( Len[Head[i]] > Len[Head[j]] ) {
                     p = i;
                     s = j;
@@ -58,6 +67,7 @@ void fof_find_groups() {
                     p = j;
                     s = i;
                 }
+
                 FoFNext[Tail[Head[p]]] = Head[s];
                 Tail[Head[p]] = Tail[Head[s]];
                 Len[Head[p]] += Len[Head[s]];
@@ -67,6 +77,7 @@ void fof_find_groups() {
                 do
                     Head[ss] = Head[p];
                 while( (ss=FoFNext[ss]) >= 0 );
+
             }
         }
     }
@@ -83,8 +94,8 @@ void fof_find_groups() {
     myfree( Ngblist );
 
     writelog( "the maximum number of ngb: %i\n", ngbmax );
+    mytimer_end();
     writelog( "FoF find groups ... done\n" );
-    timer_end();
     put_block_line;
 }
 
@@ -93,8 +104,8 @@ void fof_compute_group_properties() {
     long p, i, j, k, p0, x, y;
     struct group_properties *g;
 
-    timer_start();
     writelog( "FoF compute groups properties ... \n" );
+    mytimer_start();
 
     Ngroups = 0;
     for ( i=0; i<NumPart; i++ ) {
@@ -143,11 +154,22 @@ void fof_compute_group_properties() {
             g->mass_table[ P[p].Type ] += P[p].Mass;
 
             if ( P[p].Type == 0 ) {
-                g->mass_table[4] += SphP[p].Star_Mass;
-                g->mass_table[5] += SphP[p].BH_Mass;
+
+                if ( ( 1<<4 ) && All.TreePartType )
+                    for( k=0; k<SphP[p].Star_BH_Num[0]; k++ ) {
+                        g->mass_table[4] += P[ SphP[p].Star_BH_Index[0][k] ].Mass;
+                        //printf( "%li\n", k );
+                    }
+
+                if ( ( 1<<5 ) && All.TreePartType )
+                    for( k=0; k<SphP[p].Star_BH_Num[1]; k++ ) {
+                        g->mass_table[5] += P[ SphP[p].Star_BH_Index[1][k] ].Mass;
+                        //printf( "%li\n", k );
+                    }
             }
 
             p = FoFNext[p];
+
         }
 
         if ( g->mass == 0 ) {
@@ -178,8 +200,8 @@ void fof_compute_group_properties() {
         //printf( "%g %g\n", g->size, g->mass_table[0] );
 
     }
+    mytimer_end();
     writelog( "FoF compute groups properties ... done\n" );
-    timer_end();
     put_block_line;
 
 }
@@ -209,8 +231,8 @@ void fof_save() {
     int ndims;
     char fn[50];
     hsize_t dims[2];
-    timer_start();
     writelog( "FoF save groups ...\n" );
+    mytimer_start();
 
     sprintf( fn, "%s/fof_%.2f.hdf5", All.FoFDir, All.RedShift );
 
@@ -370,8 +392,8 @@ void fof_save() {
     myfree( buf );
 
     H5Fclose( hdf5_file );
+    mytimer_end();
     writelog( "FoF save groups ... done\n" );
-    timer_end();
     put_block_line;
 }
 
@@ -381,8 +403,8 @@ void fof_read() {
     double *buf2;
     char *buf;
     char fn[ FILENAME_MAX ];
-    timer_start();
     writelog( "read fof...\n" );
+    mytimer_start();
 
     sprintf( fn, "%s/fof_%.2f.hdf5", All.FoFDir, All.RedShift );
 
@@ -497,8 +519,8 @@ void fof_read() {
     myfree( buf );
 
     H5Fclose( hdf5_file );
+    mytimer_end();
     writelog( "read fof... done.\n" );
-    timer_end();
     put_block_line;
 }
 
@@ -507,9 +529,9 @@ void fof() {
     int flag, num;
     double masstot, mass;
     char fn[ FILENAME_MAX ];
-    timer_start();
 
     writelog( "Start FoF ...\n" );
+    mytimer_start();
     sprintf( fn, "%s/fof_%.2f.hdf5", All.FoFDir, All.RedShift );
 
     flag = 1;
@@ -527,21 +549,7 @@ void fof() {
     if ( num == NTask )
         create_dir( All.FoFDir );
 
-    /*
-    printf( "%s\n", fn );
-    printf( "task: %i, flag: %i\n", ThisTask, flag );
-    */
-
     writelog( "%i Task Need to do FoF ...\n", num );
-
-    if ( flag == 0 )
-        return;
-
-
-    /*
-    return;
-    endrun( 20181027 );
-    */
 
     for ( i=0, npart=0, masstot=0; i<NumPart; i++ )
         if ( ( 1 << P[i].Type ) & All.TreePartType ) {
@@ -559,25 +567,31 @@ void fof() {
     fof_allocate( NumPart );
     tree_build();
 
-    rhodm = (All.Omega0-All.OmegaBaryon) * 3 *  SQR(All.Hubble) / ( 8 * PI * All.G );
-    mass = masstot / npart;
-    LinkL = All.LinkLength * pow( mass / rhodm, 1.0/3 );
-    //LinkL = 65.5483;
-    /*
-    printf( "%.10f %.10f %.10f %.10f %.20f %.10f %.10f %li \n",
+    if ( flag == 1 ) {
+
+        rhodm = (All.Omega0-All.OmegaBaryon) * 3 *  SQR(All.Hubble) / ( 8 * PI * All.G );
+        mass = masstot / npart;
+        LinkL = All.LinkLength * pow( mass / rhodm, 1.0/3 );
+        //LinkL = 65.5483;
+        /*
+        printf( "%.10f %.10f %.10f %.10f %.20f %.10f %.10f %li \n",
              All.Omega0, All.OmegaBaryon,
              All.Hubble, All.G, rhodm, M_PI, masstot, npart );
              */
 
-    writelog( "critical density of dark matter: %g\n"
+        writelog( "critical density of dark matter: %g\n"
             "comoving linking lenght %g\n", rhodm, LinkL );
-    fof_find_groups();
-    fof_compute_group_properties();
-    //fof_test();
+        fof_find_groups();
+        fof_compute_group_properties();
+        //fof_test();
+        fof_save();
+
+    }
+
     tree_free();
-    fof_save();
+
+    mytimer_end();
     writelog( "FoF ... done\n" );
-    timer_end();
     put_block_line;
 
 }

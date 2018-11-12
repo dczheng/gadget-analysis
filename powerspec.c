@@ -150,17 +150,19 @@ void powerspec() {
         mass_tot += P[p].Mass;
         mass = P[p].Mass;
 
-        if ( P[p].Type == 0 ) {
+        if ( P[p].Type == 0  ) {
 
-            if ( 1<<4 & All.PowSpecPartType ) {
-                mass_tot += SphP[p].Star_Mass;
-                mass += SphP[p].Star_Mass;
-            }
+            if ( (1<<4) & All.PowSpecPartType )
+                for( i=0; i<SphP[p].Star_BH_Num[0]; i++ ) {
+                    mass_tot += P[ SphP[p].Star_BH_Index[0][i] ].Mass;
+                    mass += P[ SphP[p].Star_BH_Index[0][i] ].Mass;
+                }
 
-            if ( 1<<5 & All.PowSpecPartType ) {
-                mass += SphP[p].BH_Mass;
-                mass_tot += SphP[p].BH_Mass;
-            }
+            if ( (1<<5) & All.PowSpecPartType )
+                for( i=0; i<SphP[p].Star_BH_Num[1]; i++ ) {
+                    mass_tot += P[ SphP[p].Star_BH_Index[1][i] ].Mass;
+                    mass += P[ SphP[p].Star_BH_Index[1][i] ].Mass;
+                }
 
         }
 

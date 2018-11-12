@@ -81,6 +81,8 @@ int main( int argc, char *argv[] ){
 
     do_sync( "read data" );
 
+    pre_proc();
+
     /******************read***********************/
 
     set_units();
