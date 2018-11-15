@@ -18,20 +18,74 @@ def F( x ):
     #print( r )
     return x * r[0]
 
+def generate_F_x_array( xmin, xmax, N ):
+
+    xa = np.linspace( np.log10( xmin ), np.log10( xmax ), N )
+    xa = np.power( 10, xa )
+
+    Fa = []
+
+    for xx in xa:
+        Fa.append( F(xx) )
+
+    Fa = np.array( Fa )
+    return ( xa, Fa )
+
+
+
 def plot_F():
-    x = np.linspace( -5, 1, 30 )
-    x = np.power( 10, x )
 
-    y = []
-    for xx in x:
-        y.append( F(xx) )
+    xa, Fa = generate_F_x_array( 1e-5, 10, 300 )
 
-    plt.loglog( x, y )
+    x0 = xa[ Fa == Fa.max() ]
+
+    plt.plot( xa, Fa )
+
+    plt.axvline( x=x0, linestyle='-.', label="x=%.2f"%x0 )
+    plt.legend()
     plt.show()
-    #plt.savefig( "F_x.png" )
+
+def FF( x, xa, Fa ):
+
+    if x < xa[0]:
+        return 0
+
+    if x >= xa[-1]:
+        return 0
+
+    n = len(xa)
+    dlogx = np.log10( xa[-1] / xa[0] ) / ( n - 1 )
+    r = np.log10( x / xa[0] ) / dlogx
+    ri = int( r )
+    r = r - ri
+
+    return Fa[ri] * ( 1-r ) + Fa[ri+1] * r
+
+def test_FF():
 
 
-#plot_F()
+    N = 300
+    xmin = 1e-5
+    xmax = 10
+
+    xa, Fa = generate_F_x_array( xmin, xmax, N)
+
+    NN = 100
+    dx = np.log10( xmax/xmin ) / N
+
+    err_max = -1;
+    for i in range( NN ):
+        x = np.power( 10, i * dx + np.log10( xmin ) )
+        f = F( x )
+        ff = FF( x, xa, Fa )
+
+        err = np.abs( ( f-ff )/f )
+        print( "x: %g, f: %g, ff: %g, err: %g"%(x, f, ff, err))
+
+        if ( err > err_max ):
+            err_max = err
+
+    print( "err_max: ", err_max )
 
 def df( alpha, pmin, pmax, p ):
     if p<pmin or p>pmax:
@@ -57,6 +111,7 @@ def P_inte( nu, B, alpha, pmin, pmax, p ):
     return f( p ) * F( nu/nu_c(p) )
 
 def test_P_inte():
+
     pmin = 1
     alpha = 2.4
     nu = 1e7
@@ -125,5 +180,10 @@ def test_P():
     plt.legend()
     plt.show()
 
-test_P()
-#test_P_inte()
+
+def main():
+    #plot_F()
+    test_FF()
+
+if __name__ == '__main__':
+    main()

@@ -100,7 +100,7 @@ void total_radio_spectrum() {
             dislist[i] = comoving_distance( alist[i] );
 
         for ( i=0; i<NTask*Nnu; i++ )
-            fluxlist[i] /= All.BoxSize;
+            fluxlist[i] /= All.BoxSize; // unit distance
 
         memset( flux, 0, sizeof(double)*Nnu );
 
@@ -108,6 +108,9 @@ void total_radio_spectrum() {
             for ( j=0; j<NTask-1; j++) {
                 flux[i] += 0.5 * ( fluxlist[j*Nnu+i] + fluxlist[(j+1)*Nnu+i] ) * ( dislist[j+1] - dislist[j] );
             }
+
+        for( i=0; i<Nnu; i++ )
+            flux[i] += fluxlist[i] * dislist[0];  // low redshift
 
         sprintf( buf, "./TotalSpec/Spec_Tot.dat" );
         fd = fopen( buf, "w" );

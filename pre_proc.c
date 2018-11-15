@@ -129,7 +129,6 @@ int compare_sphp_pos( const void *a, const void *b ) {
 
 }
 
-
 void sort_particle_by_pos() {
 
     long i, n, num, offset;
@@ -513,6 +512,8 @@ void pre_proc() {
     //endrun( 20181108 );
 
     writelog( "pre proc ... done.\n" )
+
+    put_block_line;
 
 }
 

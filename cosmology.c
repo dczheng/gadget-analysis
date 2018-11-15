@@ -224,7 +224,6 @@ double top_hat_dsigma2dmdk( double k, void *params) {
 
 }
 
-
 double dsigma2dm( sigma_struct ss ) {
 
     double k0, k1, r, err;

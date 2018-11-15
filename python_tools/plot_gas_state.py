@@ -29,7 +29,7 @@ GlobTempMin = data_info[7]
 GlobTempMax = data_info[8]
 z = data_info[10]
 vmax = data.max()
-data[ data < 1e-3 * vmax ] = 0
+data[ data < 1e-4 * vmax ] = 0
 #print( data_info )
 m,n = data.shape
 print( "PicSize: (%i,%i)"%( m, n ) )
@@ -80,9 +80,9 @@ ax = fig.add_subplot( 111 )
 norm = mplc.LogNorm()
 img = ax.imshow( data, norm=norm, cmap=cm.jet )
 
-ax.set_xlabel( r"$log[\frac{\rho}{\rho_{Bar}}]$" )
-ax.set_ylabel( r"$log[T/K]$" )
-ax.set_title( "Gas State(z=%.2f)"%(z) )
+ax.set_xlabel( r"$log_{10}(\frac{\rho}{\rho_{Bar}})$" )
+ax.set_ylabel( r"$log_{10} T$" )
+ax.set_title( "z=%.2f"%(z) )
 
 xloc = tik.FixedLocator(xLocList)
 xfmt = tik.FixedFormatter(xFmtList)

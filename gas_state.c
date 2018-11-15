@@ -65,7 +65,8 @@ void gas_state() {
         j = ( LogDens - LogDensMin ) / DLogDens;
         check_picture_index( j );
 
-        img[ i*PicSize + j ]++;
+        img[ i*PicSize + j ] += P[k].Mass;
+  //      img[ i*PicSize + j ] ++;
      //  printf( "%g ", img[ i*PicSize +j ] ) ;
     }
 
