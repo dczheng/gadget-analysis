@@ -80,7 +80,7 @@ ax = fig.add_subplot( 111 )
 norm = mplc.LogNorm()
 img = ax.imshow( data, norm=norm, cmap=cm.jet )
 
-ax.set_xlabel( r"$log_{10}(\frac{\rho}{\rho_{Bar}})$" )
+ax.set_xlabel( r"$log_{10}\left(\frac{\rho}{\rho_{Bar}}\right)$" )
 ax.set_ylabel( r"$log_{10} T$" )
 ax.set_title( "z=%.2f"%(z) )
 
