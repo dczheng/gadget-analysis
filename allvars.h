@@ -47,6 +47,10 @@
 #define GAMMA                    ( 5.0 / 3.0 )
 #define GAMMA_MINUS1             ( GAMMA - 1 )
 
+#define MEC2                     8.187103009502731e-07
+#define LS2                      8.98740441e+20
+
+
 #define BCMB0                    (3.24e-6) // gauss
 
 #define RADIO_F_INTERP
@@ -215,6 +219,7 @@ extern struct global_parameters_struct {
         KernelInterpolation,
         ConvN, GroupEleSpec, RadSpec,
         PowSpec, PowSpecNGrid, PowSpecPartType, PowSpecBins,
+        CrePressurePdf,
 
         QNum, NuNum, FoFMinLen, proj_i, proj_j, proj_k,
         TreePartType, GroupIndexMin, GroupIndexMax,
@@ -243,6 +248,21 @@ extern struct global_parameters_struct {
 
     long SliceStart[6], SliceEnd[6];
 }All;
+
+#define SofteningGas   SofteningTable[0]
+#define SofteningHalo  SofteningTable[1]
+#define SofteningDisk  SofteningTable[2]
+#define SofteningBulge SofteningTable[3]
+#define SofteningStar  SofteningTable[4]
+#define SofteningBndry SofteningTable[5]
+
+#define StartX  Start[0]
+#define StartY  Start[1]
+#define StartZ  Start[2]
+
+#define EndX  End[0]
+#define EndY  End[1]
+#define EndZ  End[2]
 
 #define IMG_PROPS_START 15
 #define IMG_PROPS_OTHERS ( All.PicSize - IMG_PROPS_START )

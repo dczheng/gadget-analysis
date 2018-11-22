@@ -5,10 +5,21 @@
 #define STRING 2
 #define INT 3
 
-#define ADD_PARA( a, b, c ) {\
-    strcpy( tag[nt], a );\
-    addr[nt] = b;\
-    id[nt++] = c;\
+#define ADD_PARAR( a ) {\
+    strcpy( tag[nt], &((#a)[4]) );\
+    addr[nt] = &a;\
+    id[nt++] = REAL;\
+}
+#define ADD_PARAI( a ) {\
+    strcpy( tag[nt], &((#a)[4]) );\
+    addr[nt] = &a;\
+    id[nt++] = INT;\
+}
+
+#define ADD_PARAS( a ) {\
+    strcpy( tag[nt], &((#a)[4]) );\
+    addr[nt] = a;\
+    id[nt++] = STRING;\
 }
 
 void read_parameters( char *fn ) {
@@ -16,8 +27,10 @@ void read_parameters( char *fn ) {
     FILE *fd;
     void *addr[MAXTAGS];
     char tag[MAXTAGS][50], buf[200], buf1[200], buf2[200], buf3[200];
-        int id[MAXTAGS], nt, i, j, errflag=0;;
-        writelog( "read parameter...\n" );
+    int id[MAXTAGS], nt, i, j, errflag=0;;
+
+    writelog( "read parameter...\n" );
+
     if ( ThisTask == 0 ) {
 
         fd = fopen( fn, "r" );
@@ -31,89 +44,85 @@ void read_parameters( char *fn ) {
 
         nt = 0;
 
-        ADD_PARA( "FilePrefix",                 All.FilePrefix,                  STRING );
-        ADD_PARA( "FoFDir",                     All.FoFDir,                      STRING );
-        ADD_PARA( "RadDir",                     All.RadDir,                      STRING );
-        ADD_PARA( "GroupDir",                   All.GroupDir,                    STRING );
+        ADD_PARAS( All.FilePrefix );
+        ADD_PARAS( All.FoFDir     );
+        ADD_PARAS( All.RadDir     );
+        ADD_PARAS( All.GroupDir   );
 
-        ADD_PARA( "UnitMass_in_g",              &All.UnitMass_in_g,              REAL );
-        ADD_PARA( "UnitLength_in_cm",           &All.UnitLength_in_cm,           REAL );
-        ADD_PARA( "UnitVelocity_in_cm_per_s",   &All.UnitVelocity_in_cm_per_s,   REAL );
-        ADD_PARA( "Freq",                       &All.Freq,                       REAL );
-        ADD_PARA( "SofteningGas",               &All.SofteningTable[0],          REAL );
-        ADD_PARA( "SofteningHalo",              &All.SofteningTable[1],          REAL );
-        ADD_PARA( "SofteningDisk",              &All.SofteningTable[2],          REAL );
-        ADD_PARA( "SofteningBulge",             &All.SofteningTable[3],          REAL );
-        ADD_PARA( "SofteningStar",              &All.SofteningTable[4],          REAL );
-        ADD_PARA( "SofteningBndry",             &All.SofteningTable[5],          REAL );
-        ADD_PARA( "StartX",                     &All.Start[0],                   REAL );
-        ADD_PARA( "StartY",                     &All.Start[1],                   REAL );
-        ADD_PARA( "StartZ",                     &All.Start[2],                   REAL );
-        ADD_PARA( "EndX",                       &All.End[0],                     REAL );
-        ADD_PARA( "EndY",                       &All.End[1],                     REAL );
-        ADD_PARA( "EndZ",                       &All.End[2],                     REAL );
-        ADD_PARA( "TreeAllocFactor",            &All.TreeAllocFactor,            REAL );
-        ADD_PARA( "LinkLength",                 &All.LinkLength,                 REAL );
-        ADD_PARA( "OmegaBaryon",                &All.OmegaBaryon,                REAL );
-        ADD_PARA( "ConvSigma",                  &All.ConvSigma,                  REAL );
-        ADD_PARA( "Sigma8",                     &All.Sigma8,                     REAL );
-        ADD_PARA( "GroupMassMin",               &All.GroupMassMin,               REAL );
+        ADD_PARAR( All.UnitMass_in_g            );
+        ADD_PARAR( All.UnitLength_in_cm         );
+        ADD_PARAR( All.UnitVelocity_in_cm_per_s );
+        ADD_PARAR( All.Freq                     );
+        ADD_PARAR( All.SofteningGas             );
+        ADD_PARAR( All.SofteningHalo            );
+        ADD_PARAR( All.SofteningDisk            );
+        ADD_PARAR( All.SofteningBulge           );
+        ADD_PARAR( All.SofteningStar            );
+        ADD_PARAR( All.SofteningBndry           );
+        ADD_PARAR( All.StartX                   );
+        ADD_PARAR( All.StartY                   );
+        ADD_PARAR( All.StartZ                   );
+        ADD_PARAR( All.EndX                     );
+        ADD_PARAR( All.EndY                     );
+        ADD_PARAR( All.EndZ                     );
+        ADD_PARAR( All.TreeAllocFactor          );
+        ADD_PARAR( All.LinkLength               );
+        ADD_PARAR( All.OmegaBaryon              );
+        ADD_PARAR( All.ConvSigma                );
+        ADD_PARAR( All.Sigma8                   );
+        ADD_PARAR( All.GroupMassMin             );
+        ADD_PARAR( All.MFMmin                   );
+        ADD_PARAR( All.MFMmax                   );
+        ADD_PARAR( All.MFMSplit                 );
+        ADD_PARAR( All.NuMin                    );
+        ADD_PARAR( All.NuMax                    );
+        ADD_PARAR( All.QMin                     );
+        ADD_PARAR( All.QMax                     );
 
-        ADD_PARA( "NumFiles",                   &All.NumFiles,                   INT );
-        ADD_PARA( "PicSize",                    &All.PicSize,                    INT );
-        ADD_PARA( "StartSnapIndex",             &All.StartSnapIndex,             INT  );
-        ADD_PARA( "ProjectDirection",           &All.ProjectDirection,           INT  );
-        ADD_PARA( "KernelN",                    &All.KernelN,                    INT  );
-        ADD_PARA( "FoFMinLen",                  &All.FoFMinLen,                  INT  );
-        ADD_PARA( "TreePartType",               &All.TreePartType,               INT  );
-        ADD_PARA( "ConvN",                      &All.ConvN,                      INT  );
-        ADD_PARA( "FoF",                        &All.FoF,                        INT  );
-        ADD_PARA( "GroupIndexMin",              &All.GroupIndexMin,              INT  );
-        ADD_PARA( "GroupIndexMax",              &All.GroupIndexMax,              INT  );
+        ADD_PARAI( All.NumFiles                 );
+        ADD_PARAI( All.PicSize                  );
+        ADD_PARAI( All.StartSnapIndex           );
+        ADD_PARAI( All.ProjectDirection         );
+        ADD_PARAI( All.KernelN                  );
+        ADD_PARAI( All.FoFMinLen                );
+        ADD_PARAI( All.TreePartType             );
+        ADD_PARAI( All.ConvN                    );
+        ADD_PARAI( All.FoF                      );
+        ADD_PARAI( All.GroupIndexMin            );
+        ADD_PARAI( All.GroupIndexMax            );
+        ADD_PARAI( All.GasState                 );
+        ADD_PARAI( All.GasDensity               );
+        ADD_PARAI( All.GasTemperature           );
+        ADD_PARAI( All.KernelInterpolation      );
+        ADD_PARAI( All.MpcFlag                  );
+        ADD_PARAI( All.Group                    );
+        ADD_PARAI( All.GroupSfr                 );
+        ADD_PARAI( All.GroupTemp                );
+        ADD_PARAI( All.GroupB                   );
+        ADD_PARAI( All.GroupMach                );
+        ADD_PARAI( All.GroupHge                 );
+        ADD_PARAI( All.GroupRad                 );
+        ADD_PARAI( All.ReadMach                 );
+        ADD_PARAI( All.ReadTemp                 );
+        ADD_PARAI( All.ReadHge                  );
+        ADD_PARAI( All.ReadCr                   );
+        ADD_PARAI( All.ReadB                    );
+        ADD_PARAI( All.TotSpec                  );
+        ADD_PARAI( All.ReadSfr                  );
+        ADD_PARAI( All.GroupSpec                );
+        ADD_PARAI( All.BPdf                     );
+        ADD_PARAI( All.MF                       );
+        ADD_PARAI( All.MFBins                   );
+        ADD_PARAI( All.RadSpec                  );
+        ADD_PARAI( All.NuNum                    );
+        ADD_PARAI( All.GroupEleSpec             );
+        ADD_PARAI( All.QNum                     );
+        ADD_PARAI( All.PowSpec                  );
+        ADD_PARAI( All.PowSpecNGrid             );
+        ADD_PARAI( All.PowSpecPartType          );
+        ADD_PARAI( All.PowSpecBins              );
+        ADD_PARAI( All.CrePressurePdf           );
 
-        ADD_PARA( "GasState",                   &All.GasState,                   INT  );
-        ADD_PARA( "GasDensity",                 &All.GasDensity,                 INT  );
-        ADD_PARA( "GasTemperature",             &All.GasTemperature,             INT  );
-        ADD_PARA( "KernelInterpolation",        &All.KernelInterpolation,        INT  );
-        ADD_PARA( "MpcFlag",                    &All.MpcFlag,                    INT  );
-        ADD_PARA( "Group",                      &All.Group,                      INT  );
-        ADD_PARA( "GroupSfr",                   &All.GroupSfr,                   INT  );
-        ADD_PARA( "GroupTemp",                  &All.GroupTemp,                  INT  );
-        ADD_PARA( "GroupB",                     &All.GroupB,                     INT  );
-        ADD_PARA( "GroupMach",                  &All.GroupMach,                  INT  );
-        ADD_PARA( "GroupHge",                   &All.GroupHge,                   INT  );
-        ADD_PARA( "GroupRad",                   &All.GroupRad,                   INT  );
-        ADD_PARA( "ReadMach",                   &All.ReadMach,                   INT  );
-        ADD_PARA( "ReadTemp",                   &All.ReadTemp,                   INT  );
-        ADD_PARA( "ReadHge",                    &All.ReadHge,                    INT  );
-        ADD_PARA( "ReadCr",                     &All.ReadCr,                     INT  );
-        ADD_PARA( "ReadB",                      &All.ReadB,                      INT  );
-        ADD_PARA( "TotSpec",                    &All.TotSpec,                    INT  );
-        ADD_PARA( "ReadSfr",                    &All.ReadSfr,                    INT  );
-        ADD_PARA( "GroupSpec",                  &All.GroupSpec,                  INT  );
-
-        ADD_PARA( "BPdf",                       &All.BPdf,                       INT  );
-
-        ADD_PARA( "MF",                         &All.MF,                         INT  );
-        ADD_PARA( "MFBins",                     &All.MFBins,                     INT  );
-        ADD_PARA( "MFMmin",                     &All.MFMmin,                     REAL );
-        ADD_PARA( "MFMmax",                     &All.MFMmax,                     REAL );
-        ADD_PARA( "MFMSplit",                   &All.MFMSplit,                   REAL );
-
-        ADD_PARA( "RadSpec",                    &All.RadSpec,                    INT  );
-        ADD_PARA( "NuMin",                      &All.NuMin,                      REAL );
-        ADD_PARA( "NuMax",                      &All.NuMax,                      REAL );
-        ADD_PARA( "NuNum",                      &All.NuNum,                      INT  );
-
-        ADD_PARA( "GroupEleSpec",               &All.GroupEleSpec,               INT  );
-        ADD_PARA( "QMin",                       &All.QMin,                       REAL );
-        ADD_PARA( "QMax",                       &All.QMax,                       REAL );
-        ADD_PARA( "QNum",                       &All.QNum,                       INT  );
-
-        ADD_PARA( "PowSpec",                    &All.PowSpec,                    INT  );
-        ADD_PARA( "PowSpecNGrid",               &All.PowSpecNGrid,               INT  );
-        ADD_PARA( "PowSpecPartType",            &All.PowSpecPartType,            INT  );
-        ADD_PARA( "PowSpecBins",                &All.PowSpecBins,                INT  );
 
         while( !feof( fd ) ) {
             *buf = 0;

@@ -66,6 +66,7 @@ void init_tab_F();
 void free_tab_F();
 void test_F();
 double particle_radio( double nu, long i );
+
 double radio( double (*f)(double, void*), double *params,
         double B, double nu, double pmin, double pmax );
 
@@ -84,13 +85,11 @@ void test_ps();
 void test_sigma();
 
 double PS_dndM( double a, double M );
-
 void check_flag();
-
 void compute_particle_radio();
 void free_particle_radio();
 void B_Pdf();
-
 void pre_proc();
-
 void do_sync( char *s );
+
+void cre_pressure_pdf();
