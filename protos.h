@@ -92,4 +92,4 @@ void B_Pdf();
 void pre_proc();
 void do_sync( char *s );
 
-void cre_pressure_pdf();
+void hge_pressure_pdf();

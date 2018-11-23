@@ -121,6 +121,7 @@ enum iofields {
     IO_CR_Q0,
     IO_CR_E0,
     IO_CR_n0,
+    IO_CR_P0,
     IO_CRE_C,
     IO_CRE_ALPHA,
     IO_CRE_QMIN,
@@ -177,6 +178,7 @@ typedef struct Sph_Particle_Data {
     double CR_Q0;
     double CR_n0;
     double CR_E0;
+    double CR_P0;
     double CRE_C;
     double CRE_Alpha;
     double CRE_qmin;
@@ -219,7 +221,7 @@ extern struct global_parameters_struct {
         KernelInterpolation,
         ConvN, GroupEleSpec, RadSpec,
         PowSpec, PowSpecNGrid, PowSpecPartType, PowSpecBins,
-        CrePressurePdf,
+        HgePressurePdf,
 
         QNum, NuNum, FoFMinLen, proj_i, proj_j, proj_k,
         TreePartType, GroupIndexMin, GroupIndexMax,

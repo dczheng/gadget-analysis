@@ -69,6 +69,7 @@ int blockpresent( enum iofields blk, int pt ) {
         case IO_CR_C0:
         case IO_CR_E0:
         case IO_CR_n0:
+        case IO_CR_P0:
             if (( pt == 0 ) && ( header.npart[0] != 0 ) && All.ReadCr == 1)
                 return 1;
             else
@@ -105,6 +106,7 @@ int get_block_nbytes( enum iofields blk ) {
         case IO_CR_Q0:
         case IO_CR_E0:
         case IO_CR_n0:
+        case IO_CR_P0:
         case IO_CRE_C:
         case IO_CRE_ALPHA:
         case IO_CRE_QMIN:
@@ -144,6 +146,7 @@ void get_block_dims( int pt, enum iofields blk, hsize_t (*dims)[2] ) {
         case IO_CR_Q0:
         case IO_CR_E0:
         case IO_CR_n0:
+        case IO_CR_P0:
         case IO_CRE_C:
         case IO_CRE_ALPHA:
         case IO_CRE_QMIN:
@@ -214,6 +217,9 @@ void get_dataset_name( enum iofields blk, char *buf ) {
             break;
         case IO_CR_n0:
             strcpy( buf, "CR_n0" );
+            break;
+        case IO_CR_P0:
+            strcpy( buf, "CR_P0" );
             break;
         case IO_CRE_C:
             strcpy( buf, "CRE_C" );
@@ -353,6 +359,10 @@ void empty_buffer( enum iofields blk, int offset, int pt ) {
         case IO_CR_n0:
             for ( i=0; i<n; i++ )
                 SphP[offset+i].CR_n0 = *fp++;
+            break;
+        case IO_CR_P0:
+            for ( i=0; i<n; i++ )
+                SphP[offset+i].CR_P0 = *fp++;
             break;
         case IO_CRE_C:
             for ( i=0; i<n; i++ )
@@ -655,7 +665,6 @@ void free_particle_memory() {
     writelog( "free memory ... done.\n" );
     put_block_line;
 }
-
 
 void check_data( int err ) {
 

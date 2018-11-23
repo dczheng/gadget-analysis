@@ -51,6 +51,6 @@ double beta( double a, double b, double x ) {
 
 }
 
-void cre_pressure_pdf() {
+void hge_pressure_pdf() {
 
 }

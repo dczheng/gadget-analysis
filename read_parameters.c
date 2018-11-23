@@ -121,7 +121,7 @@ void read_parameters( char *fn ) {
         ADD_PARAI( All.PowSpecNGrid             );
         ADD_PARAI( All.PowSpecPartType          );
         ADD_PARAI( All.PowSpecBins              );
-        ADD_PARAI( All.CrePressurePdf           );
+        ADD_PARAI( All.HgePressurePdf           );
 
 
         while( !feof( fd ) ) {
