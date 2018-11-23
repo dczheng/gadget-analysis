@@ -42,10 +42,10 @@ void total_radio_spectrum() {
                         if ( nu_i < 0 || nu_i >= Nnu )
                             continue;
 
-                        flux[i] += SphP[index].P[nu_i];
+                        flux[i] += SphP[index].Rad[nu_i];
 
-                        if ( SphP[index].P[nu_i] * tmp > 10 || SphP[index].P[nu_i] < 0 || flux[i] < 0 ) {
-                            printf( "%i, %g, %g, %g\n", nu_i, nu[ nu_i ], SphP[index].P[nu_i], flux[i] );
+                        if ( SphP[index].Rad[nu_i] * tmp > 10 || SphP[index].Rad[nu_i] < 0 || flux[i] < 0 ) {
+                            printf( "%i, %g, %g, %g\n", nu_i, nu[ nu_i ], SphP[index].Rad[nu_i], flux[i] );
                             endrun( 20181029 );
                         }
 

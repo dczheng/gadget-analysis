@@ -33,8 +33,8 @@ void slice() {
             All.Start[2], All.End[2] );
 
     for ( pt=0; pt<6; pt++ ) {
-        offset = get_particle_offset( pt );
-        num = get_particle_num( pt );
+        offset = OffsetPart6[pt];
+        num = NumPart6[pt];
         index = offset;
         if ( num == 0 ) {
             All.SliceStart[pt] = -1;

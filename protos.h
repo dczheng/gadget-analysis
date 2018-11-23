@@ -5,7 +5,6 @@ void read_group();
 void free_group();
 void read_parameters( char *fn );
 void set_units();
-void init_sep_str();
 
 void slice();
 void make_slice_img( int pt );
@@ -24,10 +23,6 @@ void analysis();
 double kernel( double q );
 void init_kernel_matrix();
 void free_kernel_matrix();
-
-long get_particle_offset( int pt );
-long get_particle_num( int pt );
-double get_B( long i );
 
 void tree_build();
 void tree_free();

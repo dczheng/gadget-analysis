@@ -5,6 +5,19 @@ struct sphp_sort{
     SphParticleData *SphP;
 };
 
+long get_particle_num( int pt ) {
+    return ( header.npartTotal[pt] + ( ( (long) header.npartTotalHighWord[pt] ) << 32 ) );
+}
+
+long get_particle_offset( int pt ) {
+    long offset, i;
+    for ( i=0, offset=0; i<pt; i++ ){
+        offset += header.npartTotal[i];
+        offset += ( ( (long)header.npartTotalHighWord[i] ) << 32 );
+    }
+    return offset;
+}
+
 void find_id() {
     int bits;
     long i, num, offset;
@@ -43,8 +56,9 @@ void find_id() {
 
     writelog( "find id ... done.\n" );
     mytimer_end();
-    put_block_line;
+    put_block_line0;
 }
+
 
 void construct_id_to_index() {
     long idmax, idmin, i, idn, N;
@@ -86,7 +100,7 @@ void construct_id_to_index() {
     writelog( "construct id to index ... done.\n" );
     mytimer_end();
 
-    put_block_line;
+    put_block_line0;
 }
 
 int compare_pos( const void *a, const void *b ) {
@@ -188,7 +202,7 @@ void sort_particle_by_pos() {
     }
 
     /*
-    put_block_line;
+    put_block_line0;
 
     for( i=0; i<100; i++ )  {
         printf( "[%li] %e %e %e\n",
@@ -206,7 +220,7 @@ void sort_particle_by_pos() {
                 P[N_Gas - 100 + i].Pos[2] );
     }
 
-    put_block_line;
+    put_block_line0;
     */
 
     myfree( flag );
@@ -246,7 +260,7 @@ void sort_particle_by_pos() {
     mytimer_end();
     writelog( "sort particle ...done.\n" );
 
-    put_block_line;
+    put_block_line0;
 
 }
 
@@ -391,7 +405,7 @@ void merge_particle( int pt ) {
     }
 
     writelog( "merge particle `%i` ... done.\n", pt );
-    put_block_line;
+    put_block_line0;
 
 }
 
@@ -465,7 +479,7 @@ void attach_particle_to_gas( int pt ) {
 
     if ( attach_num != 0 ) {
         writelog( "Attatch %li `%i` particle to gas.\n", attach_num, pt+4 );
-        put_block_line;
+        put_block_line0;
     }
 
 }
@@ -493,6 +507,7 @@ void test_attach_particle_to_gas() {
 
 void pre_proc() {
 
+    int i;
     writelog( "pre proc ...\n" )
 
     find_id();
@@ -510,6 +525,23 @@ void pre_proc() {
     attach_particle_to_gas( 5 );
 
     //endrun( 20181108 );
+    //
+    //
+    //
+    for ( i=0; i<6; i++ ) {
+        NumPart6[i] = get_particle_num( i );
+        OffsetPart6[i] = get_particle_offset( i );
+    }
+
+    writelog( "NumPart6: " )
+    for ( i=0; i<6; i++ )
+        writelog( "%li ", NumPart6[i] );
+    writelog( "\n" )
+
+    writelog( "OffsetPart6: " )
+    for ( i=0; i<6; i++ )
+        writelog( "%li ", OffsetPart6[i] );
+    writelog( "\n" )
 
     writelog( "pre proc ... done.\n" )
 
@@ -517,3 +549,36 @@ void pre_proc() {
 
 }
 
+void check_data( int err ) {
+
+    long i, offset, num;
+
+    writelog( "Check data ...\n" );
+
+    offset = get_particle_offset( 4 );
+    num = get_particle_num( 4 );
+    printf( "type: 4, offset: %li, num: %li\n", offset, num );
+
+    for ( i=offset; i<offset+num; i++ )
+        printf( "%g\n", P[i].Mass );
+
+    offset = get_particle_offset( 5 );
+    num = get_particle_num( 5 );
+    printf( "type: 5, offset: %li, num: %li\n", offset, num );
+
+    /*
+    for ( i=offset; i<offset+num; i++ )
+        printf( "%g\n", P[i].Mass );
+    */
+
+    for ( i=0; i<NumPart; i++ )
+        if ( P[i].Mass == 0 ) {
+            //printf( "P[%li].Mass = 0 !!!, Type: %i\n", i, P[i].Type );
+            endrun(20181107);
+        }
+
+
+    writelog( "Check data ... done.\n" );
+    put_block_line0;
+
+}

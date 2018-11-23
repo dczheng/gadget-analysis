@@ -20,23 +20,6 @@ void tree_free() {
     put_block_line;
 }
 
-void merge_start_or_bh( long i, long j ) {
-
-    long offset, num;
-
-    printf( "[%i] Merge %li and %li\n", ThisTask, i, j  );
-
-    P[i].Mass += P[j].Mass;
-    offset = get_particle_offset( P[i].Type );
-    num = get_particle_offset( P[i].Type );
-    P[j] = P[offset+num-1];
-    num --;
-    header.npartTotal[P[i].Type] = ( ( num<<32 ) >> 32 );
-    header.npartTotalHighWord[P[i].Type] = ( num>> 32 );
-    printf( "[%i] Merge %li and %li done.\n", ThisTask, i, j  );
-
-}
-
 void tree_build_single() {
 
     long i, j, subnode, bits, nfree, n, nn, tn;

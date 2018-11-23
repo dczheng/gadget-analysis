@@ -1,5 +1,15 @@
 #include "allvars.h"
 
+void init_sep_str() {
+    memset( sep_str, '-', SEP_LEN-2 );
+    sep_str[ SEP_LEN-2 ] = '\n';
+    sep_str[ SEP_LEN-1 ] = '\0';
+
+    memset( sep_str0, '-', SEP_LEN0-2 );
+    sep_str0[ SEP_LEN0-2 ] = '\n';
+    sep_str0[ SEP_LEN0-1 ] = '\0';
+}
+
 void global_init() {
     init_sep_str();
     inte_ws = gsl_integration_workspace_alloc( GSL_INTE_WS_LEN );

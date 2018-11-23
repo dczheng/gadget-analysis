@@ -105,7 +105,7 @@ double group_luminosity( int nu_index, long index ) {
     while( p >= 0 ) {
 
         if ( P[p].Type == 0 )
-            F += SphP[p].P[nu_index];
+            F += SphP[p].Rad[nu_index];
         p = FoFNext[p];
 
     }
@@ -353,7 +353,7 @@ void group_spectrum_index() {
             check_picture_index( jj );
 
             for ( k=0; k<vN; k++ )
-                spec[ii*PicS*vN + jj * vN + k] += SphP[p].P[k];
+                spec[ii*PicS*vN + jj * vN + k] += SphP[p].Rad[k];
         }
 
         for ( i=0; i<vN * PicS2; i++ )

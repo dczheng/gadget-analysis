@@ -23,6 +23,7 @@
 #define MYPATHNAME_MAX   FILENAME_MAX
 
 #define SEP_LEN 80
+#define SEP_LEN0 20
 #define GENERATIONS 8
 
 #define SFR
@@ -166,13 +167,13 @@ extern ParticleData  *P;
 typedef struct Sph_Particle_Data {
     double Density;
     double u;
+
     /*
     double Hsml;
     double NumNgb;
     double HydroAccel[3];
     */
 
-    double Pressure;
     double MachNumber;
     double CR_C0;
     double CR_Q0;
@@ -185,7 +186,7 @@ typedef struct Sph_Particle_Data {
     double CRE_qmax;
     double CRE_n;
     double CRE_e;
-    double *P;
+    double *Rad;
     double B[3];
     double divB;
     double dBdt;
@@ -198,9 +199,9 @@ typedef struct Sph_Particle_Data {
 } SphParticleData;
 extern SphParticleData *SphP;
 
-extern char sep_str[ SEP_LEN ];
+extern char sep_str[ SEP_LEN ], sep_str0[ SEP_LEN0 ];
 extern int ThisTask, NTask;
-extern long *id_to_index, NumPart, N_Gas;
+extern long *id_to_index, NumPart, N_Gas, OffsetPart6[6], NumPart6[6];
 extern FILE *LogFileFd, *MemUseFileFd;
 extern struct io_header header;
 
@@ -363,6 +364,7 @@ typedef struct sigma_struct{
 } sigma_struct;
 
 #include "protos.h"
+#include "auxiliary_functions.h"
 
 #ifdef ZDEBUG
 void signal_hander( int s );

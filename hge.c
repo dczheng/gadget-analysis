@@ -51,6 +51,9 @@ double beta( double a, double b, double x ) {
 
 }
 
-void hge_pressure_pdf() {
+void hge_pressure( long i ) {
 
+}
+
+void hge_pressure_pdf() {
 }

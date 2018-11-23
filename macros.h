@@ -19,6 +19,7 @@
 }
 
 #define put_block_line    writelog( sep_str )
+#define put_block_line0    writelog( sep_str0 )
 
 #define find_global_value( a, A, type, op ) { \
     MPI_Reduce( &a, &A, 1, type, op, 0, MPI_COMM_WORLD ); \

@@ -97,7 +97,7 @@ void save_particle_radio() {
 
     for ( i=0; i<N_Gas; i++ )
         for ( j=0; j<All.NuNum; j++ )
-            buf[ i * All.NuNum + j ] = SphP[i].P[j];
+            buf[ i * All.NuNum + j ] = SphP[i].Rad[j];
 
     hdf5_dataspace = H5Screate_simple( ndims, dims, NULL );
     hdf5_type = H5Tcopy( H5T_NATIVE_DOUBLE );
@@ -165,9 +165,9 @@ int read_particle_radio() {
 
     for( i=0; i<N_Gas; i++ ) {
 
-        SphP[i].P = malloc( sizeof( double ) * All.NuNum );
+        SphP[i].Rad = malloc( sizeof( double ) * All.NuNum );
         for( j=0; j<All.NuNum; j++ )
-            SphP[i].P[j] = buf[ i * All.NuNum +j ];
+            SphP[i].Rad[j] = buf[ i * All.NuNum +j ];
 
     }
 
@@ -229,7 +229,7 @@ void compute_particle_radio() {
         if ( i % signal == 0 )
             writelog( "[%10li] [%10li] [%5.1f%%]\n", i, N_Gas, ((double)(i)) / N_Gas * 100 );
 
-        SphP[i].P = malloc( sizeof( double ) * nuN );
+        SphP[i].Rad = malloc( sizeof( double ) * nuN );
 
         for( j=0; j<nuN; j++ ) {
 
@@ -237,7 +237,7 @@ void compute_particle_radio() {
 
             //printf( "nu: %g\n", nu );
 
-            SphP[i].P[j] = particle_radio( nu, i );
+            SphP[i].Rad[j] = particle_radio( nu, i );
 
         }
 
@@ -257,7 +257,7 @@ void free_particle_radio() {
 
     long i;
     for( i=0; i<N_Gas; i++ )
-        free( SphP[i].P );
+        free( SphP[i].Rad );
 
 }
 

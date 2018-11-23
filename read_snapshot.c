@@ -666,40 +666,6 @@ void free_particle_memory() {
     put_block_line;
 }
 
-void check_data( int err ) {
-
-    long i, offset, num;
-
-    writelog( "Check data ...\n" );
-
-    offset = get_particle_offset( 4 );
-    num = get_particle_num( 4 );
-    printf( "type: 4, offset: %li, num: %li\n", offset, num );
-
-    for ( i=offset; i<offset+num; i++ )
-        printf( "%g\n", P[i].Mass );
-
-    offset = get_particle_offset( 5 );
-    num = get_particle_num( 5 );
-    printf( "type: 5, offset: %li, num: %li\n", offset, num );
-
-    /*
-    for ( i=offset; i<offset+num; i++ )
-        printf( "%g\n", P[i].Mass );
-    */
-
-    for ( i=0; i<NumPart; i++ )
-        if ( P[i].Mass == 0 ) {
-            //printf( "P[%li].Mass = 0 !!!, Type: %i\n", i, P[i].Type );
-            endrun(20181107);
-        }
-
-
-    writelog( "Check data ... done.\n" );
-    put_block_line;
-
-}
-
 void read_snapshot() {
     int pt, blk, nbytes;
     long i, file, offset, num;
@@ -727,8 +693,9 @@ void read_snapshot() {
     */
     show_header( header );
     for ( i=0; i<6; i++ ){
-        NumPart += get_particle_num( i );
+        NumPart += ( header.npartTotal[i] + ( ( (long) header.npartTotalHighWord[i] ) << 32 ) );
     }
+
     N_Gas = header.npartTotal[0] + ( ( (long)header.npartTotalHighWord[0] ) << 32 );
 
     All.BoxSize = header.BoxSize;

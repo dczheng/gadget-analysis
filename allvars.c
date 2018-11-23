@@ -1,7 +1,7 @@
 #include "allvars.h"
 
-char sep_str[ SEP_LEN ];
-long *id_to_index, NumPart, N_Gas;
+char sep_str[ SEP_LEN ], sep_str0[ SEP_LEN0 ];
+long *id_to_index, NumPart, N_Gas, NumPart6[6], OffsetPart6[6];
 int ThisTask, NTask;
 gsl_integration_workspace *inte_ws;
 FILE *LogFileFd, *MemUseFileFd;
