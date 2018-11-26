@@ -88,6 +88,9 @@ void analysis(){
     if( All.FoF )
         fof_free();
 
+    if ( All.HgePressurePdf )
+        hge_pressure_pdf();
+
 
 
 

@@ -22,8 +22,8 @@ void write_img( char *fn, char *nstr, int mode ) {
     img_max = -DBL_MAX;
 
     for ( i=0; i<All.PicSize2; i++ ) {
-        img_min = vmin( image.img[i], img_min, 0 );
-        img_max = vmax( image.img[i], img_max );
+        vmin2( img_min, image.img[i], 0 );
+        vmax2( img_max, image.img[i]);
     }
 
     writelog( "xmin: %g, xmax: %g, ymin: %g, ymax: %g\n",

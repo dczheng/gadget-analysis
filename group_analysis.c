@@ -136,7 +136,7 @@ double particle_f( SphParticleData *part, double p ) {
     if ( p < part->CRE_qmin || p > part->CRE_qmax )
         return 0;
 
-    r = part->CRE_C * part->Density / ( ELECTRON_MASS/g2c.g ) * pow( p, -part->CRE_Alpha );
+    r = part->CRE_C * part->Density / guc.m_e  * pow( p, -part->CRE_Alpha );
     r /= CUBE( g2c.cm );
 
     return r;
@@ -651,7 +651,7 @@ void group_analysis() {
                 data[GROUP_MACH][pic_index] += SphP[p].MachNumber * SphP[p].Density;
 
             if ( group_filed_present( GROUP_HGEN ) ) {
-                n = SphP[p].CRE_n *  SphP[p].Density / ( ( ELECTRON_MASS / ( g2c.g ) ) );
+                n = SphP[p].CRE_n *  SphP[p].Density / guc.m_e;
                 n /= CUBE( g2c.cm );
                 data[GROUP_HGEN][pic_index] += n * SphP[p].Density;
             }

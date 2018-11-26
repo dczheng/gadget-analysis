@@ -20,10 +20,10 @@ void gas_state() {
     mymalloc2( img, sizeof( double ) * SQR( PicSize ) );
 
     for ( i=0; i<N_Gas; i++ ) {
-        TempMin = vmin( SphP[i].Temp, TempMin, 1 );
-        TempMax = vmax( SphP[i].Temp, TempMax );
-        DensMin = vmin( SphP[i].Density/All.RhoBaryon, DensMin, 1 );
-        DensMax = vmax( SphP[i].Density/All.RhoBaryon, DensMax );
+        vmin2( TempMin, SphP[i].Temp,  1 );
+        vmax2( TempMax, SphP[i].Temp );
+        vmin2( DensMin, SphP[i].Density/All.RhoBaryon, 1 );
+        vmax2( DensMax, SphP[i].Density/All.RhoBaryon );
     }
 
     LogDensMin = log10( DensMin );

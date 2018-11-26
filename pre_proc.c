@@ -69,8 +69,8 @@ void construct_id_to_index() {
     idmin = LONG_MAX;
 
     for ( i=0; i<NumPart; i++ ) {
-        idmax = vmax( idmax, P[i].ID );
-        idmin = vmin( idmin, P[i].ID, 0 );
+        vmax2( idmax, P[i].ID );
+        vmin2( idmin, P[i].ID, 0 );
     }
 
     idn = idmax - idmin + 1;

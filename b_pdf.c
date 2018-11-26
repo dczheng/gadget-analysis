@@ -33,10 +33,11 @@ void B_Pdf() {
         if ( B == 0 )
             continue;
 
-        BMin = vmin( B, BMin, 1 );
-        BMax = vmax( B, BMax );
-        DensMin = vmin( SphP[i].Density/All.RhoBaryon, DensMin, 1 );
-        DensMax = vmax( SphP[i].Density/All.RhoBaryon, DensMax );
+        vmin2( BMin, B, 1 );
+        vmax2( BMax, B );
+
+        vmin2( DensMin, SphP[i].Density/All.RhoBaryon, 1 );
+        vmax2( DensMax, SphP[i].Density/All.RhoBaryon );
     }
 
     LogDensMin = log10( DensMin );

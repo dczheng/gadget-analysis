@@ -7,7 +7,9 @@
 }
 
 #define vmax( a, b ) ( ( a > b ) ? a : b )
-#define vmin( a, b, mode) ( mode == 0 ) ? ( ( a > b ) ? b : a ) : ( ( a > b && b > 0 ) ? b : a )
+#define vmax2( a, b ) ( a = vmax( a, b ) )
+#define vmin( a, b, mode) ( ( mode == 0 ) ? ( ( a > b ) ? b : a ) : ( ( a > b && b > 0 ) ? b : a ) )
+#define vmin2( a, b, mode ) ( a = vmin( a, b, mode ) )
 #define check_picture_index( i )  i = ( ( i<0 || i>=All.PicSize ) ? ( (i<0) ? 0 : All.PicSize-1 ) : i )
 #define PERIODIC( x ) ( ( x > All.HalfBoxSize || x < -All.HalfBoxSize ) ? ( ( x > All.HalfBoxSize ) ? ( x - All.BoxSize ) : ( x + All.BoxSize )  ) : x )
 #define NGB_PERIODIC( x ) ( (fabs(x) > All.HalfBoxSize) ? ( All.BoxSize-fabs(x) ) : fabs(x) )

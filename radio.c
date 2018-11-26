@@ -113,7 +113,7 @@ double radio_inte( double p, void *params ) {
 
     ri = params;
 
-    nu_c = 0.1875 * ( 1+p*p ) * ri->B * aux_c.e_mec ;  // 0.1875: 3/16
+    nu_c = 0.1875 * ( 1+p*p ) * ri->B * cuc.e_mec ;  // 0.1875: 3/16
     x = ri->nu / nu_c;
 
 #ifdef RADIO_F_INTERP
@@ -143,7 +143,7 @@ double radio( double (*f)( double, void* ), double *params,
 
     err = 1e-1;
 
-    t = sqrt( nu / BESSEL_UPPER_LIMIT / ( 0.1875 * B * aux_c.e_mec )-1 );
+    t = sqrt( nu / BESSEL_UPPER_LIMIT / ( 0.1875 * B * cuc.e_mec )-1 );
 
     //printf( "pmin: %g, pmax: %g, B: %g\n", pmin, pmax, B );
 
@@ -158,7 +158,7 @@ double radio( double (*f)( double, void* ), double *params,
     //printf( "p: ( %g, %g )\n", pmin, pmax );
     r = qtrap( &radio_inte, &ri, pmin, pmax, err );
 
-    fac = sqrt(3) * CUBE( ELECTRON_CHARGE ) * PI / ( 4.0 * ELECTRON_MASS * SQR(LIGHT_SPEED) );
+    fac = sqrt(3) * CUBE( cuc.e ) * PI / ( 4.0 * cuc.m_e * SQR(cuc.c) );
     r *= fac;
 
     return r;
@@ -217,7 +217,7 @@ void test_F() {
 
     dlogx = ( logx_max-logx_min ) / ( logx_N - 1 );
 
-    printf( "fac: %g\n", 0.1875 * aux_c.e_mec );
+    printf( "fac: %g\n", 0.1875 * cuc.e_mec );
 
     fd = fopen( "F_x.dat", "w" );
 

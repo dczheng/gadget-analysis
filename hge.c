@@ -6,14 +6,16 @@
 
 #define NUMBER_DENSITY( c, a, q )            ( c * pow( q, 1.0-a ) / ( a-1.0 ) )
 
-#define ENERGY( c, a, q )                    ( LS2 * c / (a-1.0) * ( 0.5 * BETA(a, q) + (sqrt( 1+q*q ) - 1.0 ) * pow( q, 1-a ) ) )
+#define ENERGY( c, a, q )                    ( guc.c2 * c / (a-1.0) * ( 0.5 * BETA(a, q) + (sqrt( 1+q*q ) - 1.0 ) * pow( q, 1-a ) ) )
 #define ENERGY2( c, a, q1, q2 )              ( ENERGY0( c, a, q1 ) - ENERGY0( c, a, q2 ) )
 
-#define MEAN_ENERGY( a, q )                  ( ( 0.5 * pow( q, a-1.0 ) * BETA(a, q) + sqrt( 1+q*q ) - 1.0 ) * MEC2 )
-#define MEAN_ENERGY2( a, q1, q2 )            ( ENERGY02( 1, a, q1, q2 ) / NUMBER_DENSITY2( 1, a, q1, q2 ) * ELECTRON_MASS )
+#define MEAN_ENERGY( a, q )                  ( ( 0.5 * pow( q, a-1.0 ) * BETA(a, q) + sqrt( 1+q*q ) - 1.0 ) * guc.mec2 )
+#define MEAN_ENERGY2( a, q1, q2 )            ( ENERGY02( 1, a, q1, q2 ) / NUMBER_DENSITY2( 1, a, q1, q2 ) * guc.m_e )
 
-#define PRESSURE( c, a, q )                  ( LS2 * c / 6 * BETA( a, q ) )
+#define PRESSURE( c, a, q )                  ( guc.c2 * c / 6 * BETA( a, q ) )
 #define PRESSURE2( c, a, q1, q2 )            ( PRESSURE( c, a, q1 ) - PRESSURE( c, a, q2 ) )
+
+#define hge_pressure( i )                    ( PRESSURE2( SphP[i].CRE_C, SphP[i].CRE_Alpha, SphP[i].CRE_qmin, SphP[i].CRE_qmax ) )
 
 
 double beta_inte( double x, void *params ) {
@@ -51,9 +53,35 @@ double beta( double a, double b, double x ) {
 
 }
 
-void hge_pressure( long i ) {
-
-}
-
 void hge_pressure_pdf() {
+
+    long i;
+
+    double p, hge_p, cr_p, hge_r, cr_r, hge_r_max, cr_r_max, hge_r_min, cr_r_min;
+
+    hge_r_max = cr_r_max = 0;
+    hge_r_min = cr_r_min = DBL_MAX;
+
+    for( i=0; i<N_Gas; i++ ) {
+        if ( SphP[i].CRE_n != 0 ) {
+            p = get_pressure( i );
+            hge_p = hge_pressure( i ) * SphP[i].Density;
+            cr_p = SphP[i].CR_P0;
+
+            hge_r = hge_p / p;
+            cr_r  = cr_p / p;
+
+            vmax2( hge_r_max, hge_r );
+            vmax2( cr_r_max, cr_r );
+
+            vmin2( hge_r_min, hge_r, 0);
+            vmin2( cr_r_min, cr_r, 0 );
+
+
+            //printf( "cr: %g, hge: %g\n", cr_r, hge_r );
+        }
+    }
+
+    printf( "[max] cr: %g, hge: %g\n", cr_r_max, hge_r_max );
+
 }

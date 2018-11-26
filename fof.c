@@ -189,8 +189,8 @@ void fof_compute_group_properties() {
 
         p = g->Head;
         for ( j=0; j<g->Len; j++ ) {
-            g->size = vmax( NGB_PERIODIC( P[p].Pos[x] - g->cm[x] ), g->size );
-            g->size = vmax( NGB_PERIODIC( P[p].Pos[y] - g->cm[y] ), g->size );
+            vmax2( g->size, NGB_PERIODIC( P[p].Pos[x] - g->cm[x] ) );
+            vmax2( g->size, NGB_PERIODIC( P[p].Pos[y] - g->cm[y] ) );
             p = FoFNext[p];
         }
 

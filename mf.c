@@ -13,8 +13,8 @@ void mass_function() {
     gm_max = -DBL_MAX;
 
     for ( g=0; g<Ngroups; g++ ) {
-        gm_min = vmin( gm_min, Gprops[g].mass, 0 );
-        gm_max = vmax( gm_max, Gprops[g].mass );
+        vmin2( gm_min, Gprops[g].mass, 0 );
+        vmax2( gm_max, Gprops[g].mass );
     }
 
     writelog( "gm_min: %g, gm_max: %g\n", gm_min, gm_max );

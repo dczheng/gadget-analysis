@@ -17,7 +17,7 @@ double particle_radio2( double nu,  SphParticleData *part ) {
     double r, params[4], B;
 
     params[0] = part->CRE_C;
-    params[0] = params[0] * part->Density / ( ELECTRON_MASS /(g2c.g) );
+    params[0] = params[0] * part->Density / ( cuc.m_e /(g2c.g) );
     params[0] /= CUBE( g2c.cm );
 
     params[1] = part->CRE_Alpha;
@@ -268,7 +268,7 @@ void test_qmax() {
     int i, N, qmaxn, k;
     FILE *fd;
 
-    part.CRE_C = 1 * CUBE(g2c.cm) * ( ELECTRON_MASS/(g2c.g) );
+    part.CRE_C = 1 * CUBE(g2c.cm) * ( cuc.m_e/(g2c.g) );
     part.CRE_Alpha = 2.01;
     part.CRE_qmin = 1;
     part.CRE_qmax = 1e5;
@@ -309,7 +309,7 @@ void test_qmax() {
                 part.CRE_qmax );
 
         printf(  "%g %g %g %g %g\n",
-                part.CRE_C /( CUBE(g2c.cm) * ( ELECTRON_MASS/(g2c.g) )),
+                part.CRE_C /( CUBE(g2c.cm) * ( cuc.m_e/(g2c.g) )),
                 part.CRE_Alpha,
                 part.CRE_qmin,
                 part.CRE_qmax,
@@ -392,20 +392,20 @@ double particle_radio( double nu, long i ) {
 
     C = SphP[i].CRE_C;
     //printf( "%g\n", C );
-    C = C * SphP[i].Density / ( ELECTRON_MASS /(g2c.g) );
+    C = C * SphP[i].Density / ( cuc.m_e /(g2c.g) );
     C /= CUBE( g2c.cm );
 
     B = sqrt( pow( SphP[i].B[0], 2 ) + pow( SphP[i].B[1], 2 ) + pow( SphP[i].B[2], 2 ) );
     Ub = B * B / ( 8 * PI );
     Ub += SQR( BCMB0 ) * pow( All.Time, -4 ) / ( 8*PI );
 
-    nuL = ELECTRON_CHARGE * B / ( 2 * PI * ELECTRON_MASS * LIGHT_SPEED );
+    nuL = cuc.e * B / ( 2 * PI * cuc.m_e * cuc.c );
 
     if ( sqrt( nu/nuL-1 ) < SphP[i].CRE_qmin ||
          sqrt( nu/nuL-1 ) > SphP[i].CRE_qmax )
         return 0;
 
-    P = C * 2.0 / 3.0 * LIGHT_SPEED * Ub * THOMSON_CROSS_SECTION *
+    P = C * 2.0 / 3.0 * cuc.c * Ub * THOMSON_CROSS_SECTION *
         pow( nu / nuL-1, (1-SphP[i].CRE_Alpha) / 2 ) / nuL;
 
     //printf( "%g\n", P );

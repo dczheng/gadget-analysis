@@ -477,7 +477,7 @@ void read_header( char *fn ) {
 void show_header( struct io_header header ) {
     int i;
 
-    put_block_line;
+    put_block_line0;
     writelog( "header Info:\n" );
 
     writelog( "%-25s: ", "npart" );
@@ -514,7 +514,7 @@ void show_header( struct io_header header ) {
     writelog( "%-25s: %i\n", "flag_doubleprecision",   header.flag_doubleprecision );
     writelog( "%-25s: %i\n", "flag_ic_info",           header.flag_ic_info );
     writelog( "%-25s: %f\n", "lpt_scalingfactor",      header.lpt_scalingfactor );
-    put_block_line;
+    put_block_line0;
 }
 
 void write_header( char *fn, struct io_header header ) {

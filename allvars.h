@@ -333,9 +333,13 @@ extern struct gadget_2_cgs_unit{
     double cm, g, s, erg;
 }g2c;
 
-extern struct aux_constants{
-    double e_mec;
-} aux_c;
+extern struct physical_constants_in_gadget_unit{
+    double e, m_e, m_p, c, G, mec2, c2, e_mec, sigma_t;
+}guc;
+
+extern struct physical_constants_in_cgs_unit{
+    double e, m_e, m_p, c, G, mec2, c2, e_mec, sigma_t;
+}cuc;
 
 #define MALLOC_VAR_NUM 1000
 #define MALLOC_VAR_LEN 200

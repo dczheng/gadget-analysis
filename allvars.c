@@ -21,7 +21,8 @@ SphParticleData *SphP;
 struct io_header header;
 struct image_struct image;
 struct gadget_2_cgs_unit g2c;
-struct aux_constants aux_c;
+struct physical_constants_in_gadget_unit guc;
+struct physical_constants_in_cgs_unit cuc;
 struct malloc_struct ms;
 
 #ifdef ZDEBUG
