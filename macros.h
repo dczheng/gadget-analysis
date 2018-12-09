@@ -119,7 +119,7 @@
     }\
     check_var_len( a );\
     if ( shared )\
-        sprintf( ms.var[ms.nn], "%s", #mpi_win );\
+        sprintf( ms.var[ms.nn], "%s", &((#mpi_win)[7]) );\
     else \
         sprintf( ms.var[ms.nn], "%s", #a );\
     ms.var_bytes[ms.nn] = n;\
@@ -154,7 +154,7 @@
 #define myfree0( a, shared, mpi_win ) {\
     for ( ms.i=0; ms.i<ms.nn; ms.i++ ) {\
         if ( shared ) {\
-            if ( !( strcmp( ms.var[ms.i], #mpi_win ) ) ) {\
+            if ( !( strcmp( ms.var[ms.i], &((#mpi_win)[7]) ) ) ) {\
                 ms.b = ms.var_bytes[ms.i];\
                 break;\
             }\
@@ -168,16 +168,16 @@
     }\
 \
     if ( ms.b > CUBE( 1024 ) ) {\
-        fprintf( MemUseFileFd, "Free memory for `%s` ( %g Gb )\n", #a, ms.b / CUBE( 1024. ) ); \
+        fprintf( MemUseFileFd, "Free memory for `%s` ( %g Gb )\n", ms.var[ms.i], ms.b / CUBE( 1024. ) ); \
     }\
     else if ( ms.b > SQR( 1024 ) ) {\
-        fprintf( MemUseFileFd, "Free memory for `%s` ( %g Mb )\n", #a, ms.b / SQR(  1024. ) ); \
+        fprintf( MemUseFileFd, "Free memory for `%s` ( %g Mb )\n", ms.var[ms.i], ms.b / SQR(  1024. ) ); \
     }\
     else if( ms.b > 1024 ) {\
-        fprintf( MemUseFileFd, "Free memory for `%s` ( %g Kb )\n", #a, ms.b /  1024. ); \
+        fprintf( MemUseFileFd, "Free memory for `%s` ( %g Kb )\n", ms.var[ms.i], ms.b /  1024. ); \
     }\
     else {\
-        fprintf( MemUseFileFd, "Free memory for `%s` ( %li b )\n", #a, ms.b ); \
+        fprintf( MemUseFileFd, "Free memory for `%s` ( %li b )\n", ms.var[ms.i], ms.b ); \
     }\
 \
     for ( ; ms.i<ms.nn-1; ms.i++ ) {\
