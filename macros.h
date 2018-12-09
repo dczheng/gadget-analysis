@@ -153,9 +153,17 @@
 
 #define myfree0( a, shared, mpi_win ) {\
     for ( ms.i=0; ms.i<ms.nn; ms.i++ ) {\
-        if ( !( strcmp( ms.var[ms.i], #a ) ) ) {\
-            ms.b = ms.var_bytes[ms.i];\
-            break;\
+        if ( shared ) {\
+            if ( !( strcmp( ms.var[ms.i], #mpi_win ) ) ) {\
+                ms.b = ms.var_bytes[ms.i];\
+                break;\
+            }\
+        }\
+        else {\
+            if ( !( strcmp( ms.var[ms.i], #a ) ) ) {\
+                ms.b = ms.var_bytes[ms.i];\
+                break;\
+            }\
         }\
     }\
 \

@@ -90,7 +90,6 @@ void save_particle_radio() {
     dims[0] = N_Gas;
     dims[1] = All.NuNum;
 
-
     hdf5_dataspace = H5Screate_simple( ndims, dims, NULL );
     hdf5_type = H5Tcopy( H5T_NATIVE_DOUBLE );
     hdf5_dataset = H5Dcreate( hdf5_file, "Radio", hdf5_type, hdf5_dataspace, H5P_DEFAULT );
