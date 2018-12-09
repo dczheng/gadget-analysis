@@ -3,6 +3,10 @@
 void gas_density() {
     int num, i;
     char buf[100];
+
+    if ( ThisTask_Local != 0 )
+        return;
+
     writelog( "gas density silce ...\n" );
     num = All.SliceEnd[0] - All.SliceStart[0];
     mymalloc2( image.data, sizeof( double ) * num );
@@ -27,7 +31,7 @@ void gas_density() {
     myfree( image.img );
 
     writelog( "gas density silce ... done.\n" );
-    put_block_line;
+    put_sep;
 }
 
 int compare_gas_rho( const void *a, const void *b ){

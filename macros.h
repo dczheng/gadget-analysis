@@ -1,7 +1,7 @@
 #define writelog( fmt, ... ) { \
     fprintf( LogFileFd, fmt, ##__VA_ARGS__ ); \
     fflush( LogFileFd ); \
-    if ( ThisTask == (NTask - 1) ) { \
+    if ( ThisTask_Master == NTask_Master-1 ) { \
         printf( fmt, ##__VA_ARGS__ ); \
     }\
 }
@@ -20,8 +20,8 @@
    b = t1; \
 }
 
-#define put_block_line    writelog( sep_str )
-#define put_block_line0    writelog( sep_str0 )
+#define put_sep    writelog( sep_str )
+#define put_sep0    writelog( sep_str0 )
 
 #define find_global_value( a, A, type, op ) { \
     MPI_Reduce( &a, &A, 1, type, op, 0, MPI_COMM_WORLD ); \
@@ -76,8 +76,15 @@
     fflush( MemUseFileFd ); \
 }
 
-#define mymalloc( a, n, flag, b ) {\
-    if ( !(a = malloc( n )) ) { \
+
+#define mymalloc0( a, n, flag, b, shared, disp_unit, mpi_win ) {\
+        if ( shared ) \
+            MPI_Win_allocate_shared( n, disp_unit, MPI_INFO_NULL,\
+                    MpiComm_Local, &a, &mpi_win ); \
+        else \
+            a = malloc( n ); \
+    \
+    if ( (!a) && (n > 0) ) { \
         if ( n > CUBE( 1024 ) ) {\
             writelog( "Failed to allocate memory for `%s` ( %g Gb )\n", #a, n / CUBE( 1024. ) ); \
         }\
@@ -88,7 +95,7 @@
             writelog( "Failed to allocate memory for `%s` ( %g Kb )\n", #a, n /  1024. ); \
         }\
         else {\
-            writelog( "Failed to allocate memory for `%s` ( %li b )\n", #a, n ); \
+            writelog( "Failed to allocate memory for `%s` ( %li b )\n", #a, (long)n ); \
         }\
         endrun( 20180430 ); \
     }\
@@ -103,7 +110,7 @@
         fprintf( MemUseFileFd, "allocate memory for `%s` ( %g Kb )\n", #a, n /  1024. ); \
     }\
     else {\
-        fprintf( MemUseFileFd, "allocate memory for `%s` ( %li b )\n", #a, n ); \
+        fprintf( MemUseFileFd, "allocate memory for `%s` ( %li b )\n", #a, (long)n ); \
     }\
 \
     if ( flag == 1 ){\
@@ -111,7 +118,10 @@
         memset( a, b, n ); \
     }\
     check_var_len( a );\
-    sprintf( ms.var[ms.nn], "%s", #a );\
+    if ( shared )\
+        sprintf( ms.var[ms.nn], "%s", #mpi_win );\
+    else \
+        sprintf( ms.var[ms.nn], "%s", #a );\
     ms.var_bytes[ms.nn] = n;\
     ms.nn++; \
     ms.mem += n; \
@@ -122,11 +132,26 @@
     fflush( MemUseFileFd ); \
 }
 
-#define mymalloc1( a, n )  mymalloc( a, n, 0, 0 )
-#define mymalloc2( a, n )  mymalloc( a, n, 1, 0 )
+#define mymalloc( a, n, flag, b ) mymalloc0( a, n, flag, b, 0, ThisTask, MpiWin_P ) // here ThisTask and MpiWin_P are useless.
+#define mymalloc_shared( a, n, flag, b, disp_unit, mpi_win ) { \
+    if ( ThisTask_Local == 0 ) { \
+        mymalloc0( a, n, flag, b, 1, disp_unit, mpi_win ) \
+    } \
+    else { \
+        mymalloc0( a, 0, flag, b, 1, disp_unit, mpi_win ) \
+        MPI_Win_shared_query( mpi_win, 0, &WinSize, &WinDisp, &a ); \
+    }\
+}
+
+#define mymalloc1( a, n )     mymalloc( a, n, 0, 0 )
+#define mymalloc2( a, n )     mymalloc( a, n, 1, 0 )
 #define mymalloc3( a, n, b )  mymalloc( a, n, 1, b )
 
-#define myfree( a ) {\
+#define mymalloc1_shared( a, n, disp_unit, mpi_win )  mymalloc_shared( a, n, 0, 0, disp_unit, mpi_win )
+#define mymalloc2_shared( a, n, disp_unit, mpi_win )  mymalloc_shared( a, n, 1, 0, disp_unit, mpi_win )
+#define mymalloc3_shared( a, n, b, disp_unit, mpi_win )  mymalloc_shared( a, n, 1, b, disp_unit, mpi_win )
+
+#define myfree0( a, shared, mpi_win ) {\
     for ( ms.i=0; ms.i<ms.nn; ms.i++ ) {\
         if ( !( strcmp( ms.var[ms.i], #a ) ) ) {\
             ms.b = ms.var_bytes[ms.i];\
@@ -153,10 +178,19 @@
     }\
     ms.nn--; \
     ms.mem -= ms.b; \
+\
+    if ( shared ) \
+        MPI_Win_free( &mpi_win );\
+    else \
+        free( a ); \
+\
     malloc_report(); \
     fprintf( MemUseFileFd, sep_str ); \
     fflush( MemUseFileFd ); \
 }
+
+#define myfree( a )        myfree0( a, 0, MpiWin_P )
+#define myfree_shared( mpi_win ) myfree0( P, 1, mpi_win )
 
 #define endrun0( fmt, ... ) {\
     fprintf( stderr, fmt, ##__VA_ARGS__ ); \
@@ -187,5 +221,5 @@ writelog( "[Timer Start in `%s`]\n", __FUNCTION__ ); \
     timer2 = second();
 
 #define mytimer_end() \
-    writelog( "[Total Time in `%s`]: %g sec\n", __FUNCTION__, second() - timer1 ); \
+    writelog( "[Total Time in `%s`]: [%g sec]\n", __FUNCTION__, second() - timer1 ); \
 

@@ -77,6 +77,8 @@ void slice() {
     writelog( "\n" );
 
     writelog( "determine slice info ... done.\n" );
+    put_sep0;
+
 }
 
 void make_slice_img( int pt ) {
@@ -134,7 +136,9 @@ void make_slice_img( int pt ) {
     img_xmax = All.End[ All.proj_i ];
     img_ymin = All.Start[ All.proj_j ];
     img_ymax = All.End[ All.proj_j ];
+
     writelog( "make slice image ... done\n" );
-    put_block_line;
+
+    put_sep;
 
 }

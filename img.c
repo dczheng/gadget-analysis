@@ -5,7 +5,7 @@ void init_img() {
     memset( &image, 0, sizeof( struct image_struct ) );
     mymalloc2( image.props, All.PicSize * sizeof( double ) );
     writelog( "init image ... done.\n" );
-    put_block_line;
+    put_sep0;
 }
 
 void free_img() {

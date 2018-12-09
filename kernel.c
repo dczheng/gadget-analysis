@@ -49,6 +49,7 @@ void init_kernel_matrix() {
         }
     }
     writelog( "initialize kernel matrix ... done.\n" );
+    put_sep0;
 }
 
 void free_kernel_matrix() {

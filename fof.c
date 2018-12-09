@@ -8,9 +8,13 @@ void fof_allocate( long N ) {
 }
 
 void fof_free() {
+
+    if ( ThisTask_Local != 0 )
+        return;
     myfree( Gprops );
     myfree( FoFNext );
-    put_block_line;
+    put_sep;
+
 }
 
 int fof_compare_len( const void *a, const void *b ) {
@@ -23,7 +27,7 @@ void fof_find_groups() {
     long i, p, s, j, ss,
         *Head, *Tail,*Len;
     ngbmax = 0;
-    put_block_line;
+    put_sep;
     writelog( "Start FoF find groups ...\n" );
     mytimer_start();
 
@@ -96,7 +100,7 @@ void fof_find_groups() {
     writelog( "the maximum number of ngb: %i\n", ngbmax );
     mytimer_end();
     writelog( "FoF find groups ... done\n" );
-    put_block_line;
+    put_sep;
 }
 
 void fof_compute_group_properties() {
@@ -202,7 +206,7 @@ void fof_compute_group_properties() {
     }
     mytimer_end();
     writelog( "FoF compute groups properties ... done\n" );
-    put_block_line;
+    put_sep;
 
 }
 
@@ -394,7 +398,7 @@ void fof_save() {
     H5Fclose( hdf5_file );
     mytimer_end();
     writelog( "FoF save groups ... done\n" );
-    put_block_line;
+    put_sep;
 }
 
 void fof_read() {
@@ -521,7 +525,7 @@ void fof_read() {
     H5Fclose( hdf5_file );
     mytimer_end();
     writelog( "read fof... done.\n" );
-    put_block_line;
+    put_sep;
 }
 
 void fof() {
@@ -529,6 +533,9 @@ void fof() {
     int flag, num;
     double masstot, mass;
     char fn[ FILENAME_MAX ];
+
+    if ( ThisTask_Local != 0 )
+        return;
 
     writelog( "Start FoF ...\n" );
     mytimer_start();
@@ -595,6 +602,6 @@ void fof() {
 
     mytimer_end();
     writelog( "FoF ... done\n" );
-    put_block_line;
+    put_sep;
 
 }

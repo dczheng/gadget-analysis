@@ -9,6 +9,9 @@ void total_radio_spectrum() {
     char buf[100];
     FILE *fd;
 
+    if ( ThisTask_Local != 0 )
+        return;
+
     writelog( "total radio spectrum ...\n" );
 
     Nnu = All.NuNum;
@@ -42,10 +45,10 @@ void total_radio_spectrum() {
                         if ( nu_i < 0 || nu_i >= Nnu )
                             continue;
 
-                        flux[i] += SphP[index].Rad[nu_i];
+                        flux[i] += PartRad[index * All.NuNum + nu_i];
 
-                        if ( SphP[index].Rad[nu_i] * tmp > 10 || SphP[index].Rad[nu_i] < 0 || flux[i] < 0 ) {
-                            printf( "%i, %g, %g, %g\n", nu_i, nu[ nu_i ], SphP[index].Rad[nu_i], flux[i] );
+                        if ( PartRad[index*All.NuNum+nu_i] * tmp > 10 || PartRad[index*All.NuNum+nu_i] < 0 || flux[i] < 0 ) {
+                            printf( "%i, %g, %g, %g\n", nu_i, nu[ nu_i ], PartRad[index*All.NuNum+nu_i], flux[i] );
                             endrun( 20181029 );
                         }
 
@@ -67,7 +70,7 @@ void total_radio_spectrum() {
 
     fclose( fd );
 
-    MPI_Barrier( MPI_COMM_WORLD );
+    do_sync_master( "calc total spectrum" );
 
     //endrun( 20181029 );
 

@@ -76,6 +76,6 @@ void set_units() {
     writelog2( guc.mec2 );
     */
 
-    put_block_line;
+    put_sep;
 }
 

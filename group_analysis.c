@@ -34,7 +34,7 @@ void group_particle_spectrum() {
 
     writelog( "compute group particle spectrum...\n" );
 
-    put_block_line;
+    put_sep0;
 
     for( i=0; i<nuN; i++ )
         nu[i] = exp( log(numin) + i * dlognu ) * 1e6;
@@ -64,7 +64,7 @@ void group_particle_spectrum() {
 
     myfree( nu );
     writelog( "compute group particle spectrum... done.\n" );
-    put_block_line;
+    put_sep0;
 
 }
 
@@ -105,7 +105,7 @@ double group_luminosity( int nu_index, long index ) {
     while( p >= 0 ) {
 
         if ( P[p].Type == 0 )
-            F += SphP[p].Rad[nu_index];
+            F += PartRad[ p * All.NuNum + nu_index];
         p = FoFNext[p];
 
     }
@@ -353,7 +353,7 @@ void group_spectrum_index() {
             check_picture_index( jj );
 
             for ( k=0; k<vN; k++ )
-                spec[ii*PicS*vN + jj * vN + k] += SphP[p].Rad[k];
+                spec[ii*PicS*vN + jj * vN + k] += PartRad[ p * All.NuNum + k ];
         }
 
         for ( i=0; i<vN * PicS2; i++ )
@@ -407,7 +407,7 @@ void group_spectrum_index() {
     myfree( spec_index );
     myfree( spec_index_err );
     writelog( "group spectrum index... done.\n" );
-    put_block_line;
+    put_sep0;
 
 }
 
@@ -554,6 +554,9 @@ void group_analysis() {
 
     char buf[100], buf1[100];
     double *data[GROUP_FILED_NBLOCKS];
+
+    if ( ThisTask_Local != 0 )
+        return;
 
     PicSize = All.PicSize;
     PicSize2 = All.PicSize2;
@@ -772,19 +775,19 @@ void group_analysis() {
 
     }
 
-    put_block_line;
+    put_sep0;
 
     if ( All.GroupEleSpec )
         group_electron_spectrum();
 
-    put_block_line;
+    put_sep0;
 
     if ( All.GroupSpec ) {
         group_spectrum();
         group_spectrum_index();
     }
 
-    put_block_line;
+    put_sep0;
 
 }
 

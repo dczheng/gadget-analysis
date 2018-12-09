@@ -10,6 +10,9 @@ void B_Pdf() {
     int i, j, k, PicSize;
     char buf[200];
 
+    if ( ThisTask_Local != 0 )
+        return;
+
     BMin = DensMin = DBL_MAX;
     BMax = DensMax = DBL_MIN;
     writelog( "plot B PDF ...\n" );
@@ -111,6 +114,6 @@ void B_Pdf() {
     myfree( img );
 
     //All.PicSize = PicSize_tmp;
-    put_block_line;
+    put_sep;
 
 }

@@ -4,6 +4,9 @@ void compute_temperature() {
     double yhelium, u, ne, mu, XH;
     int i;
 
+    if ( ThisTask_Local != 0 )
+        return;
+
     writelog( "compute gas temprature...\n" );
     XH = HYDROGEN_MASSFRAC;
     yhelium = ( 1 - XH ) / ( 4 * XH );
@@ -14,7 +17,7 @@ void compute_temperature() {
         SphP[i].Temp = GAMMA_MINUS1 / BOLTZMANN * u * PROTONMASS * mu;
     }
     writelog( "compute gas temprature... done.\n" );
-    put_block_line;
+    put_sep;
 
 }
 
@@ -22,6 +25,10 @@ void gas_temperature() {
 
     int num, i, PicSize2;
     char buf[100];
+
+    if ( ThisTask_Local != 0 )
+        return;
+
     writelog( "gas temperature silce ...\n" );
     PicSize2 = All.PicSize2;
     num = All.SliceEnd[0] - All.SliceStart[0];
@@ -46,6 +53,6 @@ void gas_temperature() {
     myfree( image.data );
     myfree( image.img );
     writelog( "gas Temperature silce ... done.\n" );
-    put_block_line;
+    put_sep;
 
 }

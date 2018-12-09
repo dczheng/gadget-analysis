@@ -25,6 +25,7 @@ void F( double x, double *r, double *err ) {
     gsl_integration_qagiu( &Func, x,
             GSL_INTE_ERR_ABS, GSL_INTE_ERR_REL, GSL_INTE_WS_LEN,
             inte_ws, r, err );
+
     /*
     *err = 1e-1;
     x = 1e-5;
@@ -65,8 +66,6 @@ void init_tab_F() {
             MPI_SUM, MPI_COMM_WORLD );
     memcpy( tab_F_V, buf, (TAB_F_N+1) * sizeof( double ) );
     myfree( buf );
-
-    MPI_Barrier( MPI_COMM_WORLD );
 
     writelog( "initialize tab_F ... done.\n" );
 
@@ -152,7 +151,7 @@ double radio( double (*f)( double, void* ), double *params,
 
     //printf( "pmin: %g\n", pmin );
 
-    if ( pmin > pmax-5 )
+    if ( pmin > pmax * 0.95 ) // avoid bad integration.
         return 0;
 
     //printf( "p: ( %g, %g )\n", pmin, pmax );

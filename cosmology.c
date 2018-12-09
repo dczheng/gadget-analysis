@@ -357,6 +357,6 @@ void compute_cosmo_quantities() {
     writelog1( "RhoM", All.RhoM );
 
     writelog( "compute cosmology quantities ... done.\n" );
-    put_block_line;
+    put_sep;
 }
 

@@ -86,9 +86,11 @@ void powerspec() {
     FILE *fd;
     char buf[100];
 
+    if ( ThisTask_Local != 0 )
+        return;
+
     fftw_real *rhogrid;
     fftw_complex *fft_of_rhogrid;
-
 
     rfftwnd_plan fft_plan;
 
@@ -383,6 +385,6 @@ void powerspec() {
     myfree( rhogrid );
 
     writelog( "compute power spectrum ... done.\n" );
-    put_block_line;
+    put_sep;
 
 }

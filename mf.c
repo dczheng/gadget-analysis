@@ -7,6 +7,10 @@ void mass_function() {
            gm_min, gm_max, m_split, t;
     char buf[100];
     FILE *fd;
+
+    if ( ThisTask_Local != 0 )
+        return;
+
     writelog( "compute mass function ...\n" );
 
     gm_min = DBL_MAX;
@@ -125,6 +129,6 @@ void mass_function() {
     fclose( fd );
 
     writelog( "compute mass function ... done.\n" );
-    put_block_line;
+    put_sep;
 
 }

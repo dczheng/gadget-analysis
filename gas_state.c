@@ -9,6 +9,9 @@ void gas_state() {
     int i, j, k, PicSize;
     char buf[200];
 
+    if ( ThisTask_Local != 0 )
+        return;
+
     TempMin = DensMin = DBL_MAX;
     TempMax = DensMax = DBL_MIN;
     writelog( "plot gas state...\n" );
@@ -91,6 +94,6 @@ void gas_state() {
     myfree( img );
 
     //All.PicSize = PicSize_tmp;
-    put_block_line;
+    put_sep;
 
 }

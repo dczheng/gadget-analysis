@@ -477,7 +477,7 @@ void read_header( char *fn ) {
 void show_header( struct io_header header ) {
     int i;
 
-    put_block_line0;
+    put_sep0;
     writelog( "header Info:\n" );
 
     writelog( "%-25s: ", "npart" );
@@ -514,7 +514,7 @@ void show_header( struct io_header header ) {
     writelog( "%-25s: %i\n", "flag_doubleprecision",   header.flag_doubleprecision );
     writelog( "%-25s: %i\n", "flag_ic_info",           header.flag_ic_info );
     writelog( "%-25s: %f\n", "lpt_scalingfactor",      header.lpt_scalingfactor );
-    put_block_line0;
+    put_sep0;
 }
 
 void write_header( char *fn, struct io_header header ) {
@@ -640,114 +640,134 @@ void write_header( char *fn, struct io_header header ) {
     H5Fclose( hdf5_file );
 }
 
-void allocate_memory() {
-    ms.max_mem = ms.mem = ms.nn = 0;
-    mymalloc1( P, NumPart * sizeof( struct Particle_Data ) );
-    mymalloc1( SphP, N_Gas * sizeof( struct Sph_Particle_Data ) );
-}
-
 void free_particle_memory() {
-    long i;
-    int j;
-    writelog( "free memory ...\n" );
 
-    for( i=0; i<N_Gas; i++ )
-        for( j=0; j<2; j++ )
-            if ( SphP[i].Star_BH_Num[j] != 0 )
-                free( SphP[i].Star_BH_Index[j] );
+    writelog( "free particle memory ...\n" );
 
-    myfree( P );
-    myfree( SphP );
-
-    id_to_index++;
-    myfree( id_to_index );
-
-    writelog( "free memory ... done.\n" );
-    put_block_line;
+    myfree_shared( MpiWin_P );
+    myfree_shared( MpiWin_SphP );
+    //MPI_Win_free( &MpiWin_P );
+    //MPI_Win_free( &MpiWin_SphP );
+    put_sep;
 }
 
 void read_snapshot() {
-    int pt, blk, nbytes;
+    int pt, blk, nbytes, SnapIndex;
     long i, file, offset, num;
     char file_name[MYFILENAME_MAX], buf[200], buf1[200];
     size_t BufferBytes;
-    writelog( "read_data ...\n" );
-    mytimer_start();
+
+    put_sep0;
+    writelog( "read data ...\n" );
 
 #ifdef OUTPUT_IN_DOUBLEPRECISION
     writelog( "****** Note: output precision is double ! ******\n" );
 #else
     writelog( "****** Note: output precision is float ! ******\n" );
 #endif
+    mytimer_start();
 
-    sprintf( file_name, "%s_%03d.%3i.hdf5", All.FilePrefix, All.StartSnapIndex + ThisTask, 0 );
-    if ( All.NumFiles < 2 )
-        sprintf( file_name, "%s_%03d.hdf5", All.FilePrefix, All.StartSnapIndex + ThisTask );
-    N_Gas = NumPart = 0;
-    read_header( file_name );
-    /*
-    for ( i=0; i<6; i++ ) {
-        printf( "%.20f\n", header.mass[i] );
+    if ( ThisTask_Local == 0 ) {
+
+        SnapIndex = ThisTask / All.NumThreadsPerSnapshot + All.StartSnapIndex;
+
+        sprintf( file_name, "%s_%03d.%03i.hdf5", All.FilePrefix, SnapIndex, 0 );
+
+        if ( All.NumFilesPerSnapshot < 2 )
+            sprintf( file_name, "%s_%03d.hdf5", All.FilePrefix, SnapIndex );
+        N_Gas = NumPart = 0;
+
+        read_header( file_name );
+
+        for ( i=0; i<6; i++ ){
+            NumPart += ( header.npartTotal[i] + ( ( (long) header.npartTotalHighWord[i] ) << 32 ) );
+        }
+
+        N_Gas = header.npartTotal[0] + ( ( (long)header.npartTotalHighWord[0] ) << 32 );
+
+        All.BoxSize = header.BoxSize;
+        All.HalfBoxSize = All.BoxSize / 2;
+        All.RedShift = header.redshift;
+        All.Omega0 = header.Omega0;
+        All.OmegaLambda = header.OmegaLambda;
+        All.HubbleParam = header.HubbleParam;
+        writelog( "NumPart = %ld, N_Gas = %ld\n", NumPart, N_Gas );
     }
-    endrun(20181107);
-    */
+
+    do_sync_local( "" );
+
+    MPI_Bcast( &N_Gas, 1, MPI_LONG, 0, MpiComm_Local );
+    MPI_Bcast( &NumPart, 1, MPI_LONG, 0, MpiComm_Local );
+    MPI_Bcast( &All, sizeof( struct global_parameters_struct ), MPI_BYTE,
+            0, MpiComm_Local );
+    MPI_Bcast( &header, sizeof( struct io_header ), MPI_BYTE,
+            0, MpiComm_Local );
     show_header( header );
-    for ( i=0; i<6; i++ ){
-        NumPart += ( header.npartTotal[i] + ( ( (long) header.npartTotalHighWord[i] ) << 32 ) );
-    }
 
-    N_Gas = header.npartTotal[0] + ( ( (long)header.npartTotalHighWord[0] ) << 32 );
+    /*
+    printf( "ThisTask: %i, ThisTask_Local: %i, N_Gas: %li, NumPart: %li, Omega0: %g\n",
+            ThisTask, ThisTask_Local, N_Gas, NumPart, header.Omega0 );
+    do_sync( "" );
+    endrun( 20181208 );
+    */
 
-    All.BoxSize = header.BoxSize;
-    All.HalfBoxSize = All.BoxSize / 2;
-    All.RedShift = header.redshift;
-    All.Omega0 = header.Omega0;
-    All.OmegaLambda = header.OmegaLambda;
-    All.HubbleParam = header.HubbleParam;
-    writelog( "NumPart = %ld, N_Gas = %ld\n", NumPart, N_Gas );
+    do_sync( "" );
 
-    allocate_memory();
+    mymalloc1_shared( P, NumPart * sizeof( struct Particle_Data ), sizeof( struct Particle_Data ), MpiWin_P );
+    mymalloc1_shared( SphP, N_Gas * sizeof( struct Sph_Particle_Data ), sizeof( struct Particle_Data ), MpiWin_SphP );
 
-    BufferBytes = header.npart[1] * sizeof( OutputFloat ) * 3;
-    mymalloc1( CommBuffer, BufferBytes );
+    if ( ThisTask_Local == 0 ) {
 
-    for ( blk=0; blk<IO_NBLOCKS; blk++ ) {
-        for ( pt=0, offset=0; pt<6; pt++ ) {
-            for (file=0; file<All.NumFiles; file++) {
-                if ( All.NumFiles < 2 )
-                    sprintf( file_name, "%s_%03d.hdf5", All.FilePrefix, All.StartSnapIndex + ThisTask );
-                else
-                    sprintf( file_name, "%s_%03d.%3li.hdf5",
-                            All.FilePrefix, All.StartSnapIndex + ThisTask, file );
-                    read_header( file_name );
+        BufferBytes = header.npart[1] * sizeof( OutputFloat ) * 3;
+        mymalloc1( CommBuffer, BufferBytes );
 
-                    if ( blockpresent( blk, pt ) ) {
-                        nbytes = get_block_nbytes( blk );
-                        if ( nbytes * header.npart[pt] > BufferBytes ){
-                            writelog( "CommBuffer IS TOO SMALL.\n" );
-                            myfree( CommBuffer );
-                            BufferBytes = nbytes * header.npart[pt];
-                            mymalloc1( CommBuffer, BufferBytes );
-                        }
+        for ( blk=0; blk<IO_NBLOCKS; blk++ ) {
+            for ( pt=0, offset=0; pt<6; pt++ ) {
+                for (file=0; file<All.NumFilesPerSnapshot; file++) {
+                    if ( All.NumFilesPerSnapshot < 2 )
+                        sprintf( file_name, "%s_%03d.hdf5", All.FilePrefix, SnapIndex );
+                    else
+                        sprintf( file_name, "%s_%03d.%3li.hdf5",
+                                All.FilePrefix, SnapIndex, file );
+                        read_header( file_name );
 
-                        hdf5_file = H5Fopen( file_name, H5F_ACC_RDWR, H5P_DEFAULT );
-                        get_dataset_name( blk, buf );
-                        get_hdf5_native_type( blk, &hdf5_type );
-                        writelog( "[%i] %8li reading %s ...\n", pt, offset, buf );
-                        sprintf( buf1, "PartType%i/%s", pt, buf );
-                        hdf5_dataset = H5Dopen( hdf5_file, buf1 );
-                        herr = H5Dread( hdf5_dataset, hdf5_type, H5S_ALL, H5S_ALL, H5P_DEFAULT, CommBuffer );
-                        empty_buffer( blk, offset, pt );
-                        H5Dclose( hdf5_dataset );
-                        H5Tclose( hdf5_type );
-                        H5Fclose( hdf5_file );
+                        if ( blockpresent( blk, pt ) ) {
+                            nbytes = get_block_nbytes( blk );
+                            if ( nbytes * header.npart[pt] > BufferBytes ){
+                                writelog( "CommBuffer IS TOO SMALL.\n" );
+                                myfree( CommBuffer );
+                                BufferBytes = nbytes * header.npart[pt];
+                                mymalloc1( CommBuffer, BufferBytes );
+                            }
+
+                            hdf5_file = H5Fopen( file_name, H5F_ACC_RDWR, H5P_DEFAULT );
+                            get_dataset_name( blk, buf );
+                            get_hdf5_native_type( blk, &hdf5_type );
+                            writelog( "[%i] %8li reading %s ...\n", pt, offset, buf );
+                            sprintf( buf1, "PartType%i/%s", pt, buf );
+                            hdf5_dataset = H5Dopen( hdf5_file, buf1 );
+                            herr = H5Dread( hdf5_dataset, hdf5_type, H5S_ALL, H5S_ALL, H5P_DEFAULT, CommBuffer );
+                            empty_buffer( blk, offset, pt );
+                            H5Dclose( hdf5_dataset );
+                            H5Tclose( hdf5_type );
+                            H5Fclose( hdf5_file );
+                    }
+
+                    offset += header.npart[pt];
                 }
-
-                offset += header.npart[pt];
             }
         }
+        myfree( CommBuffer );
     }
-    myfree( CommBuffer );
+
+    /*
+    do_sync( "" );
+    sleep( 10000 );
+    printf( "ThisTask: %i, ThisTask_Local: %i, Position of Particle 0: (%g, %g, %g)\n",
+            ThisTask, ThisTask_Local, P[0].Pos[0], P[0].Pos[1], P[0].Pos[2] );
+    do_sync( "" );
+    endrun( 20181209 );
+    */
 
     //check_data( 212121 );
 
@@ -761,14 +781,13 @@ void read_snapshot() {
         offset += num;
     }
 
+    /*
     for ( i=0; i<N_Gas; i++ )
         for( pt=0; pt<2; pt++ )
             SphP[i].Star_BH_Num[pt] = SphP[i].Star_BH_MaxNum[pt] = 0;
+            */
 
     mytimer_end();
     writelog( "read data ... done. \n" );
-
-    put_block_line;
-    //endrun(20181107);
+    put_sep;
 }
-

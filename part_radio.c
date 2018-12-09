@@ -38,7 +38,6 @@ double particle_radio2( double nu,  SphParticleData *part ) {
         return 0;
 
     B = pow( part->B[0], 2 ) + pow( part->B[1], 2 ) + pow( part->B[2], 2 );
-    B += SQR( BCMB0 ) * pow( All.Time, -2 );
     B = sqrt( B );
 
     //printf( "B: %g\n", B );
@@ -60,9 +59,7 @@ double particle_radio( double nu, long i ) {
 void save_particle_radio() {
 
     char fn[ FILENAME_MAX ];
-    double *buf;
-    int ndims, j;
-    long i;
+    int ndims;
     hsize_t dims[2];
 
     hid_t hdf5_file, hdf5_dataset, hdf5_dataspace, hdf5_attribute, hdf5_type;
@@ -93,32 +90,23 @@ void save_particle_radio() {
     dims[0] = N_Gas;
     dims[1] = All.NuNum;
 
-    mymalloc1( buf, sizeof(double) * N_Gas * All.NuNum );
-
-    for ( i=0; i<N_Gas; i++ )
-        for ( j=0; j<All.NuNum; j++ )
-            buf[ i * All.NuNum + j ] = SphP[i].Rad[j];
 
     hdf5_dataspace = H5Screate_simple( ndims, dims, NULL );
     hdf5_type = H5Tcopy( H5T_NATIVE_DOUBLE );
     hdf5_dataset = H5Dcreate( hdf5_file, "Radio", hdf5_type, hdf5_dataspace, H5P_DEFAULT );
-    H5Dwrite( hdf5_dataset, hdf5_type, hdf5_dataspace, H5S_ALL, H5P_DEFAULT, buf );
+    H5Dwrite( hdf5_dataset, hdf5_type, hdf5_dataspace, H5S_ALL, H5P_DEFAULT, PartRad );
     H5Dclose( hdf5_dataset );
     H5Tclose( hdf5_type );
     H5Sclose( hdf5_dataspace );
 
-    myfree( buf );
-
     H5Fclose( hdf5_file );
-
 
 }
 
 int read_particle_radio() {
 
-    double *buf, NuMin, NuMax;
-    int nuN, j;
-    long i;
+    double NuMin, NuMax;
+    int nuN;
     char fn[ FILENAME_MAX ];
     hid_t hdf5_file, hdf5_dataset, hdf5_attribute, hdf5_type;
 
@@ -155,23 +143,11 @@ int read_particle_radio() {
         return 0;
     }
 
-    mymalloc1( buf, sizeof(double) * N_Gas * All.NuNum );
-
     hdf5_type = H5Tcopy( H5T_NATIVE_DOUBLE );
     hdf5_dataset = H5Dopen( hdf5_file, "Radio" );
-    H5Dread( hdf5_dataset, hdf5_type, H5S_ALL, H5S_ALL, H5P_DEFAULT, buf );
+    H5Dread( hdf5_dataset, hdf5_type, H5S_ALL, H5S_ALL, H5P_DEFAULT, PartRad );
     H5Dclose( hdf5_dataset );
     H5Tclose( hdf5_type );
-
-    for( i=0; i<N_Gas; i++ ) {
-
-        SphP[i].Rad = malloc( sizeof( double ) * All.NuNum );
-        for( j=0; j<All.NuNum; j++ )
-            SphP[i].Rad[j] = buf[ i * All.NuNum +j ];
-
-    }
-
-    myfree( buf );
 
     H5Fclose( hdf5_file );
 
@@ -186,27 +162,36 @@ void compute_particle_radio() {
     long i;
     char fn[ FILENAME_MAX ];
 
+    /*
+    if ( ThisTask_Local != 0 )
+        return;
+        */
+
     writelog( "Start compute particle radio ... \n" )
 
-    sprintf( fn, "%s/rad_%.2f.hdf5", All.RadDir, All.RedShift );
+    mymalloc1_shared( PartRad, sizeof(double)*N_Gas * All.NuNum, sizeof(double), MpiWin_PartRad );
 
-    flag = 1;
+    if ( ThisTask_Local == 0 ) {
 
-    if ( access( fn, 0 ) != -1 ) {
+        sprintf( fn, "%s/rad_%.2f.hdf5", All.RadDir, All.RedShift );
+        flag = 1;
 
-        if ( read_particle_radio() )
-            flag = 0;
+        if ( access( fn, 0 ) != -1 ) {
+            if ( read_particle_radio() )
+                flag = 0;
+        }
+
+        MPI_Reduce( &flag, &num, 1, MPI_INT, MPI_SUM, 0, MpiComm_Master );
+        MPI_Bcast(  &num, 1, MPI_INT, 0, MpiComm_Master );
+
+        if ( num == NTask_Master )
+            create_dir( All.RadDir );
+
+        writelog( "%i Task Need to compute radio.\n", num );
 
     }
 
-    MPI_Reduce( &flag, &num, 1, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD );
-    MPI_Bcast(  &num, 1, MPI_INT, 0, MPI_COMM_WORLD );
-
-
-    if ( num == NTask )
-        create_dir( All.RadDir );
-
-    writelog( "%i Task Need to compute radio.\n", num );
+    MPI_Bcast(  &flag, 1, MPI_INT, 0, MpiComm_Local );
 
     if ( flag == 0 )
         return;
@@ -229,7 +214,8 @@ void compute_particle_radio() {
         if ( i % signal == 0 )
             writelog( "[%10li] [%10li] [%5.1f%%]\n", i, N_Gas, ((double)(i)) / N_Gas * 100 );
 
-        SphP[i].Rad = malloc( sizeof( double ) * nuN );
+        if ( i % NTask_Local != ThisTask_Local )
+            continue;
 
         for( j=0; j<nuN; j++ ) {
 
@@ -237,7 +223,7 @@ void compute_particle_radio() {
 
             //printf( "nu: %g\n", nu );
 
-            SphP[i].Rad[j] = particle_radio( nu, i );
+            PartRad[ i*All.NuNum + j ] = particle_radio( nu, i );
 
         }
 
@@ -248,16 +234,15 @@ void compute_particle_radio() {
         free_tab_F();
 #endif
 
-    save_particle_radio();
+    if ( ThisTask_Local == 0 )
+        save_particle_radio();
 
     //endrun( 20181027 );
 }
 
 void free_particle_radio() {
 
-    long i;
-    for( i=0; i<N_Gas; i++ )
-        free( SphP[i].Rad );
+    myfree_shared( MpiWin_PartRad );
 
 }
 
@@ -340,7 +325,7 @@ void test_radio() {
     All.Time = 1;
     All.HubbleParam = 0.7;
     set_units();
-    put_block_line;
+    put_sep;
 
 #ifdef RADIO_F_INTERP
     init_tab_F();
@@ -353,7 +338,8 @@ void test_radio() {
         //test_qmax();
     }
 
-    MPI_Barrier( MPI_COMM_WORLD );
+    do_sync( "radio test" );
+
 #ifdef RADIO_F_INTERP
     free_tab_F();
 #endif

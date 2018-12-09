@@ -10,6 +10,7 @@
     addr[nt] = &a;\
     id[nt++] = REAL;\
 }
+
 #define ADD_PARAI( a ) {\
     strcpy( tag[nt], &((#a)[4]) );\
     addr[nt] = &a;\
@@ -79,7 +80,7 @@ void read_parameters( char *fn ) {
         ADD_PARAR( All.QMin                     );
         ADD_PARAR( All.QMax                     );
 
-        ADD_PARAI( All.NumFiles                 );
+        ADD_PARAI( All.NumFilesPerSnapshot      );
         ADD_PARAI( All.PicSize                  );
         ADD_PARAI( All.StartSnapIndex           );
         ADD_PARAI( All.ProjectDirection         );
@@ -122,7 +123,6 @@ void read_parameters( char *fn ) {
         ADD_PARAI( All.PowSpecPartType          );
         ADD_PARAI( All.PowSpecBins              );
         ADD_PARAI( All.HgePressurePdf           );
-
 
         while( !feof( fd ) ) {
             *buf = 0;
@@ -168,8 +168,10 @@ void read_parameters( char *fn ) {
             endrun(20181107);
         fclose( fd );
     }
-    MPI_Barrier( MPI_COMM_WORLD );
+
+    do_sync( "read parameter" );
+
     MPI_Bcast( &All, sizeof( struct global_parameters_struct ), MPI_BYTE, 0, MPI_COMM_WORLD );
-    put_block_line;
+    put_sep;
 }
 

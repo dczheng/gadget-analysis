@@ -14,7 +14,7 @@ void init_analysis() {
     init_img();
 
     writelog( "initialize analysis... done.\n" );
-    put_block_line;
+    put_sep;
 }
 
 void free_analysis() {
@@ -29,13 +29,16 @@ void free_analysis() {
     }
 
     writelog( "free analysis ... done.\n" );
-    put_block_line;
+    put_sep;
 }
-
 
 void analysis(){
 
     init_analysis();
+
+    writelog( "analyais ...\n" );
+
+    put_sep0;
     //printf( "%g\n", All.RedShift );
     if ( (All.GasTemperature ||
           All.GasState ||
@@ -73,7 +76,6 @@ void analysis(){
     if ( All.MF )
         mass_function();
 
-
     if ( All.Group ) {
         create_dir( All.GroupDir );
         group_analysis();
@@ -98,5 +100,9 @@ void analysis(){
     //tree_free();
     //output_rho();
     //vel_value();
+    //
+    writelog( "analyais ... done.\n" );
+    put_sep;
+
     free_analysis();
 }
