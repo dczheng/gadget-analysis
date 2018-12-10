@@ -9,11 +9,6 @@ void total_radio_spectrum() {
     char buf[100];
     FILE *fd;
 
-    /*
-    if ( ThisTask_Local != 0 )
-        return;
-        */
-
     writelog( "total radio spectrum ...\n" );
 
     Nnu = All.NuNum;
@@ -50,9 +45,9 @@ void total_radio_spectrum() {
                         if ( nu_i < 0 || nu_i >= Nnu )
                             continue;
 
-                        flux_local[i] += PartRad[index * All.NuNum + nu_i];
+                        flux_local[i] += PartRad[index * Nnu + nu_i];
 
-                        if ( PartRad[index*All.NuNum+nu_i] * tmp > 10 || PartRad[index*All.NuNum+nu_i] < 0 || flux[i] < 0 ) {
+                        if ( PartRad[index*Nnu+nu_i] * tmp > 10 || PartRad[index*All.NuNum+nu_i] < 0 || flux_local[i] < 0 ) {
                             printf( "%i, %g, %g, %g\n", nu_i, nu[ nu_i ], PartRad[index*All.NuNum+nu_i], flux[i] );
                             endrun( 20181029 );
                         }
@@ -84,17 +79,17 @@ void total_radio_spectrum() {
     //endrun( 20181029 );
 
     if ( ThisTask_Master == 0 ) {
-        mymalloc1( alist, sizeof( double ) * NTask );
-        mymalloc1( dislist, sizeof( double ) * NTask );
-        mymalloc1( fluxlist, sizeof( double ) * NTask * Nnu );
+        mymalloc1( alist, sizeof( double ) * NTask_Master );
+        mymalloc1( dislist, sizeof( double ) * NTask_Master );
+        mymalloc1( fluxlist, sizeof( double ) * NTask_Master * Nnu );
     }
 
     MPI_Gather( &All.Time, 1, MPI_DOUBLE, alist, 1, MPI_DOUBLE, 0, MpiComm_Master );
     MPI_Gather( flux, Nnu, MPI_DOUBLE, fluxlist, Nnu, MPI_DOUBLE, 0, MpiComm_Master );
 
     if ( ThisTask_Master == 0 ) {
-        for ( i=0; i<NTask-1; i++ )
-            for ( j=i; j<NTask; j++ ) {
+        for ( i=0; i<NTask_Master-1; i++ )
+            for ( j=i; j<NTask_Master; j++ ) {
                 if ( alist[i] < alist[j] ) {
 
                         tmp = alist[i];
@@ -110,15 +105,15 @@ void total_radio_spectrum() {
                 }
             }
 
-        for ( i=0; i<NTask-1; i++ )
+        for ( i=0; i<NTask_Master; i++ )
             dislist[i] = comoving_distance( alist[i] );
 
-        for ( i=0; i<NTask*Nnu; i++ )
+        for ( i=0; i<NTask_Master*Nnu; i++ )
             fluxlist[i] /= All.BoxSize; // unit distance
 
         memset( flux, 0, sizeof(double)*Nnu );
         for ( i=0; i<Nnu; i++ )
-            for ( j=0; j<NTask-1; j++) {
+            for ( j=0; j<NTask_Master-1; j++) {
                 flux[i] += 0.5 * ( fluxlist[j*Nnu+i] + fluxlist[(j+1)*Nnu+i] ) * ( dislist[j+1] - dislist[j] );
             }
 

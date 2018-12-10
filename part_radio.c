@@ -193,8 +193,6 @@ void compute_particle_radio() {
     if ( All.TabF  && num )
         init_tab_F();
 
-    do_sync( "init_tab_F" );
-
     MPI_Bcast(  &flag, 1, MPI_INT, 0, MpiComm_Local );
 
     if ( flag == 0 )

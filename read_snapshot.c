@@ -712,6 +712,7 @@ void read_snapshot() {
     if ( ThisTask_Local == 0 ) {
         writelog( "Parallel ( %i ) read data ...\n", All.ParallelIO );
         do_sync_master( "" );
+        put_sep0;
         for( io_i = 0; io_i < IOGroups; io_i++ ) {
             if ( ThisTask_Master % IOGroups == io_i ) {
                 //printf( "Master: %i read data ...\n", ThisTask_Master );
