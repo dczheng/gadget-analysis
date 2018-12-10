@@ -92,6 +92,7 @@ void tree_build_single() {
             }
             else {
 
+                /*
                 if ( P[n].Pos[0] == P[i].Pos[0] &&
                      P[n].Pos[1] == P[i].Pos[1] &&
                      P[n].Pos[2] == P[i].Pos[2] ) {
@@ -110,6 +111,7 @@ void tree_build_single() {
                     endruns( "Error2 !!!" );
 
                 }
+                */
 
                 Nodes[parent].suns[subnode] = nfree;
                 nfreep->len = 0.5 * Nodes[parent].len;

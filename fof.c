@@ -537,6 +537,8 @@ void fof() {
     if ( ThisTask_Local != 0 )
         return;
 
+    do_sync_master( "FoF" );
+
     writelog( "Start FoF ...\n" );
     mytimer_start();
     sprintf( fn, "%s/fof_%.2f.hdf5", All.FoFDir, All.RedShift );
@@ -550,10 +552,10 @@ void fof() {
 
     num = 0;
 
-    MPI_Reduce( &flag, &num, 1, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD );
-    MPI_Bcast( &num, 1, MPI_INT, 0, MPI_COMM_WORLD );
+    MPI_Reduce( &flag, &num, 1, MPI_INT, MPI_SUM, 0, MpiComm_Master );
+    MPI_Bcast( &num, 1, MPI_INT, 0, MpiComm_Master );
 
-    if ( num == NTask )
+    if ( num == NTask_Master )
         create_dir( All.FoFDir );
 
     writelog( "%i Task Need to do FoF ...\n", num );

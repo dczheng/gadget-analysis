@@ -190,14 +190,15 @@ void compute_particle_radio() {
 
     }
 
+    if ( All.TabF  && num )
+        init_tab_F();
+
+    do_sync( "init_tab_F" );
+
     MPI_Bcast(  &flag, 1, MPI_INT, 0, MpiComm_Local );
 
     if ( flag == 0 )
         return;
-
-#ifdef RADIO_F_INTERP
-        init_tab_F();
-#endif
 
     nuN = All.NuNum;
     numin = All.NuMin;
@@ -229,14 +230,12 @@ void compute_particle_radio() {
     }
 
 
-#ifdef RADIO_F_INTERP
+    if ( All.TabF )
         free_tab_F();
-#endif
 
     if ( ThisTask_Local == 0 )
         save_particle_radio();
 
-    //endrun( 20181027 );
 }
 
 void free_particle_radio() {
@@ -326,22 +325,12 @@ void test_radio() {
     set_units();
     put_sep;
 
-#ifdef RADIO_F_INTERP
-    init_tab_F();
-#endif
+    if ( All.TabF )
+        init_tab_F();
 
+    if ( All.TabF )
+        free_tab_F();
 
-
-    if ( ThisTask == 0 ) {
-        test_F();
-        //test_qmax();
-    }
-
-    do_sync( "radio test" );
-
-#ifdef RADIO_F_INTERP
-    free_tab_F();
-#endif
     endrun(20181004);
 
 }

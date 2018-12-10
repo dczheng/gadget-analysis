@@ -2,7 +2,8 @@
 
 char sep_str[ SEP_LEN ], sep_str0[ SEP_LEN0 ];
 long *id_to_index, NumPart, N_Gas, NumPart6[6], OffsetPart6[6];
-int ThisTask, NTask, MasterTask, ThisTask_Local, NTask_Local, ThisTask_Master, NTask_Master;
+int ThisTask, NTask, MasterTask, ThisTask_Local, NTask_Local, ThisTask_Master, NTask_Master,
+    IOGroups;
 MPI_Comm  MpiComm_Local, MpiComm_Master;
 MPI_Win MpiWin_P, MpiWin_SphP, MpiWin_PartRad;
 MPI_Aint WinSize;

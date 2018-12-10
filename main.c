@@ -108,7 +108,6 @@ void create_mpi_comms() {
 
     MasterTask = ThisTask / NTask_Local * NTask_Local;
 
-
     range[0] = 0;
     range[1] = NTask-1;
     range[2] = NTask_Local;
@@ -242,7 +241,14 @@ int main( int argc, char *argv[] ){
 
     read_parameters( argv[1] );
     check_flag();
-    do_sync( "" );
+
+    if ( All.ParallelIO <= 0 ) {
+        All.ParallelIO = NTask_Master;
+    }
+
+    IOGroups = NTask_Master / All.ParallelIO;
+    if ( NTask_Master % All.ParallelIO )
+        IOGroups ++;
 
     //test_radio();
     //test_sigma();
@@ -252,7 +258,7 @@ int main( int argc, char *argv[] ){
     do_sync( "read data" );
 
     pre_proc();
-    do_sync( "pre process data" );
+    do_sync_local( "pre process data" );
 
     /******************read***********************/
 

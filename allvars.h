@@ -53,8 +53,6 @@
 
 #define BCMB0                    (3.24e-6) // gauss
 
-//#define RADIO_F_INTERP
-
 #define GSL_INTE_WS_LEN 10000
 #define GSL_INTE_ERR_ABS ((double)(0.0))
 #define GSL_INTE_ERR_REL ((double)(1e-4))
@@ -200,7 +198,7 @@ extern SphParticleData *SphP;
 
 extern char sep_str[ SEP_LEN ], sep_str0[ SEP_LEN0 ];
 extern int ThisTask, NTask, MasterTask, ThisTask_Local, NTask_Local,
-       ThisTask_Master, NTask_Master;
+       ThisTask_Master, NTask_Master, IOGroups;
 
 extern MPI_Win MpiWin_P, MpiWin_SphP, MpiWin_PartRad;
 extern MPI_Comm  MpiComm_Local, MpiComm_Master;
@@ -229,7 +227,7 @@ extern struct global_parameters_struct {
         KernelInterpolation,
         ConvN, GroupEleSpec, RadSpec,
         PowSpec, PowSpecNGrid, PowSpecPartType, PowSpecBins,
-        HgePressurePdf,
+        HgePressurePdf, TabF, Tree, ParallelIO,
 
         QNum, NuNum, FoFMinLen, proj_i, proj_j, proj_k,
         TreePartType, GroupIndexMin, GroupIndexMax,

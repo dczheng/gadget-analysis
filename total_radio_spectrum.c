@@ -4,13 +4,15 @@ void total_radio_spectrum() {
 
     long index;
     int Nnu, i, signal, j, k, nu_i;
-    double *nu, *flux, numin, numax, dnu, tmp,
+    double *nu, *flux_local, *flux, numin, numax, dnu, tmp,
            *alist, *fluxlist, *dislist;
     char buf[100];
     FILE *fd;
 
+    /*
     if ( ThisTask_Local != 0 )
         return;
+        */
 
     writelog( "total radio spectrum ...\n" );
 
@@ -21,7 +23,7 @@ void total_radio_spectrum() {
     dnu = log( numax/numin) / (Nnu-1);
 
     mymalloc1( nu, sizeof( double ) * Nnu );
-    mymalloc2( flux, sizeof( double ) * Nnu );
+    mymalloc2( flux_local, sizeof( double ) * Nnu );
 
     for ( i=0; i<Nnu; i++ ) {
         nu[i] = exp(log(numin) + i * dnu);
@@ -36,6 +38,9 @@ void total_radio_spectrum() {
                         writelog( "total spectrum [%8li] [%8li] [%5.1f%%]\n",
                                index, N_Gas, ( (double)index )/N_Gas * 100 );
 
+                    if ( index % NTask_Local != ThisTask_Local )
+                        continue;
+
                     for ( i=0; i<Nnu; i++ ) {
                         nu_i = log( nu[i]/All.Time / numin ) / dnu;
                         //tmp = particle_radio( nu[i]*1e6 / All.Time, index );
@@ -45,7 +50,7 @@ void total_radio_spectrum() {
                         if ( nu_i < 0 || nu_i >= Nnu )
                             continue;
 
-                        flux[i] += PartRad[index * All.NuNum + nu_i];
+                        flux_local[i] += PartRad[index * All.NuNum + nu_i];
 
                         if ( PartRad[index*All.NuNum+nu_i] * tmp > 10 || PartRad[index*All.NuNum+nu_i] < 0 || flux[i] < 0 ) {
                             printf( "%i, %g, %g, %g\n", nu_i, nu[ nu_i ], PartRad[index*All.NuNum+nu_i], flux[i] );
@@ -55,33 +60,39 @@ void total_radio_spectrum() {
                     }
         }
 
+    if ( ThisTask_Local == 0 )
+        mymalloc2( flux, sizeof( double ) * Nnu );
+
+    MPI_Reduce( flux_local, flux, Nnu, MPI_DOUBLE, MPI_SUM, 0, MpiComm_Local );
+
+    myfree( nu );
+    myfree( flux_local );
+
+    if ( ThisTask_Local )
+        return;
 
     for ( i=0; i<Nnu; i++ )
         flux[i] *= tmp;
 
     create_dir( "TotalSpec" );
-
     sprintf( buf, "./TotalSpec/Spec_Tot_%.2f.dat", All.RedShift );
-
     fd = fopen( buf, "w" );
-
     for( i=0; i<Nnu; i++ )
-        fprintf( fd, "%g %g\n", nu[i], flux[i] );
-
+        fprintf( fd, "%g %g\n", exp(log(numin) + i * dnu), flux[i] );
     fclose( fd );
-
-    do_sync_master( "calc total spectrum" );
 
     //endrun( 20181029 );
 
-    mymalloc1( alist, sizeof( double ) * NTask );
-    mymalloc1( dislist, sizeof( double ) * NTask );
-    mymalloc1( fluxlist, sizeof( double ) * NTask * Nnu );
+    if ( ThisTask_Master == 0 ) {
+        mymalloc1( alist, sizeof( double ) * NTask );
+        mymalloc1( dislist, sizeof( double ) * NTask );
+        mymalloc1( fluxlist, sizeof( double ) * NTask * Nnu );
+    }
 
-    MPI_Gather( &All.Time, 1, MPI_DOUBLE, alist, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD );
-    MPI_Gather( flux, Nnu, MPI_DOUBLE, fluxlist, Nnu, MPI_DOUBLE, 0, MPI_COMM_WORLD );
+    MPI_Gather( &All.Time, 1, MPI_DOUBLE, alist, 1, MPI_DOUBLE, 0, MpiComm_Master );
+    MPI_Gather( flux, Nnu, MPI_DOUBLE, fluxlist, Nnu, MPI_DOUBLE, 0, MpiComm_Master );
 
-    if ( ThisTask == 0 ) {
+    if ( ThisTask_Master == 0 ) {
         for ( i=0; i<NTask-1; i++ )
             for ( j=i; j<NTask; j++ ) {
                 if ( alist[i] < alist[j] ) {
@@ -106,7 +117,6 @@ void total_radio_spectrum() {
             fluxlist[i] /= All.BoxSize; // unit distance
 
         memset( flux, 0, sizeof(double)*Nnu );
-
         for ( i=0; i<Nnu; i++ )
             for ( j=0; j<NTask-1; j++) {
                 flux[i] += 0.5 * ( fluxlist[j*Nnu+i] + fluxlist[(j+1)*Nnu+i] ) * ( dislist[j+1] - dislist[j] );
@@ -119,16 +129,17 @@ void total_radio_spectrum() {
         fd = fopen( buf, "w" );
 
         for ( i=0; i<Nnu; i++ )
-            fprintf( fd, "%g %g\n", nu[i], flux[i] );
+            fprintf( fd, "%g %g\n", exp(log(numin) + i * dnu), flux[i] );
         fclose( fd );
     }
 
-    myfree( alist );
-    myfree( dislist );
-    myfree( fluxlist );
-    myfree( nu );
-    myfree( flux );
+    if ( ThisTask_Master == 0 ) {
+        myfree( alist );
+        myfree( dislist );
+        myfree( fluxlist );
+    }
 
+    myfree( flux );
     writelog( "total radio spectrum ... done.\n" );
 
 }

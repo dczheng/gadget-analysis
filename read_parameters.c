@@ -123,6 +123,9 @@ void read_parameters( char *fn ) {
         ADD_PARAI( All.PowSpecPartType          );
         ADD_PARAI( All.PowSpecBins              );
         ADD_PARAI( All.HgePressurePdf           );
+        ADD_PARAI( All.TabF                     );
+        ADD_PARAI( All.Tree                     );
+        ADD_PARAI( All.ParallelIO               );
 
         while( !feof( fd ) ) {
             *buf = 0;
@@ -168,8 +171,6 @@ void read_parameters( char *fn ) {
             endrun(20181107);
         fclose( fd );
     }
-
-    do_sync( "read parameter" );
 
     MPI_Bcast( &All, sizeof( struct global_parameters_struct ), MPI_BYTE, 0, MPI_COMM_WORLD );
     put_sep;

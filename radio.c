@@ -10,13 +10,21 @@
 
 double *tab_F_V;
 
+struct radio_inte_struct{
+    double (*f) ( double, void* );
+    void *params;
+    double B;
+    double nu;
+};
+
+
 double F_integrand( double x, void *params ) {
     if ( x > BESSEL_UPPER_LIMIT )
         return 0;
     return gsl_sf_bessel_Knu( 5.0/3.0, x );
 }
 
-void F( double x, double *r, double *err ) {
+void F0( double x, double *r, double *err ) {
 
     gsl_function Func;
     Func.function = &F_integrand;
@@ -35,44 +43,9 @@ void F( double x, double *r, double *err ) {
 
 }
 
-void init_tab_F() {
-    double dlogx, x, err, F_v, *buf, err_max, err_max_global;
-    int i;
-
-    writelog( "initialize tab_F ...\n" );
-
-    dlogx = log(F_X_MAX/F_X_MIN) / ( TAB_F_N - 1 );
-    mymalloc1( tab_F_V, sizeof( double ) * ( TAB_F_N+1 ) );
-    err_max = -1;
-
-    for ( i=0; i<=TAB_F_N; i++ ) {
-        if ( i % NTask != ThisTask )
-            continue;
-        x = log( F_X_MIN ) + dlogx * i;
-        x = exp( x );
-        F( x, &F_v, &err );
-
-        if ( err>err_max )
-            err_max = err;
-
-        tab_F_V[i] = log( F_v );
-    }
-
-    MPI_Reduce( &err_max, &err_max_global, 1, MPI_DOUBLE,
-            MPI_MAX, 0, MPI_COMM_WORLD );
-
-    mymalloc2( buf, sizeof( double ) * ( TAB_F_N+1 ) );
-    MPI_Allreduce( tab_F_V, buf, TAB_F_N+1, MPI_DOUBLE,
-            MPI_SUM, MPI_COMM_WORLD );
-    memcpy( tab_F_V, buf, (TAB_F_N+1) * sizeof( double ) );
-    myfree( buf );
-
-    writelog( "initialize tab_F ... done.\n" );
-
-}
-
-void free_tab_F() {
-    myfree( tab_F_V );
+void F( double x, double *r, double *err ) {
+    F0( x, r, err );
+    *r = *r * x;
 }
 
 double tab_F( double x ) {
@@ -98,81 +71,23 @@ double tab_F( double x ) {
 
 }
 
-struct radio_inte_struct{
-    double (*f) ( double, void* );
-    void *params;
-    double B;
-    double nu;
-};
-
-double radio_inte( double p, void *params ) {
-
-    double r, x, nu_c;
-    struct radio_inte_struct *ri;
-
-    ri = params;
-
-    nu_c = 0.1875 * ( 1+p*p ) * ri->B * cuc.e_mec ;  // 0.1875: 3/16
-    x = ri->nu / nu_c;
-
-#ifdef RADIO_F_INTERP
-    r = tab_F( x );
-#else
-    double err;
-    F( x, &r, &err );
-#endif
-
-    r *= x;
-    r *= (*(ri->f))( p, ri->params );
-
-    return r;
-
-}
-
-double radio( double (*f)( double, void* ), double *params,
-        double B, double nu, double pmin, double pmax ) {
-
-    double r, err, fac, t;
-    struct radio_inte_struct ri;
-
-    ri.f = f;
-    ri.params = params;
-    ri.B = B;
-    ri.nu = nu;
-
-    err = 1e-1;
-
-    t = sqrt( nu / BESSEL_UPPER_LIMIT / ( 0.1875 * B * cuc.e_mec )-1 );
-
-    //printf( "pmin: %g, pmax: %g, B: %g\n", pmin, pmax, B );
-
-    if ( pmin < t )
-        pmin = t;
-
-    //printf( "pmin: %g\n", pmin );
-
-    if ( pmin > pmax * 0.95 ) // avoid bad integration.
-        return 0;
-
-    //printf( "p: ( %g, %g )\n", pmin, pmax );
-    r = qtrap( &radio_inte, &ri, pmin, pmax, err );
-
-    fac = sqrt(3) * CUBE( cuc.e ) * PI / ( 4.0 * cuc.m_e * SQR(cuc.c) );
-    r *= fac;
-
-    return r;
-
-}
-
 void test_tab_F() {
 
     double x, dx, xmax, xmin, F_v, tab_F_v, err, err_max, err_mean;
     int i, N;
+    FILE *fd;
 
     xmin = F_X_MIN;
     xmax = F_X_MAX - 1;
     N = 1000;
+
+    writelog( "test tab_F\n" );
+
+    if ( ThisTask )
+        return;
+
     dx = log( xmax/xmin ) / ( N-1 );
+    fd = fopen( "test_tab_F.dat", "w" );
 
     /*
     i = 0;
@@ -192,7 +107,7 @@ void test_tab_F() {
         F( x, &F_v, &err );
         tab_F_v = tab_F( x );
         err = fabs( tab_F_v - F_v ) / F_v * 100;
-        printf( "x: %g, F: %g, tab_F: %g, err: %.2f%%\n", x, F_v, tab_F_v, err);
+        fprintf( fd, "x: %g, F: %g, tab_F: %g, err: %.2f%%\n", x, F_v, tab_F_v, err);
         if ( err > err_max )
             err_max = err;
         err_mean += err;
@@ -201,10 +116,13 @@ void test_tab_F() {
 
         err_mean /= N;
 
-    printf( "err_max: %.2f%%, err_mean: %.2f%%\n", err_max, err_mean );
+    fprintf( fd, "err_max: %.2f%%, err_mean: %.2f%%\n", err_max, err_mean );
+    fclose( fd );
+
 }
 
-void test_F() {
+
+void output_F_x() {
 
     double logx_min, logx_max, x, dlogx, F_v, err, err_max, err_mean;
     int logx_N, i;
@@ -212,11 +130,14 @@ void test_F() {
 
     logx_min = -3;
     logx_max = 1;
-    logx_N = 100;
+    logx_N = 1000;
+
+    writelog( "output F_x\n" );
+
+    if ( ThisTask )
+        return;
 
     dlogx = ( logx_max-logx_min ) / ( logx_N - 1 );
-
-    printf( "fac: %g\n", 0.1875 * cuc.e_mec );
 
     fd = fopen( "F_x.dat", "w" );
 
@@ -226,7 +147,7 @@ void test_F() {
         x = logx_min + i * dlogx;
         x = pow( 10, x );
         F( x, &F_v, &err );
-        fprintf( fd, "%g %g %g %g\n", x, x*F_v, F_v, err );
+        fprintf( fd, "%g %g %g\n", x, F_v, err );
         if ( err > err_max )
             err_max = err;
 
@@ -235,8 +156,159 @@ void test_F() {
 
     err_mean /= logx_N;
 
-    printf( "err_max: %g, err_mean: %g\n", err_max, err_mean );
+    printf( "[compute F] err_max: %g, err_mean: %g\n", err_max, err_mean );
 
     fclose( fd );
 
 }
+
+void output_tab_F() {
+    int i;
+    FILE *fd;
+    double dlogx, x;
+
+    writelog( "output tab_F\n" );
+
+    if ( ThisTask )
+        return;
+
+    dlogx = log(F_X_MAX/F_X_MIN) / ( TAB_F_N - 1 );
+    fd = fopen( "tab_F.dat", "w" );
+
+    for( i=0; i<=TAB_F_N; i++ ) {
+
+        x = log( F_X_MIN ) + dlogx * i;
+        fprintf( fd, "%g %g\n", exp(x), exp(tab_F_V[i]) );
+
+    }
+
+    fclose( fd );
+
+}
+
+void init_tab_F() {
+    double dlogx, x, err, F_v, *buf, err_max, err_max_global;
+    int i;
+
+    writelog( "initialize tab_F ...\n" );
+
+    dlogx = log(F_X_MAX/F_X_MIN) / ( TAB_F_N - 1 );
+    mymalloc2( tab_F_V, sizeof( double ) * ( TAB_F_N+1 ) );
+    err_max = -1;
+
+    for ( i=0; i<=TAB_F_N; i++ ) {
+        if ( i % NTask != ThisTask )
+            continue;
+        x = log( F_X_MIN ) + dlogx * i;
+        x = exp( x );
+        F( x, &F_v, &err );
+
+        if ( err>err_max )
+            err_max = err;
+
+        tab_F_V[i] = log( F_v );
+    }
+
+    MPI_Reduce( &err_max, &err_max_global, 1, MPI_DOUBLE,
+            MPI_MAX, 0, MPI_COMM_WORLD );
+
+    writelog( "err max: %g\n", err_max_global );
+
+    mymalloc2( buf, sizeof( double ) * ( TAB_F_N+1 ) );
+    MPI_Allreduce( tab_F_V, buf, TAB_F_N+1, MPI_DOUBLE,
+            MPI_SUM, MPI_COMM_WORLD );
+    memcpy( tab_F_V, buf, (TAB_F_N+1) * sizeof( double ) );
+
+    myfree( buf );
+
+    output_F_x();
+    put_sep0;
+
+    output_tab_F();
+    put_sep0;
+
+    test_tab_F();
+    put_sep0;
+
+    do_sync( "" );
+
+    writelog( "initialize tab_F ... done.\n" );
+
+}
+
+void free_tab_F() {
+    myfree( tab_F_V );
+}
+
+double radio_inte( double p, void *params ) {
+
+    double r, x, nu_c, err;
+    struct radio_inte_struct *ri;
+
+    ri = params;
+
+    nu_c = 0.1875 * ( 1+p*p ) * ri->B * cuc.e_mec ;  // 0.1875: 3/16
+    x = ri->nu / nu_c;
+
+    if ( All.TabF )
+        r = tab_F( x );
+    else
+        F( x, &r, &err );
+
+    r *= (*(ri->f))( p, ri->params );
+
+    return r;
+
+}
+
+double radio( double (*f)( double, void* ), double *params,
+        double B, double nu, double pmin, double pmax ) {
+
+    double r, err, fac, t;
+    struct radio_inte_struct ri;
+
+    ri.f = f;
+    ri.params = params;
+    ri.B = B;
+    ri.nu = nu;
+
+    err = 1e-1;
+
+    ZSPRINTF( 0, "B: %g, nu: %g, c: %g, a: %g, pmin: %g, pmax: %g\n", B,  nu,
+            ((double*)params)[0],
+            ((double*)params)[1],
+            ((double*)params)[2],
+            ((double*)params)[3]
+            );
+
+    t = sqrt( nu / BESSEL_UPPER_LIMIT / ( 0.1875 * B * cuc.e_mec )-1 );
+
+    //printf( "pmin: %g, pmax: %g, B: %g\n", pmin, pmax, B );
+
+    if ( pmin < t )
+        pmin = t;
+
+    //printf( "pmin: %g\n", pmin );
+
+    if ( pmin > pmax * 0.95 ) // avoid bad integration.
+        return 0;
+
+    //printf( "p: ( %g, %g )\n", pmin, pmax );
+    r = qtrap( &radio_inte, &ri, pmin, pmax, err );
+    //
+    /*
+    gsl_function F;
+    F.function = &radio_inte;
+    F.params = &ri;
+    gsl_integration_qag( &F, pmin, pmax,
+            GSL_INTE_ERR_ABS, GSL_INTE_ERR_REL, GSL_INTE_WS_LEN,
+            GSL_INTE_KEY, inte_ws, &r, &err );
+            */
+
+    fac = sqrt(3) * CUBE( cuc.e ) * PI / ( 4.0 * cuc.m_e * SQR(cuc.c) );
+    r *= fac;
+
+    return r;
+
+}
+

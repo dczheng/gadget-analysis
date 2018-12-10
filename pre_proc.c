@@ -508,6 +508,7 @@ void test_attach_particle_to_gas() {
 void pre_proc() {
 
     int i;
+    (void)i;
 
     if ( ThisTask_Local != 0 )
         return;
@@ -520,28 +521,30 @@ void pre_proc() {
 
     //test_attach_particle_to_gas();
 
-    sort_particle_by_pos();
+    /*
+        sort_particle_by_pos();
 
-    merge_particle( 4 );
-    merge_particle( 5 );
+        merge_particle( 4 );
+        merge_particle( 5 );
 
-    attach_particle_to_gas( 4 );
-    attach_particle_to_gas( 5 );
+        attach_particle_to_gas( 4 );
+        attach_particle_to_gas( 5 );
 
-    for ( i=0; i<6; i++ ) {
-        NumPart6[i] = get_particle_num( i );
-        OffsetPart6[i] = get_particle_offset( i );
-    }
+        for ( i=0; i<6; i++ ) {
+            NumPart6[i] = get_particle_num( i );
+            OffsetPart6[i] = get_particle_offset( i );
+        }
 
-    writelog( "NumPart6: " )
-    for ( i=0; i<6; i++ )
-        writelog( "%li ", NumPart6[i] );
-    writelog( "\n" )
+        writelog( "NumPart6: " )
+        for ( i=0; i<6; i++ )
+            writelog( "%li ", NumPart6[i] );
+        writelog( "\n" )
 
-    writelog( "OffsetPart6: " )
-    for ( i=0; i<6; i++ )
-        writelog( "%li ", OffsetPart6[i] );
-    writelog( "\n" )
+        writelog( "OffsetPart6: " )
+        for ( i=0; i<6; i++ )
+            writelog( "%li ", OffsetPart6[i] );
+        writelog( "\n" )
+        */
 
     writelog( "pre proc ... done.\n" )
 
