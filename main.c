@@ -13,6 +13,7 @@ void init_sep_str() {
 void global_init() {
     init_sep_str();
     ms.max_mem = ms.mem = ms.nn = 0;
+    srand( time(NULL) );
     inte_ws = gsl_integration_workspace_alloc( GSL_INTE_WS_LEN );
 }
 

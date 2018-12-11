@@ -22,7 +22,7 @@ void tree_free() {
 
 void tree_build_single() {
 
-    long i, j, subnode, bits, nfree, n, nn, tn;
+    long i, j, subnode, bits, nfree, n, nn;
     struct NODE *nfreep;
     double max[3], min[3], len, lenhalf;
 
@@ -92,27 +92,6 @@ void tree_build_single() {
             }
             else {
 
-                /*
-                if ( P[n].Pos[0] == P[i].Pos[0] &&
-                     P[n].Pos[1] == P[i].Pos[1] &&
-                     P[n].Pos[2] == P[i].Pos[2] ) {
-
-                    if ( P[n].Type != 0 ) {
-                        writelog( "%i %i\n", P[n].Type, P[i].Type );
-                        endruns( "Error1 !!!" );
-                    }
-
-                    if ( P[i].Type == 4 )
-                        continue;
-
-                    if ( P[i].Type == 5 )
-                        continue;
-
-                    endruns( "Error2 !!!" );
-
-                }
-                */
-
                 Nodes[parent].suns[subnode] = nfree;
                 nfreep->len = 0.5 * Nodes[parent].len;
                 nfreep -> bitflags = 0;
@@ -124,19 +103,40 @@ void tree_build_single() {
                     nfreep->suns[j] = -1;
                 for ( j=0, subnode=0, bits=1; j<3; j++, bits<<=1 )
                     subnode += (( P[n].Pos[j] > nfreep->center[j] ) ? bits : 0);
+
+
+
+                /*dealing with particles at identical locations ( or extremely close ). */
+                if ( nfreep -> len < 1.0e-3 * All.SofteningTable[P[n].Type] ) {
+
+                    printf( "[task: %i] extremely close particle:\n"
+                            "[1][%i][%i]( %.10f, %.10f, %.10f )\n"
+                            "[2][%i][%i]( %.10f, %.10f, %.10f )\n",
+                            ThisTask,
+                            P[n].ID, P[n].Type, P[n].Pos[0], P[n].Pos[1], P[n].Pos[2],
+                            P[i].ID, P[i].Type, P[i].Pos[0], P[i].Pos[1], P[i].Pos[2] );
+
+                    subnode = (int)(((double)rand()) / RAND_MAX * 8);
+                    if (subnode >= 8)
+                        subnode = 7;
+                }
+
                 nfreep->suns[subnode] = n;
-                tn = n;
+
+                if ( nfree-NumPart >= MaxNodes ){
+                    printf( "( %.10f, %.10f, %.10f ), ( %.10f, %.10f, %.10f )\ntype: (%i, %i), ID: (%i, %i)\n",
+                            P[n].Pos[0], P[n].Pos[1], P[n].Pos[2],
+                            P[i].Pos[0], P[i].Pos[1], P[i].Pos[2],
+                            P[n].Type, P[i].Type,
+                            P[n].ID, P[i].ID );
+                    endrun0( "Task: %i, Max number of tree nodes reached.\n", ThisTask );
+                }
+
                 n = nfree;
                 nfree++;
                 nfreep++;
-                if ( nfree-NumPart >= MaxNodes ){
-                    printf( "( %.10f, %.10f, %.10f ), ( %.10f, %.10f, %.10f )\ntype: (%i, %i), ID: (%i, %i)\n",
-                            P[tn].Pos[0], P[tn].Pos[1], P[tn].Pos[2],
-                            P[i].Pos[0], P[i].Pos[1], P[i].Pos[2],
-                            P[tn].Type, P[i].Type,
-                            P[tn].ID, P[i].ID );
-                    endrun0( "Task: %i, Max number of tree nodes reached.\n", ThisTask );
-                }
+
+
             }
         }
     }

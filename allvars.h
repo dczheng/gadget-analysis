@@ -189,9 +189,11 @@ typedef struct Sph_Particle_Data {
     double dBdt;
     double elec;
     double Temp;
+    /*
     int Star_BH_Num[2];
     int Star_BH_MaxNum[2];
     MyIDType *Star_BH_Index[2];
+    */
     double sfr;
 } SphParticleData;
 extern SphParticleData *SphP;

@@ -409,6 +409,7 @@ void merge_particle( int pt ) {
 
 }
 
+/*
 void attach_particle_to_gas( int pt ) {
 
     long i, li, ri, mi, offset, num, attach_num;
@@ -504,6 +505,7 @@ void test_attach_particle_to_gas() {
             P[i].Pos[j] = P[offset45[1] + i].Pos[j];
 
 }
+*/
 
 void pre_proc() {
 

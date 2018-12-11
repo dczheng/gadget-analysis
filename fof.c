@@ -157,6 +157,7 @@ void fof_compute_group_properties() {
             g->npart[ P[p].Type ] ++;
             g->mass_table[ P[p].Type ] += P[p].Mass;
 
+            /*
             if ( P[p].Type == 0 ) {
 
                 if ( ( 1<<4 ) && All.TreePartType )
@@ -171,6 +172,7 @@ void fof_compute_group_properties() {
                         //printf( "%li\n", k );
                     }
             }
+            */
 
             p = FoFNext[p];
 
@@ -537,7 +539,7 @@ void fof() {
     if ( ThisTask_Local != 0 )
         return;
 
-    do_sync_master( "FoF" );
+    do_sync_master( "Begin FoF" );
 
     writelog( "Start FoF ...\n" );
     mytimer_start();

@@ -152,6 +152,7 @@ void powerspec() {
         mass_tot += P[p].Mass;
         mass = P[p].Mass;
 
+            /*
         if ( P[p].Type == 0  ) {
 
             if ( (1<<4) & All.PowSpecPartType )
@@ -167,6 +168,7 @@ void powerspec() {
                 }
 
         }
+                */
 
 //        rhogrid[ NGrid3 * ( NGrid * xyz[0] + xyz[1] ) + xyz[2] ] += mass;
         rhogrid[ NGrid3 * ( NGrid * xyz[0]  + xyz[1]  ) + xyz[2]  ]  += mass * ( 1-dis[0] ) * ( 1-dis[1] ) * ( 1-dis[2] );
