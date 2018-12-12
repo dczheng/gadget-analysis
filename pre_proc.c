@@ -269,8 +269,7 @@ void test_sort() {
     ParticleData *Ptmp;
     SphParticleData *SphPtmp;
 
-    long i, li, ri, mi;
-    int signal;
+    long i, li, ri, mi, t;
 
     writelog( "test sort ...\n" );
     mymalloc1( Ptmp, sizeof( ParticleData ) * N_Gas );
@@ -283,11 +282,11 @@ void test_sort() {
 
     mytimer_start();
 
-    signal = N_Gas / 100;
+    t = N_Gas / 100;
 
     for( i=0; i<N_Gas; i++ ) {
 
-        if ( i % signal == 0 ) {
+        if ( i % t == 0 ) {
             writelog( "[%6.2f%%] [%li] [%li]\n", (double)i / N_Gas * 100, N_Gas, i );
         }
 

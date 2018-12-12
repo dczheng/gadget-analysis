@@ -25,16 +25,24 @@
 
 void read_parameters( char *fn ) {
 
-    FILE *fd;
+    FILE *fd, *fd2;
     void *addr[MAXTAGS];
-    char tag[MAXTAGS][50], buf[200], buf1[200], buf2[200], buf3[200];
+    char tag[MAXTAGS][50], *bname, buf[200], buf1[200], buf2[200], buf3[200];
     int id[MAXTAGS], nt, i, j, errflag=0;;
 
+    put_sep;
     writelog( "read parameter...\n" );
 
     if ( ThisTask == 0 ) {
 
+        bname = basename( fn );
+        sprintf( buf, "./gadget-analysis.log/%s-usedvalues", bname );
+        fd2 = fopen( buf, "w" );
         fd = fopen( fn, "r" );
+
+        if ( NULL == fd2 ){
+            endrun0( "Faile to Open %s\n", buf );
+        }
 
         if ( NULL == fd ){
             endrun0( "Faile to Open Parameter file %s\n", fn );
@@ -126,6 +134,9 @@ void read_parameters( char *fn ) {
         ADD_PARAI( All.TabF                     );
         ADD_PARAI( All.Tree                     );
         ADD_PARAI( All.ParallelIO               );
+        ADD_PARAI( All.ReadVel                  );
+        ADD_PARAI( All.ReadElec                 );
+        ADD_PARAI( All.Readu                    );
 
         while( !feof( fd ) ) {
             *buf = 0;
@@ -144,15 +155,18 @@ void read_parameters( char *fn ) {
                 switch ( id[j] ) {
                     case REAL:
                         *( (double*)addr[j] ) = atof( buf2 );
-                        writelog( "%-35s: %g\n", buf1, *((double*)addr[j]) );
+                        //writelog( "%-35s: %g\n", buf1, *((double*)addr[j]) );
+                        fprintf( fd2, "%-35s %g\n", buf1, *((double*)addr[j]) );
                         break;
                     case INT:
                         *( (int*)addr[j] ) = atoi( buf2 );
-                        writelog( "%-35s: %d\n", buf1, *((int*)addr[j]) );
+                        //writelog( "%-35s: %d\n", buf1, *((int*)addr[j]) );
+                        fprintf( fd2, "%-35s %d\n", buf1, *((int*)addr[j]) );
                         break;
                     case STRING:
                         strcpy( (char*)addr[j], buf2 );
-                        writelog( "%-35s: %s\n", buf1, buf2 );
+                        //writelog( "%-35s: %s\n", buf1, buf2 );
+                        fprintf( fd2, "%-35s %s\n", buf1, buf2 );
                         break;
                 }
             }
@@ -170,6 +184,7 @@ void read_parameters( char *fn ) {
         if ( errflag )
             endrun(20181107);
         fclose( fd );
+        fclose( fd2 );
     }
 
     MPI_Bcast( &All, sizeof( struct global_parameters_struct ), MPI_BYTE, 0, MPI_COMM_WORLD );

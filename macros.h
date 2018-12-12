@@ -72,8 +72,8 @@
     }\
 \
     sprintf( ms.str, "%s Nvars %li.\n", ms.str, ms.nn );\
-    fprintf( MemUseFileFd, ms.str ); \
-    fflush( MemUseFileFd ); \
+    fprintf( UsedMemFileFd, ms.str ); \
+    fflush( UsedMemFileFd ); \
 }
 
 
@@ -101,20 +101,20 @@
     }\
 \
     if ( n > CUBE( 1024 ) ) {\
-        fprintf( MemUseFileFd, "allocate memory for `%s` ( %g Gb )\n", #a, n / CUBE( 1024. ) ); \
+        fprintf( UsedMemFileFd, "allocate memory for `%s` ( %g Gb )\n", #a, n / CUBE( 1024. ) ); \
     }\
     else if ( n > SQR( 1024 ) ) {\
-        fprintf( MemUseFileFd, "allocate memory for `%s` ( %g Mb )\n", #a, n / SQR(  1024. ) ); \
+        fprintf( UsedMemFileFd, "allocate memory for `%s` ( %g Mb )\n", #a, n / SQR(  1024. ) ); \
     }\
     else if( n > 1024 ) {\
-        fprintf( MemUseFileFd, "allocate memory for `%s` ( %g Kb )\n", #a, n /  1024. ); \
+        fprintf( UsedMemFileFd, "allocate memory for `%s` ( %g Kb )\n", #a, n /  1024. ); \
     }\
     else {\
-        fprintf( MemUseFileFd, "allocate memory for `%s` ( %li b )\n", #a, (long)n ); \
+        fprintf( UsedMemFileFd, "allocate memory for `%s` ( %li b )\n", #a, (long)n ); \
     }\
 \
     if ( flag == 1 ){\
-        fprintf( MemUseFileFd, "initialize `%s` ...\n", #a ); \
+        fprintf( UsedMemFileFd, "initialize `%s` ...\n", #a ); \
         memset( a, b, n ); \
     }\
     check_var_len( a );\
@@ -128,8 +128,8 @@
     ms.max_mem = vmax( ms.max_mem, ms.mem ); \
     check_var_num();\
     malloc_report(); \
-    fprintf( MemUseFileFd, sep_str ); \
-    fflush( MemUseFileFd ); \
+    fprintf( UsedMemFileFd, sep_str ); \
+    fflush( UsedMemFileFd ); \
 }
 
 #define mymalloc( a, n, flag, b ) mymalloc0( a, n, flag, b, 0, ThisTask, MpiWin_P ) // here ThisTask and MpiWin_P are useless.
@@ -168,16 +168,16 @@
     }\
 \
     if ( ms.b > CUBE( 1024 ) ) {\
-        fprintf( MemUseFileFd, "Free memory for `%s` ( %g Gb )\n", ms.var[ms.i], ms.b / CUBE( 1024. ) ); \
+        fprintf( UsedMemFileFd, "Free memory for `%s` ( %g Gb )\n", ms.var[ms.i], ms.b / CUBE( 1024. ) ); \
     }\
     else if ( ms.b > SQR( 1024 ) ) {\
-        fprintf( MemUseFileFd, "Free memory for `%s` ( %g Mb )\n", ms.var[ms.i], ms.b / SQR(  1024. ) ); \
+        fprintf( UsedMemFileFd, "Free memory for `%s` ( %g Mb )\n", ms.var[ms.i], ms.b / SQR(  1024. ) ); \
     }\
     else if( ms.b > 1024 ) {\
-        fprintf( MemUseFileFd, "Free memory for `%s` ( %g Kb )\n", ms.var[ms.i], ms.b /  1024. ); \
+        fprintf( UsedMemFileFd, "Free memory for `%s` ( %g Kb )\n", ms.var[ms.i], ms.b /  1024. ); \
     }\
     else {\
-        fprintf( MemUseFileFd, "Free memory for `%s` ( %li b )\n", ms.var[ms.i], ms.b ); \
+        fprintf( UsedMemFileFd, "Free memory for `%s` ( %li b )\n", ms.var[ms.i], ms.b ); \
     }\
 \
     for ( ; ms.i<ms.nn-1; ms.i++ ) {\
@@ -193,8 +193,8 @@
         free( a ); \
 \
     malloc_report(); \
-    fprintf( MemUseFileFd, sep_str ); \
-    fflush( MemUseFileFd ); \
+    fprintf( UsedMemFileFd, sep_str ); \
+    fflush( UsedMemFileFd ); \
 }
 
 #define myfree( a )        myfree0( a, 0, MpiWin_P )

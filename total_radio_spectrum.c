@@ -3,16 +3,16 @@
 void total_radio_spectrum() {
 
     long index;
-    int Nnu, i, signal, j, k, nu_i;
+    int Nnu, i, j, k, t;
     double *nu, *flux_local, *flux, numin, numax, dnu, tmp,
            *alist, *fluxlist, *dislist;
     char buf[100];
     FILE *fd;
 
+    do_sync( "before total radio spectrum" );
     writelog( "total radio spectrum ...\n" );
 
     Nnu = All.NuNum;
-    signal = N_Gas / 10;
     numin = All.NuMin;
     numax = All.NuMax;
     dnu = log( numax/numin) / (Nnu-1);
@@ -28,31 +28,35 @@ void total_radio_spectrum() {
     tmp = 1.0 / ( ( 4.0 * PI * SQR( All.LumDis * g2c.cm ) ) * ( SQR( All.BoxSize / All.ComDis ) ) );
 
     if ( All.RedShift > 1e-10 )
-            for ( index=0; index<N_Gas; index++ ) {
-                    if  ( index % signal == 0 )
-                        writelog( "total spectrum [%8li] [%8li] [%5.1f%%]\n",
-                               index, N_Gas, ( (double)index )/N_Gas * 100 );
+        t = N_Gas / 10;
+        for ( index=0; index<N_Gas; index++ ) {
+                if  ( index % t == 0 )
+                    writelog( "total spectrum [%8li] [%8li] [%5.1f%%]\n",
+                           index, N_Gas, ( (double)index )/N_Gas * 100 );
 
-                    if ( index % NTask_Local != ThisTask_Local )
+                if ( index % NTask_Local != ThisTask_Local )
+                    continue;
+
+                for ( i=0; i<Nnu; i++ ) {
+                    //nu_i = log( nu[i]/All.Time / numin ) / dnu;
+                    //tmp = particle_radio( nu[i]*1e6 / All.Time, index );
+                    //if ( tmp < 0 )
+                     //   endrun( 20181006 );
+                     //
+                     /*
+                    if ( nu_i < 0 || nu_i >= Nnu )
                         continue;
+                        */
 
-                    for ( i=0; i<Nnu; i++ ) {
-                        nu_i = log( nu[i]/All.Time / numin ) / dnu;
-                        //tmp = particle_radio( nu[i]*1e6 / All.Time, index );
-                        //if ( tmp < 0 )
-                         //   endrun( 20181006 );
-                         //
-                        if ( nu_i < 0 || nu_i >= Nnu )
-                            continue;
+                    flux_local[i] += PartRad[index * Nnu + i];
 
-                        flux_local[i] += PartRad[index * Nnu + nu_i];
-
-                        if ( PartRad[index*Nnu+nu_i] * tmp > 10 || PartRad[index*All.NuNum+nu_i] < 0 || flux_local[i] < 0 ) {
-                            printf( "%i, %g, %g, %g\n", nu_i, nu[ nu_i ], PartRad[index*All.NuNum+nu_i], flux[i] );
-                            endrun( 20181029 );
-                        }
-
+                    if ( PartRad[index*Nnu+i] * tmp > 10 || PartRad[index*All.NuNum+i] < 0 || flux_local[i] < 0 ) {
+                        printf( "%i, %g, %g, %g\n",
+                                i, nu[ i ], PartRad[index*All.NuNum+i], flux[i] );
+                        endrun( 20181029 );
                     }
+
+                }
         }
 
     if ( ThisTask_Local == 0 )

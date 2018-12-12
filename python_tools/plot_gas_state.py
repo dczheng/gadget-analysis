@@ -62,14 +62,14 @@ if ( xmin > xmax ):
     pass
 else:
     xLocList = np.linspace( xmin, xmax, xmax - xmin + 1 )
-    xFmtList = xLocList
+    xFmtList = [ r'$10^{%.0f}$'%i for i in xLocList ]
     xLocList = ( xLocList - DensMin ) / xl * (n-1)
     print( "xticks: ", xFmtList )
 if ( ymin > ymax ):
     pass
 else:
     yLocList = np.linspace( ymin, ymax, ymax - ymin + 1 )
-    yFmtList = yLocList
+    yFmtList = [ r'$10^{%.0f}$'%i for i in yLocList ]
     yLocList = m - ( yLocList - TempMin ) / yl * (m-1)
     print( "yticks: ", yFmtList )
 
@@ -80,8 +80,8 @@ ax = fig.add_subplot( 111 )
 norm = mplc.LogNorm()
 img = ax.imshow( data, norm=norm, cmap=cm.jet )
 
-ax.set_xlabel( r"$log_{10}\left(\frac{\rho}{\rho_{Bar}}\right)$" )
-ax.set_ylabel( r"$log_{10} T$" )
+ax.set_xlabel( r"$\frac{\rho}{\rho_{Bar}}$" )
+ax.set_ylabel( r"$T[K]$" )
 ax.set_title( "z=%.2f"%(z) )
 
 xloc = tik.FixedLocator(xLocList)

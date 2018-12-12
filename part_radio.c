@@ -157,8 +157,8 @@ int read_particle_radio() {
 void compute_particle_radio() {
 
     double numin, numax, dlognu, nu;
-    int nuN, signal, j, num, flag;
-    long i;
+    int nuN, j, num, flag;
+    long i, t;
     char fn[ FILENAME_MAX ];
 
     /*
@@ -171,6 +171,7 @@ void compute_particle_radio() {
     mymalloc1_shared( PartRad, sizeof(double)*N_Gas * All.NuNum, sizeof(double), MpiWin_PartRad );
 
     if ( ThisTask_Local == 0 ) {
+        //printf( "Task: %i enter %s\n", ThisTask, __FUNCTION__ );
 
         sprintf( fn, "%s/rad_%.2f.hdf5", All.RadDir, All.RedShift );
         flag = 1;
@@ -190,10 +191,13 @@ void compute_particle_radio() {
 
     }
 
+    MPI_Bcast(  &num, 1, MPI_INT, 0, MpiComm_Local );
+    MPI_Bcast(  &flag, 1, MPI_INT, 0, MpiComm_Local );
+
     if ( All.TabF  && num )
         init_tab_F();
 
-    MPI_Bcast(  &flag, 1, MPI_INT, 0, MpiComm_Local );
+    //printf( "Task: %i, flag: %i\n", ThisTask, flag );
 
     if ( flag == 0 )
         return;
@@ -204,12 +208,10 @@ void compute_particle_radio() {
 
     dlognu = log( numax/numin ) / ( nuN - 1 );
 
-    signal = N_Gas / 10;
-
+    t = N_Gas / 10;
     for( i=0; i<N_Gas; i++ ) {
 
-
-        if ( i % signal == 0 )
+        if ( i % t == 0 )
             writelog( "[%10li] [%10li] [%5.1f%%]\n", i, N_Gas, ((double)(i)) / N_Gas * 100 );
 
         if ( i % NTask_Local != ThisTask_Local )
@@ -221,7 +223,7 @@ void compute_particle_radio() {
 
             //printf( "nu: %g\n", nu );
 
-            PartRad[ i*All.NuNum + j ] = particle_radio( nu, i );
+            PartRad[ i*All.NuNum + j ] = particle_radio( nu/All.Time, i );
 
         }
 
@@ -396,7 +398,4 @@ double particle_radio( double nu, long i ) {
 
 }
 */
-
-
-
 

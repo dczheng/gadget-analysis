@@ -15,6 +15,7 @@
 #include "limits.h"
 #include "sys/stat.h"
 #include "macros.h"
+#include "libgen.h"
 
 #define ZDEBUG
 
@@ -183,6 +184,7 @@ typedef struct Sph_Particle_Data {
     double CRE_qmax;
     double CRE_n;
     double CRE_e;
+    double CRE_P;
     //double *Rad;
     double B[3];
     double divB;
@@ -207,7 +209,7 @@ extern MPI_Comm  MpiComm_Local, MpiComm_Master;
 extern MPI_Aint WinSize;
 extern int WinDisp;
 extern long *id_to_index, NumPart, N_Gas, OffsetPart6[6], NumPart6[6];
-extern FILE *LogFileFd, *MemUseFileFd;
+extern FILE *LogFileFd, *UsedMemFileFd;
 extern struct io_header header;
 
 extern double *PartRad;
@@ -220,7 +222,8 @@ extern struct global_parameters_struct {
          *ToolsPath, Sproj;
 
     int FoF,
-        ReadHge, ReadCr, ReadB, ReadMach, ReadSfr, ReadTemp,
+        ReadHge, ReadCr, ReadB, ReadMach, ReadSfr, ReadTemp, ReadVel,
+        ReadElec, Readu,
         MpcFlag,
         Group, MF, MFBins, BPdf,
         GroupDens, GroupTemp, GroupSfr, GroupB, GroupMach, GroupHge,

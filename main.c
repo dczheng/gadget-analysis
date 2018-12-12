@@ -1,5 +1,7 @@
 #include "allvars.h"
 
+char buf[100], *bname;
+
 void init_sep_str() {
     memset( sep_str, '-', SEP_LEN-2 );
     sep_str[ SEP_LEN-2 ] = '\n';
@@ -160,13 +162,68 @@ void free_comms() {
 
 }
 
+void merge_log_file() {
+
+    int i, j, status;
+    FILE *fd,*fd1;
+    char buf2[200], t[2][10];
+
+    t[0][0]  = '\0';
+    sprintf( t[1], "-usedmem");
+
+    printf( "merge log file ...\n" );
+    for ( i=0; i<2; i++ ) {
+        sprintf( buf, "./gadget-analysis.log/%s%s.log", bname, t[i] );
+        //printf( "%s\n", buf );
+        fd = fopen( buf, "w" );
+        if ( NULL == fd ) {
+            printf( "Failed to open file %s\n", buf );
+            endrun( 20181213 );
+        }
+
+        for( j=0; j<NTask; j++ ) {
+            sprintf( buf, "./gadget-analysis.log/%s%s-%03i.log", bname, t[i], j );
+       // printf( "%s\n", buf );
+
+            fd1 = fopen( buf, "r" );
+            if ( NULL == fd1 ) {
+                printf( "Failed to open file %s\n", buf );
+                endrun( 20181213 );
+            }
+
+            fprintf( fd, "%s", sep_str );
+            fprintf( fd, "Task: %i\n", j );
+            fprintf( fd, "%s", sep_str );
+
+            while( !feof( fd1 ) ) {
+                fgets( buf2, 200, fd1 );
+                fprintf( fd, buf2 );
+            }
+
+            fclose( fd1 );
+
+            status = remove( buf );
+
+            if ( status ) {
+                printf( "Failed to remove file %s\n", buf );
+                endrun( 20181213 );
+            }
+
+        }
+
+        fclose( fd );
+    }
+
+    //endrun( 20181213 );
+
+}
+
 int main( int argc, char *argv[] ){
 
     time_t time1, time2;
     long dtime;
     struct tm *tb;
     int provided;
-    char buf[100];
 
     //MPI_Init( &argc, &argv );
     MPI_Init_thread( &argc, &argv, MPI_THREAD_FUNNELED, &provided );
@@ -210,14 +267,29 @@ int main( int argc, char *argv[] ){
         }
     }
 
-    do_sync( "" );
-    sprintf( buf, "./gadget-analysis.log/gadget-analysis-%03d.log", ThisTask );
+    bname = basename( argv[1] );
+    //printf( "argv[1]: %s, bname: %s\n", argv[1], bname );
+    //endrun( 11 );
+    //
+    /*
+    if ( ThisTask == 0 )
+    merge_log_file();
+    */
+
+    sprintf( buf, "./gadget-analysis.log/%s-%03d.log", bname, ThisTask );
     LogFileFd = fopen( buf, "w" );
+    if ( NULL == LogFileFd )
+        endrun0( "Failed open file %s\n", buf );
 
-    sprintf( buf, "./gadget-analysis.log/memuse-%03d.txt", ThisTask );
-    MemUseFileFd = fopen( buf, "w" );
+    sprintf( buf, "./gadget-analysis.log/%s-usedmem-%03d.log", bname, ThisTask );
+    UsedMemFileFd = fopen( buf, "w" );
 
+    if ( NULL == UsedMemFileFd )
+        endrun0( "Failed open file %s\n", buf );
+
+    create_mpi_comms();
     put_sep;
+
     writelog( "Start At: %s", asctime(tb) );
 
 #ifdef ZDEBUG
@@ -235,8 +307,6 @@ int main( int argc, char *argv[] ){
     writelog( "GADGET_TOOLS: %s\n", All.ToolsPath );
     writelog( "NumThreadsPerSnapshot: %i\n", All.NumThreadsPerSnapshot );
 
-    create_mpi_comms();
-    put_sep;
 
     /******************read***********************/
 
@@ -259,7 +329,7 @@ int main( int argc, char *argv[] ){
     do_sync( "read data" );
 
     pre_proc();
-    do_sync_local( "pre process data" );
+    do_sync( "pre process data" );
 
     /******************read***********************/
 
@@ -289,9 +359,12 @@ int main( int argc, char *argv[] ){
     put_sep;
 
     fclose( LogFileFd );
-    fclose( MemUseFileFd );
+    fclose( UsedMemFileFd );
 
     global_free();
+
+    if ( ThisTask == 0 )
+        merge_log_file();
 
     MPI_Finalize();
     return 0;

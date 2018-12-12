@@ -8,51 +8,79 @@ hsize_t dims[2], maxdims[2];
 int ndims;
 void *CommBuffer;
 
+#define blockpresent_check( A )  { \
+    if ( A ) \
+        return 1; \
+    else \
+        return 0; \
+}
+
+int blockpresent0( enum iofields blk, int pt ) {
+    switch( blk ) {
+        case IO_VEL:
+        case IO_POS:
+        case IO_ID:
+        case IO_ACCEL:
+            blockpresent_check( header.npart[pt] > 0 );
+
+        case IO_MASS:
+            blockpresent_check( (header.npart[pt] > 0 && header.mass[pt] == 0) );
+
+        case IO_MAG:
+        case IO_SFR:
+        case IO_DIVB:
+        case IO_DBDT:
+        case IO_U:
+        case IO_TEMP:
+        case IO_RHO:
+        case IO_POT:
+        case IO_NE:
+        case IO_MN:
+        case IO_CR_C0:
+        case IO_CR_Q0:
+        case IO_CR_E0:
+        case IO_CR_n0:
+        case IO_CR_P0:
+        case IO_CRE_C:
+        case IO_CRE_ALPHA:
+        case IO_CRE_QMIN:
+        case IO_CRE_QMAX:
+        case IO_CRE_N:
+        case IO_CRE_E:
+            blockpresent_check( (pt == 0 && header.mass[pt] == 0) );
+        default:
+            return 0;
+    }
+}
+
 int blockpresent( enum iofields blk, int pt ) {
     switch( blk ) {
         case IO_POS:
-        case IO_VEL:
         case IO_ID:
-            if ( header.npart[pt] > 0 )
-                return 1;
-            else
-                return 0;
         case IO_MASS:
-            if ( (header.npart[pt] > 0 ) && header.mass[pt] == 0 )
-                return 1;
-            else
-                return 0;
+        case IO_RHO:
+            blockpresent_check( blockpresent0( blk, pt ) );
+
+        case IO_VEL:
+            blockpresent_check( blockpresent0(blk,pt) && All.ReadVel );
+
         case IO_TEMP:
-            if ( All.ReadTemp == 0 )
-                return 0;
+            blockpresent_check( blockpresent0(blk,pt) && All.ReadTemp );
+
+        case IO_U:
+            blockpresent_check( blockpresent0(blk,pt) && All.Readu );
 
         case IO_NE:
-        case IO_U:
-        case IO_RHO:
-            if (( pt == 0 ) && ( header.npart[0] != 0 ))
-                return 1;
-            else
-                return 0;
+            blockpresent_check( blockpresent0(blk,pt) && All.ReadElec );
 
         case IO_MN:
-            if (( pt == 0 ) && ( header.npart[0] != 0 ) && All.ReadMach == 1 )
-                return 1;
-            else
-                return 0;
+            blockpresent_check( blockpresent0(blk,pt) && All.ReadMach );
 
         case IO_MAG:
-        case IO_DIVB:
-        case IO_DBDT:
-            if (( pt == 0 ) && ( header.npart[0] != 0 ) && All.ReadB == 1)
-                return 1;
-            else
-                return 0;
+            blockpresent_check( blockpresent0(blk,pt) && All.ReadB );
 
         case IO_SFR:
-            if (( pt == 0 ) && ( header.npart[0] != 0 ) && All.ReadSfr == 1)
-                return 1;
-            else
-                return 0;
+            blockpresent_check( blockpresent0(blk,pt) && All.ReadSfr );
 
         case IO_CRE_C:
         case IO_CRE_ALPHA:
@@ -60,21 +88,17 @@ int blockpresent( enum iofields blk, int pt ) {
         case IO_CRE_QMAX:
         case IO_CRE_N:
         case IO_CRE_E:
-            if (( pt == 0 ) && ( header.npart[0] != 0 ) && All.ReadHge == 1)
-                return 1;
-            else
-                return 0;
+            blockpresent_check( blockpresent0(blk,pt) && All.ReadHge );
 
         case IO_CR_Q0:
         case IO_CR_C0:
         case IO_CR_E0:
         case IO_CR_n0:
         case IO_CR_P0:
-            if (( pt == 0 ) && ( header.npart[0] != 0 ) && All.ReadCr == 1)
-                return 1;
-            else
-                return 0;
+            blockpresent_check( blockpresent0(blk,pt) && All.ReadCr );
 
+        case IO_DIVB:
+        case IO_DBDT:
         case IO_POT:
         case IO_ACCEL:
             return 0;
@@ -651,6 +675,22 @@ void free_particle_memory() {
     put_sep;
 }
 
+void read_snapshot_test() {
+    long i;
+
+    do_sync_local( "" );
+    mytimer_start();
+    for( i=0; i<NumPart; i++ ) {
+        if ( i % NTask_Local != ThisTask_Local )
+            continue;
+        P[i].Pos[0] ++;
+    }
+    sleep( 10 );
+    do_sync_local( "" );
+    mytimer_end();
+    endrun( 20181212 );
+}
+
 void read_snapshot() {
     int pt, blk, nbytes, SnapIndex, io_i;
     long i, file, offset, num;
@@ -787,6 +827,7 @@ void read_snapshot() {
             SphP[i].Star_BH_Num[pt] = SphP[i].Star_BH_MaxNum[pt] = 0;
             */
 
+    //read_snapshot_test();
     mytimer_end();
     writelog( "read data ... done. \n" );
     //endrun( 20181210 );

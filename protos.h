@@ -85,9 +85,9 @@ void compute_particle_radio();
 void free_particle_radio();
 void B_Pdf();
 void pre_proc();
-void do_sync0( char *s, MPI_Comm comm );
-#define do_sync( s ) do_sync0( s, MPI_COMM_WORLD )
-#define do_sync_local( s ) do_sync0( s, MpiComm_Local )
-#define do_sync_master( s ) do_sync0( s, MpiComm_Master )
+
+void do_sync( char *s );
+void do_sync_local( char *s );
+void do_sync_master( char *s );
 
 void hge_pressure_pdf();

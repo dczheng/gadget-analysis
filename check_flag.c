@@ -27,6 +27,7 @@ void check_flag() {
 
     A_NEED_B( All.HgePressurePdf, All.ReadHge );
     A_NEED_B( All.HgePressurePdf, All.ReadCr );
+    A_NEED_B( All.HgePressurePdf, All.Readu );
 
 
 }

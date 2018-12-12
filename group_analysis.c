@@ -21,11 +21,11 @@ int group_present( long index ) {
 void group_particle_spectrum() {
 
     double numin, numax, dlognu, *nu;
-    int nuN, signal, index, i, len, l;
-    long p;
+    int nuN, index, i, len, l;
+    long p, t;
 
     nuN = All.NuNum;
-    signal = nuN / 10;
+    t = nuN / 10;
     numin = All.NuMin;
     numax = All.NuMax;
 
@@ -45,11 +45,11 @@ void group_particle_spectrum() {
             break;
 
         len = Gprops[index].Len;
-        signal = len / 10;
+        t = len / 10;
         p = Gprops[index].Head;
         writelog( "group: %i ...\n", index );
         for ( l=0; l<len; l++, p = FoFNext[p]) {
-            if ( l % signal == 0 )
+            if ( l % t == 0 )
                 writelog( "[%8i] [%8i] [%5.1f%%]\n", l, len, ((double)(l))/len * 100);
             if ( P[p].Type != 0 )
                 continue;

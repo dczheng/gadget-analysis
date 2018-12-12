@@ -12,7 +12,7 @@ int WinDisp;
 double *PartRad;
 
 gsl_integration_workspace *inte_ws;
-FILE *LogFileFd, *MemUseFileFd;
+FILE *LogFileFd, *UsedMemFileFd;
 
 struct NODE *Nodes, *Nodes_Base;
 long MaxNodes;

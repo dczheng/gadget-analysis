@@ -47,6 +47,25 @@ void do_sync0( char *s, MPI_Comm comm ) {
 
 }
 
+void do_sync( char *s ) {
+    char buf[100];
+    sprintf( buf, "%s [Global]", s );
+    do_sync0( buf, MPI_COMM_WORLD );
+}
+
+void do_sync_local( char *s ) {
+    char buf[100];
+    sprintf( buf, "%s [Local]", s );
+    do_sync0( buf, MpiComm_Local );
+}
+
+void do_sync_master( char *s ) {
+    char buf[100];
+    sprintf( buf, "%s [Master]", s );
+    do_sync0( buf, MpiComm_Master );
+}
+
+
 double second() {
     return ( (double) clock() / CLOCKS_PER_SEC );
 }
