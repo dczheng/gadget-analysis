@@ -323,7 +323,7 @@ int main( int argc, char *argv[] ){
 
     //test_sigma();
     //
-    test_radio();
+    //test_radio();
 
     read_snapshot();
     do_sync( "read data" );
