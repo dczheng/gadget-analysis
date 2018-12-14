@@ -149,6 +149,12 @@ enum group_fields {
     GROUP_RADP
 };
 
+struct radio_inte_struct{
+    double (*f) ( double, void* );
+    void *params;
+    double B;
+    double nu;
+};
 
 
 typedef struct Particle_Data {

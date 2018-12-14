@@ -1,5 +1,70 @@
 #include "allvars.h"
 
+
+/*
+void compute_radio( double v ) {
+
+    mymalloc( img, sizeof( double ) * SQR( PicSize ) );
+    memset( img, 0, sizeof( double ) * SQR( PicSize ) );
+
+    dy = dx = BoxSize / PicSize;
+    h = All.SofteningTable[0] * ( g2c.cm );
+    V = 4.0 / 3.0 * PI * pow( h, 3 );
+    ang = h / ang_dis / PI * 180.0 * 60;
+    beam = pow( 10.0 / 60, 2.0 ) / ( 4.0 * log(2) );
+    img_max = DBL_MIN;
+    img_min = DBL_MAX;
+    for ( i=0; i<N_Gas; i++ ) {
+        xi = (int)( P[i].Pos[0] / dx );
+        yi = (int)( P[i].Pos[1] / dy );
+        tmp = img[xi * PicSize + yi] += SphP[i].P * V / ( 4*PI*pow(lum_dis,2) ) / SQR(ang)
+            * beam * 1e25;
+        //tmp = img[xi * PicSize + yi] += SphP[i].P * V / ( 4*PI*pow(lum_dis,2) ) / SQR(ang)
+        //    * 1e25;
+        img_max = ( tmp > img_max ) ? tmp : img_max;
+        img_min = ( tmp < img_min && tmp > 0 ) ? tmp : img_min;
+    }
+}
+*/
+
+/*
+double particle_radio( double nu, long i ) {
+
+    C = SphP[i].CRE_C;
+    //printf( "%g\n", C );
+    C = C * SphP[i].Density / ( cuc.m_e /(g2c.g) );
+    C /= CUBE( g2c.cm );
+
+    B = sqrt( pow( SphP[i].B[0], 2 ) + pow( SphP[i].B[1], 2 ) + pow( SphP[i].B[2], 2 ) );
+    Ub = B * B / ( 8 * PI );
+    Ub += SQR( BCMB0 ) * pow( All.Time, -4 ) / ( 8*PI );
+
+    nuL = cuc.e * B / ( 2 * PI * cuc.m_e * cuc.c );
+
+    if ( sqrt( nu/nuL-1 ) < SphP[i].CRE_qmin ||
+         sqrt( nu/nuL-1 ) > SphP[i].CRE_qmax )
+        return 0;
+
+    P = C * 2.0 / 3.0 * cuc.c * Ub * THOMSON_CROSS_SECTION *
+        pow( nu / nuL-1, (1-SphP[i].CRE_Alpha) / 2 ) / nuL;
+
+    //printf( "%g\n", P );
+    //
+    P = P * ( 4.0/3.0 * PI * CUBE( All.SofteningTable[0] * g2c.cm ) );
+
+    // Unit: erg / Hz / s
+    //
+    //printf( "Ub: %g, nuL: %g, P: %g\n",  Ub, nuL, P );
+
+    printf( "P: %g, P2: %g\n", P, P2 );
+
+    endrun( 20181005 );
+
+    return P;
+
+}
+*/
+
 double particle_df( double p, void *params ) {
 
     double *pa;
@@ -244,20 +309,21 @@ void free_particle_radio() {
 
 }
 
-void test_qmax() {
+void d2PdVdv_qmax() {
 
     SphParticleData part;
-    double nu_min, nu_max, nu, dlognu, P, qmax_min, qmax_max, dlogqmax, B;
+    double nu_min, nu_max, nu, dlognu, *J, *J0, logqmax_min, logqmax_max, dlogqmax;
     int i, N, qmaxn, k;
     FILE *fd;
 
     part.CRE_C = 1 * CUBE(g2c.cm) * ( cuc.m_e/(g2c.g) );
     part.CRE_Alpha = 2.01;
     part.CRE_qmin = 1;
-    part.CRE_qmax = 1e5;
-    part.Density = 1;
-    B = BCMB0;
-    part.B[0] = sqrt( SQR(B) - SQR(BCMB0) * pow( All.Time, -2 ) );
+    part.CRE_qmax = 1e8;
+    part.Density = All.RhoBaryon;
+
+    part.B[0] = 1e-6;
+    //part.B[0] = sqrt( SQR(B) - SQR(BCMB0) * pow( All.Time, -2 ) );
     part.B[1] = part.B[2] = 0;
 
     N = 100;
@@ -265,68 +331,166 @@ void test_qmax() {
     nu_max = 1e9;
     dlognu = log10( nu_max/nu_min ) / ( N-1 );
 
-    qmaxn = 5;
-    qmax_min = 5e3;
-    qmax_max = 1e5;
-    dlogqmax = log10( qmax_max/qmax_min ) / ( qmaxn-1 );
+    qmaxn = 3;
+    logqmax_min = 4;
+    logqmax_max = 10;
+    dlogqmax = (logqmax_max - logqmax_min) / ( qmaxn-1 );
 
-    fd = fopen( "./qmax_test.dat", "w" );
+    mymalloc2( J, N * sizeof(double) );
 
-    fprintf( fd, "0 " );
+    if ( ThisTask_Local == 0 ) {
+        mymalloc2( J0, N * sizeof(double) );
+        fd = fopen( "./d2PdVdv_qmax.dat", "w" );
+        fprintf( fd, "0 " );
 
-    for( i=0; i<N; i++ ) {
-        nu = log10(nu_min) + i * dlognu;
-        nu = pow( 10, nu );
-        fprintf( fd, "%g ", nu );
+        for( i=0; i<N; i++ ) {
+            nu = log10(nu_min) + i * dlognu;
+            nu = pow( 10, nu );
+            fprintf( fd, "%g ", nu );
+        }
+
+        fprintf( fd, "\n" );
     }
 
-    fprintf( fd, "\n" );
-
     for( k=0; k<qmaxn; k++ ) {
-        part.CRE_qmax = log10( qmax_min ) + k*dlogqmax;
-        part.CRE_qmax = pow( 10, part.CRE_qmax );
+        part.CRE_qmax = pow( 10, logqmax_min + k*dlogqmax );
 
         //part.CRE_qmax = qmax_max;
 
-        fprintf( fd, "%g ",
+        if ( ThisTask_Local == 0 ) {
+            fprintf( fd, "%g ",
                 part.CRE_qmax );
+            printf( "qmax: %g \n",
+                part.CRE_qmax );
+        }
 
+        /*
         printf(  "%g %g %g %g %g\n",
                 part.CRE_C /( CUBE(g2c.cm) * ( cuc.m_e/(g2c.g) )),
                 part.CRE_Alpha,
                 part.CRE_qmin,
                 part.CRE_qmax,
                 part.B[0] );
+                */
 
         for( i=0; i<N; i++ ) {
+            if ( i % NTask_Local != ThisTask_Local )
+                continue;
+
+           // printf( "Task %i, i: %i\n", ThisTask_Local, i );
+
             nu = log10(nu_min) + i * dlognu;
             nu = pow( 10, nu );
-            P = particle_radio2( nu, &part );
+            J[i] = particle_radio2( nu, &part ) / ( 4.0/3.0 * PI * CUBE( All.SofteningTable[0] * g2c.cm ) );
             //printf( "nu: %g, P: %g\n", nu, P );
             //break;
-            fprintf( fd, "%g ", P );
         }
 
-        fprintf( fd, "\n" );
+        MPI_Reduce( J, J0, N, MPI_DOUBLE, MPI_SUM, 0, MpiComm_Local );
+
+        if ( ThisTask_Local == 0 ) {
+            for( i=0; i<N; i++ )
+                fprintf( fd, "%g ", J0[i] );
+            fprintf( fd, "\n" );
+            fflush( fd );
+        }
 
         //break;
 
     }
 
-    fclose( fd );
+    if ( ThisTask_Local == 0 ) {
+        myfree( J0 );
+        fclose( fd );
+    }
+    myfree( J );
+    do_sync_local( "" );
 
+    endruns( "qmax test done." );
+
+}
+
+void output_radio_inte() {
+
+    int i, N;
+    double logqmax, logqmin, dlogq, *q, *r_local, *r, p[4];
+    struct radio_inte_struct ri;
+    FILE *fd;
+
+    logqmin = -1;
+    logqmax = 10;
+    N = 100;
+
+    dlogq = ( logqmax - logqmin ) / ( N-1 );
+
+    mymalloc2( q, N * sizeof( double ) );
+    mymalloc2( r_local, N * sizeof( double ) );
+
+    if ( ThisTask_Local == 0 ) {
+        mymalloc2( r, N * sizeof( double ) );
+    }
+
+    for( i=0; i<N; i++ )
+        q[i] = pow(10, logqmin + i * dlogq);
+
+    p[0] = 1 * CUBE(g2c.cm) * ( cuc.m_e/(g2c.g) );
+    p[1] = 2.01;
+    p[2] = 1;
+    p[3] = 1e4;
+
+    ri.f = particle_df;
+    ri.params = &p;
+    ri.B = 1e-6;
+    ri.nu = 1e4;
+
+    for( i=0; i<N; i++ ) {
+        if ( i % NTask_Local != ThisTask_Local )
+            continue;
+        r_local[i] = radio_inte( q[i], &ri );
+    }
+
+    MPI_Reduce( r_local, r, N, MPI_DOUBLE, MPI_SUM, 0, MpiComm_Local );
+
+    if ( ThisTask_Local == 0 ) {
+
+        fd = fopen( "radio_inte.dat", "w" );
+
+        for( i=0; i<N; i++ )
+            fprintf( fd, "%g %g\n", q[i], r[i] );
+
+        fclose( fd );
+
+        myfree( r );
+
+    }
+
+    myfree( r_local );
+    myfree( q );
 }
 
 void test_radio() {
 
 
-    All.Time = 1;
+    All.Time = header.time = 1;
     All.HubbleParam = 0.7;
+    All.TabF = 0;
+    All.Omega0 = 0.302;
+    All.OmegaLambda = 0.698;
+    All.HubbleParam = 0.68;
+    All.RedShift = 0;
     set_units();
+    compute_cosmo_quantities();
+    init_compute_F();
     put_sep;
 
-    if ( All.TabF )
+//    if ( All.TabF )
         init_tab_F();
+
+    if ( MasterTask == 0 )
+        output_radio_inte();
+        //d2PdVdv_qmax();
+
+    do_sync("");
 
     if ( All.TabF )
         free_tab_F();
@@ -334,68 +498,3 @@ void test_radio() {
     endrun(20181004);
 
 }
-
-/*
-void compute_radio( double v ) {
-
-    mymalloc( img, sizeof( double ) * SQR( PicSize ) );
-    memset( img, 0, sizeof( double ) * SQR( PicSize ) );
-
-    dy = dx = BoxSize / PicSize;
-    h = All.SofteningTable[0] * ( g2c.cm );
-    V = 4.0 / 3.0 * PI * pow( h, 3 );
-    ang = h / ang_dis / PI * 180.0 * 60;
-    beam = pow( 10.0 / 60, 2.0 ) / ( 4.0 * log(2) );
-    img_max = DBL_MIN;
-    img_min = DBL_MAX;
-    for ( i=0; i<N_Gas; i++ ) {
-        xi = (int)( P[i].Pos[0] / dx );
-        yi = (int)( P[i].Pos[1] / dy );
-        tmp = img[xi * PicSize + yi] += SphP[i].P * V / ( 4*PI*pow(lum_dis,2) ) / SQR(ang)
-            * beam * 1e25;
-        //tmp = img[xi * PicSize + yi] += SphP[i].P * V / ( 4*PI*pow(lum_dis,2) ) / SQR(ang)
-        //    * 1e25;
-        img_max = ( tmp > img_max ) ? tmp : img_max;
-        img_min = ( tmp < img_min && tmp > 0 ) ? tmp : img_min;
-    }
-}
-*/
-
-/*
-double particle_radio( double nu, long i ) {
-
-    C = SphP[i].CRE_C;
-    //printf( "%g\n", C );
-    C = C * SphP[i].Density / ( cuc.m_e /(g2c.g) );
-    C /= CUBE( g2c.cm );
-
-    B = sqrt( pow( SphP[i].B[0], 2 ) + pow( SphP[i].B[1], 2 ) + pow( SphP[i].B[2], 2 ) );
-    Ub = B * B / ( 8 * PI );
-    Ub += SQR( BCMB0 ) * pow( All.Time, -4 ) / ( 8*PI );
-
-    nuL = cuc.e * B / ( 2 * PI * cuc.m_e * cuc.c );
-
-    if ( sqrt( nu/nuL-1 ) < SphP[i].CRE_qmin ||
-         sqrt( nu/nuL-1 ) > SphP[i].CRE_qmax )
-        return 0;
-
-    P = C * 2.0 / 3.0 * cuc.c * Ub * THOMSON_CROSS_SECTION *
-        pow( nu / nuL-1, (1-SphP[i].CRE_Alpha) / 2 ) / nuL;
-
-    //printf( "%g\n", P );
-    //
-    P = P * ( 4.0/3.0 * PI * CUBE( All.SofteningTable[0] * g2c.cm ) );
-
-    // Unit: erg / Hz / s
-    //
-    //printf( "Ub: %g, nuL: %g, P: %g\n",  Ub, nuL, P );
-
-    printf( "P: %g, P2: %g\n", P, P2 );
-
-    endrun( 20181005 );
-
-    return P;
-
-}
-*/
-

@@ -80,7 +80,7 @@ void gas_state() {
     writelog( "sum: %g\n", sum );
 
     for ( i=0; i<SQR(PicSize); i++ )
-        img[i] /= sum;
+        img[i] /= sum * DLogTemp * DLogDens;
 
     create_dir( "./GasState" );
     sprintf( buf, "./GasState/GasState_%.2f.dat", All.RedShift );

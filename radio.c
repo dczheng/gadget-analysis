@@ -1,25 +1,18 @@
 #include "allvars.h"
 
 #define TAB_F_N 100000
-#define BESSEL_UPPER_LIMIT   ((double)700)
+#define GSL_BESSEL_UPPER_LIMIT   ((double)700)
+#define GSL_BESSEL_BREAKPOINT    ((double)100)
     /*Knu function will give a very small value ( gsl_sf_bessel_Knu can not work )
-     * when x > BESSEL_UPPER_LIMIT */
+     * when x > GSL_BESSEL_UPPER_LIMIT */
 
 #define F_X_MAX              ((double)600)
 #define F_X_MIN              ((double)1e-5)
 
-double *tab_F_V;
-
-struct radio_inte_struct{
-    double (*f) ( double, void* );
-    void *params;
-    double B;
-    double nu;
-};
-
+double *tab_F_V, F_V_above_breakpoint, F_V_above_breakpoint_err;
 
 double F_integrand( double x, void *params ) {
-    if ( x > BESSEL_UPPER_LIMIT )
+    if ( x > GSL_BESSEL_UPPER_LIMIT )
         return 0;
     return gsl_sf_bessel_Knu( 5.0/3.0, x );
 }
@@ -29,10 +22,22 @@ void F0( double x, double *r, double *err ) {
     gsl_function Func;
     Func.function = &F_integrand;
     Func.params = NULL;
+    //printf( "x: %g\n", x );
 
-    gsl_integration_qagiu( &Func, x,
+    if ( x < GSL_BESSEL_BREAKPOINT ) {
+        gsl_integration_qag( &Func, x, GSL_BESSEL_BREAKPOINT,
             GSL_INTE_ERR_ABS, GSL_INTE_ERR_REL, GSL_INTE_WS_LEN,
+            GSL_INTE_KEY,
             inte_ws, r, err );
+        *r += F_V_above_breakpoint;
+        if ( *err < F_V_above_breakpoint_err )
+            *err = F_V_above_breakpoint_err;
+    }
+    else {
+        gsl_integration_qagiu( &Func, x,
+                GSL_INTE_ERR_ABS, GSL_INTE_ERR_REL, GSL_INTE_WS_LEN,
+                inte_ws, r, err );
+    }
 
     /*
     *err = 1e-1;
@@ -40,6 +45,18 @@ void F0( double x, double *r, double *err ) {
     printf( "x: %g\n", x );
     *r = qtrap( &F_integrand, NULL, x, F_INTE_UPPER_LIMIT, *err );
     */
+
+}
+
+void init_compute_F() {
+
+    gsl_function Func;
+    Func.function = &F_integrand;
+    Func.params = NULL;
+
+    gsl_integration_qagiu( &Func, GSL_BESSEL_BREAKPOINT,
+            GSL_INTE_ERR_ABS, GSL_INTE_ERR_REL, GSL_INTE_WS_LEN,
+            inte_ws, &F_V_above_breakpoint, &F_V_above_breakpoint_err );
 
 }
 
@@ -281,7 +298,7 @@ double radio( double (*f)( double, void* ), double *params,
             ((double*)params)[3]
             );
 
-    t = sqrt( nu / BESSEL_UPPER_LIMIT / ( 0.1875 * B * cuc.e_mec )-1 );
+    t = sqrt( nu / GSL_BESSEL_UPPER_LIMIT / ( 0.1875 * B * cuc.e_mec )-1 );
 
     //printf( "pmin: %g, pmax: %g, B: %g\n", pmin, pmax, B );
 

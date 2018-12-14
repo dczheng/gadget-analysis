@@ -60,8 +60,10 @@ void compute_temperature();
 void init_tab_F();
 void free_tab_F();
 void test_F();
+void init_compute_F();
 double particle_radio( double nu, long i );
 
+double radio_inte( double p, void *params );
 double radio( double (*f)(double, void*), double *params,
         double B, double nu, double pmin, double pmax );
 

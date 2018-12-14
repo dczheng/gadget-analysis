@@ -52,7 +52,7 @@ void total_radio_spectrum() {
 
                     if ( PartRad[index*Nnu+i] * tmp > 10 || PartRad[index*All.NuNum+i] < 0 || flux_local[i] < 0 ) {
                         printf( "%i, %g, %g, %g\n",
-                                i, nu[ i ], PartRad[index*All.NuNum+i], flux[i] );
+                                i, nu[ i ], PartRad[index*All.NuNum+i], flux_local[i] );
                         endrun( 20181029 );
                     }
 
@@ -83,9 +83,9 @@ void total_radio_spectrum() {
     //endrun( 20181029 );
 
     if ( ThisTask_Master == 0 ) {
-        mymalloc1( alist, sizeof( double ) * NTask_Master );
-        mymalloc1( dislist, sizeof( double ) * NTask_Master );
-        mymalloc1( fluxlist, sizeof( double ) * NTask_Master * Nnu );
+        mymalloc2( alist, sizeof( double ) * NTask_Master );
+        mymalloc2( dislist, sizeof( double ) * NTask_Master );
+        mymalloc2( fluxlist, sizeof( double ) * NTask_Master * Nnu );
     }
 
     MPI_Gather( &All.Time, 1, MPI_DOUBLE, alist, 1, MPI_DOUBLE, 0, MpiComm_Master );

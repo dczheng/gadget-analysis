@@ -13,7 +13,7 @@ void create_dir( char *s ) {
         }
     }
 
-    do_sync_master( "" );
+    MPI_Barrier( MpiComm_Master );
 
 }
 

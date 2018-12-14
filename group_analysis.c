@@ -545,11 +545,11 @@ void check_group_flag() {
 
 void group_analysis() {
 
-    long *npart;
+    long *npart, p;
     struct group_properties g;
     double L, dL, *mass, B, PP, nu, n, e,
             lum_dis, com_dis;// com_dis, lum_dis, h, ang;
-    int *num, g_index, i, j, p, PicSize, x, y,
+    int *num, g_index, i, j, PicSize, x, y,
          xo, yo, PicSize2, pic_index, ii, jj;
 
     char buf[100], buf1[100];
@@ -620,12 +620,28 @@ void group_analysis() {
         writelog( "L: %g, dL:%g\n", 2*L, dL );
 
         p = g.Head;
+
         for ( i=0; i<g.Len; i++, p=FoFNext[p] ) {
             if ( P[p].Type != 0 )
                 continue;
+
+            /*
+            printf( "[%li] Pos: ( %g, %g, %g )\n",
+                    p, P[p].Pos[0], P[p].Pos[1], P[p].Pos[2] );
+            continue;
+            */
+
             ii = PERIODIC( P[p].Pos[x] - g.cm[x] ) / dL + xo;
             jj = PERIODIC( P[p].Pos[y] - g.cm[y] ) / dL + yo;
-            //printf( "%li, %li\n", ii, jj );
+
+            /*
+            if ( ii < 0 || ii >= PicSize ||
+                    jj < 0 || jj >= PicSize )
+                    printf( "%i, %i\n", ii, jj );
+                    */
+
+            //continue;
+
             check_picture_index( ii );
             check_picture_index( jj );
             pic_index= ii*PicSize + jj;

@@ -27,7 +27,7 @@ double trapzd( double (*func)( double, void* ),
 
 }
 
-#define REFINE_MAX 20
+#define REFINE_MAX 30
 double qtrap( double (*func)( double, void* ),
         void *params, double a, double b, double err ) {
 
@@ -48,10 +48,12 @@ double qtrap( double (*func)( double, void* ),
         olds = s;
     }
 
+    /*
     printf( "a: %g, b: %g\n", a, b );
     printf( "Too many steps in qtrap!\n" );
     RAISE_SIGSTOP();
     endrun( 20181008 );
-     return  s;
+    */
+    return  s;
 
 }

@@ -150,7 +150,8 @@ void fof_compute_group_properties() {
 
             for ( k=0; k<3; k++ ){
                 g->cm[k] += P[p].Mass *
-                    ( PERIODIC( P[p].Pos[k]-P[p0].Pos[k] ) + P[p0].Pos[k] );
+                    ( PERIODIC( P[p].Pos[k]-P[p0].Pos[k] )
+                      + P[p0].Pos[k] );
                 g->vel[k] += P[p].Mass * P[p].Vel[k];
             }
 

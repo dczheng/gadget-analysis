@@ -321,9 +321,9 @@ int main( int argc, char *argv[] ){
     if ( NTask_Master % All.ParallelIO )
         IOGroups ++;
 
-    //test_radio();
     //test_sigma();
     //
+    test_radio();
 
     read_snapshot();
     do_sync( "read data" );

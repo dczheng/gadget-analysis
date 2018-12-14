@@ -17,7 +17,7 @@ void write_img( char *fn, char *nstr, int mode ) {
     fd = fopen( fn, "w" );
     double v;
     int i, j;
-    writelog( "write `%s` data ...\n", nstr );
+    writelog( "save `%s` img ...\n", nstr );
     img_min = DBL_MAX;
     img_max = -DBL_MAX;
 
@@ -26,10 +26,12 @@ void write_img( char *fn, char *nstr, int mode ) {
         vmax2( img_max, image.img[i]);
     }
 
+    /*
     writelog( "xmin: %g, xmax: %g, ymin: %g, ymax: %g\n",
             img_xmin, img_xmax, img_ymin, img_ymax );
 
     writelog( "min: %g, max: %g\n", img_min, img_max );
+    */
 
     if ( mode  ) {
 

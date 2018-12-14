@@ -151,7 +151,7 @@ void hge_pressure_pdf() {
     }
 
     for( i=0; i<SQR(PicSize); i++ )
-        img[i] /= sum;
+        img[i] /= sum * dloghge_r * dlogcr_r;
 
     create_dir( "./HgePressurePdf" );
     sprintf( buf, "./HgePressurePdf/HgePressurePdf_%.2f.dat", All.RedShift );
