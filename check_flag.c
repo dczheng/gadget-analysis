@@ -16,6 +16,7 @@ void check_flag() {
     A_NEED_B( All.Group, All.FoF );
 
     A_NEED_B( All.BPdf, All.ReadB );
+    A_NEED_B( All.GroupSpec, All.RadSpec );
 
     if ( All.Group )
         check_group_flag();

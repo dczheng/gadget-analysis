@@ -102,8 +102,6 @@ void create_mpi_comms() {
     MPI_Comm  TmpComm;
 
 
-    do_sync( "" );
-
     writelog( "create mpi comms ...\n" );
 
     NTask_Local = All.NumThreadsPerSnapshot;
@@ -134,8 +132,6 @@ void create_mpi_comms() {
             */
     }
 
-    do_sync( "" );
-
     MPI_Comm_split( MPI_COMM_WORLD, MasterTask, ThisTask, &TmpComm );
     MPI_Comm_split_type( TmpComm, MPI_COMM_TYPE_SHARED, ThisTask,
             MPI_INFO_NULL, &MpiComm_Local );
@@ -149,7 +145,7 @@ void create_mpi_comms() {
 
     //mpi_comms_test();
 
-    do_sync( "" );
+    do_sync( "create comm" );
 
 }
 

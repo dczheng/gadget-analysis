@@ -48,12 +48,11 @@ double qtrap( double (*func)( double, void* ),
         olds = s;
     }
 
-    /*
     printf( "a: %g, b: %g\n", a, b );
     printf( "Too many steps in qtrap!\n" );
     RAISE_SIGSTOP();
     endrun( 20181008 );
-    */
+
     return  s;
 
 }

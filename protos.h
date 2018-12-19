@@ -65,7 +65,7 @@ double particle_radio( double nu, long i );
 
 double radio_inte( double p, void *params );
 double radio( double (*f)(double, void*), double *params,
-        double B, double nu, double pmin, double pmax );
+        double B, double nu, double pmin, double pmax, double err );
 
 double qtrap( double (*func)( double, void* ),
         void *params, double a, double b, double err );

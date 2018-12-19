@@ -107,7 +107,7 @@ double particle_radio2( double nu,  SphParticleData *part ) {
 
     //printf( "B: %g\n", B );
 
-    r = radio( &particle_df, params, B, nu, params[2], params[3] );
+    r = radio( &particle_df, params, B, nu, params[2], params[3], 1e-2 );
 
     r = r * ( 4.0/3.0 * PI * CUBE( All.SofteningTable[0] * g2c.cm ) );
 
@@ -233,6 +233,8 @@ void compute_particle_radio() {
 
     writelog( "Start compute particle radio ... \n" )
 
+    init_compute_F();
+
     mymalloc1_shared( PartRad, sizeof(double)*N_Gas * All.NuNum, sizeof(double), MpiWin_PartRad );
 
     if ( ThisTask_Local == 0 ) {
@@ -333,7 +335,7 @@ void d2PdVdv_qmax() {
 
     qmaxn = 3;
     logqmax_min = 4;
-    logqmax_max = 10;
+    logqmax_max = 6;
     dlogqmax = (logqmax_max - logqmax_min) / ( qmaxn-1 );
 
     mymalloc2( J, N * sizeof(double) );
@@ -395,7 +397,7 @@ void d2PdVdv_qmax() {
             fflush( fd );
         }
 
-        //break;
+       // break;
 
     }
 
@@ -406,7 +408,7 @@ void d2PdVdv_qmax() {
     myfree( J );
     do_sync_local( "" );
 
-    endruns( "qmax test done." );
+    writelog( "d2PdVdv_qmax done." );
 
 }
 
@@ -487,8 +489,8 @@ void test_radio() {
         init_tab_F();
 
     if ( MasterTask == 0 )
-        output_radio_inte();
-        //d2PdVdv_qmax();
+        //output_radio_inte();
+        d2PdVdv_qmax();
 
     do_sync("");
 
