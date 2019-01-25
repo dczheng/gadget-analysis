@@ -432,6 +432,7 @@ int group_filed_present( enum group_fields blk ) {
                 return 1;
             return 0;
         case GROUP_HGEN:
+        case GROUP_HGEC:
         case GROUP_HGEE:
         case GROUP_HGEALPHA:
         case GROUP_HGEQMIN:
@@ -468,6 +469,9 @@ void get_group_filed_name( enum group_fields blk, char *buf ) {
             break;
         case GROUP_HGEN:
             strcpy( buf, "Hge_n" );
+            break;
+        case GROUP_HGEC:
+            strcpy( buf, "Hge_C" );
             break;
         case GROUP_HGEE:
             strcpy( buf, "Hge_e" );
@@ -519,6 +523,7 @@ void check_group_flag() {
                     flag = 1;
                 }
                 break;
+            case GROUP_HGEC:
             case GROUP_HGEN:
             case GROUP_HGEE:
             case GROUP_HGEQMIN:
@@ -543,6 +548,51 @@ void check_group_flag() {
 
 }
 
+void output_group_info(  long index ) {
+
+    long p;
+    struct group_properties *g;
+    FILE *fd;
+    char buf[20];
+
+    sprintf( buf, "group_%04li.dat", index );
+
+    fd = fopen( buf, "w" );
+    g = &Gprops[index];
+
+    p = g->Head;
+
+    while( p >= 0 ) {
+
+        //printf( "%li\n", p );
+        if ( P[p].Type == 0 ) {
+            fprintf( fd, "%g %g %g  %g %g %g %g %g %g %g\n",
+                P[p].Pos[0],
+                P[p].Pos[1],
+                P[p].Pos[2],
+                get_B( p ),
+                SphP[p].CRE_C * SphP[index].Density / guc.m_e
+                / CUBE( g2c.cm ),
+                SphP[p].CRE_Alpha,
+                SphP[p].CRE_qmin,
+                SphP[p].CRE_qmax,
+                SphP[p].CRE_n * SphP[index].Density / guc.m_e
+                / CUBE( g2c.cm ),
+                SphP[p].CRE_e * SphP[index].Density
+                * g2c.erg / CUBE( g2c.cm )
+                );
+        }
+
+        p = FoFNext[p];
+
+    }
+
+    fclose( fd );
+
+    //endrun( 20190123 );
+
+}
+
 void group_analysis() {
 
     long *npart, p;
@@ -557,6 +607,9 @@ void group_analysis() {
 
     if ( ThisTask_Local != 0 )
         return;
+
+    if ( ThisTask == 0 )
+        output_group_info( 0 );
 
     PicSize = All.PicSize;
     PicSize2 = All.PicSize2;
@@ -677,6 +730,10 @@ void group_analysis() {
 
             if ( group_filed_present( GROUP_HGEALPHA ) ) {
                 data[GROUP_HGEALPHA][pic_index] += SphP[p].CRE_Alpha * SphP[p].Density;
+            }
+
+            if ( group_filed_present( GROUP_HGEC ) ) {
+                data[GROUP_HGEC][pic_index] +=  SphP[p].CRE_C * SphP[p].Density;
             }
 
             if ( group_filed_present( GROUP_HGEE ) ) {

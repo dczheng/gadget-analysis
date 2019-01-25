@@ -321,8 +321,20 @@ int main( int argc, char *argv[] ){
     //
     //test_radio();
 
+    //test_cos();
+
     read_snapshot();
     do_sync( "read data" );
+
+    int i;
+
+    /*
+    for ( i=0; i<N_Gas; i++ ){
+        SphP[i].CRE_Alpha = 3.1;
+        if ( isnan( SphP[i].CRE_qmin ) )
+            SphP[i].CRE_qmin = 0.1;
+    }
+    */
 
     pre_proc();
     do_sync( "pre process data" );
@@ -331,11 +343,14 @@ int main( int argc, char *argv[] ){
 
     set_units();
 
+
     compute_cosmo_quantities();
 
     //test_ps();
 
     /******************analysis***********************/
+
+
     analysis();
     /******************analysis***********************/
     do_sync( "analysis" );

@@ -82,8 +82,19 @@ double particle_radio2( double nu,  SphParticleData *part ) {
     double r, params[4], B;
 
     params[0] = part->CRE_C;
-    params[0] = params[0] * part->Density / ( cuc.m_e /(g2c.g) );
+    if ( part->CRE_qmin <= 0 )
+        return 0;
+    /*
+    params[0] = part->CRE_n * ( part->CRE_Alpha - 1 ) /
+        pow( part->CRE_qmin, 1-part->CRE_Alpha );
+        */
+    params[0] = params[0] * part->Density / guc.m_e;
     params[0] /= CUBE( g2c.cm );
+    /*
+    printf( "n: %g, a: %g, qmin: %g, %g\n",
+            part->CRE_n, part->CRE_Alpha, part->CRE_qmin,
+            params[0] );
+            */
 
     params[1] = part->CRE_Alpha;
     params[2] = part->CRE_qmin;
@@ -318,7 +329,7 @@ void d2PdVdv_qmax() {
     int i, N, qmaxn, k;
     FILE *fd;
 
-    part.CRE_C = 1 * CUBE(g2c.cm) * ( cuc.m_e/(g2c.g) );
+    part.CRE_C = CUBE(g2c.cm) * ( guc.m_e ) / All.RhoBaryon;
     part.CRE_Alpha = 2.01;
     part.CRE_qmin = 1;
     part.CRE_qmax = 1e8;
@@ -333,14 +344,14 @@ void d2PdVdv_qmax() {
     nu_max = 1e9;
     dlognu = log10( nu_max/nu_min ) / ( N-1 );
 
-    qmaxn = 3;
+    qmaxn = 10;
     logqmax_min = 4;
-    logqmax_max = 6;
+    logqmax_max = 5;
     dlogqmax = (logqmax_max - logqmax_min) / ( qmaxn-1 );
 
     mymalloc2( J, N * sizeof(double) );
 
-    if ( ThisTask_Local == 0 ) {
+    if ( ThisTask == 0 ) {
         mymalloc2( J0, N * sizeof(double) );
         fd = fopen( "./d2PdVdv_qmax.dat", "w" );
         fprintf( fd, "0 " );
@@ -359,7 +370,7 @@ void d2PdVdv_qmax() {
 
         //part.CRE_qmax = qmax_max;
 
-        if ( ThisTask_Local == 0 ) {
+        if ( ThisTask == 0 ) {
             fprintf( fd, "%g ",
                 part.CRE_qmax );
             printf( "qmax: %g \n",
@@ -376,7 +387,7 @@ void d2PdVdv_qmax() {
                 */
 
         for( i=0; i<N; i++ ) {
-            if ( i % NTask_Local != ThisTask_Local )
+            if ( i % NTask != ThisTask )
                 continue;
 
            // printf( "Task %i, i: %i\n", ThisTask_Local, i );
@@ -388,9 +399,9 @@ void d2PdVdv_qmax() {
             //break;
         }
 
-        MPI_Reduce( J, J0, N, MPI_DOUBLE, MPI_SUM, 0, MpiComm_Local );
+        MPI_Reduce( J, J0, N, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD );
 
-        if ( ThisTask_Local == 0 ) {
+        if ( ThisTask == 0 ) {
             for( i=0; i<N; i++ )
                 fprintf( fd, "%g ", J0[i] );
             fprintf( fd, "\n" );
@@ -401,14 +412,14 @@ void d2PdVdv_qmax() {
 
     }
 
-    if ( ThisTask_Local == 0 ) {
+    if ( ThisTask == 0 ) {
         myfree( J0 );
         fclose( fd );
     }
     myfree( J );
-    do_sync_local( "" );
+    do_sync( "" );
 
-    writelog( "d2PdVdv_qmax done." );
+    writelog( "d2PdVdv_qmax done.\n" );
 
 }
 
@@ -485,12 +496,12 @@ void test_radio() {
     init_compute_F();
     put_sep;
 
-//    if ( All.TabF )
+    writelog( "test radaion ... \n" );
+    if ( All.TabF )
         init_tab_F();
 
-    if ( MasterTask == 0 )
         //output_radio_inte();
-        d2PdVdv_qmax();
+    d2PdVdv_qmax();
 
     do_sync("");
 

@@ -7,7 +7,7 @@ double E_a ( double a ) {
 
     double E2;
     E2 =  All.Omega0 / ( a*a*a ) +
-          ( 1-All.Omega0-header.OmegaLambda ) / ( a*a ) +
+          ( 1-All.Omega0-All.OmegaLambda ) / ( a*a ) +
           All.OmegaLambda;
     return sqrt( E2 );
 
@@ -33,7 +33,9 @@ double comoving_distance( double a ) {
     gsl_integration_qag( &F, a, 1,
             GSL_INTE_ERR_ABS, GSL_INTE_ERR_REL, GSL_INTE_WS_LEN,
             GSL_INTE_KEY, inte_ws, &d, &err );
+    //d *= LIGHT_SPEED / ( HUBBLE * All.HubbleParam );
     d *= guc.c / ( All.Hubble );
+    //printf( "%g, %g\n", a, d );
     return d;
 
 }
@@ -358,5 +360,30 @@ void compute_cosmo_quantities() {
 
     writelog( "compute cosmology quantities ... done.\n" );
     put_sep;
+}
+
+void test_cos() {
+
+    double z, La, Ll, Lc, a;
+    All.HubbleParam = 0.68;
+    All.OmegaLambda = 0.698;
+    All.Omega0 = 0.302;
+    set_units();
+
+    if ( ThisTask == 0 ) {
+        for ( z=0.1; z<1; z *= 1.1) {
+            a = 1 / ( 1+z );
+            Lc = comoving_distance( a );
+            La = angular_distance( a );
+            Ll = luminosity_distance( a );
+            printf( "%g, %g, %g, %g, %g, %g, %g\n",
+                    z, a, Lc, La, Ll,
+                    La / Lc, Ll / Lc );
+        }
+    }
+
+    do_sync( "" );
+    endrun( 20190115 );
+
 }
 

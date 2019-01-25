@@ -92,4 +92,6 @@ void do_sync( char *s );
 void do_sync_local( char *s );
 void do_sync_master( char *s );
 
+void test_cos();
+
 void hge_pressure_pdf();

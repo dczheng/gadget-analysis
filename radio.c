@@ -279,17 +279,15 @@ double radio_inte( double p, void *params ) {
 }
 
 double radio( double (*f)( double, void* ), double *params,
-        double B, double nu, double pmin, double pmax ) {
+        double B, double nu, double pmin, double pmax, double err ) {
 
-    double r, err, fac, t;
+    double r, fac, t;
     struct radio_inte_struct ri;
 
     ri.f = f;
     ri.params = params;
     ri.B = B;
     ri.nu = nu;
-
-    err = 1e-1;
 
     ZSPRINTF( 0, "B: %g, nu: %g, c: %g, a: %g, pmin: %g, pmax: %g\n", B,  nu,
             ((double*)params)[0],
@@ -322,7 +320,8 @@ double radio( double (*f)( double, void* ), double *params,
             GSL_INTE_KEY, inte_ws, &r, &err );
             */
 
-    fac = sqrt(3) * CUBE( cuc.e ) * PI / ( 4.0 * cuc.m_e * SQR(cuc.c) );
+    //printf( "%f\n", B );
+    fac = sqrt(3) * CUBE( cuc.e ) * B * PI / ( 4.0 * cuc.mec2 );
     r *= fac;
 
     return r;

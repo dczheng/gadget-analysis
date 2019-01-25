@@ -4,7 +4,7 @@ void gas_state() {
 
     double TempMin, TempMax, DensMin, DensMax,
            LogTempMin, LogTempMax, LogDensMin, LogDensMax,
-           *img, DLogTemp, DLogDens, LogDens, LogTemp, sum,
+           *img, DLogTemp, DLogDens, LogDens, LogTemp, Dens, Temp, sum,
            GlobLogTempMin, GlobLogTempMax, GlobLogDensMin, GlobLogDensMax;
     int i, j, k, PicSize;
     char buf[200];
@@ -51,16 +51,16 @@ void gas_state() {
             GlobLogDensMin, GlobLogDensMax, GlobLogTempMin, GlobLogTempMax );
 
     for ( k=0; k<N_Gas; k++ ) {
-        LogTemp = SphP[k].Temp;
-        if ( LogTemp <= 0 )
+        Temp = SphP[k].Temp;
+        if ( Temp <= 0 )
             endrun(20181107);
-        LogTemp = log10( LogTemp );
+        LogTemp = log10( Temp );
 
-        LogDens = SphP[k].Density / All.RhoBaryon;
+        Dens = SphP[k].Density / All.RhoBaryon;
 
-        if ( LogDens <= 0 )
+        if ( Dens <= 0 )
             endrun(20181107);
-        LogDens = log10( LogDens );
+        LogDens = log10( Dens );
 
         i = ( LogTemp - LogTempMin ) / DLogTemp;
         check_picture_index( i );
@@ -68,6 +68,7 @@ void gas_state() {
         j = ( LogDens - LogDensMin ) / DLogDens;
         check_picture_index( j );
 
+        //img[ i*PicSize + j ] += P[k].Mass / Temp / Dens;
         img[ i*PicSize + j ] += P[k].Mass;
   //      img[ i*PicSize + j ] ++;
      //  printf( "%g ", img[ i*PicSize +j ] ) ;

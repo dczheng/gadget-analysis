@@ -1,87 +1,131 @@
 #!/usr/bin/env python3
-import matplotlib as mpl
-mpl.use( 'agg' )
+import matplotlib
+matplotlib.use( 'agg' )
 
 import numpy as np
-import argparse
 import matplotlib.pyplot as plt
-#import matplotlib.ticker as tik
-#import matplotlib.colors as mplc
+import matplotlib.gridspec as gridspec
 
-parser = argparse.ArgumentParser()
+BoxSize = 100
+Nmesh  = 256
 
-parser.add_argument( 'f' )
-parser.add_argument( '-g', help='plot gadget data', action='store_true' )
-parser.add_argument( '-eps', help='save eps', action='store_true' )
-parser.add_argument( '-nolog', help='disable log axis', action='store_true' )
-parser.add_argument( '-K0', help='minimum k',type=float )
-parser.add_argument( '-K1', help='maximu k',type=float )
-parser.add_argument( '-P0', help='minimum P',type=float )
-parser.add_argument( '-P1', help='maximu P',type=float )
-parser.add_argument( '-Mpc', help='Mpc Input', action='store_true' )
+sigma8_camb = 0.8371
+sigma8 = 0.817
 
-args = parser.parse_args()
+my_markersize = 2
 
-if args.g:
-    print( 'load gadget data ...' )
-    data = np.loadtxt( args.f, skiprows=2008 )
-    #print( data[0:2,:] )
-else:
-    print( 'load gadget-tools data ...' )
-    data = np.loadtxt( args.f )
+gs = gridspec.GridSpec( 2, 1, height_ratios=[4,1] )
 
-k = data[:,0]
-p = data[:,1]
+ax1 = plt.subplot( gs[0] )
+ax2 = plt.subplot( gs[1] )
 
-fig = plt.figure()
-ax = fig.add_subplot( 111 )
+kmin = 2 * np.pi / BoxSize
+kmax = 2 * np.pi / ( BoxSize / Nmesh )
 
-if not( args.Mpc ):
-    k = k * 1000
+halo_fit = np.loadtxt( './decay_matterpower.dat' )
 
-k = k[ p>0 ]
-p = p[ p>0 ]
+k = halo_fit[:, 0]
+Delta = halo_fit[:, 1] * k**3 / ( 2 * np.pi ** 2 )
 
-ax.plot( k, p, '.' )
-ax.plot( k, p, '-.' )
+Delta = Delta / ( sigma8_camb**2 ) * sigma8 ** 2
 
-if not(args.nolog):
-    ax.set_xscale( 'log' )
-    ax.set_yscale( 'log' )
+Dmin = Delta.min()
+Dmax = Delta.max()
 
-ax.set_xlabel( r'$k\,[h/Mpc]$' )
-ax.set_ylabel( r'$\Delta^2(k)\,[\frac{4 \pi k^3}{(2 \pi L)^3} P(k)]$' )
+ax1.plot( k, Delta, label='HaloFit' )
 
-if args.K0 or args.K1:
-    klim = list(plt.xlim())
+zeta = 0.01
+chi_list = [ 0.001, 0.01, 0.02, 0.03 ]
 
-    if args.K0:
-        klim[0] = args.K0
+fn_list = []
+pic_label_list = []
+for chi in chi_list:
+    fn = "hge_128_50_%g_%g_PowSpec.dat"%(zeta, chi)
+    fn_list.append( fn )
+    pic_label_list.append( r'$\zeta=%g, \; \chi=%g$'%(zeta, chi) )
 
-    if args.K1:
-        klim[1] = args.K1
-
-    plt.xlim( klim )
-
-if args.P0 or args.P1:
-    plim = list(plt.ylim())
-
-    if args.P0:
-        plim[0] = args.P0
-
-    if args.P1:
-        plim[1] = args.P1
-
-    plt.ylim( plim )
-
-ax.set_title( 'Power Spectrum' )
+fn_list.append( "hge_128_50_PowSpec.dat" )
+pic_label_list.append( "NoCRE" )
 
 
-if args.eps:
-    file_suffix = '.eps'
-else:
-    file_suffix = '.png'
+for i in range( len(fn_list) ):
 
-fn = args.f[0:-4] + file_suffix
+    fn = fn_list[i]
+    pic_label = pic_label_list[i]
 
-plt.savefig( fn )
+    data = np.loadtxt( fn )
+
+    k = data[:, 0]
+    k = k * 1000 #convert to Mpc
+    Delta = data[:, 1]
+
+    k = k[ Delta>0 ]
+    Delta = Delta[ Delta> 0 ]
+
+    ax1.plot( k, Delta, '-.', label=pic_label, markersize=my_markersize )
+
+    print( "K: %.3f, %.3f, %.3f, %.3f"%(kmin, kmax, k.min(), k.max()) )
+    print( "Delta: %e, %e, %e, %e"%( Dmin, Dmax, Delta.min(), Delta.max() ) )
+
+    if k.min() > kmin:
+        kmin = k.min()
+    if k.max() < kmax:
+        kmax = k.max()
+
+    if Delta.min() > Dmin:
+        Dmin = Delta.min()
+    if Delta.max() < Dmax:
+        Dmax = Delta.max()
+
+
+kmax = 6
+#ax1.set_xlabel( r'$k \; [hMpc^{-1}]$' )
+ax1.set_ylabel( r'$\Delta^2(k)$' )
+
+ax1.set_xscale( 'log' )
+ax1.set_yscale( 'log' )
+
+print( "kmin: %g, kmax: %g"%(kmin, kmax) )
+print( "Dmin: %g, Dmax: %g"%(Dmin, Dmax) )
+
+ax1.set_xlim( [kmin, kmax] )
+ax1.set_ylim( [Dmin, Dmax] )
+
+ax1.legend()
+
+ax1.set_title( "Power Spectrum" )
+
+
+data = np.loadtxt( fn_list[-1] )
+k_no_cre = data[:,0]
+k_no_cre = k_no_cre * 1000 #convert to Mpc
+Delta_no_cre = data[:,1]
+
+for i in range( len(fn_list)-1 ):
+
+    fn = fn_list[i]
+    pic_label = pic_label_list[i]
+
+    data = np.loadtxt( fn )
+
+    k = data[:, 0]
+    k = k * 1000 #convert to Mpc
+    Delta = data[:, 1]
+
+    dDelta = np.abs( Delta-Delta_no_cre )
+
+    index = dDelta > 0
+    k = k[ index ]
+    dDelta = dDelta[index] / Delta_no_cre[index]
+
+    ax2.plot( k, dDelta, label=pic_label )
+
+ax2.set_xlabel( r'$k \; [hMpc^{-1}]$' )
+ax2.set_ylabel( r'$\frac{|\Delta^2-\Delta^2_{NoCRE}|}{\Delta^2_{NoCRE}}$' )
+ax2.legend(fontsize=4)
+
+ax2.set_xscale( 'log' )
+
+ax2.set_xlim( [kmin, kmax] )
+
+plt.savefig( "hge_128_50_powspec.pdf" )

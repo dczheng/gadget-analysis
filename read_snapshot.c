@@ -42,9 +42,9 @@ int blockpresent0( enum iofields blk, int pt ) {
         case IO_CR_n0:
         case IO_CR_P0:
         case IO_CRE_C:
-        case IO_CRE_ALPHA:
         case IO_CRE_QMIN:
         case IO_CRE_QMAX:
+        case IO_CRE_ALPHA:
         case IO_CRE_N:
         case IO_CRE_E:
             blockpresent_check( (pt == 0 && header.mass[pt] == 0) );

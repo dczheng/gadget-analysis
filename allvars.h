@@ -142,6 +142,7 @@ enum group_fields {
     GROUP_MACH,
     GROUP_HGEN,
     GROUP_HGEE,
+    GROUP_HGEC,
     GROUP_HGEALPHA,
     GROUP_HGEQMIN,
     GROUP_HGEQMAX,
