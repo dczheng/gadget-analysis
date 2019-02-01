@@ -338,7 +338,7 @@ extern long *NextNode;
 extern long *Ngblist;
 
 struct group_properties{
-    double mass, cm[3], vr200, vel[3], mass_table[6], size;
+    double mass, cm[3], vr200, vel[3], mass_table[6], size[3];
     long Head, Tail, Len, npart[6];
 };
 

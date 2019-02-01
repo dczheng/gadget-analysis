@@ -116,6 +116,14 @@ double particle_radio2( double nu,  SphParticleData *part ) {
     B = pow( part->B[0], 2 ) + pow( part->B[1], 2 ) + pow( part->B[2], 2 );
     B = sqrt( B );
 
+    /*
+    if ( B > 1e-8 )
+        return 0;
+        */
+    //B = 1e-7;
+
+    //B = 1e-10;
+    //params[3] = 1e7;
     //printf( "B: %g\n", B );
 
     r = radio( &particle_df, params, B, nu, params[2], params[3], 1e-2 );

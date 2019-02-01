@@ -326,13 +326,16 @@ int main( int argc, char *argv[] ){
     read_snapshot();
     do_sync( "read data" );
 
+    /*
     int i;
 
-    /*
     for ( i=0; i<N_Gas; i++ ){
-        SphP[i].CRE_Alpha = 3.1;
-        if ( isnan( SphP[i].CRE_qmin ) )
-            SphP[i].CRE_qmin = 0.1;
+//        SphP[i].CRE_Alpha = 2.1;
+//        SphP[i].CRE_C *= 1e10;
+
+        SphP[i].CRE_qmax = 1e8;
+        //SphP[i].CRE_qmin = 1;
+        //SphP[i].CRE_qmax *= 3.1;
     }
     */
 

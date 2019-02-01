@@ -249,7 +249,7 @@ def plot_dp_dt( dpdt_dp2dpdt, p ):
     ls = [ '-k', '--r', '-.y' ]
     ax = axs[0]
     ax.plot( p, dpdt_coul, ls[0],  label='coul' )
-    ax.plot( p, dpdt_syn, ls[1], label='syn' )
+    ax.plot( p, dpdt_syn, ls[1], label='rad' )
     #ax.plot( p, dpdt_bre, ls[2], label='bre' )
 
     ax.set_ylabel( r'$\frac{dp}{dt}$', fontsize=20 )
@@ -257,7 +257,7 @@ def plot_dp_dt( dpdt_dp2dpdt, p ):
     ax = axs[1]
 
     ax.plot( p, dp2dpdt_coul, ls[0], label='coul' )
-    ax.plot( p, dp2dpdt_syn, ls[1], label='syn' )
+    ax.plot( p, dp2dpdt_syn, ls[1], label='rad' )
     #ax.plot( p, dp2dpdt_bre, ls[2], label='bre' )
 
     '''
@@ -351,7 +351,7 @@ def plot_df( p, dpdt_dp2dpdt, dt, alpha, ax, title ):
         dp2dpdt = dp2dpdt_coul + dp2dpdt_syn
         r = -alpha / p * dpdt + dp2dpdt
         df = np.exp( r * dt )
-        ax.plot( p, df, ls[0], label='coul+syn+ic' )
+        ax.plot( p, df, ls[0], label='coul+rad' )
 
     if flag & 0b10000:
         dpdt = dpdt_coul + dpdt_bre
@@ -367,7 +367,6 @@ def plot_df( p, dpdt_dp2dpdt, dt, alpha, ax, title ):
         df = np.exp( r * dt )
         ax.plot( p, df, ls[2], label='all'  )
 
-
     if flag & 0b00100:
         dpdt = dpdt_coul
         dp2dpdt = dp2dpdt_coul
@@ -380,7 +379,7 @@ def plot_df( p, dpdt_dp2dpdt, dt, alpha, ax, title ):
         dp2dpdt = dp2dpdt_syn
         r = -alpha / p * dpdt + dp2dpdt
         df = np.exp( r * dt )
-        ax.plot( p, df, ls[4], label='syn+ic' )
+        ax.plot( p, df, ls[4], label='rad' )
 
     if flag & 0b00001:
         dpdt = dpdt_bre
@@ -399,7 +398,7 @@ def plot_df( p, dpdt_dp2dpdt, dt, alpha, ax, title ):
     ax.set_title( title, fontsize=fs )
     ax.tick_params( axis='both', labelsize=20, direction='in', pad=5 )
     ax.legend( prop={'size':15}, framealpha=0.1 )
-    ax.grid( prop={'size':15}, framealpha=0.1 )
+    ax.grid()
 
     #plt.show()
     #fig.savefig( 'tt.pdf' )
@@ -543,6 +542,6 @@ def compare_dpdt_dp2dpdt_with_c(  ):
 #plot_dfs_dns()
 #compare_dpdt_dp2dpdt_with_c()
 
-#plot_for_paper()
+plot_for_paper()
 #comp_T_with_c()
 plot_cooling_timescale()

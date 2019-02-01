@@ -105,7 +105,7 @@ void fof_find_groups() {
 
 void fof_compute_group_properties() {
 
-    long p, i, j, k, p0, x, y;
+    long p, i, j, k, p0;
     struct group_properties *g;
 
     writelog( "FoF compute groups properties ... \n" );
@@ -123,19 +123,16 @@ void fof_compute_group_properties() {
     writelog( "The number of groups with at least %i particles: %i\n", All.FoFMinLen, Ngroups );
     writelog( "Largest group has %li particles\n", Gprops[0].Len );
 
-    x = All.proj_i;
-    y = All.proj_j;
-
     for ( i=0; i<Ngroups; i++ ) {
 
         g = &Gprops[i];
         g->mass = 0;
         g->vr200 = 0;
-        g->size = 0;
 
         for ( k=0; k<3; k++ ){
             g->cm[k] = 0;
             g->vel[k] = 0;
+            g->size[k] = 0;
         }
 
         for ( k=0; k<6; k++ ) {
@@ -196,8 +193,9 @@ void fof_compute_group_properties() {
 
         p = g->Head;
         for ( j=0; j<g->Len; j++ ) {
-            vmax2( g->size, NGB_PERIODIC( P[p].Pos[x] - g->cm[x] ) );
-            vmax2( g->size, NGB_PERIODIC( P[p].Pos[y] - g->cm[y] ) );
+            for ( k=0; k<3; k++ ) {
+                vmax2( g->size[k], NGB_PERIODIC( P[p].Pos[k] - g->cm[k] ) );
+            }
             p = FoFNext[p];
         }
 
@@ -346,14 +344,6 @@ void fof_save() {
     H5Dwrite( hdf5_dataset, hdf5_type, hdf5_dataspace, H5S_ALL, H5P_DEFAULT, buf );
     H5Dclose( hdf5_dataset );
 
-    for ( i=0; i<Ngroups; i++ ) {
-        buf2[i] = Gprops[i].size;
-    }
-
-    hdf5_dataset = H5Dcreate( hdf5_file, "Size", hdf5_type, hdf5_dataspace, H5P_DEFAULT );
-    H5Dwrite( hdf5_dataset, hdf5_type, hdf5_dataspace, H5S_ALL, H5P_DEFAULT, buf );
-    H5Dclose( hdf5_dataset );
-
     H5Sclose( hdf5_dataspace );
     /*****************real 1d********************/
 
@@ -362,6 +352,17 @@ void fof_save() {
     dims[0] = Ngroups;
     dims[1] = 3;
     hdf5_dataspace = H5Screate_simple( ndims, dims, NULL );
+
+    for ( i=0; i<Ngroups; i++ ) {
+        for ( j=0; j<3; j++ ) {
+            buf2[i*3+j] = Gprops[i].size[j];
+        }
+    }
+
+    hdf5_dataset = H5Dcreate( hdf5_file, "Size", hdf5_type, hdf5_dataspace, H5P_DEFAULT );
+    H5Dwrite( hdf5_dataset, hdf5_type, hdf5_dataspace, H5S_ALL, H5P_DEFAULT, buf );
+    H5Dclose( hdf5_dataset );
+
 
     for ( i=0; i<Ngroups; i++ )
         for ( j=0; j<3; j++ )
@@ -494,7 +495,8 @@ void fof_read() {
     H5Dread( hdf5_dataset, hdf5_type, H5S_ALL, H5S_ALL, H5P_DEFAULT, buf );
     H5Dclose( hdf5_dataset );
     for ( i=0; i<Ngroups; i++)
-        Gprops[i].size = buf2[i];
+        for (j=0; j<3; j++)
+            Gprops[i].size[j] = buf2[i*3+j];
 
     writelog( "read CenterOfMass ...\n" );
     hdf5_dataset = H5Dopen( hdf5_file, "CenterOfMass" );

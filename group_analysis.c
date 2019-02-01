@@ -114,18 +114,25 @@ double group_luminosity( int nu_index, long index ) {
 
 }
 
+inline double get_group_size( struct group_properties *g ) {
+    return vmax( g->size[All.proj_i], g->size[All.proj_j] );
+}
+
 void group_flux( int nu_index, long index, double *flux, double *flux_nosr ) {
 
     double com_dis, lum_dis, L;
     struct group_properties *g;
+    double size;
 
     g = &Gprops[index];
     com_dis = comoving_distance( All.Time );
     lum_dis = luminosity_distance( All.Time ) * g2c.cm;
 
     L = group_luminosity( nu_index, index );
+
+    size = get_group_size( g );
     *flux_nosr = L / ( 4.0 * PI * SQR( lum_dis ) );
-    *flux = *flux_nosr / ( SQR( g->size * 2  / com_dis ) );
+    *flux = *flux_nosr / ( SQR( size * 2  / com_dis ) );
 
 }
 
@@ -336,7 +343,7 @@ void group_spectrum_index() {
         memset( spec_index, 0, sizeof( double ) * PicS2 );
         memset( spec_index_err, 0, sizeof( double ) * PicS2 );
 
-        L = g.size;
+        L = get_group_size( &g ) * 1.1;
         dL = 2 * L / PicS;
 
 
@@ -412,6 +419,7 @@ void group_spectrum_index() {
 }
 
 int group_filed_present( enum group_fields blk ) {
+
     switch( blk ) {
         case GROUP_DENS:
                 return 1;
@@ -567,18 +575,34 @@ void output_group_info(  long index ) {
         //printf( "%li\n", p );
         if ( P[p].Type == 0 ) {
             fprintf( fd, "%g %g %g  %g %g %g %g %g %g %g\n",
-                P[p].Pos[0],
-                P[p].Pos[1],
-                P[p].Pos[2],
-                get_B( p ),
-                SphP[p].CRE_C * SphP[index].Density / guc.m_e
+                //P[p].Pos[0],
+                //P[p].Pos[1],
+                //P[p].Pos[2],
+                SphP[p].CR_C0 * pow( SphP[p].Density, (2.75-1)*0.3333 )
+                * SphP[p].Density / guc.m_p
                 / CUBE( g2c.cm ),
+
+                SphP[p].CR_n0
+                * SphP[p].Density / guc.m_p
+                / CUBE( g2c.cm ),
+
+                SphP[p].CR_E0
+                * SphP[p].Density
+                * g2c.erg / CUBE( g2c.cm ),
+
+                get_B( p ),
+
+                SphP[p].CRE_C * SphP[p].Density / guc.m_e
+                / CUBE( g2c.cm ),
+
                 SphP[p].CRE_Alpha,
                 SphP[p].CRE_qmin,
                 SphP[p].CRE_qmax,
-                SphP[p].CRE_n * SphP[index].Density / guc.m_e
+
+                SphP[p].CRE_n * SphP[p].Density / guc.m_e
                 / CUBE( g2c.cm ),
-                SphP[p].CRE_e * SphP[index].Density
+
+                SphP[p].CRE_e * SphP[p].Density
                 * g2c.erg / CUBE( g2c.cm )
                 );
         }
@@ -655,7 +679,7 @@ void group_analysis() {
         p = g.Head;
         mass = g.mass_table;
         npart = g.npart;
-        L = g.size;
+        L = get_group_size( &g ) * 1.1;
 
         dL = 2 * L / PicSize;
         writelog( "npart: " );

@@ -27,7 +27,7 @@ plt.ylabel( r'$F(x)$', fontsize=20 )
 x0 = x[ F == F.max() ]
 print( x0 )
 
-plt.axvline( x = x0, linestyle='-.', label="x=%.2f"%x0 )
+plt.axvline( x = x0, linestyle='-.', color = 'r', label="x=%.2f"%x0 )
 ax = plt.gca()
 ax.xaxis.set_major_locator( plt.LinearLocator(numticks=6) )
 ax.tick_params( axis='both', direction='in', labelsize=20, pad=5 )
