@@ -263,6 +263,8 @@ int main( int argc, char *argv[] ){
         }
     }
 
+    MPI_Barrier( MPI_COMM_WORLD );
+
     bname = basename( argv[1] );
     //printf( "argv[1]: %s, bname: %s\n", argv[1], bname );
     //endrun( 11 );
@@ -274,6 +276,7 @@ int main( int argc, char *argv[] ){
 
     sprintf( buf, "./gadget-analysis.log/%s-%03d.log", bname, ThisTask );
     LogFileFd = fopen( buf, "w" );
+
     if ( NULL == LogFileFd )
         endrun0( "Failed open file %s\n", buf );
 
@@ -302,6 +305,7 @@ int main( int argc, char *argv[] ){
     }
     writelog( "GADGET_TOOLS: %s\n", All.ToolsPath );
     writelog( "NumThreadsPerSnapshot: %i\n", All.NumThreadsPerSnapshot );
+    writelog( "Parameters file: %s\n", argv[1] );
 
 
     /******************read***********************/
@@ -345,7 +349,6 @@ int main( int argc, char *argv[] ){
     /******************read***********************/
 
     set_units();
-
 
     compute_cosmo_quantities();
 

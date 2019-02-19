@@ -41,7 +41,7 @@ def f( x, a, b ):
     return x*a+b
 
 for i in range( 1, m ):
-    m = data[ i, 1 ]
+    M = data[ i, 1 ] * 1e10
     index = data[ i, 0 ]
     #p = data[ i, 2:-1 ]
     p = data[ i, 2: ]
@@ -52,7 +52,7 @@ for i in range( 1, m ):
         ss = '.-'
     else:
         ss = '-'
-    t = "%.2e"%m
+    t = "%.2e"%M
     t = t.split( 'e' )
     if t[1][0] == '+':
         t[1] = t[1][1:]
@@ -84,7 +84,7 @@ if ( data_type == 'ele' ):
     plt.xlabel( r'$q$' )
     plt.ylabel( r'$f \; [cm^{-3}]$' )
 
-plt.legend()
+plt.legend(framealpha=0.1)
 plt.grid()
 
 plt.title( 'z = ' + fn[-8:-4] )

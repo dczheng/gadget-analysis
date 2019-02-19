@@ -22,13 +22,13 @@ void check_flag() {
         check_group_flag();
 
     A_NEED_B( All.RadSpec, All.ReadB );
-    A_NEED_B( All.RadSpec, All.ReadHge );
+    A_NEED_B( All.RadSpec, All.ReadCre );
 
     A_NEED_B( All.TotSpec, All.RadSpec );
 
-    A_NEED_B( All.HgePressurePdf, All.ReadHge );
-    A_NEED_B( All.HgePressurePdf, All.ReadCr );
-    A_NEED_B( All.HgePressurePdf, All.Readu );
+    A_NEED_B( All.CrePressurePdf, All.ReadCre );
+    A_NEED_B( All.CrePressurePdf, All.ReadCr );
+    A_NEED_B( All.CrePressurePdf, All.Readu );
 
 
 }

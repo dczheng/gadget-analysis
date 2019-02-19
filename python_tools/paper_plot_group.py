@@ -1,55 +1,59 @@
 #!/usr/bin/env python3
-import matplotlib
-matplotlib.use( 'agg' )
 
-import numpy as np
-import matplotlib.pyplot as plt
-import matplotlib.colors as mplc
-from matplotlib import cm
+from my_work_env import *
+
 import matplotlib.gridspec as gridspec
 import matplotlib.ticker as tik
 
-plt.rc( 'text', usetex=True )
-plt.rc( 'font', family='serif' )
-
-data_dir = './group/'
+data_dir = './'
 data_name = [
         'Density',
         'Hge_n',
-        'Hge_qmax',
         'Mach',
         'MagneticField',
-        'MagneticField'
         ]
 
 titles = [
-        'Density',
-        'n',
-        r'q_{max}',
-        'Mach Number',
-        'Magnetic Field',
-        'Magnetic Field'
+        r'$\rm Density$',
+        r'$n_{\rm CRE}$',
+        r'$\rm Mach \,Number$',
+        r'$\rm Magnetic \, Field$'
+        ]
+
+labels = [
+        r'${\rm g \, {cm}^{-3}}$',
+        r'${\rm cm}^{-3}$',
+        '',
+        r'${\mu \rm G}$',
         ]
 
 cmaps = [
         cm.jet,
         #cm.gist_ncar,
         cm.jet,
+        #cm.gist_ncar,
+        #cm.viridis,
+        #cm.plasma,
+        #cm.rainbow,
+        #cm.gist_ncar,
         #cm.jet,
         cm.gist_ncar,
-        cm.gist_ncar,
-        cm.jet,
-        cm.jet,
+        #cm.nipy_spectral
+        cm.jet
+        #cm.magma,
         ]
+plot_vmin = [ None, 1e-13, 0.1, 1e-7 ]
+plot_vmax = [ None, None, 20, None ]
 
-contour_flags = [ 1, 1, 1, 1, 1, 1 ]
+contour_flags = [ 0, 0, 0, 0 ]
+log_flags = [ 1, 1, 0, 1 ]
 
 dN = len( data_name )
 
 figm = 2
-fign = 3
+fign = 2
 
-fig, axs = plt.subplots( figm,fign )
+fig, axs = plt.subplots( figm,fign, figsize=(8,8) )
 
 redshift = 0.09
 group_index = 0
@@ -64,25 +68,48 @@ for dn in data_name:
     ds.append( np.loadtxt( f ) )
     print( 'load %s ...'%dn )
 
-gp = ds[0][0,:]
+for i in range( dN ):
+    if plot_vmin[i]:
+        if ( log_flags[i] ):
+            ds[i][ds[i]<plot_vmin[i]] = 0
+        else:
+            ds[i][ds[i]<plot_vmin[i]] = np.nan
+    if plot_vmax[i]:
+        if ( log_flags[i] ):
+            ds[i][ds[i]>plot_vmax[i]] = 0
+        else:
+            ds[i][ds[i]>plot_vmax[i]] = np.nan
 
 for i in range( dN ):
+
+    print( 'plot %s ...'%data_name[i] )
+
     dd = ds[i][1:,:]
     ax = axs[i//fign][i%fign]
     my_cmap = cmaps[i]
     title = titles[i]
     cf = contour_flags[i]
 
-    img = ax.imshow( dd, norm=mplc.LogNorm(), cmap=my_cmap )
-    cbar = plt.colorbar( img, ax=ax, shrink=0.75, pad=0 )
+    if ( log_flags[i] ):
+        img = ax.imshow( dd, norm=mplc.LogNorm(), cmap=my_cmap, vmin=plot_vmin[i], vmax=plot_vmax[i] )
+    else:
+        img = ax.imshow( dd, cmap=my_cmap, vmin=plot_vmin[i], vmax=plot_vmax[i] )
+
+    cbar = plt.colorbar( img, ax=ax, label=labels[i], shrink=0.72, pad=0 )
+    cbar.ax.tick_params( direction='in', width=0.3, length=1.5, labelsize=15 )
+    cbar.ax.minorticks_off()
 
     if cf:
-        plt.contour( dd )
+        ax.contour( dd )
+
+    ax.grid()
 
     ax.invert_yaxis()
     ax.set_title( title )
 
-plt.savefig( 'Group.pdf' )
+fig.tight_layout()
+fig.savefig( output_dir + 'group.pdf' )
+exit()
 
 DensMin = data_info[1]
 DensMax = data_info[2]
@@ -205,5 +232,5 @@ for i in range( 2 ):
 
 #plt.savefig( 'test.png' )
 #plt.subplots_adjust( vspace=0.001 )
-plt.savefig( fn_out )
+plt.savefig( output_dir + 'group.pdf' )
 

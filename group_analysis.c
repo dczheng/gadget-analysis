@@ -8,7 +8,7 @@ int group_present( long index ) {
 
     if ( ( index >= All.GroupIndexMin ) &&
          ( index <= All.GroupIndexMax ) &&
-         ( Gprops[index].mass * 1e10 >= All.GroupMassMin) )
+         ( Gprops[index].mass >= All.GroupMassMin) )
             return 1;
     else {
 
@@ -154,7 +154,7 @@ void group_electron_spectrum() {
 
     long p;
     int i, qn, index;
-    double dlogq, qmin, qmax, *f, q, rho, qmax_max;
+    double dlogq, qmin, qmax, *f, q, rho, qmax_max, qmin_min;
     char buf[100];
     FILE *fd;
 
@@ -189,6 +189,8 @@ void group_electron_spectrum() {
         p = Gprops[index].Head;
         rho = 0;
         qmax_max = 0;
+        qmin_min = 1e10;
+        memset( f, 0, sizeof(double) * qn );
         while( p >= 0 ) {
             if ( P[p].Type == 0 ) {
                 for( i=0; i<qn; i++ ) {
@@ -205,22 +207,23 @@ void group_electron_spectrum() {
                             SphP[p].CRE_qmin,
                             SphP[p].CRE_qmax);
                             */
-                if ( SphP[p].CRE_qmax > qmax_max )
-                    qmax_max = SphP[p].CRE_qmax;
+                vmax2( qmax_max, SphP[p].CRE_qmax );
+                vmin2( qmin_min, SphP[p].CRE_qmin, 1 );
             }
             p = FoFNext[p];
         }
 
-        printf( "[%i] qmax_max: %g\n", index, qmax_max );
-        fprintf( fd, "%i  %g  ", index, Gprops[index].mass * 1e10 );
+        printf( "[%i] qmax_max: %g, qmin_min: %g\n", index, qmax_max, qmin_min );
+        fprintf( fd, "%i  %g  ", index, Gprops[index].mass );
         for ( i=0; i<qn; i++ ) {
             fprintf( fd, "%g  ", f[i]/rho );
         }
         fprintf( fd, "\n" );
-
     }
 
     myfree( f );
+
+    fclose( fd );
 
 }
 
@@ -274,8 +277,8 @@ void group_spectrum() {
         for ( i=0; i<vN; i++ )
             group_flux( i, index, flux+i, flux_nosr+i );
 
-        fprintf( fd1, "%i  %g  ", index, Gprops[index].mass * 1e10 );
-        fprintf( fd2, "%i  %g  ", index, Gprops[index].mass * 1e10 );
+        fprintf( fd1, "%i  %g  ", index, Gprops[index].mass );
+        fprintf( fd2, "%i  %g  ", index, Gprops[index].mass );
 
         for ( i=0; i<vN; i++ ) {
             fprintf( fd1, "%g  ", flux[i] );
@@ -439,13 +442,13 @@ int group_filed_present( enum group_fields blk ) {
             if ( All.GroupMach )
                 return 1;
             return 0;
-        case GROUP_HGEN:
-        case GROUP_HGEC:
-        case GROUP_HGEE:
-        case GROUP_HGEALPHA:
-        case GROUP_HGEQMIN:
-        case GROUP_HGEQMAX:
-            if ( All.GroupHge )
+        case GROUP_CREN:
+        case GROUP_CREC:
+        case GROUP_CREE:
+        case GROUP_CREALPHA:
+        case GROUP_CREQMIN:
+        case GROUP_CREQMAX:
+            if ( All.GroupCre )
                 return 1;
             return 0;
         case GROUP_RAD:
@@ -475,23 +478,23 @@ void get_group_filed_name( enum group_fields blk, char *buf ) {
         case GROUP_MACH:
             strcpy( buf, "Mach" );
             break;
-        case GROUP_HGEN:
-            strcpy( buf, "Hge_n" );
+        case GROUP_CREN:
+            strcpy( buf, "Cre_n" );
             break;
-        case GROUP_HGEC:
-            strcpy( buf, "Hge_C" );
+        case GROUP_CREC:
+            strcpy( buf, "Cre_C" );
             break;
-        case GROUP_HGEE:
-            strcpy( buf, "Hge_e" );
+        case GROUP_CREE:
+            strcpy( buf, "Cre_e" );
             break;
-        case GROUP_HGEALPHA:
-            strcpy( buf, "Hge_Alpha" );
+        case GROUP_CREALPHA:
+            strcpy( buf, "Cre_Alpha" );
             break;
-        case GROUP_HGEQMIN:
-            strcpy( buf, "Hge_qmin" );
+        case GROUP_CREQMIN:
+            strcpy( buf, "Cre_qmin" );
             break;
-        case GROUP_HGEQMAX:
-            strcpy( buf, "Hge_qmax" );
+        case GROUP_CREQMAX:
+            strcpy( buf, "Cre_qmax" );
             break;
         case GROUP_RAD:
             strcpy( buf, "Radio" );
@@ -531,20 +534,20 @@ void check_group_flag() {
                     flag = 1;
                 }
                 break;
-            case GROUP_HGEC:
-            case GROUP_HGEN:
-            case GROUP_HGEE:
-            case GROUP_HGEQMIN:
-            case GROUP_HGEQMAX:
-            case GROUP_HGEALPHA:
-                if ( All.ReadHge == 0 ) {
-                    printf( "`ReadHge` is required by `GroupHgen`.\n" );
+            case GROUP_CREC:
+            case GROUP_CREN:
+            case GROUP_CREE:
+            case GROUP_CREQMIN:
+            case GROUP_CREQMAX:
+            case GROUP_CREALPHA:
+                if ( All.ReadCre == 0 ) {
+                    printf( "`ReadCre` is required by `GroupCren`.\n" );
                     flag = 1;
                 }
                 break;
             case GROUP_RAD:
-                if ( All.ReadHge == 0  || All.ReadB == 0) {
-                    printf( "`ReadHge` and `RaadB` is required by `GroupRad`.\n" );
+                if ( All.ReadCre == 0  || All.ReadB == 0) {
+                    printf( "`ReadCre` and `RaadB` is required by `GroupRad`.\n" );
                     flag = 1;
                 }
                 break;
@@ -746,32 +749,32 @@ void group_analysis() {
             if ( group_filed_present( GROUP_MACH ) )
                 data[GROUP_MACH][pic_index] += SphP[p].MachNumber * SphP[p].Density;
 
-            if ( group_filed_present( GROUP_HGEN ) ) {
+            if ( group_filed_present( GROUP_CREN ) ) {
                 n = SphP[p].CRE_n *  SphP[p].Density / guc.m_e;
                 n /= CUBE( g2c.cm );
-                data[GROUP_HGEN][pic_index] += n * SphP[p].Density;
+                data[GROUP_CREN][pic_index] += n * SphP[p].Density;
             }
 
-            if ( group_filed_present( GROUP_HGEALPHA ) ) {
-                data[GROUP_HGEALPHA][pic_index] += SphP[p].CRE_Alpha * SphP[p].Density;
+            if ( group_filed_present( GROUP_CREALPHA ) ) {
+                data[GROUP_CREALPHA][pic_index] += SphP[p].CRE_Alpha * SphP[p].Density;
             }
 
-            if ( group_filed_present( GROUP_HGEC ) ) {
-                data[GROUP_HGEC][pic_index] +=  SphP[p].CRE_C * SphP[p].Density;
+            if ( group_filed_present( GROUP_CREC ) ) {
+                data[GROUP_CREC][pic_index] +=  SphP[p].CRE_C * SphP[p].Density;
             }
 
-            if ( group_filed_present( GROUP_HGEE ) ) {
+            if ( group_filed_present( GROUP_CREE ) ) {
                 e = SphP[p].CRE_e * SphP[p].Density;
                 e /= g2c.erg / CUBE( g2c.cm );
-                data[GROUP_HGEE][pic_index] += e * SphP[p].Density;
+                data[GROUP_CREE][pic_index] += e * SphP[p].Density;
             }
 
-            if ( group_filed_present( GROUP_HGEQMIN ) ) {
-                data[GROUP_HGEQMIN][pic_index] += SphP[p].CRE_qmin * SphP[p].Density;
+            if ( group_filed_present( GROUP_CREQMIN ) ) {
+                data[GROUP_CREQMIN][pic_index] += SphP[p].CRE_qmin * SphP[p].Density;
             }
 
-            if ( group_filed_present( GROUP_HGEQMAX ) ) {
-                data[GROUP_HGEQMAX][pic_index] += SphP[p].CRE_qmax * SphP[p].Density;
+            if ( group_filed_present( GROUP_CREQMAX ) ) {
+                data[GROUP_CREQMAX][pic_index] += SphP[p].CRE_qmax * SphP[p].Density;
             }
 
             if ( group_filed_present( GROUP_RAD ) ) {
@@ -881,7 +884,7 @@ void group_analysis() {
 
     if ( All.GroupSpec ) {
         group_spectrum();
-        group_spectrum_index();
+        //group_spectrum_index();
     }
 
     put_sep0;

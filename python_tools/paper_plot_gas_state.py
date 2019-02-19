@@ -1,35 +1,18 @@
 #!/usr/bin/env python3
-import matplotlib
-matplotlib.use( 'agg' )
 
-import numpy as np
-import matplotlib.pyplot as plt
-import matplotlib.colors as mplc
-from matplotlib import cm
+from my_work_env import *
 import matplotlib.gridspec as gridspec
 import matplotlib.ticker as tik
 
 
-#axs = []
-
-
-#mask_r = 1e-2
-#mask_r = 0
-plt.rc( 'text', usetex=True )
-plt.rc( 'font', family='serif' )
-
-data_dir = "./hge256_data/"
-data_name = [ 'hge256_GasState_0.00.dat', \
-          #      'hge256_0.001_0.05_GasState_0.00.dat', \
-                'hge256_0.01_0.05_GasState_0.00.dat' \
+data_dir = "./"
+data_name = [ '256_GasState_0.00.dat', \
+                'cre_256_no_turb_GasState_0.00.dat' \
                 ]
-titlelist =[ "CRE100" , \
-#"CRE100\_001            CRE100\_01", \
-"CRE100\_01" \
+titlelist =[ "S1" , \
+"S2" \
 ]
 dN = len( data_name )
-
-fn_out = 'hge256_out/GasPhase.pdf'
 
 ds = []
 for dn in data_name:
@@ -246,47 +229,5 @@ for i in range( 2 ):
     #axs[i].tick_params[ 'fontsize' ] = 5
 
 
-#plt.savefig( 'test.png' )
-#plt.subplots_adjust( vspace=0.001 )
 plt.tight_layout()
-fig.savefig( fn_out )
-
-
-'''
-        ds2[1] = np.hstack( [ds[0], ds[1], ds[2]] )
-
-for i in range(2):
-
-    if i == 0:
-        dd = np.hstack( [ds[0], ds[1], ds[2]] )
-
-        for j in range(3):
-
-    else:
-        dd = np.hstack( [ds[3], ds[4]] )
-        for j in range(2):
-            axs[i].text( n/7 + j*n, n+2, titlelist[j+3],fontsize=7 )
-
-    axs[i].axvline( x = n, color='k', linewidth=1 )
-
-    img = axs[i].imshow( dd, norm=my_norm, cmap=my_cmap )
-    #cbar = plt.colorbar( img, ax=axs[i], pad=0, extend='neither' )
-    #cbar = plt.colorbar( img, ax=axs[i], pad=0, shrink=0.788 )
-    cbar = plt.colorbar( img, ax=axs[i], pad=0 )
-
-
-    if i == 1:
-
-    #cbar.ax.tick_params( labelsize=8 )
-
-#plt.tight_layout()
-#plt.show()
-plt.savefig( 'hge256_out/GasPhase.pdf' )
-'''
-
-'''
-fn_png = sys.argv[1][:-4] + '.png'
-print( 'save image to ' + fn_png )
-plt.savefig( fn_png )
-#plt.show()
-'''
+fig.savefig( output_dir + 'GasPhase.pdf' )

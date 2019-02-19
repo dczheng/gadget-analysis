@@ -88,7 +88,7 @@ int blockpresent( enum iofields blk, int pt ) {
         case IO_CRE_QMAX:
         case IO_CRE_N:
         case IO_CRE_E:
-            blockpresent_check( blockpresent0(blk,pt) && All.ReadHge );
+            blockpresent_check( blockpresent0(blk,pt) && All.ReadCre );
 
         case IO_CR_Q0:
         case IO_CR_C0:

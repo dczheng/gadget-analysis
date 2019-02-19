@@ -305,7 +305,7 @@ double radio( double (*f)( double, void* ), double *params,
 
     //printf( "pmin: %g\n", pmin );
 
-    if ( pmin > pmax * 0.95 ) // avoid bad integration.
+    if ( pmin > pmax * 0.9 ) // avoid bad integration.
         return 0;
 
     //printf( "p: ( %g, %g )\n", pmin, pmax );

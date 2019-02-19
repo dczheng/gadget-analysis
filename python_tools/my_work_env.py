@@ -9,6 +9,8 @@ import h5py
 import tools_and_constants as tc
 import os
 import sys
+from matplotlib import cm
+import matplotlib.colors as mplc
 
 plt.rc( 'text', usetex=True )
 plt.rc( 'font', family='serif' )

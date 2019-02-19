@@ -109,11 +109,11 @@ void read_parameters( char *fn ) {
         ADD_PARAI( All.GroupTemp                );
         ADD_PARAI( All.GroupB                   );
         ADD_PARAI( All.GroupMach                );
-        ADD_PARAI( All.GroupHge                 );
+        ADD_PARAI( All.GroupCre                 );
         ADD_PARAI( All.GroupRad                 );
         ADD_PARAI( All.ReadMach                 );
         ADD_PARAI( All.ReadTemp                 );
-        ADD_PARAI( All.ReadHge                  );
+        ADD_PARAI( All.ReadCre                  );
         ADD_PARAI( All.ReadCr                   );
         ADD_PARAI( All.ReadB                    );
         ADD_PARAI( All.TotSpec                  );
@@ -130,7 +130,7 @@ void read_parameters( char *fn ) {
         ADD_PARAI( All.PowSpecNGrid             );
         ADD_PARAI( All.PowSpecPartType          );
         ADD_PARAI( All.PowSpecBins              );
-        ADD_PARAI( All.HgePressurePdf           );
+        ADD_PARAI( All.CrePressurePdf           );
         ADD_PARAI( All.TabF                     );
         ADD_PARAI( All.Tree                     );
         ADD_PARAI( All.ParallelIO               );

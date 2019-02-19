@@ -34,6 +34,9 @@ def beta_func( x, a, b ):
 def cre_n( c, a, q ):
     return c * np.power( q, 1-a ) / ( a-1 )
 
+def cre_n2( c, a, q1, q2 ):
+    return cre_n( c, a, q1 ) - cre_n( c, a, q2 )
+
 def cre_Tbar( a, q ):
 
     aa = ( a-2 )/2
@@ -43,8 +46,19 @@ def cre_Tbar( a, q ):
     return ( np.power( q, a-1 ) / 2 * beta_func( x, aa, bb ) + \
              np.sqrt( 1+q*q ) - 1 ) * tc.m_ec2
 
+def cre_Tbar_gadget( a, q ):
+    Tbar = cre_Tbar( a, q )
+    return Tbar / tc.gadget_energy_in_erg
+
 def cre_e( c, a, q ):
     return cre_n( c, a, q ) * cre_Tbar( a, q )
+
+def cre_e_gadget( c, a, q ):
+    e = cre_n( c, a, q ) * cre_Tbar( a, q ) / tc.m_e
+    return e / ( tc.gadget_energy_in_erg / tc.gadget_mass_in_g )
+
+def cre_e_gadget_2( c, a, q1, q2 ):
+    return cre_e_gadget( c, a, q1 ) - cre_e_gadget( c, a, q2 )
 
 def cre_T( q ):
     return tc.m_ec2 * ( np.sqrt( 1+q*q ) - 1 )
@@ -65,6 +79,19 @@ def cre_dndt( c, a, qmin, dpdt ):
 
     return -cre_f( c, a, qmin, qmin ) * \
             dpdt( qmin )
+
+def plot_cre_e():
+    q = np.power( 10, np.linspace( -1, 7, 100 ) )
+    a = 2.01
+    c = 1
+    e = [ cre_e(c, a, qq) for qq in q ]
+    plt.plot( q, e, label='C: %g, a: %g'%( c, a ) )
+    plt.xlabel( r'$q$' )
+    plt.xscale( 'log' )
+    plt.ylabel( r'$\epsilon$' )
+    plt.yscale( 'log' )
+    plt.savefig( 'e.pdf' )
+
 
 
 def dp_dt_coul ( p, n_e ):
@@ -538,10 +565,15 @@ def compare_dpdt_dp2dpdt_with_c(  ):
 
     fd.close()
 
+def main():
+    #plot_dfs_dns()
+    #compare_dpdt_dp2dpdt_with_c()
 
-#plot_dfs_dns()
-#compare_dpdt_dp2dpdt_with_c()
+    #plot_for_paper()
+    #comp_T_with_c()
+    #plot_cooling_timescale()
+    plot_cre_e();
 
-plot_for_paper()
-#comp_T_with_c()
-plot_cooling_timescale()
+
+if __name__ == '__main__':
+    main()

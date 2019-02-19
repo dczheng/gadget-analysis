@@ -48,7 +48,7 @@ NuNum                         100
 ReadSfr                       1
 ReadCr                        0
 ReadTemp                      1
-ReadHge                       1
+ReadCre                       1
 ReadB                         1
 ReadMach                      1
 
@@ -56,7 +56,7 @@ Freq                          100
 
 Group                         1
 
-GroupHgen                     1
+GroupCren                     1
 GroupRad                      1
 GroupMach                     1
 GroupSfr                      0

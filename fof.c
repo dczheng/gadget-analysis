@@ -21,6 +21,10 @@ int fof_compare_len( const void *a, const void *b ) {
     return ( ( ( ( struct group_properties *)a )->Len < ( ( struct group_properties * )b )->Len ) ? 1 : -1 );
 }
 
+int fof_compare_mass( const void *a, const void *b ) {
+    return ( ( ( ( struct group_properties *)a )->mass < ( ( struct group_properties * )b )->mass ) ? 1 : -1 );
+}
+
 void fof_find_groups() {
     int ngbnum, k, ngbmax;
     double pos[3];
@@ -205,6 +209,9 @@ void fof_compute_group_properties() {
         //printf( "%g %g\n", g->size, g->mass_table[0] );
 
     }
+
+    qsort( Gprops, Ngroups, sizeof( struct group_properties ), fof_compare_mass );
+
     mytimer_end();
     writelog( "FoF compute groups properties ... done\n" );
     put_sep;

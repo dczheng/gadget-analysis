@@ -41,8 +41,8 @@ OmegaBaryon =                    0.04751
 HubbleParam =                    0.68
 
 gadget_length_in_cm            =              Kpc  / HubbleParam
-gadget_mass_in_g               =              Msun / HubbleParam
-gadget_velocity_in_cm_per_s    =              1e5  / HubbleParam
+gadget_mass_in_g               =              1e10 * Msun / HubbleParam
+gadget_velocity_in_cm_per_s    =              1e5
 gadget_time_in_s               =              gadget_length_in_cm / gadget_velocity_in_cm_per_s
 gadget_energy_in_erg           =              gadget_mass_in_g * gadget_length_in_cm**2 / (gadget_time_in_s**2)
 

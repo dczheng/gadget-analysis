@@ -90,8 +90,8 @@ void analysis(){
     if( All.FoF )
         fof_free();
 
-    if ( All.HgePressurePdf )
-        hge_pressure_pdf();
+    if ( All.CrePressurePdf )
+        cre_pressure_pdf();
 
 
 

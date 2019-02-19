@@ -94,4 +94,4 @@ void do_sync_master( char *s );
 
 void test_cos();
 
-void hge_pressure_pdf();
+void cre_pressure_pdf();

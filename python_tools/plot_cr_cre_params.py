@@ -30,6 +30,9 @@ cr = [ f[ '/PartType0/CR_C0' ].value, \
     f[ '/PartType0/CR_n0' ].value, \
     f[ '/PartType0/CR_q0' ].value ]
 
+cre_alpha = f[ '/PartType0/CRE_Alpha' ].value
+
+
 dens = f[ '/PartType0/Density' ].value
 
 print( 'proc CRE params ...' )
@@ -79,6 +82,9 @@ for i in range( N ):
     if i == 0:
         axs[0, i].set_ylabel( r'$N$' )
         #axs[0, i].set_xlim( -20, 0 )
+axs[1, N-1].hist( cre_alpha[cre_alpha>0], bins=20 )
+axs[1, N-1].set_yscale( 'log' )
+axs[1, N-1].set_xlabel( r'$\alpha$' )
 
 for i in range( N-1 ):
     print( "plot cr [%s]"%(dn[i]) )
