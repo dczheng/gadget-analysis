@@ -67,6 +67,7 @@ axs[2].plot( MM, NN, '-.', label=r'$S1$')
 axs[2].plot( cre_MM, cre_NN, '-', label=r'$S2$')
 
 axs[1].plot( M, (cre_dndm-dndm) / dndm )
+print( (cre_dndm-dndm) / dndm )
 
 for i in range( axN ):
     axs[i].set_xscale( 'log' )
@@ -77,15 +78,12 @@ for i in range( axN ):
     if i == 0:
         #axs[i].set_ylabel( r'$\frac{dn} {dlog_{10}(M/M_{\odot})} \,\rm [(h/Mpc)^3]$', fontsize=20 )
         axs[i].set_ylabel( r'$\rm MF\;[\frac{(h/Mpc)^3}{dlog_10(M/M_{\odot})}]$', fontsize=20 )
-        axs[i].tick_params( axis='x', which='both',bottom=False, top=False,  labelbottom=False)
         axs[i].legend( prop={'size':20}, framealpha=0.1)
     if i == 1:
         axs[i].set_ylabel( r'$\frac{{\rm MF_{S2}-MF_{S1}}}{\rm MF_{S1}}$', fontsize=20 )
-        axs[i].minorticks_off()
         #axs[i].yaxis.set_major_locator(plt.LinearLocator(numticks=8))
         axs[i].set_yscale( 'linear' )
-        axs[i].yaxis.set_major_locator(plt.MultipleLocator(0.05))
-        axs[i].tick_params( axis='x', which='both',bottom=False, top=False,  labelbottom=False)
+        axs[i].yaxis.set_major_locator(plt.MultipleLocator(0.02))
 
     if i == 2:
         axs[i].set_ylabel( r'$\rm Number$', fontsize=20 )
@@ -93,6 +91,8 @@ for i in range( axN ):
         axs[i].set_xlabel( r'$M/M_{\odot}$', fontsize=20 )
 
     axs[i].tick_params( axis='both', direction='in', pad=5, labelsize=20 )
+    if i == 1:
+        axs[i].tick_params( axis='both', direction='in', pad=5, labelsize=15 )
     axs[i].minorticks_off()
 
 fig = plt.gcf()

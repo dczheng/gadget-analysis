@@ -108,7 +108,7 @@ def plot_pdf2():
     x, y = gen_bin( d[:,2], d[:,3] )
     ax.plot( x, y, label=r'$\frac{P_{\rm CRP}}{P_{\rm Gas}}$' )
 
-    ax.set_yscale( 'log' )
+    #ax.set_yscale( 'log' )
     ax.set_xscale( 'log' )
     ax.set_ylabel( r'$\rm Percent$', fontsize=20 )
     ax.tick_params( axis='both', direction='in', pad=5, labelsize=10 )

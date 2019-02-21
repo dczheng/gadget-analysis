@@ -8,7 +8,7 @@ import matplotlib.ticker as tik
 data_dir = './'
 data_name = [
         'Density',
-        'Hge_n',
+        'Cre_n',
         'Mach',
         'MagneticField',
         ]

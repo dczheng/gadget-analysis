@@ -25,7 +25,12 @@ for i in range( dN ):
     ds[i] = ds[i][1:,:]
 
 for i in range( 1, dN ):
-    ds[i] = (ds[i] - ds[0] ) / ds[0]
+    index = np.where( ds[0] < 0.1 )
+    t1 = ds[i].copy()
+    t2 = ds[0].copy()
+    t1[index] = 0
+    t2[index] = 0
+    ds[i] = (t1 - t2) / t2
 
 
 #ds.append( np.abs(ds[1] - ds[0] ) / ds[0] )
@@ -123,8 +128,8 @@ for i in range( 2 ):
         my_cmap = cm.Spectral
 
         my_norm = mplc.SymLogNorm( linthresh=1e-3 )
-        dd[ dd>0.15 ] = np.nan
-        dd[ dd<-0.15 ] = np.nan
+        #dd[ dd>0.15 ] = np.nan
+        #dd[ dd<-0.15 ] = np.nan
 
     img = axs[i].imshow( dd, norm=my_norm, cmap=my_cmap )
     cbar = plt.colorbar( img, ax=ax, pad=0, shrink=0.75 )

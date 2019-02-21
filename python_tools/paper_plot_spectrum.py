@@ -126,7 +126,7 @@ def my_plot0():
         M = dat_e[ i, 1 ] * 1e10
         index = dat_e[ i, 0 ]
 
-        F = dat_e[i, 2:] * 0.1
+        F = dat_e[i, 2:]
 
         t = "%.2e"%M
         t = t.split( 'e' )
@@ -207,11 +207,11 @@ def my_plot2():
 
     for i in range( 1, m ):
 
-        M = dat_r[ i, 1 ] * 1e10
+        M = dat_r[ i, 1 ]
         index = dat_r[ i, 0 ]
 
-        P = dat_r[ i, 2: ] / tc.mJy * 0.1
-        F = dat_e[i, 2:] * 0.1
+        P = dat_r[ i, 2: ] / tc.mJy
+        F = dat_e[i, 2:]
 
         t = "%.2e"%M
         t = t.split( 'e' )
