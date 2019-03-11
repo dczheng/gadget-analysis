@@ -779,7 +779,8 @@ void group_analysis() {
 
             if ( group_filed_present( GROUP_RAD ) ) {
                 nu = All.Freq * 1e6;
-                PP = particle_radio( nu, p );
+                //PP = particle_radio( nu, p );
+                PP = PartRad[ p * All.NuNum];
                 data[GROUP_RAD][pic_index] += PP * SphP[p].Density;
             }
 
