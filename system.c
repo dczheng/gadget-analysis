@@ -1,6 +1,7 @@
 #include "allvars.h"
 
 double t0, t1;
+char buf[100];
 
 void create_dir( char *s ) {
 
@@ -19,7 +20,6 @@ void create_dir( char *s ) {
 
 void do_sync0( char *s, MPI_Comm comm ) {
 
-    char buf[100];
     int i, n, nn;
 
     if ( NTask == 1 )
@@ -48,19 +48,16 @@ void do_sync0( char *s, MPI_Comm comm ) {
 }
 
 void do_sync( char *s ) {
-    char buf[100];
     sprintf( buf, "%s [Global]", s );
     do_sync0( buf, MPI_COMM_WORLD );
 }
 
 void do_sync_local( char *s ) {
-    char buf[100];
     sprintf( buf, "%s [Local]", s );
     do_sync0( buf, MpiComm_Local );
 }
 
 void do_sync_master( char *s ) {
-    char buf[100];
     sprintf( buf, "%s [Master]", s );
     do_sync0( buf, MpiComm_Master );
 }

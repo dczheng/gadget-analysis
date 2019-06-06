@@ -14,6 +14,8 @@ import matplotlib.colors as mplc
 
 plt.rc( 'text', usetex=True )
 plt.rc( 'font', family='serif' )
+plt.style.use( 'ggplot' )
 
-output_dir = "/mnt/ddnfs/data_users/dczheng/simulation/plots/"
+figs_dir = "/mnt/ddnfs/data_users/dczheng/simulation/plots/figs/"
+data_dir = "/mnt/ddnfs/data_users/dczheng/simulation/plots/data/"
 

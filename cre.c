@@ -160,8 +160,9 @@ void cre_pressure_pdf() {
     for( i=0; i<SQR(PicSize); i++ )
         img[i] /= sum * dlogcre_r * dlogcr_r;
 
-    create_dir( "./CrePressurePdf" );
-    sprintf( buf, "./CrePressurePdf/CrePressurePdf_%.2f.dat", All.RedShift );
+    sprintf( buf, "%s/CrePressurePdf", All.OutputPrefix );
+    create_dir( buf );
+    sprintf( buf, "%s/CrePressurePdf_%.2f.dat", buf, All.RedShift );
 
 
     image.img = img;

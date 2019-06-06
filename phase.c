@@ -1,6 +1,6 @@
 #include"allvars.h"
 
-void gas_state() {
+void phase() {
 
     double TempMin, TempMax, DensMin, DensMax,
            LogTempMin, LogTempMax, LogDensMin, LogDensMax,
@@ -14,7 +14,7 @@ void gas_state() {
 
     TempMin = DensMin = DBL_MAX;
     TempMax = DensMax = DBL_MIN;
-    writelog( "plot gas state...\n" );
+    writelog( "plot gas phase...\n" );
 
     //PicSize_tmp = All.PicSize;
     PicSize = All.PicSize;
@@ -83,15 +83,16 @@ void gas_state() {
     for ( i=0; i<SQR(PicSize); i++ )
         img[i] /= sum * DLogTemp * DLogDens;
 
-    create_dir( "./GasState" );
-    sprintf( buf, "./GasState/GasState_%.2f.dat", All.RedShift );
+    sprintf( buf, "%sPhase", All.OutputPrefix );
+    create_dir( buf );
+    sprintf( buf, "%s/Phase_%.2f.dat", buf, All.RedShift );
 
     image.img = img;
     img_xmin = LogDensMin;
     img_xmax = LogDensMax;
     img_ymin = LogTempMin;
     img_ymax = LogTempMax;
-    write_img2( buf, "gas state" );
+    write_img2( buf, "gas phase" );
     myfree( img );
 
     //All.PicSize = PicSize_tmp;

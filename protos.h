@@ -15,7 +15,6 @@ void write_img( char *fn, char *s, int mode );
 #define write_img1( fn, s )  write_img( fn, s, 0 )
 #define write_img2( fn, s )  write_img( fn, s, 1 )
 
-
 void create_dir( char *s );
 double second();
 
@@ -50,9 +49,10 @@ void task_sync_test();
 void check_group_flag();
 
 void test_radio();
-void gas_state();
-void gas_temperature();
-void gas_density();
+void phase();
+void temperature_slice();
+void density_slice();
+void mach_slice();
 void mass_function();
 void total_radio_spectrum();
 void compute_temperature();

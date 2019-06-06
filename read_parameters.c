@@ -99,9 +99,9 @@ void read_parameters( char *fn ) {
         ADD_PARAI( All.FoF                      );
         ADD_PARAI( All.GroupIndexMin            );
         ADD_PARAI( All.GroupIndexMax            );
-        ADD_PARAI( All.GasState                 );
-        ADD_PARAI( All.GasDensity               );
-        ADD_PARAI( All.GasTemperature           );
+        ADD_PARAI( All.Phase                 );
+        ADD_PARAI( All.DensitySlice               );
+        ADD_PARAI( All.TemperatureSlice           );
         ADD_PARAI( All.KernelInterpolation      );
         ADD_PARAI( All.MpcFlag                  );
         ADD_PARAI( All.Group                    );
@@ -109,6 +109,7 @@ void read_parameters( char *fn ) {
         ADD_PARAI( All.GroupTemp                );
         ADD_PARAI( All.GroupB                   );
         ADD_PARAI( All.GroupMach                );
+        ADD_PARAI( All.MachSlice                  );
         ADD_PARAI( All.GroupCre                 );
         ADD_PARAI( All.GroupRad                 );
         ADD_PARAI( All.ReadMach                 );

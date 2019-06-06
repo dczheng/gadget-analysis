@@ -279,7 +279,7 @@ def plot_dp_dt( dpdt_dp2dpdt, p ):
     ax.plot( p, dpdt_syn, ls[1], label='rad' )
     #ax.plot( p, dpdt_bre, ls[2], label='bre' )
 
-    ax.set_ylabel( r'$\frac{dp}{dt}$', fontsize=20 )
+    ax.set_ylabel( r'$\frac{dp}{dt}~[s^{-1}]$', fontsize=20 )
 
     ax = axs[1]
 
@@ -294,16 +294,16 @@ def plot_dp_dt( dpdt_dp2dpdt, p ):
     ax.plot( t0, t1, label='- coul' )
     '''
 
-    ax.set_ylabel( r'$\frac{d^2p}{dpdt}$', fontsize=20 )
+    ax.set_ylabel( r'$\frac{d^2p}{dpdt}~[s^{-1}]$', fontsize=20 )
 
 
     for i in range( axN ):
         axs[i].set_xscale( 'log' )
         axs[i].set_yscale( 'log' )
         axs[i].set_xlabel( r'$p$', fontsize=20)
-        axs[i].grid()
+        #axs[i].grid()
         axs[i].legend()
-        axs[i].tick_params( axis='both', direction='in', labelsize=15, pad=5 )
+        axs[i].tick_params( axis='both', direction='in', labelsize=15, pad=5, length=0 )
 
 
     #plt.show()
@@ -569,10 +569,10 @@ def main():
     #plot_dfs_dns()
     #compare_dpdt_dp2dpdt_with_c()
 
-    #plot_for_paper()
+    plot_for_paper()
     #comp_T_with_c()
     #plot_cooling_timescale()
-    plot_cre_e();
+    #plot_cre_e();
 
 
 if __name__ == '__main__':

@@ -1,8 +1,8 @@
 #include "allvars.h"
 
 #define make_group_output_filename( buf, nstr, group_index ) \
-    sprintf( buf, "%s/%s/%s_%.2f_%04i_%c.dat",\
-            All.GroupDir, nstr, nstr, All.RedShift, group_index, All.Sproj );
+    sprintf( buf, "%s%s/%s/%s_%.2f_%04i_%c.dat",\
+            All.OutputPrefix, All.GroupDir, nstr, nstr, All.RedShift, group_index, All.Sproj );
 
 int group_present( long index ) {
 
@@ -654,7 +654,7 @@ void group_analysis() {
 
         mymalloc1( data[i], PicSize2 * sizeof( double ) );
         get_group_filed_name( i, buf1 );
-        sprintf( buf, "%s/%s", All.GroupDir, buf1 );
+        sprintf( buf, "%s%s/%s", All.OutputPrefix, All.GroupDir, buf1 );
         create_dir( buf );
 
     }

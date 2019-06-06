@@ -21,7 +21,7 @@ void compute_temperature() {
 
 }
 
-void gas_temperature() {
+void temperature_slice() {
 
     int num, i, PicSize2;
     char buf[100];
@@ -39,8 +39,9 @@ void gas_temperature() {
         image.data[i] = SphP[i].Temp;
     }
 
-    create_dir( "./GasTemp" );
-    sprintf( buf, "./GasTemp/GasTemp_%.2f.dat", All.RedShift );
+    sprintf( buf, "%sTemp", All.OutputPrefix );
+    create_dir( buf );
+    sprintf( buf, "%s/Temp_%.2f.dat", buf, All.RedShift );
 
     make_slice_img( 0 );
 

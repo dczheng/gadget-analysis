@@ -223,6 +223,7 @@ extern double *PartRad;
 
 extern struct global_parameters_struct {
     char FilePrefix[ MYFILENAME_MAX ],
+         OutputPrefix[ MYFILENAME_MAX ],
          FoFDir[ MYFILENAME_MAX ],
          RadDir[ MYFILENAME_MAX ],
          GroupDir[ MYFILENAME_MAX ],
@@ -233,9 +234,9 @@ extern struct global_parameters_struct {
         ReadElec, Readu,
         MpcFlag,
         Group, MF, MFBins, BPdf,
-        GroupDens, GroupTemp, GroupSfr, GroupB, GroupMach, GroupCre,
+        GroupDens, GroupTemp, GroupSfr, GroupB, GroupMach, GroupCre, MachSlice,
         GroupRad, GroupSpec, TotSpec,
-        GasState, GasDensity, GasTemperature,
+        Phase, DensitySlice, TemperatureSlice,
         KernelInterpolation,
         ConvN, GroupEleSpec, RadSpec,
         PowSpec, PowSpecNGrid, PowSpecPartType, PowSpecBins,

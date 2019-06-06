@@ -31,7 +31,7 @@ for i in range(1,m):
 
 plt.xlabel( r'$\nu \; [\rm MHz]$', fontsize=20 )
 plt.ylabel( r'$\frac{d^2P(\nu)}{dVd\nu}[\rm erg\, s^{-1}\, cm^{-3}\, Hz^{-1}]$', fontsize=20 )
-plt.grid()
+#plt.grid()
 
 ax = plt.gca()
 #ax.margins( 0.5, 0.5 )

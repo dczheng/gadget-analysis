@@ -7,3 +7,5 @@ test/
 *data*
 __pycache__/
 *pyc
+3D_Render/
+*pdf

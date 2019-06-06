@@ -1,10 +1,12 @@
 #include "allvars.h"
 
 void slice() {
+
     int pt;
     long offset, num, index, i;
     struct Particle_Data p_tmp;
     struct Sph_Particle_Data sphp_tmp;
+
     writelog( "determine slice info ...\n" );
 
     if ( All.End[All.proj_i] - All.Start[All.proj_i] !=
@@ -25,6 +27,7 @@ void slice() {
         All.Start[2] = 0;
         All.End[2] = All.BoxSize;
     }
+
     writelog( "StartX: %g, EndX: %g\n"
             "StartY: %g, EndY: %g\n"
             "StartZ: %g, EndZ: %g\n",
@@ -33,16 +36,21 @@ void slice() {
             All.Start[2], All.End[2] );
 
     for ( pt=0; pt<6; pt++ ) {
+
         offset = OffsetPart6[pt];
         num = NumPart6[pt];
+        //printf( "%li %li\n", offset, num );
         index = offset;
+
         if ( num == 0 ) {
             All.SliceStart[pt] = -1;
             All.SliceEnd[pt] = -1;
             continue;
         }
+
         writelog( "particle %i: offset=%li, num=%li\n",
                 pt, offset, num );
+
         for ( i=offset; i<offset+num; i++ ) {
             if ( P[i].Pos[0] >= All.Start[0] &&
                  P[i].Pos[0] <= All.End[0] &&
@@ -61,15 +69,17 @@ void slice() {
                 index ++;
             }
         }
+
         All.SliceStart[pt] = offset;
         All.SliceEnd[pt] = index;
     }
     writelog( "Slice Start: " );
+
     for ( pt=0; pt<6; pt++ ) {
         writelog( "%ld ", All.SliceStart[pt] );
     }
-    writelog( "\n" );
 
+    writelog( "\n" );
     writelog( "Slice End: " );
     for ( pt=0; pt<6; pt++ ) {
         writelog( "%ld ", All.SliceEnd[pt] );
@@ -82,8 +92,10 @@ void slice() {
 }
 
 void make_slice_img( int pt ) {
+
     double *img, dx, dy, x, y, h, dh, lx, ly, v;
     int i, xi, yi, N, Nhalf, i1, i2, j1, j2, li, lj, PicSize;
+
     PicSize = All.PicSize;
     writelog( "make slice imgage  ...\n" );
     img = image.img;
@@ -93,7 +105,9 @@ void make_slice_img( int pt ) {
     Nhalf = N / 2;
     h = All.SofteningTable[pt];
     dh = h / Nhalf;
+
     for ( i=All.SliceStart[pt]; i<All.SliceEnd[pt]; i++ ){
+
         x = P[i].Pos[All.proj_i];
         y = P[i].Pos[All.proj_j];
         x -= All.Start[All.proj_i];

@@ -263,6 +263,8 @@ int main( int argc, char *argv[] ){
         }
     }
 
+    sprintf( All.OutputPrefix, "./output_%s/", argv[1] );
+
     MPI_Barrier( MPI_COMM_WORLD );
 
     bname = basename( argv[1] );
@@ -355,7 +357,6 @@ int main( int argc, char *argv[] ){
     //test_ps();
 
     /******************analysis***********************/
-
 
     analysis();
     /******************analysis***********************/

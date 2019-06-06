@@ -516,6 +516,11 @@ void pre_proc() {
 
     writelog( "pre proc ...\n" )
 
+    for ( i=0; i<6; i++ ) {
+         NumPart6[i] = get_particle_num( i );
+         OffsetPart6[i] = get_particle_offset( i );
+    }
+
     find_id();
 
     //test_sort();

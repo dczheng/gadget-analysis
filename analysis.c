@@ -1,6 +1,7 @@
 #include "allvars.h"
 
 void init_analysis() {
+
     writelog( "initialize analysis...\n" );
     All.proj_k = All.ProjectDirection;
     All.proj_i = ( All.ProjectDirection + 1 ) % 3;
@@ -13,8 +14,11 @@ void init_analysis() {
     init_conv_kernel();
     init_img();
 
+    create_dir( All.OutputPrefix );
+
     writelog( "initialize analysis... done.\n" );
     put_sep;
+
 }
 
 void free_analysis() {
@@ -40,15 +44,19 @@ void analysis(){
 
     put_sep0;
     //printf( "%g\n", All.RedShift );
-    if ( (All.GasTemperature ||
-          All.GasState ||
+    if ( (All.TemperatureSlice ||
+          All.Phase ||
           All.Group )
          && All.ReadTemp == 0  ) {
         compute_temperature();
     }
 
-    if ( All.GasState ) {
-        gas_state();
+    if ( All.Phase ) {
+        phase();
+    }
+
+    if ( All.MachSlice ) {
+        mach_slice();
     }
 
     if ( All.BPdf ) {
@@ -58,11 +66,11 @@ void analysis(){
     if ( All.PowSpec )
         powerspec();
 
-    if ( All.GasDensity )
-        gas_density();
+    if ( All.DensitySlice )
+        density_slice();
 
-    if ( All.GasTemperature )
-        gas_temperature();
+    if ( All.TemperatureSlice )
+        temperature_slice();
 
     if ( All.FoF ) {
         fof();

@@ -102,8 +102,9 @@ void B_Pdf() {
     for ( i=0; i<SQR(PicSize); i++ )
         img[i] /= sum;
 
-    create_dir( "./BPdf" );
-    sprintf( buf, "./BPdf/BPdf_%.2f.dat", All.RedShift );
+    sprintf( buf, "%sBPdf", All.OutputPrefix );
+    create_dir( buf );
+    sprintf( buf, "%s/BPdf_%.2f.dat", buf, All.RedShift );
 
     image.img = img;
     img_xmin = LogDensMin;

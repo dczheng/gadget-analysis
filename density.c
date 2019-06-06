@@ -1,6 +1,6 @@
 #include "allvars.h"
 
-void gas_density() {
+void density_slice() {
     int num, i;
     char buf[100];
 
@@ -16,8 +16,9 @@ void gas_density() {
         image.data[i] = SphP[i].Density;
     }
 
-    create_dir( "./GasDens" );
-    sprintf( buf, "./GasDens/GasDens_%.2f.dat", All.RedShift );
+    sprintf( buf, "%sDensity", All.OutputPrefix );
+    create_dir( buf );
+    sprintf( buf, "%s/Density_%.2f.dat", buf, All.RedShift );
 
     make_slice_img( 0 );
 
