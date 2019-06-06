@@ -26,8 +26,8 @@ from my_work_env import *
 N = 5
 
 cmaps = [
-        cm.plasma,\
-        #cm.viridis, \
+        cm.viridis, \
+        #cm.gnuplot2, \
         cm.magma, \
         cm.viridis, \
         cm.viridis, \
@@ -57,7 +57,11 @@ norms = [
         mplc.LogNorm()
         ]
 
-data = [ np.loadtxt( f ) for f in FileNames ]
+#data = [ np.loadtxt( f ) for f in FileNames ]
+data = [ np.loadtxt( FileNames[i] ) for i in range(2) ]
+data.append( data[0] )
+data.append( data[0] )
+data.append( data[0] )
 
 data = [ d[1:, :] for d in data ]
 
@@ -74,26 +78,45 @@ N = 5
 fig = plt.figure( figsize=(4*N, 5) )
 dx = 1 / N
 axs = [ fig.add_axes([i*dx, 1/10, dx, 4/5]) for i in range(N) ]
-for i in range(N):
-    axs.append( fig.add_axes( [i*dx+0.01, 1/10+0.01*N, 0.3*dx, 0.3*4/5 ] ) )
 
-print( data[0].min(), data[0].max() )
+for i in range(N):
+    axs.append( fig.add_axes( [i*dx, 2/30, dx, 1/30 ] ) )
+
+for i in range(N):
+    axs.append( fig.add_axes( [i*dx+0.01, 1/10+0.01*N, 0.4*dx, 0.4*4/5 ] ) )
 
 for i in range(N):
     ax = axs[i]
+    bar_ax = axs[i+N]
 
     print( data[i].min(), data[i].max() )
     img = ax.imshow( data[i], norm = norms[i], cmap=cmaps[i] )
-    cbar = plt.colorbar( img, ax = ax, pad=0, fraction=0.0475, orientation='horizontal' )
-    cbar.ax.tick_params( direction='in', width=0.3, length=1.5, labelsize=10 )
-    ax.set_title( Names[i] )
+    cbar = plt.colorbar( img, cax = bar_ax, orientation='horizontal' )
+    cbar.ax.tick_params( direction='in', labelsize=15 )
+    #help( cbar.ax.tick_params )
+    cbar.ax.minorticks_off()
+    ax.set_title( Names[i], fontsize=20 )
     ax.set_yticks( [] )
     ax.set_xticks( [] )
 
+    #bar_ax.spines['top'].set_color( 'red' )
+    #bar_ax.spines['bottom'].set_color( 'red' )
+    #bar_ax.spines['left'].set_color( 'red' )
+    #bar_ax.spines['right'].set_color( 'red' )
+
+m, n = data[0].shape
+wh = 50
+rxy= [ n-wh-85,160 ]
+
+for i in range(N):
+    axs[i].add_patch( matplotlib.patches.Rectangle( rxy, wh, wh, color='w', fill=False ) )
+
+
 for i in range(N):
 
-    ax = axs[i+N]
-    img = ax.imshow( data[i], norm = norms[i], cmap=cmaps[i] )
+    ax = axs[i+N*2]
+
+    img = ax.imshow( data[i][rxy[1]:rxy[1]+wh:,rxy[0]:rxy[0]+wh], norm = norms[i], cmap=cmaps[i] )
 
     #cbar = plt.colorbar( img, ax = ax, pad=0, fraction=0.0475, orientation='horizontal' )
     #cbar.ax.tick_params( direction='in', width=0.3, length=1.5, labelsize=10 )
@@ -104,7 +127,6 @@ for i in range(N):
     ax.set_yticks( [] )
     ax.set_xticks( [] )
 
-#fig.subplots_adjust(wspace=-1)
-#fig.tight_layout()
+
 plt.savefig( figs_dir + 'slices.pdf' )
 
