@@ -60,8 +60,8 @@
 #define GSL_INTE_KEY GSL_INTEG_GAUSS61
 extern gsl_integration_workspace *inte_ws;
 
-#define SQR(X) ( X*X )
-#define CUBE(X) ( X*X*X )
+#define SQR(X) ( (X)*(X) )
+#define CUBE(X) ( SQR(X) * (X) )
 
 //#define LONGIDS
 //#define OUTPUT_IN_DOUBLEPRECISION

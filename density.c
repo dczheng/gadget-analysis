@@ -3,6 +3,7 @@
 void density_slice() {
     int num, i;
     char buf[100];
+    double dx;
 
     if ( ThisTask_Local != 0 )
         return;
@@ -22,8 +23,9 @@ void density_slice() {
 
     make_slice_img( 0 );
 
+    dx = ( All.End[All.proj_i] - All.Start[All.proj_i] ) / All.PicSize;
     for ( i=0; i<SQR(All.PicSize); i++ ) {
-        image.img[i] *= All.UnitMass_in_g / pow( All.UnitLength_in_cm, 2 );
+        image.img[i] *= All.UnitMass_in_g / pow( All.UnitLength_in_cm, 2 ) / SQR(dx);
     }
 
 

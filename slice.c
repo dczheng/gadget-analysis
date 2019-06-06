@@ -58,14 +58,17 @@ void slice() {
                  P[i].Pos[1] <= All.End[1] &&
                  P[i].Pos[2] >= All.Start[2] &&
                  P[i].Pos[2] <= All.End[2] ) {
+
                 p_tmp = P[index];
                 P[index] = P[i];
                 P[i] = p_tmp;
+
                 if ( pt == 0 ) {
                     sphp_tmp = SphP[ index ];
                     SphP[index] = SphP[i];
                     SphP[i] = sphp_tmp;
                 }
+
                 index ++;
             }
         }
@@ -81,6 +84,7 @@ void slice() {
 
     writelog( "\n" );
     writelog( "Slice End: " );
+
     for ( pt=0; pt<6; pt++ ) {
         writelog( "%ld ", All.SliceEnd[pt] );
     }
@@ -100,7 +104,10 @@ void make_slice_img( int pt ) {
     writelog( "make slice imgage  ...\n" );
     img = image.img;
     memset( img, 0, sizeof( double ) * PicSize * PicSize );
+
     dx = dy = (All.End[All.proj_i] - All.Start[All.proj_i])/ PicSize;
+    writelog( "dx: %f, dy: %f\n", dx, dy  );
+
     N = All.KernelN;
     Nhalf = N / 2;
     h = All.SofteningTable[pt];
@@ -120,15 +127,23 @@ void make_slice_img( int pt ) {
         //printf( "%i, %i\n", xi, yi );
         check_picture_index( xi );
         check_picture_index( yi );
+
         if ( All.KernelInterpolation == 0 ){
             img[ xi * PicSize + yi ] += v;
             continue;
         }
+
         i1 = (int)(( x-h ) / dx);
         i2 = (int)(( x+h ) / dx);
         j1 = (int)(( y-h ) / dy);
         j2 = (int)(( y+h ) / dy);
+
+
         if ( i1 != xi || i2 != xi || j1 != yi || j2 != yi ) {
+            /*
+            writelog( "(%f, %f ), ( %i, %i), (%f, %f, %f, %f), (%i, %i, %i, %i)\n",
+                x, y, xi, yi, x-h, x+h, y-h, y+h, i1, i2, j1, j2 );
+                */
             for ( li=0; li<N; li++ )
                 for ( lj=0; lj<N; lj++ ){
                         lx = x + ( li-Nhalf ) * dh;
@@ -138,7 +153,9 @@ void make_slice_img( int pt ) {
                         if ( i1 < 0 || i1 >= PicSize ||
                                 j1 < 0 || j1 >= PicSize ) continue;
                         img[ i1 * PicSize + j1 ] += v * All.KernelMat2D[pt][ li*N + lj ];
+                        //writelog( "%f %f\n", v, v * All.KernelMat2D[pt][li*N+lj] );
                 }
+
         }
         else
             img[ xi * PicSize + yi ] += v;

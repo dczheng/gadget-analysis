@@ -24,6 +24,15 @@ from my_work_env import *
 #my_cmap = cm.Spectral
 
 N = 5
+
+cmaps = [
+        cm.plasma,\
+        #cm.viridis, \
+        cm.magma, \
+        cm.viridis, \
+        cm.viridis, \
+        cm.viridis \
+        ]
 Names = [
         r'$\rm Density$', \
         r'$\rm Mach \, Number$', \
@@ -34,18 +43,10 @@ Names = [
 FileNames = [
         data_dir + '/Density_0.00.dat', \
         data_dir + '/MachNumber_0.00.dat', \
-        data_dir + '/256_Density_0.20.dat', \
-        data_dir + '/256_Density_0.20.dat', \
-        data_dir + '/256_Density_0.20.dat'
+        data_dir + '/Density_0.00.dat', \
+        data_dir + '/Density_0.00.dat', \
+        data_dir + '/Density_0.00.dat'
                 ]
-cmaps = [
-        cm.viridis, \
-        #cm.jet, \
-        cm.magma, \
-        cm.viridis, \
-        cm.viridis, \
-        cm.viridis \
-        ]
 
 norms = [
         mplc.LogNorm(),\
@@ -60,9 +61,10 @@ data = [ np.loadtxt( f ) for f in FileNames ]
 
 data = [ d[1:, :] for d in data ]
 
-t = 1e-20
+t = [ 0 ] * N
+t[1] = 1
 for i in range(len(data)):
-    data[i][data[i]<=t] = data[i][data[i] > t ].min()
+    data[i][data[i]<=t[i]] = data[i][data[i] > t[i] ].min()
 
 matplotlib.style.use( 'default' )
 plt.rc( 'text', usetex=True )
@@ -82,8 +84,8 @@ for i in range(N):
 
     print( data[i].min(), data[i].max() )
     img = ax.imshow( data[i], norm = norms[i], cmap=cmaps[i] )
-    #cbar = plt.colorbar( img, ax = ax, pad=0, fraction=0.0475, orientation='horizontal' )
-    #cbar.ax.tick_params( direction='in', width=0.3, length=1.5, labelsize=10 )
+    cbar = plt.colorbar( img, ax = ax, pad=0, fraction=0.0475, orientation='horizontal' )
+    cbar.ax.tick_params( direction='in', width=0.3, length=1.5, labelsize=10 )
     ax.set_title( Names[i] )
     ax.set_yticks( [] )
     ax.set_xticks( [] )
@@ -95,6 +97,10 @@ for i in range(N):
 
     #cbar = plt.colorbar( img, ax = ax, pad=0, fraction=0.0475, orientation='horizontal' )
     #cbar.ax.tick_params( direction='in', width=0.3, length=1.5, labelsize=10 )
+    ax.spines['top'].set_color( 'white' )
+    ax.spines['bottom'].set_color( 'white' )
+    ax.spines['left'].set_color( 'white' )
+    ax.spines['right'].set_color( 'white' )
     ax.set_yticks( [] )
     ax.set_xticks( [] )
 

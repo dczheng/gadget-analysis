@@ -31,14 +31,27 @@ void init_kernel_matrix() {
             for ( i=0; i<N; i++ )
                 for ( j=0; j<N; j++ )
                     for ( k=0; k<N; k++ ) {
-                        q = sqrt( pow( i-Nhalf, 2 ) +
-                                  pow( j-Nhalf, 2 ) +
-                                  pow( k-Nhalf, 2 ) );
+                        //writelog( "%i\n", Nhalf );
+                        q = sqrt( SQR( i-Nhalf ) +
+                                  SQR( j-Nhalf ) +
+                                  SQR( k-Nhalf ) );
                         q = q / Nhalf;
                         All.KernelMat3D[pt][ i*N*N + j*N + k ] = kernel( q ) / pow( h, 3 )
                             * pow( dh, 3 );
                         All.KernelMat2D[pt][ i*N + j ] += All.KernelMat3D[pt][ i*N*N + j*N + k ];
+                        //writelog( "%f, %f\n", q, All.KernelMat2D[pt][i*N+j] );
                     }
+            /*
+            double t;
+            t = 0;
+            for ( i=0; i<N; i++ )
+                for ( j=0; j<N; j++ ) {
+                    t += All.KernelMat2D[pt][ i*N + j ];
+                }
+            writelog( "%f\n", t );
+            endrun( 0 );
+            */
+
             for ( i=0, q=0; i<N*N*N; i++ ) {
                 q += All.KernelMat3D[pt][i];
             }
