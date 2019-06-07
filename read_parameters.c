@@ -87,6 +87,9 @@ void read_parameters( char *fn ) {
         ADD_PARAR( All.NuMax                    );
         ADD_PARAR( All.QMin                     );
         ADD_PARAR( All.QMax                     );
+        ADD_PARAR( All.PosShiftX                );
+        ADD_PARAR( All.PosShiftY                );
+        ADD_PARAR( All.PosShiftZ                );
 
         ADD_PARAI( All.NumFilesPerSnapshot      );
         ADD_PARAI( All.PicSize                  );
@@ -99,9 +102,10 @@ void read_parameters( char *fn ) {
         ADD_PARAI( All.FoF                      );
         ADD_PARAI( All.GroupIndexMin            );
         ADD_PARAI( All.GroupIndexMax            );
-        ADD_PARAI( All.Phase                 );
-        ADD_PARAI( All.DensitySlice               );
-        ADD_PARAI( All.TemperatureSlice           );
+        ADD_PARAI( All.Phase                    );
+        ADD_PARAI( All.DensitySlice             );
+        ADD_PARAI( All.BSlice                   );
+        ADD_PARAI( All.TemperatureSlice         );
         ADD_PARAI( All.KernelInterpolation      );
         ADD_PARAI( All.MpcFlag                  );
         ADD_PARAI( All.Group                    );

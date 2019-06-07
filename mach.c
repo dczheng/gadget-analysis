@@ -4,6 +4,7 @@ void mach_slice() {
 
     int num, i;
     char buf[100];
+    double dx;
 
     if ( ThisTask_Local != 0 )
         return;
@@ -23,6 +24,11 @@ void mach_slice() {
     sprintf( buf, "%s/MachNumber_%.2f.dat", buf, All.RedShift );
 
     make_slice_img( 0 );
+
+    dx = ( All.End[All.proj_i] - All.Start[All.proj_i] ) / All.PicSize;
+    for ( i=0; i<SQR(All.PicSize); i++ ) {
+        image.img[i] /= SQR(dx);
+    }
 
     write_img2( buf, "mach number slice" );
     myfree( image.data );

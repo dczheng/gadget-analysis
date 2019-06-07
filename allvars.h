@@ -235,6 +235,7 @@ extern struct global_parameters_struct {
         MpcFlag,
         Group, MF, MFBins, BPdf,
         GroupDens, GroupTemp, GroupSfr, GroupB, GroupMach, GroupCre, MachSlice,
+        BSlice,
         GroupRad, GroupSpec, TotSpec,
         Phase, DensitySlice, TemperatureSlice,
         KernelInterpolation,
@@ -265,7 +266,8 @@ extern struct global_parameters_struct {
            Hubble, Omega0, OmegaLambda, OmegaBaryon,
            Sigma8,
            *ConvKernel, ConvSigma, NuMin, NuMax, GroupMassMin, Freq,
-           QMin, QMax, MFMmin, MFMmax, MFMSplit;
+           QMin, QMax, MFMmin, MFMmax, MFMSplit,
+           PosShiftX, PosShiftY, PosShiftZ;
 
     long SliceStart[6], SliceEnd[6];
 }All;

@@ -508,7 +508,7 @@ void test_attach_particle_to_gas() {
 
 void pre_proc() {
 
-    int i;
+    long i;
     (void)i;
 
     if ( ThisTask_Local != 0 )
@@ -520,6 +520,21 @@ void pre_proc() {
          NumPart6[i] = get_particle_num( i );
          OffsetPart6[i] = get_particle_offset( i );
     }
+
+    writelog( "Shift Position: (%g, %g, %g)\n", All.PosShiftX, All.PosShiftY, All.PosShiftZ );
+
+    if ( fabs( All.PosShiftX) >= All.BoxSize ||
+        fabs( All.PosShiftY) >= All.BoxSize ||
+        fabs( All.PosShiftZ) >= All.BoxSize ) {
+        endruns( "Shift distance is invalid." );
+    }
+
+    for ( i=0; i<NumPart; i++ ) {
+        P[i].Pos[0] = PERIODIC( P[i].Pos[0] + All.PosShiftX );
+        P[i].Pos[1] = PERIODIC( P[i].Pos[1] + All.PosShiftY );
+        P[i].Pos[2] = PERIODIC( P[i].Pos[2] + All.PosShiftZ );
+    }
+
 
     find_id();
 

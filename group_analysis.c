@@ -711,8 +711,8 @@ void group_analysis() {
             continue;
             */
 
-            ii = PERIODIC( P[p].Pos[x] - g.cm[x] ) / dL + xo;
-            jj = PERIODIC( P[p].Pos[y] - g.cm[y] ) / dL + yo;
+            ii = PERIODIC_HALF( P[p].Pos[x] - g.cm[x] ) / dL + xo;
+            jj = PERIODIC_HALF( P[p].Pos[y] - g.cm[y] ) / dL + yo;
 
             /*
             if ( ii < 0 || ii >= PicSize ||

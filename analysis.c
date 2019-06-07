@@ -59,6 +59,10 @@ void analysis(){
         mach_slice();
     }
 
+    if ( All.BSlice ) {
+        mag_slice();
+    }
+
     if ( All.BPdf ) {
         B_Pdf();
     }
