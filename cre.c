@@ -90,7 +90,7 @@ void cre_pressure_pdf() {
     int PicSize, ii, jj, *cre_cr, *cr_bar;
     char buf[100], bins=30;
     double p, cre_r, cr_r, cre_r_max, cr_r_max, cre_r_min, cr_r_min,
-           dlogcr_r, dlogcre_r, *img, sum,
+           dlogcr_r, dlogcre_r, sum,
            dlogcre_bar, dlogcr_bar, t;
 
     FILE *fd;
@@ -134,7 +134,7 @@ void cre_pressure_pdf() {
     dlogcr_r = log10( cr_r_max / cr_r_min ) / ( PicSize-1 );
     dlogcre_r = log10( cre_r_max / cre_r_min ) / ( PicSize-1 );
 
-    mymalloc2( img, sizeof(double) * SQR(PicSize) );
+    reset_img();
 
     sum = 0;
     for( i=0; i<N_Gas; i++ ) {
@@ -152,28 +152,25 @@ void cre_pressure_pdf() {
         check_picture_index( ii );
         check_picture_index( jj );
 
-        img[ ii*PicSize + jj ] += 1;
+        image.img[ ii*PicSize + jj ] += 1;
         sum ++;
 
     }
 
     for( i=0; i<SQR(PicSize); i++ )
-        img[i] /= sum * dlogcre_r * dlogcr_r;
+        image.img[i] /= sum * dlogcre_r * dlogcr_r;
 
     sprintf( buf, "%s/CrePressurePdf", All.OutputPrefix );
     create_dir( buf );
     sprintf( buf, "%s/CrePressurePdf_%.2f.dat", buf, All.RedShift );
 
 
-    image.img = img;
     img_xmin = log10( cr_r_min );
     img_xmax = log10( cr_r_max );
     img_ymin = log10( cre_r_min );
     img_ymax = log10( cre_r_max );
 
     write_img1( buf, "CrePressurePdf" );
-
-    myfree( img );
 
     dlogcre_bar = log10( cre_r_max / cre_r_min ) / ( bins-1 );
     dlogcr_bar = log10( cr_r_max / cr_r_min ) / ( bins-1 );
@@ -217,4 +214,34 @@ void cre_pressure_pdf() {
     mytimer_end();
     put_sep0;
 
+}
+
+void cren_slice() {
+
+    int num, i;
+    char buf[100];
+
+    if ( ThisTask_Local != 0 )
+        return;
+
+    writelog( "cre number density silce ...\n" );
+    num = All.SliceEnd[0] - All.SliceStart[0];
+
+    mymalloc2( image.data, sizeof( double ) * num );
+
+    for ( i=All.SliceStart[0]; i<All.SliceEnd[0]; i++ ) {
+        image.data[i] = SphP[i].CRE_n * SphP[i].Density / guc.m_e / CUBE( g2c.cm );
+    }
+
+    sprintf( buf, "%scre_n", All.OutputPrefix );
+    create_dir( buf );
+    sprintf( buf, "%s/cre_n_%.2f.dat", buf, All.RedShift );
+
+    make_slice_img( 0 );
+
+    write_img2( buf, "cre number densityslice" );
+    myfree( image.data );
+
+    writelog( "cre number density ... done.\n" );
+    put_sep;
 }

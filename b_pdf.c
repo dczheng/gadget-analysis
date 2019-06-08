@@ -4,14 +4,11 @@ void B_Pdf() {
 
     double BMin, BMax, DensMin, DensMax,
            LogBMin, LogBMax, LogDensMin, LogDensMax,
-           *img, DLogB, DLogDens, LogDens, LogB, sum,
+           DLogB, DLogDens, LogDens, LogB, sum,
            GlobLogBMin, GlobLogBMax, GlobLogDensMin, GlobLogDensMax,
            B;
     int i, j, k, PicSize;
     char buf[200];
-
-    if ( ThisTask_Local != 0 )
-        return;
 
     BMin = DensMin = DBL_MAX;
     BMax = DensMax = DBL_MIN;
@@ -20,8 +17,7 @@ void B_Pdf() {
     //PicSize_tmp = All.PicSize;
     PicSize = All.PicSize;
 
-    mymalloc2( img, sizeof( double ) * SQR( PicSize ) );
-
+    reset_img();
     for ( i=0; i<N_Gas; i++ ) {
 
         B = get_B( i ) * 1e6;
@@ -90,29 +86,27 @@ void B_Pdf() {
         j = ( LogDens - LogDensMin ) / DLogDens;
         check_picture_index( j );
 
-        img[ i*PicSize + j ]++;
+        image.img[ i*PicSize + j ]++;
      //  printf( "%g ", img[ i*PicSize +j ] ) ;
     }
 
     for ( i=0, sum=0; i<SQR(PicSize); i++ )
-        sum += img[i];
+        sum += image.img[i];
 
     writelog( "sum: %g\n", sum );
 
     for ( i=0; i<SQR(PicSize); i++ )
-        img[i] /= sum;
+        image.img[i] /= sum;
 
     sprintf( buf, "%sBPdf", All.OutputPrefix );
     create_dir( buf );
     sprintf( buf, "%s/BPdf_%.2f.dat", buf, All.RedShift );
 
-    image.img = img;
     img_xmin = LogDensMin;
     img_xmax = LogDensMax;
     img_ymin = LogBMin;
     img_ymax = LogBMax;
     write_img2( buf, "BPdf" );
-    myfree( img );
 
     //All.PicSize = PicSize_tmp;
     put_sep;

@@ -97,13 +97,15 @@ void slice() {
 
 void make_slice_img( int pt ) {
 
-    double *img, dx, dy, x, y, h, dh, lx, ly, v;
+    double *img, *num, dx, dy, x, y, h, dh, lx, ly, v;
     int i, xi, yi, N, Nhalf, i1, i2, j1, j2, li, lj, PicSize;
 
     PicSize = All.PicSize;
     writelog( "make slice imgage  ...\n" );
+
+    reset_img();
     img = image.img;
-    memset( img, 0, sizeof( double ) * PicSize * PicSize );
+    num = image.num;
 
     dx = dy = (All.End[All.proj_i] - All.Start[All.proj_i])/ PicSize;
     writelog( "dx: %f, dy: %f\n", dx, dy  );
@@ -130,6 +132,7 @@ void make_slice_img( int pt ) {
 
         if ( All.KernelInterpolation == 0 ){
             img[ xi * PicSize + yi ] += v;
+            num[ xi * PicSize + yi ] += 1;
             continue;
         }
 
@@ -153,15 +156,25 @@ void make_slice_img( int pt ) {
                         if ( i1 < 0 || i1 >= PicSize ||
                                 j1 < 0 || j1 >= PicSize ) continue;
                         img[ i1 * PicSize + j1 ] += v * All.KernelMat2D[pt][ li*N + lj ];
+                        num[ i1 * PicSize + j1 ] += All.KernelMat2D[pt][ li*N + lj ];
                         //writelog( "%f %f\n", v, v * All.KernelMat2D[pt][li*N+lj] );
                 }
 
         }
         else
             img[ xi * PicSize + yi ] += v;
+            num[ xi * PicSize + yi ] += 1;
         //printf( "%g\n", img[ xi * PicSize + yi ] );
 
     }
+
+    for ( i=0; i<SQR(All.PicSize); i++ )
+        if ( num[i] != 0 )
+            img[i] /= num[i];
+
+    if ( All.UnitAreaSlice )
+        for ( i=0; i<SQR(All.PicSize); i++ )
+            img[i] /= SQR(dx);
 
     img_xmin = All.Start[ All.proj_i ];
     img_xmax = All.End[ All.proj_i ];

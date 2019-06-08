@@ -303,7 +303,7 @@ void group_spectrum() {
 void group_spectrum_index() {
 
     double *spec, *v, vmin, vmax, dv, cov00, cov01, cov11, c0,
-           *spec_index, *spec_index_err,L, dL, *mass;
+           *spec_index, *spec_index_err,L, dL, *mass, *img_tmp;
     int vN, k, PicS, PicS2, ii, jj, i, j, x, y, xo, yo, flag,
         index, p;
     struct group_properties g;
@@ -400,6 +400,7 @@ void group_spectrum_index() {
         img_ymin =  -L;
         img_ymax =  L;
 
+        img_tmp = image.img;
         image.img = spec_index;
         make_group_output_filename( buf, spec_index_str, index )
         write_img1( buf, spec_index_str );
@@ -409,6 +410,7 @@ void group_spectrum_index() {
             All.GroupDir, spec_index_str, spec_index_err_str,
             All.RedShift, index, All.Sproj );
         write_img1( buf, spec_index_err_str );
+        image.img = img_tmp;
 
     }
 
@@ -631,9 +633,6 @@ void group_analysis() {
 
     char buf[100], buf1[100];
     double *data[GROUP_FILED_NBLOCKS];
-
-    if ( ThisTask_Local != 0 )
-        return;
 
     if ( ThisTask == 0 )
         output_group_info( 0 );

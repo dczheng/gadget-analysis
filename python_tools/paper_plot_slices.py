@@ -2,137 +2,176 @@
 
 from my_work_env import *
 
-
-#my_cmap = cm.jet
-#my_cmap = cm.Set1
-#my_cmap = cm.cubehelix
-#my_cmap = cm.ocean
-#my_cmap = cm.magma
-#my_cmap = cm.Paired
-#my_cmap = cm.tab10
-#my_cmap = cm.tab20
-#my_cmap = cm.tab20b
-#my_cmap = cm.tab20c
-#my_cmap = cm.Set2
-#my_cmap = cm.Set3
-#my_cmap = cm.Set1
-#my_cmap = cm.viridis
-#my_cmap = cm.PiYG
-#my_cmap = cm.BrBG
-#my_cmap = cm.RdYlBu
-#my_cmap = cm.RdBu
-#my_cmap = cm.Spectral
-
 N = 4
 cmaps = [
-        cm.viridis, \
-        #cm.gnuplot2, \
-        cm.magma, \
-        cm.jet,\
-        cm.viridis
+        plt.get_cmap( 'ds9b' ),\
+        plt.get_cmap( 'ds9a' ),\
+        cm.gist_heat,\
+        cm.nipy_spectral,\
+        plt.get_cmap( 'ds9heat' ),\
+        plt.get_cmap( 'ds9a' ),\
+        plt.get_cmap( 'ds9he' ),\
+        plt.get_cmap( 'ds9cool' ),\
+        plt.get_cmap( 'ds9rainbow' ),\
         ]
 Names = [
-        r'$\rm Density$', \
+        r'$\rm Density \; [gcm^{-3}]$', \
         r'$\rm Mach \, Number$', \
-        r'$\rm Magnetic \, Field$', \
-        r'$\rm CRE \,Number \, Density$'
+        r'$\rm Magnetic \, Field \; [G]$', \
+        r'$\rm CRE \,Number \, Density \; [cm^{-3}]$'
         ]
-FileNames = [
-        data_dir + '/Density_0.00.dat', \
-        data_dir + '/MachNumber_0.00.dat', \
-        data_dir + '/MagneticField_0.00.dat', \
-        data_dir + '/Density_0.00.dat', \
-        data_dir + '/Density2_0.00.dat', \
-        data_dir + '/MachNumber2_0.00.dat', \
-        data_dir + '/MagneticField2_0.00.dat', \
-        data_dir + '/Density2_0.00.dat'
-                ]
 
 norms = [
         mplc.LogNorm(),\
-        #        None, \
         mplc.LogNorm(),\
         mplc.LogNorm(),\
         mplc.LogNorm()
         ]
 
-#data = [ np.loadtxt( f ) for f in FileNames ]
-data = [ np.loadtxt( FileNames[i] ) for i in range(3) ]
-data.append( data[0] )
-data.append( np.loadtxt( FileNames[N] ) )
-data.append( np.loadtxt( FileNames[N+1] ) )
-data.append( np.loadtxt( FileNames[N+2] ) )
-data.append( data[0] )
+FileNames1 = [
+        data_dir + '/Density_0.20.dat', \
+        data_dir + '/MachNumber_0.20.dat', \
+        data_dir + '/MagneticField_0.20.dat', \
+        data_dir + '/cre_n_0.20.dat', \
+                ]
+FileNames1_little = [
+        data_dir + '/Density2_0.20.dat', \
+        data_dir + '/MachNumber2_0.20.dat', \
+        data_dir + '/MagneticField2_0.20.dat', \
+        data_dir + '/cre_n2_0.20.dat'
+                ]
 
-data = [ d[1:, :] for d in data ]
+FileNames2 = [
+        data_dir + '/Density_0.00.dat', \
+        data_dir + '/MachNumber_0.00.dat', \
+        data_dir + '/MagneticField_0.00.dat', \
+        data_dir + '/cre_n_0.00.dat', \
+                ]
+FileNames2_little = [
+        data_dir + '/Density2_0.00.dat', \
+        data_dir + '/MachNumber2_0.00.dat', \
+        data_dir + '/MagneticField2_0.00.dat', \
+        data_dir + '/cre_n2_0.00.dat'
+                ]
 
-t = [ 0 ] * N * 2
-t[1] = 0
-t[1+N] = 0
-for i in range(len(data)):
-    data[i][data[i]<=t[i]] = data[i][data[i] > t[i] ].min()
+
+data1 = [ np.loadtxt( FileNames1[i] ) for i in range(N) ]
+data1_little = [ np.loadtxt( FileNames1_little[i] ) for i in range(N) ]
+data2 = [ np.loadtxt( FileNames2[i] ) for i in range(N) ]
+data2_little = [ np.loadtxt( FileNames2_little[i] ) for i in range(N) ]
+
+data_all = [ data1, data1_little, data2, data2_little ]
+a = 1e-7
+for i in range( 4 ):
+    for j in range(N):
+        data_all[i][j] = data_all[i][j][1:,:]
+        v = data_all[i][j].max() * a
+        if j == 1: #Mach Number
+            v = 0.9
+        data_all[i][j][ data_all[i][j]<=v ] = v
+
+for i in range(4):
+    for j in range(N):
+        print( data_all[i][j].shape )
+
+m, n = data1[0].shape
+
+for i in range( N ):
+    a = np.min( [ data_all[j][i].min() for j in range(4)] )
+    b = np.max( [ data_all[j][i].max() for j in range(4)] )
+    print( a, b )
+    for j in range(4):
+        data_all[j][i][0,0] = a
+        data_all[j][i][0,1] = b
+
+for j in range(N):
+    for i in range(4):
+        print( data_all[i][j][0,0], data_all[i][j][0,1] )
+
 
 matplotlib.style.use( 'default' )
 plt.rc( 'text', usetex=True )
 plt.rc( 'font', family='serif' )
 
-fig = plt.figure( figsize=(4*N, 5) )
+fig = plt.figure( figsize=(4*N, 9) )
 dx = 1 / N
-axs = [ fig.add_axes([i*dx, 1/10, dx, 4/5]) for i in range(N) ]
+ax_up = [ fig.add_axes([i*dx, 5/9, dx, 4/9]) for i in range(N) ]
+t1 = 0.04
+t2 = 0.4
+ax_up_little = [ fig.add_axes([i*dx+t1/4, 5/9+t1*4/9, t2*dx, t2*4/9]) for i in range(N) ]
+ax_middle = [ fig.add_axes([i*dx, 1/9, dx, 4/9]) for i in range(N) ]
+ax_middle_little = [ fig.add_axes([i*dx+t1/4, 1/9+t1*4/9, t2*dx, t2*4/9]) for i in range(N) ]
 
-for i in range(N):
-    axs.append( fig.add_axes( [i*dx, 2/30, dx, 1/30 ] ) )
+t = 1/4
+ax_bottom = [ fig.add_axes([i*dx, (1-t)/9, dx, t/9]) for i in range(N) ]
 
-for i in range(N):
-    axs.append( fig.add_axes( [i*dx+0.01, 1/10+0.01*N, 0.4*dx, 0.4*4/5 ] ) )
+ax_all = [ax_up, ax_up_little, ax_middle, ax_middle_little, ax_bottom]
+for ax in ax_all:
+    for a in ax:
+        a.set_xticks( [] )
+        a.set_yticks( [] )
 
-for i in range(N):
-    print( data[i].min(), data[i].max() )
-    ax = axs[i]
-    bar_ax = axs[i+N]
-
-    img = ax.imshow( data[i], norm = norms[i], cmap=cmaps[i] )
-    cbar = plt.colorbar( img, cax = bar_ax, orientation='horizontal' )
-    cbar.ax.tick_params( direction='in', labelsize=15 )
-    #help( cbar.ax.tick_params )
-    cbar.ax.minorticks_off()
-    ax.set_title( Names[i], fontsize=20 )
-    ax.set_yticks( [] )
-    ax.set_xticks( [] )
-
-    #bar_ax.spines['top'].set_color( 'red' )
-    #bar_ax.spines['bottom'].set_color( 'red' )
-    #bar_ax.spines['left'].set_color( 'red' )
-    #bar_ax.spines['right'].set_color( 'red' )
-
-m, n = data[0].shape
-wh = int(10000 / 100000 * m)
+wh = int(5000 / 100000 * m)
 rxy= [ (n-wh)//2,(m-wh)//2 ]
 
+for i in range(2):
+    for j in range(N):
+        ax_all[i*2+1][j].spines['top'].set_color( 'white' )
+        ax_all[i*2+1][j].spines['bottom'].set_color( 'white' )
+        ax_all[i*2+1][j].spines['left'].set_color( 'white' )
+        ax_all[i*2+1][j].spines['right'].set_color( 'white' )
+
 for i in range(N):
-    axs[i].add_patch( matplotlib.patches.Rectangle( rxy, wh, wh, color='w', fill=False ) )
 
+    norm = norms[i]
+    cmap = cmaps[i]
+    Name = Names[i]
 
-for i in range(N):
+    #----------------------------------#
+    ax = ax_up[i]
+    data = data1[i]
 
-    ax = axs[i+N*2]
+    ax.imshow( data, norm = norm, cmap=cmap )
+    ax.add_patch( matplotlib.patches.Rectangle( rxy, wh, wh, color='w', fill=False ) )
 
-    #img = ax.imshow( data[i+N], norm = norms[i], cmap=cmaps[i] )
-    img = ax.imshow( data[i][rxy[1]:rxy[1]+wh, rxy[0]:rxy[0]+wh], norm = norms[i], cmap=cmaps[i] )
+    ax = ax_up_little[i]
+    data = data1_little[i]
+    ax.imshow( data, norm = norm, cmap=cmap )
 
-    cbar = plt.colorbar( img, ax = ax, pad=0.01, fraction=0.0475, orientation='horizontal' )
-    cbar.ax.tick_params( direction='in', width=0.3, length=1.5, labelsize=10,\
-            colors='w' )
+    #----------------------------------#
+    ax = ax_middle[i]
+    bar_ax = ax_bottom[i]
+    data = data2[i]
 
-    cbar.ax.minorticks_off()
-    ax.spines['top'].set_color( 'white' )
-    ax.spines['bottom'].set_color( 'white' )
-    ax.spines['left'].set_color( 'white' )
-    ax.spines['right'].set_color( 'white' )
+    vmin = data.min()
+    vmax = data.max()
+    print( vmin, vmax )
+    img = ax.imshow( data, norm = norm, cmap=cmap )
+    ax.add_patch( matplotlib.patches.Rectangle( rxy, wh, wh, color='w', fill=False ) )
+    cbar = plt.colorbar( img, cax = bar_ax, orientation='horizontal' )
+    vmin = int(np.log10(vmin))
+    vmax = int(np.log10(vmax))
+    if i == 0:
+        t = range( vmin, vmax )
+    if i == 1:
+        t = range( vmin, vmax+1 )
+    if i == 2:
+        t = range( vmin-1, vmax+1 )
+    if i == 3:
+        t = range( vmin-1, vmax-1 )
+    tik = [ 10**v for v in t ]
+    print( tik )
+    cbar.set_ticks( tik )
+    bar_ax.tick_params( axis='x', direction='in', labelsize=10, top=True, bottom=True )
+    bar_ax.minorticks_off()
+    bar_ax.set_xlabel( Name, fontsize=15 )
 
-    ax.set_yticks( [] )
-    ax.set_xticks( [] )
+    ax = ax_middle_little[i]
+    data = data2_little[i]
+    img = ax.imshow( data, norm = norm, cmap=cmap )
 
+    #----------------------------------#
 
 plt.savefig( figs_dir + 'slices.pdf', dpi=800 )
+#plt.show()
 

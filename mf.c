@@ -8,9 +8,6 @@ void mass_function() {
     char buf[100];
     FILE *fd;
 
-    if ( ThisTask_Local != 0 )
-        return;
-
     writelog( "compute mass function ...\n" );
 
     gm_min = DBL_MAX;

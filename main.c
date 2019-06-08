@@ -253,24 +253,22 @@ int main( int argc, char *argv[] ){
 
     global_init();
 
+    bname = basename( argv[1] );
+    //printf( "argv[1]: %s, bname: %s\n", argv[1], bname );
+
+    /************************init log**************************************/
     if ( ThisTask == 0 ){
         printf( "%s", sep_str );
         if ( access( "./gadget-analysis.log/", 0 ) == -1 ) {
-            printf( "create directory ./gadget-analysis.log/ by task 0\n" );
+            printf( "create directory `./gadget-analysis.log/` by task 0\n" );
 
             if ( mkdir( "./gadget-analysis.log/", 0755 ) == -1 )
                 endruns( "failed create directory `./gadget-analysis.log/`" );
         }
     }
 
-    sprintf( All.OutputPrefix, "./output_%s/", argv[1] );
-
     MPI_Barrier( MPI_COMM_WORLD );
 
-    bname = basename( argv[1] );
-    //printf( "argv[1]: %s, bname: %s\n", argv[1], bname );
-    //endrun( 11 );
-    //
     /*
     if ( ThisTask == 0 )
     merge_log_file();
@@ -287,6 +285,8 @@ int main( int argc, char *argv[] ){
 
     if ( NULL == UsedMemFileFd )
         endrun0( "Failed open file %s\n", buf );
+
+    sprintf( All.OutputPrefix, "./output_%s/", bname );
 
     create_mpi_comms();
     put_sep;

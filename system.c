@@ -1,9 +1,11 @@
 #include "allvars.h"
 
 double t0, t1;
-char buf[100];
 
 void create_dir( char *s ) {
+
+    if ( ThisTask_Local != 0 )
+        return;
 
     if ( ThisTask_Master == 0 ){
         if ( access( s, 0 ) == -1 ){
@@ -12,6 +14,7 @@ void create_dir( char *s ) {
             if ( mkdir( s, 0755) == -1 )
                 endrun0( "failed create directory %s.\n", s );
         }
+
     }
 
     MPI_Barrier( MpiComm_Master );
@@ -21,12 +24,12 @@ void create_dir( char *s ) {
 void do_sync0( char *s, MPI_Comm comm ) {
 
     int i, n, nn;
+    char buf[100];
 
     if ( NTask == 1 )
         return;
 
     sprintf( buf, "* synchronization `%s` *", s );
-
     n = strlen( buf );
     nn = strlen( s );
     //printf( "%i\n", nn );
@@ -47,6 +50,7 @@ void do_sync0( char *s, MPI_Comm comm ) {
 
 }
 
+char buf[100];
 void do_sync( char *s ) {
     sprintf( buf, "%s [Global]", s );
     do_sync0( buf, MPI_COMM_WORLD );
@@ -67,10 +71,9 @@ double second() {
     return ( (double) clock() / CLOCKS_PER_SEC );
 }
 
-void task_sync_test() {
+void task_sync_test( char *s ) {
 
-    sleep( 2 );
+    printf( "[sync test] %s: %i\n", s,ThisTask );
     MPI_Barrier( MPI_COMM_WORLD );
-    printf( "%i\n", ThisTask );
 
 }

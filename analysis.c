@@ -44,54 +44,61 @@ void analysis(){
 
     put_sep0;
     //printf( "%g\n", All.RedShift );
-    if ( (All.TemperatureSlice ||
-          All.Phase ||
-          All.Group )
-         && All.ReadTemp == 0  ) {
-        compute_temperature();
+    //
+    if ( ThisTask_Local == 0 ) {
+        if ( (All.TemperatureSlice ||
+              All.Phase ||
+              All.Group )
+             && All.ReadTemp == 0  ) {
+            compute_temperature();
+        }
+
+        if ( All.Phase ) {
+            phase();
+        }
+
+        if ( All.MachSlice ) {
+            mach_slice();
+        }
+
+        if ( All.BSlice ) {
+            mag_slice();
+        }
+
+        if ( All.CREnSlice ) {
+            cren_slice();
+        }
+
+        if ( All.BPdf ) {
+            B_Pdf();
+        }
+
+        if ( All.PowSpec )
+            powerspec();
+
+        if ( All.DensitySlice )
+            density_slice();
+
+        if ( All.TemperatureSlice )
+            temperature_slice();
+
+        if ( All.FoF )
+            fof();
+
+        if ( All.MF )
+            mass_function();
+
     }
 
-    if ( All.Phase ) {
-        phase();
-    }
-
-    if ( All.MachSlice ) {
-        mach_slice();
-    }
-
-    if ( All.BSlice ) {
-        mag_slice();
-    }
-
-    if ( All.BPdf ) {
-        B_Pdf();
-    }
-
-    if ( All.PowSpec )
-        powerspec();
-
-    if ( All.DensitySlice )
-        density_slice();
-
-    if ( All.TemperatureSlice )
-        temperature_slice();
-
-    if ( All.FoF ) {
-        fof();
-        do_sync( "fof" );
-    }
-
+    do_sync( "" );
 
     if ( All.RadSpec )
         compute_particle_radio();
 
-    if ( All.MF )
-        mass_function();
 
-    if ( All.Group ) {
-        create_dir( All.GroupDir );
-        group_analysis();
-
+    if ( ThisTask_Local == 0 && All.Group ) {
+            create_dir( All.GroupDir );
+            group_analysis();
     }
 
     if ( All.TotSpec ) {
@@ -99,11 +106,12 @@ void analysis(){
         do_sync( "total radio spectrum" );
     }
 
-    if( All.FoF )
-        fof_free();
+    if ( ThisTask_Local == 0 && All.FoF )
+            fof_free();
 
     if ( All.CrePressurePdf )
-        cre_pressure_pdf();
+       cre_pressure_pdf();
+
 
 
 

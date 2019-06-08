@@ -3,18 +3,13 @@
 void density_slice() {
     int num, i;
     char buf[100];
-    double dx;
-
-    if ( ThisTask_Local != 0 )
-        return;
 
     writelog( "gas density silce ...\n" );
     num = All.SliceEnd[0] - All.SliceStart[0];
     mymalloc2( image.data, sizeof( double ) * num );
-    mymalloc2( image.img, sizeof( double ) * SQR( All.PicSize ) );
 
     for ( i=All.SliceStart[0]; i<num; i++ ) {
-        image.data[i] = SphP[i].Density;
+        image.data[i] = SphP[i].Density * ( g2c.g / CUBE( g2c.cm ) );
     }
 
     sprintf( buf, "%sDensity", All.OutputPrefix );
@@ -23,16 +18,8 @@ void density_slice() {
 
     make_slice_img( 0 );
 
-    dx = ( All.End[All.proj_i] - All.Start[All.proj_i] ) / All.PicSize;
-
-    for ( i=0; i<SQR(All.PicSize); i++ ) {
-        image.img[i] *= All.UnitMass_in_g / pow( All.UnitLength_in_cm, 2 ) / SQR(dx);
-    }
-
-
     write_img2( buf, "gas density slice" );
     myfree( image.data );
-    myfree( image.img );
 
     writelog( "gas density silce ... done.\n" );
     put_sep;

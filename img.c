@@ -4,12 +4,22 @@ void init_img() {
     writelog( "init image ...\n" );
     memset( &image, 0, sizeof( struct image_struct ) );
     mymalloc2( image.props, All.PicSize * sizeof( double ) );
+    mymalloc2( image.img, sizeof( double ) * SQR(All.PicSize) );
+    mymalloc2( image.num, sizeof( double ) * SQR(All.PicSize) );
     writelog( "init image ... done.\n" );
     put_sep0;
 }
 
 void free_img() {
     myfree( image.props );
+    myfree( image.img );
+    myfree( image.num );
+}
+
+void reset_img() {
+    memset( image.props, 0, All.PicSize * sizeof(double) );
+    memset( image.img, 0, SQR(All.PicSize) * sizeof(double) );
+    memset( image.num, 0, SQR(All.PicSize) * sizeof(double) );
 }
 
 void write_img( char *fn, char *nstr, int mode ) {

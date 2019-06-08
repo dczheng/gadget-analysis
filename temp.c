@@ -4,9 +4,6 @@ void compute_temperature() {
     double yhelium, u, ne, mu, XH;
     int i;
 
-    if ( ThisTask_Local != 0 )
-        return;
-
     writelog( "compute gas temprature...\n" );
     XH = HYDROGEN_MASSFRAC;
     yhelium = ( 1 - XH ) / ( 4 * XH );
@@ -26,14 +23,10 @@ void temperature_slice() {
     int num, i, PicSize2;
     char buf[100];
 
-    if ( ThisTask_Local != 0 )
-        return;
-
     writelog( "gas temperature silce ...\n" );
     PicSize2 = All.PicSize2;
     num = All.SliceEnd[0] - All.SliceStart[0];
     mymalloc2( image.data, sizeof( double ) * num );
-    mymalloc2( image.img, sizeof( double ) * SQR( All.PicSize ) );
 
     for ( i=All.SliceStart[0]; i<num; i++ ) {
         image.data[i] = SphP[i].Temp;
@@ -52,7 +45,6 @@ void temperature_slice() {
     write_img2( buf, "gas temperature slice" );
 
     myfree( image.data );
-    myfree( image.img );
     writelog( "gas Temperature silce ... done.\n" );
     put_sep;
 

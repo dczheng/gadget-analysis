@@ -4,7 +4,7 @@ void phase() {
 
     double TempMin, TempMax, DensMin, DensMax,
            LogTempMin, LogTempMax, LogDensMin, LogDensMax,
-           *img, DLogTemp, DLogDens, LogDens, LogTemp, Dens, Temp, sum,
+           DLogTemp, DLogDens, LogDens, LogTemp, Dens, Temp, sum,
            GlobLogTempMin, GlobLogTempMax, GlobLogDensMin, GlobLogDensMax;
     int i, j, k, PicSize;
     char buf[200];
@@ -20,7 +20,7 @@ void phase() {
     PicSize = All.PicSize;
 
 
-    mymalloc2( img, sizeof( double ) * SQR( PicSize ) );
+    reset_img();
 
     for ( i=0; i<N_Gas; i++ ) {
         vmin2( TempMin, SphP[i].Temp,  1 );
@@ -68,32 +68,30 @@ void phase() {
         j = ( LogDens - LogDensMin ) / DLogDens;
         check_picture_index( j );
 
-        //img[ i*PicSize + j ] += P[k].Mass / Temp / Dens;
-        img[ i*PicSize + j ] += P[k].Mass;
-  //      img[ i*PicSize + j ] ++;
-     //  printf( "%g ", img[ i*PicSize +j ] ) ;
+        //image.img[ i*PicSize + j ] += P[k].Mass / Temp / Dens;
+        image.img[ i*PicSize + j ] += P[k].Mass;
+  //      image.img[ i*PicSize + j ] ++;
+     //  printf( "%g ", image.img[ i*PicSize +j ] ) ;
     }
 
 
     for ( i=0, sum=0; i<SQR(PicSize); i++ )
-        sum += img[i];
+        sum += image.img[i];
 
     writelog( "sum: %g\n", sum );
 
     for ( i=0; i<SQR(PicSize); i++ )
-        img[i] /= sum * DLogTemp * DLogDens;
+        image.img[i] /= sum * DLogTemp * DLogDens;
 
     sprintf( buf, "%sPhase", All.OutputPrefix );
     create_dir( buf );
     sprintf( buf, "%s/Phase_%.2f.dat", buf, All.RedShift );
 
-    image.img = img;
     img_xmin = LogDensMin;
     img_xmax = LogDensMax;
     img_ymin = LogTempMin;
     img_ymax = LogTempMax;
     write_img2( buf, "gas phase" );
-    myfree( img );
 
     //All.PicSize = PicSize_tmp;
     put_sep;

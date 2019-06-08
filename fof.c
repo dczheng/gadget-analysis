@@ -9,8 +9,6 @@ void fof_allocate( long N ) {
 
 void fof_free() {
 
-    if ( ThisTask_Local != 0 )
-        return;
     myfree( Gprops );
     myfree( FoFNext );
     put_sep;
@@ -105,6 +103,7 @@ void fof_find_groups() {
     mytimer_end();
     writelog( "FoF find groups ... done\n" );
     put_sep;
+
 }
 
 void fof_compute_group_properties() {
@@ -545,9 +544,6 @@ void fof() {
     int flag, num;
     double masstot, mass;
     char fn[ FILENAME_MAX ];
-
-    if ( ThisTask_Local != 0 )
-        return;
 
     do_sync_master( "Begin FoF" );
 

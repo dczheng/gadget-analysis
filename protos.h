@@ -11,6 +11,7 @@ void make_slice_img( int pt );
 
 void init_img();
 void free_img();
+void reset_img();
 void write_img( char *fn, char *s, int mode );
 #define write_img1( fn, s )  write_img( fn, s, 0 )
 #define write_img2( fn, s )  write_img( fn, s, 1 )
@@ -44,7 +45,6 @@ void init_conv_kernel();
 void free_conv_kernel();
 
 void check_flags();
-void task_sync_test();
 
 void check_group_flag();
 
@@ -53,6 +53,8 @@ void phase();
 void temperature_slice();
 void density_slice();
 void mach_slice();
+void mag_slice();
+void cren_slice();
 void mass_function();
 void total_radio_spectrum();
 void compute_temperature();
@@ -91,6 +93,7 @@ void pre_proc();
 void do_sync( char *s );
 void do_sync_local( char *s );
 void do_sync_master( char *s );
+void task_sync_test( char *s );
 
 void test_cos();
 

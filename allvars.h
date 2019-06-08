@@ -235,7 +235,7 @@ extern struct global_parameters_struct {
         MpcFlag,
         Group, MF, MFBins, BPdf,
         GroupDens, GroupTemp, GroupSfr, GroupB, GroupMach, GroupCre, MachSlice,
-        BSlice,
+        BSlice, UnitAreaSlice, CREnSlice,
         GroupRad, GroupSpec, TotSpec,
         Phase, DensitySlice, TemperatureSlice,
         KernelInterpolation,
@@ -306,7 +306,7 @@ extern struct global_parameters_struct {
 #define img_globmax    ( image.props[14] )
 #define img_props(i)   ( image.props[ IMG_PROPS_START+i ] )
 struct image_struct{
-    double *data, *img,
+    double *data, *img,  *num,
            *props;
     /* props:
      *      0 nprops
