@@ -98,7 +98,7 @@ void B_Pdf() {
     for ( i=0; i<SQR(PicSize); i++ )
         image.img[i] /= sum;
 
-    sprintf( buf, "%sBPdf", All.OutputPrefix );
+    sprintf( buf, "%sBPdf", All.OutputDir );
     create_dir( buf );
     sprintf( buf, "%s/BPdf_%.2f.dat", buf, All.RedShift );
 

@@ -95,7 +95,7 @@ void slice() {
 
 }
 
-void make_slice_img( int pt ) {
+void make_slice_img( int pt, double *data ) {
 
     double *img, *num, dx, dy, x, y, h, dh, lx, ly, v;
     int i, xi, yi, N, Nhalf, i1, i2, j1, j2, li, lj, PicSize;
@@ -121,7 +121,7 @@ void make_slice_img( int pt ) {
         y = P[i].Pos[All.proj_j];
         x -= All.Start[All.proj_i];
         y -= All.Start[All.proj_j];
-        v = image.data[ i-All.SliceStart[pt] ];
+        v = data[ i-All.SliceStart[pt] ];
 
         //printf( "%g\n", v );
         xi = x / dx;

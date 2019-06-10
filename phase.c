@@ -83,7 +83,7 @@ void phase() {
     for ( i=0; i<SQR(PicSize); i++ )
         image.img[i] /= sum * DLogTemp * DLogDens;
 
-    sprintf( buf, "%sPhase", All.OutputPrefix );
+    sprintf( buf, "%sPhase", All.OutputDir );
     create_dir( buf );
     sprintf( buf, "%s/Phase_%.2f.dat", buf, All.RedShift );
 

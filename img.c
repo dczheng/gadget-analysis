@@ -6,6 +6,8 @@ void init_img() {
     mymalloc2( image.props, All.PicSize * sizeof( double ) );
     mymalloc2( image.img, sizeof( double ) * SQR(All.PicSize) );
     mymalloc2( image.num, sizeof( double ) * SQR(All.PicSize) );
+    image.img_tmp = image.img;
+    image.num_tmp = image.num;
     writelog( "init image ... done.\n" );
     put_sep0;
 }
@@ -17,6 +19,8 @@ void free_img() {
 }
 
 void reset_img() {
+    image.img = image.img_tmp;
+    image.num = image.num_tmp;
     memset( image.props, 0, All.PicSize * sizeof(double) );
     memset( image.img, 0, SQR(All.PicSize) * sizeof(double) );
     memset( image.num, 0, SQR(All.PicSize) * sizeof(double) );

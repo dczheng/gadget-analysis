@@ -223,7 +223,7 @@ extern double *PartRad;
 
 extern struct global_parameters_struct {
     char FilePrefix[ MYFILENAME_MAX ],
-         OutputPrefix[ MYFILENAME_MAX ],
+         OutputDir[ MYFILENAME_MAX ],
          FoFDir[ MYFILENAME_MAX ],
          RadDir[ MYFILENAME_MAX ],
          GroupDir[ MYFILENAME_MAX ],
@@ -306,7 +306,7 @@ extern struct global_parameters_struct {
 #define img_globmax    ( image.props[14] )
 #define img_props(i)   ( image.props[ IMG_PROPS_START+i ] )
 struct image_struct{
-    double *data, *img,  *num,
+    double *img,  *num, *img_tmp, *num_tmp,
            *props;
     /* props:
      *      0 nprops

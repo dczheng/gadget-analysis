@@ -1,8 +1,8 @@
 #include "allvars.h"
 
 #define make_group_output_filename( buf, nstr, group_index ) \
-    sprintf( buf, "%s%s/%s/%s_%.2f_%04i_%c.dat",\
-            All.OutputPrefix, All.GroupDir, nstr, nstr, All.RedShift, group_index, All.Sproj );
+    sprintf( buf, "%s%s/%s_%.2f_%04i_%c.dat",\
+            All.GroupDir, nstr, nstr, All.RedShift, group_index, All.Sproj );
 
 int group_present( long index ) {
 
@@ -164,10 +164,10 @@ void group_electron_spectrum() {
 
     dlogq = log( qmax/qmin ) / ( qn-1 );
 
-    sprintf( buf, "%s/ElectronSpectrum", All.GroupDir );
+    sprintf( buf, "%sElectronSpectrum", All.GroupDir );
     create_dir( buf );
 
-    sprintf( buf, "%s/ElectronSpectrum/EleSpec_%.2f.dat",
+    sprintf( buf, "%sElectronSpectrum/EleSpec_%.2f.dat",
             All.GroupDir, All.RedShift );
 
     fd = fopen( buf, "w" );
@@ -242,15 +242,15 @@ void group_spectrum() {
 
     dv = log( vmax/vmin ) / ( vN-1 );
 
-    sprintf( buf, "%s/Spectrum", All.GroupDir );
+    sprintf( buf, "%sSpectrum", All.GroupDir );
     create_dir( buf );
 
-    sprintf( buf, "%s/Spectrum/Spec_%.2f.dat",
+    sprintf( buf, "%sSpectrum/Spec_%.2f.dat",
             All.GroupDir, All.RedShift );
 
     fd1 = fopen( buf, "w" );
 
-    sprintf( buf, "%s/Spectrum/Spec_%.2f_nosr.dat",
+    sprintf( buf, "%sSpectrum/Spec_%.2f_nosr.dat",
             All.GroupDir, All.RedShift );
 
     mymalloc1( flux, sizeof(double) * vN );
@@ -303,7 +303,7 @@ void group_spectrum() {
 void group_spectrum_index() {
 
     double *spec, *v, vmin, vmax, dv, cov00, cov01, cov11, c0,
-           *spec_index, *spec_index_err,L, dL, *mass, *img_tmp;
+           *spec_index, *spec_index_err,L, dL, *mass;
     int vN, k, PicS, PicS2, ii, jj, i, j, x, y, xo, yo, flag,
         index, p;
     struct group_properties g;
@@ -324,7 +324,7 @@ void group_spectrum_index() {
 
     dv = log10( vmax/vmin) / vN;
 
-    sprintf( buf, "%s/%s", All.GroupDir, spec_index_str );
+    sprintf( buf, "%s%s", All.GroupDir, spec_index_str );
     create_dir( buf );
 
     mymalloc1( v, sizeof( double ) * vN );
@@ -400,17 +400,15 @@ void group_spectrum_index() {
         img_ymin =  -L;
         img_ymax =  L;
 
-        img_tmp = image.img;
         image.img = spec_index;
         make_group_output_filename( buf, spec_index_str, index )
         write_img1( buf, spec_index_str );
 
         image.img = spec_index_err;
-        sprintf( buf, "%s/%s/%s_%.2f_%04i_%c.dat",
+        sprintf( buf, "%s%s/%s_%.2f_%04i_%c.dat",
             All.GroupDir, spec_index_str, spec_index_err_str,
             All.RedShift, index, All.Sproj );
         write_img1( buf, spec_index_err_str );
-        image.img = img_tmp;
 
     }
 
@@ -418,6 +416,7 @@ void group_spectrum_index() {
     myfree( spec );
     myfree( spec_index );
     myfree( spec_index_err );
+    reset_img();
     writelog( "group spectrum index... done.\n" );
     put_sep0;
 
@@ -653,7 +652,7 @@ void group_analysis() {
 
         mymalloc1( data[i], PicSize2 * sizeof( double ) );
         get_group_filed_name( i, buf1 );
-        sprintf( buf, "%s%s/%s", All.OutputPrefix, All.GroupDir, buf1 );
+        sprintf( buf, "%s%s", All.GroupDir, buf1 );
         create_dir( buf );
 
     }
@@ -704,21 +703,17 @@ void group_analysis() {
             if ( P[p].Type != 0 )
                 continue;
 
-            /*
-            printf( "[%li] Pos: ( %g, %g, %g )\n",
-                    p, P[p].Pos[0], P[p].Pos[1], P[p].Pos[2] );
-            continue;
-            */
+            //printf( "[%li] Pos: ( %g, %g, %g )\n",
+            //        p, P[p].Pos[0], P[p].Pos[1], P[p].Pos[2] );
+            //continue;
 
             ii = PERIODIC_HALF( P[p].Pos[x] - g.cm[x] ) / dL + xo;
             jj = PERIODIC_HALF( P[p].Pos[y] - g.cm[y] ) / dL + yo;
 
-            /*
-            if ( ii < 0 || ii >= PicSize ||
-                    jj < 0 || jj >= PicSize )
-                    printf( "%i, %i\n", ii, jj );
-                    */
-
+            //if ( ii < 0 || ii >= PicSize ||
+            //        jj < 0 || jj >= PicSize )
+            //        printf( "%i, %i\n", ii, jj );
+            //
             //continue;
 
             check_picture_index( ii );
@@ -843,11 +838,11 @@ void group_analysis() {
                 lum_dis = luminosity_distance( All.Time ) * ( g2c.cm );
                 com_dis = comoving_distance( All.Time );
      //           printf( "z:%g lum_dis: %g\n", All.RedShift, lum_dis);
-                /*
-                ang_dis = angular_distance( All.Time );
-                h = All.SofteningTable[0];
-                ang = h / com_dis / PI * 180;
-                */
+     //
+                //ang_dis = angular_distance( All.Time );
+                //h = All.SofteningTable[0];
+                //ang = h / com_dis / PI * 180;
+                //
                 for ( i=0; i<SQR(PicSize); i++ ) {
                     data[GROUP_RADP][i]  = data[GROUP_RAD][i] / ( 4 * PI * SQR( lum_dis ) ) * 1e23 * CUBE( KPC ) * 1e3;
                 }
@@ -875,6 +870,7 @@ void group_analysis() {
 
     }
 
+
     put_sep0;
 
     if ( All.GroupEleSpec )
@@ -886,6 +882,8 @@ void group_analysis() {
         group_spectrum();
         //group_spectrum_index();
     }
+
+    reset_img();
 
     put_sep0;
 

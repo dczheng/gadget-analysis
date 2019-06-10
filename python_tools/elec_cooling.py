@@ -565,14 +565,70 @@ def compare_dpdt_dp2dpdt_with_c(  ):
 
     fd.close()
 
+def rad_cooling():
+
+    B = 1e-6
+    n = 100 * tc.rho_bar_crit0 / tc.m_p
+    ne = n
+    pmin = 1e-1
+    pmax = 1e9
+    c = 1
+    a = 2.5
+
+    ps = np.power( 10, np.linspace( np.log10(pmin), np.log10(pmax), 1000 ) )
+    fs = np.array([ cre_f( c, a, p, pmin ) for p in ps ])
+    plt.loglog( ps, fs, label='0' )
+
+    dt = 0.1 * tc.Myr
+    print( "dt: ", dt )
+
+    Ccool = B**2 / ( 8 * np.pi ) * 4 * tc.sigma_t / ( 3 * tc.m_ec )
+    print( "Ccool: ", Ccool )
+
+    pmax = 1 / ( dt * Ccool * ( a-1 ) )
+    print( "pmax: ", pmax )
+    fs[ ps>pmax ] = 0
+    plt.loglog( ps, fs, label='1' )
+
+    dpdt = lambda p: dp_dt_syn(p, B)
+    n = cre_n2( c, a, pmin, pmax )
+    print( n )
+
+    index = 1
+    for i in range( 100 ):
+        dndt = cre_dndt( c, a, pmax, dpdt ) - cre_dndt( c, a, pmin, dpdt )
+        n = n - dndt * dt
+        pmax = (cre_n( c, a, pmin) - n) / c * ( a-1 )
+        pmax = np.power( pmax, 1/(1-a) )
+        index += 1
+        if i % 10 == 0:
+            fs[ ps>pmax ] = 0
+            plt.loglog( ps, fs, label='%i'%(index) )
+        print( pmax )
+        if pmax < pmin:
+            exit()
+
+    #print( cre_dndt( c, a, pmin, dpdt ) )
+    #print( cre_dndt( c, a, pmax, dpdt ) )
+    #for i in range(100):
+
+    plt.legend()
+    plt.savefig( figs_dir + 'rad_cooling.pdf' )
+
+    exit()
+
+
+
 def main():
     #plot_dfs_dns()
     #compare_dpdt_dp2dpdt_with_c()
 
-    plot_for_paper()
+    #plot_for_paper()
     #comp_T_with_c()
     #plot_cooling_timescale()
     #plot_cre_e();
+    rad_cooling()
+
 
 
 if __name__ == '__main__':

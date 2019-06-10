@@ -5,6 +5,7 @@ import tools_and_constants as tc
 from scipy.optimize import curve_fit
 
 def my_plot1():
+
     rad_spec_file1 = './cre_256_no_turb_Spec_0.09_nosr.dat'
     rad_spec_file2 = './cre_256_Spec_0.09_nosr.dat'
 
@@ -67,7 +68,6 @@ def my_plot1():
         #ylim = list(axs_r[i].get_ylim())
         #ylim[0] = 1e-5
         #axs_r[i].set_ylim( ylim )
-        axs_r[i].grid()
         axs_r[i].minorticks_off()
         axs_r[i].locator_params( numticks=10 )
 
@@ -75,7 +75,6 @@ def my_plot1():
         axs_e[i].set_xlabel( r'$p$' )
         axs_e[i].set_ylabel( r'$F$' )
 
-        axs_e[i].grid()
         axs_e[i].minorticks_off()
         axs_e[i].locator_params( numticks=10 )
 
@@ -156,7 +155,6 @@ def my_plot0():
         ax.loglog( p, F, ss, label=label_e )
 
 
-    ax.grid()
     ax.minorticks_off()
 
     ax.set_xlabel( r'$p$', fontsize=20 )
@@ -174,8 +172,8 @@ def my_plot0():
 
 def my_plot2():
 
-    rad_spec_file = './cre_256_no_turb_Spec_0.09_nosr.dat'
-    ele_spec_file = './cre_256_no_turb_Elec_Spec_0.09.dat'
+    rad_spec_file = data_dir + './Spec_0.20_nosr.dat'
+    ele_spec_file = data_dir + './EleSpec_0.20.dat'
 
     dat_r = np.loadtxt( rad_spec_file )
     dat_e = np.loadtxt( ele_spec_file )
@@ -252,22 +250,24 @@ def my_plot2():
 
 
     for i in range( 2 ):
-        axs[i].grid()
         axs[i].minorticks_off()
+        #axs[0].set_xscale( 'log' )
         #axs[i].locator_params( numticks=10 )
 
         if i == 0:
             axs[i].set_xlabel( r'$p$', fontsize=20 )
             axs[i].set_ylabel( r'$f(p) \, \rm [cm^{-3}]$', fontsize=20 )
             axs[i].legend( framealpha=0.1, title=r'$\alpha$')
-            ylim = list(axs[i].get_ylim())
-            ylim[0] = 1e-25
-            axs[i].set_ylim( ylim )
+            #ylim = list(axs[i].get_ylim())
+            #ylim[0] = 1e-25
+            #axs[i].set_ylim( ylim )
+            axs[i].set_xlim( [1, 1e7] )
         else:
-            axs[1].set_xlabel( r'$\nu \, [\rm MHz]$', fontsize=20 )
-            axs[1].set_ylabel( r'$S \, [\rm mJy]$', fontsize=20 )
+            axs[i].set_xlabel( r'$\nu \, [\rm MHz]$', fontsize=20 )
+            axs[i].set_ylabel( r'$S \, [\rm mJy]$', fontsize=20 )
             axs[i].legend( framealpha=0.1, title=r'$\alpha_{\rm rad}$' )
-        axs[i].tick_params( axis='both', pad=5, direction='in', labelsize=15 )
+
+        axs[i].tick_params( axis='both', pad=5, direction='in', labelsize=10 )
 
     if ( len(sys.argv) < 2 ):
         file_pre = ''
@@ -276,7 +276,7 @@ def my_plot2():
 
     fig.tight_layout()
 
-    fig.savefig( output_dir + file_pre + 'ele_rad_spec.pdf', figsize=(5,5) )
+    fig.savefig( figs_dir + file_pre + 'ele_rad_spec.pdf', figsize=(5,5) )
 
     #return
     fig, axs = plt.subplots( 1, 2 )
@@ -291,7 +291,7 @@ def my_plot2():
     axs[1].set_ylabel( r'$Number$' )
 
     fig.tight_layout()
-    fig.savefig( output_dir + file_pre + 'ele_rad_spec_index.pdf', figsize=(8,8) )
+    fig.savefig( figs_dir + file_pre + 'ele_rad_spec_index.pdf', figsize=(8,8) )
 
 
 my_plot2()

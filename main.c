@@ -286,7 +286,7 @@ int main( int argc, char *argv[] ){
     if ( NULL == UsedMemFileFd )
         endrun0( "Failed open file %s\n", buf );
 
-    sprintf( All.OutputPrefix, "./output_%s/", bname );
+    sprintf( All.OutputDir, "./output_%s/", bname );
 
     create_mpi_comms();
     put_sep;

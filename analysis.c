@@ -14,7 +14,7 @@ void init_analysis() {
     init_conv_kernel();
     init_img();
 
-    create_dir( All.OutputPrefix );
+    create_dir( All.OutputDir );
 
     writelog( "initialize analysis... done.\n" );
     put_sep;
@@ -97,8 +97,9 @@ void analysis(){
 
 
     if ( ThisTask_Local == 0 && All.Group ) {
-            create_dir( All.GroupDir );
-            group_analysis();
+        sprintf( All.GroupDir, "%sgroup/", All.OutputDir );
+        create_dir( All.GroupDir );
+        group_analysis();
     }
 
     if ( All.TotSpec ) {

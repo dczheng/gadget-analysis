@@ -7,7 +7,7 @@ void read_parameters( char *fn );
 void set_units();
 
 void slice();
-void make_slice_img( int pt );
+void make_slice_img( int pt, double *data );
 
 void init_img();
 void free_img();

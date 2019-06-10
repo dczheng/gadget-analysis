@@ -56,7 +56,6 @@ void read_parameters( char *fn ) {
         ADD_PARAS( All.FilePrefix );
         ADD_PARAS( All.FoFDir     );
         ADD_PARAS( All.RadDir     );
-        ADD_PARAS( All.GroupDir   );
 
         ADD_PARAR( All.UnitMass_in_g            );
         ADD_PARAR( All.UnitLength_in_cm         );

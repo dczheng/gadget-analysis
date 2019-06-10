@@ -22,21 +22,23 @@ void temperature_slice() {
 
     int num, i, PicSize2;
     char buf[100];
+    double *data;
 
     writelog( "gas temperature silce ...\n" );
     PicSize2 = All.PicSize2;
     num = All.SliceEnd[0] - All.SliceStart[0];
-    mymalloc2( image.data, sizeof( double ) * num );
+
+    mymalloc2( data, sizeof( double ) * num );
 
     for ( i=All.SliceStart[0]; i<num; i++ ) {
-        image.data[i] = SphP[i].Temp;
+        data[i] = SphP[i].Temp;
     }
 
-    sprintf( buf, "%sTemp", All.OutputPrefix );
+    sprintf( buf, "%sTemp", All.OutputDir );
     create_dir( buf );
     sprintf( buf, "%s/Temp_%.2f.dat", buf, All.RedShift );
 
-    make_slice_img( 0 );
+    make_slice_img( 0, data );
 
     for ( i=0; i<PicSize2; i++ ){
         image.img[i] *= All.UnitLength_in_cm;
@@ -44,7 +46,7 @@ void temperature_slice() {
 
     write_img2( buf, "gas temperature slice" );
 
-    myfree( image.data );
+    myfree( data );
     writelog( "gas Temperature silce ... done.\n" );
     put_sep;
 

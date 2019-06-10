@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-
 from my_work_env import *
 import tools_and_constants as tc
 
@@ -36,6 +35,14 @@ for p in pa:
     plt.loglog( g, N, label=r'$\alpha: %.1f$'%p )
     #plt.plot( g, N, label=r'$\alpha: %.1f$'%p )
 
+xlim = plt.xlim()
+ylim = plt.ylim()
+tx= 0.83
+ty= 0.8
+x = np.power( 10, np.log10( xlim[0] ) + tx * np.log10( xlim[1]/xlim[0] ) )
+y = np.power( 10, np.log10( ylim[0] ) + ty * np.log10( ylim[1]/ylim[0] ) )
+plt.text( x, y, r'$\rm B=%.2f \, \mu G$'%B )
+
 plt.legend()
 plt.minorticks_off()
 plt.tick_params( axis='both', direction='in', labelsize=15, length=0 )
@@ -43,4 +50,4 @@ plt.xlabel( r'$\gamma$', fontsize=20 )
 plt.ylabel( r'$N(\gamma, t)/N_0$', fontsize=20 )
 plt.tight_layout()
 
-plt.savefig( output_dir + 'n_up.pdf' )
+plt.savefig( figs_dir + 'n_up.pdf' )
