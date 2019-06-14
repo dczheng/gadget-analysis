@@ -31,7 +31,12 @@ void write_img( char *fn, char *nstr, int mode ) {
     fd = fopen( fn, "w" );
     double v;
     int i, j;
-    writelog( "save `%s` img ...\n", nstr );
+    if ( nstr == NULL ) {
+        writelog( "save img ...\n" );
+    }
+    else {
+        writelog( "save `%s` img ...\n", nstr );
+    }
     img_min = DBL_MAX;
     img_max = -DBL_MAX;
 

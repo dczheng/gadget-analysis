@@ -21,7 +21,6 @@ void tree_free() {
 }
 
 void tree_build_single() {
-
     long i, j, subnode, bits, nfree, n, nn;
     struct NODE *nfreep;
     double max[3], min[3], len, lenhalf;

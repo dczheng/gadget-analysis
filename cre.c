@@ -215,34 +215,3 @@ void cre_pressure_pdf() {
     put_sep0;
 
 }
-
-void cren_slice() {
-
-    int num, i;
-    char buf[100];
-    double *data;
-
-    if ( ThisTask_Local != 0 )
-        return;
-
-    writelog( "cre number density silce ...\n" );
-    num = All.SliceEnd[0] - All.SliceStart[0];
-
-    mymalloc2( data, sizeof( double ) * num );
-
-    for ( i=All.SliceStart[0]; i<All.SliceEnd[0]; i++ ) {
-        data[i] = SphP[i].CRE_n * SphP[i].Density / guc.m_e / CUBE( g2c.cm );
-    }
-
-    sprintf( buf, "%scre_n", All.OutputDir );
-    create_dir( buf );
-    sprintf( buf, "%s/cre_n_%.2f.dat", buf, All.RedShift );
-
-    make_slice_img( 0, data );
-
-    write_img2( buf, "cre number densityslice" );
-    myfree( data );
-
-    writelog( "cre number density ... done.\n" );
-    put_sep;
-}

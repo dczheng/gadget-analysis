@@ -6,9 +6,6 @@ void free_group();
 void read_parameters( char *fn );
 void set_units();
 
-void slice();
-void make_slice_img( int pt, double *data );
-
 void init_img();
 void free_img();
 void reset_img();
@@ -50,6 +47,10 @@ void check_group_flag();
 
 void test_radio();
 void phase();
+
+void slice_init();
+void make_slice_img( int pt, double *data );
+
 void temperature_slice();
 void density_slice();
 void mach_slice();

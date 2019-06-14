@@ -1,6 +1,6 @@
 #include "allvars.h"
 
-void slice() {
+void slice_init() {
 
     int pt;
     long offset, num, index, i;
@@ -108,7 +108,7 @@ void make_slice_img( int pt, double *data ) {
     num = image.num;
 
     dx = dy = (All.End[All.proj_i] - All.Start[All.proj_i])/ PicSize;
-    writelog( "dx: %f, dy: %f\n", dx, dy  );
+    //writelog( "dx: %f, dy: %f\n", dx, dy  );
 
     N = All.KernelN;
     Nhalf = N / 2;
@@ -181,8 +181,86 @@ void make_slice_img( int pt, double *data ) {
     img_ymin = All.Start[ All.proj_j ];
     img_ymax = All.End[ All.proj_j ];
 
-    writelog( "make slice image ... done\n" );
+}
 
-    put_sep;
+void field_slice( int pt, double *data, char *name ) {
 
+    char buf[100];
+
+    sprintf( buf, "`%s` slice\n", name );
+    writelog( buf );
+
+    sprintf( buf, "%s%s", All.OutputDir, name );
+    create_dir( buf );
+    sprintf( buf, "%s/%s_%.2f.dat", buf, name, All.RedShift );
+
+    make_slice_img( pt, data );
+
+    write_img1( buf, NULL );
+
+}
+
+void mag_slice() {
+    int num, i;
+    double *data;
+
+    num = All.SliceEnd[0] - All.SliceStart[0];
+    mymalloc2( data, sizeof( double ) * num );
+    for ( i=All.SliceStart[0]; i<All.SliceEnd[0]; i++ ) {
+        data[i] = get_B( i );
+    }
+    field_slice( 0, data, "MagneticField" );
+    myfree( data );
+}
+
+void mach_slice() {
+    int num, i;
+    double *data;
+
+    num = All.SliceEnd[0] - All.SliceStart[0];
+    mymalloc2( data, sizeof( double ) * num );
+    for ( i=All.SliceStart[0]; i<All.SliceEnd[0]; i++ ) {
+        data[i] = SphP[i].MachNumber;
+    }
+    field_slice( 0, data, "MachNumber" );
+    myfree( data );
+}
+
+void density_slice() {
+    int num, i;
+    double *data;
+
+    num = All.SliceEnd[0] - All.SliceStart[0];
+    mymalloc2( data, sizeof( double ) * num );
+    for ( i=All.SliceStart[0]; i<num; i++ ) {
+        data[i] = SphP[i].Density * ( g2c.g / CUBE( g2c.cm ) );
+    }
+    field_slice( 0, data, "Density" );
+    myfree( data );
+}
+
+void temperature_slice() {
+    int num, i;
+    double *data;
+
+    num = All.SliceEnd[0] - All.SliceStart[0];
+    mymalloc2( data, sizeof( double ) * num );
+    for ( i=All.SliceStart[0]; i<num; i++ ) {
+        data[i] = SphP[i].Temp;
+    }
+    field_slice( 0, data, "Temperature" );
+    myfree( data );
+}
+
+void cren_slice() {
+    int num, i;
+    double *data;
+
+    num = All.SliceEnd[0] - All.SliceStart[0];
+    mymalloc2( data, sizeof( double ) * num );
+    for ( i=All.SliceStart[0]; i<All.SliceEnd[0]; i++ ) {
+        data[i] = SphP[i].CRE_n * SphP[i].Density / guc.m_e / CUBE( g2c.cm );
+    }
+    field_slice( 0, data, "cre_n" );
+    myfree( data );
 }

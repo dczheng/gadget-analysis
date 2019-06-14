@@ -369,7 +369,6 @@ void powerspec() {
 
     //test_powerspec_interp();
     //
-    //
     if ( Kmin*1000 > 1e-2 )
         writelog( "Kmin is too small, sigma8 can't be computed!\n" )
     else

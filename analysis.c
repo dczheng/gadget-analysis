@@ -8,7 +8,7 @@ void init_analysis() {
     All.proj_j = ( All.ProjectDirection + 2 ) % 3;
     All.Sproj = All.ProjectDirection + 'x';
     All.PicSize2 = SQR( All.PicSize );
-    slice();
+    slice_init();
     if ( All.KernelInterpolation )
         init_kernel_matrix();
     init_conv_kernel();
