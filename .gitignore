@@ -9,3 +9,4 @@ __pycache__/
 *pyc
 3D_Render/
 *pdf
+*.dat
