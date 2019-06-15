@@ -10,11 +10,11 @@ from scipy.integrate import quad
 gamma = lambda p: np.sqrt( 1 + p*p )
 beta = lambda p: p / gamma(p)
 
-coul_fac1 = lambda b, n_e: 3 * tc.sigma_t * tc.c * n_e / ( 2 * (b**2 ) )
+coul_fac1 = lambda b, n_e: 3 * mytc.sigma_t * mytc.c * n_e / ( 2 * (b**2 ) )
 
-omega_plasma = lambda n_e: np.sqrt( 4 * np.pi * tc.e2 * n_e / tc.m_e  )
+omega_plasma = lambda n_e: np.sqrt( 4 * np.pi * mytc.e2 * n_e / mytc.m_e  )
 
-coul_fac2 = lambda g, b, n_e: tc.m_ec2 * b * np.sqrt( g - 1 ) / ( tc.hbar * omega_plasma( n_e ) )
+coul_fac2 = lambda g, b, n_e: mytc.m_ec2 * b * np.sqrt( g - 1 ) / ( mytc.hbar * omega_plasma( n_e ) )
 
 def beta_func( x, a, b ):
 
@@ -44,24 +44,24 @@ def cre_Tbar( a, q ):
     x = 1 / ( 1+q*q )
 
     return ( np.power( q, a-1 ) / 2 * beta_func( x, aa, bb ) + \
-             np.sqrt( 1+q*q ) - 1 ) * tc.m_ec2
+             np.sqrt( 1+q*q ) - 1 ) * mytc.m_ec2
 
 def cre_Tbar_gadget( a, q ):
     Tbar = cre_Tbar( a, q )
-    return Tbar / tc.gadget_energy_in_erg
+    return Tbar / mytc.gadget_energy_in_erg
 
 def cre_e( c, a, q ):
     return cre_n( c, a, q ) * cre_Tbar( a, q )
 
 def cre_e_gadget( c, a, q ):
-    e = cre_n( c, a, q ) * cre_Tbar( a, q ) / tc.m_e
-    return e / ( tc.gadget_energy_in_erg / tc.gadget_mass_in_g )
+    e = cre_n( c, a, q ) * cre_Tbar( a, q ) / mytc.m_e
+    return e / ( mytc.gadget_energy_in_erg / mytc.gadget_mass_in_g )
 
 def cre_e_gadget_2( c, a, q1, q2 ):
     return cre_e_gadget( c, a, q1 ) - cre_e_gadget( c, a, q2 )
 
 def cre_T( q ):
-    return tc.m_ec2 * ( np.sqrt( 1+q*q ) - 1 )
+    return mytc.m_ec2 * ( np.sqrt( 1+q*q ) - 1 )
 
 def cre_f( c, a, q, qmin ):
 
@@ -127,7 +127,7 @@ def dp_dt_syn( p, B ):
 
     g = gamma( p )
 
-    Ccool = B**2 / ( 8 * np.pi ) * 4 * tc.sigma_t / ( 3 * tc.m_ec )
+    Ccool = B**2 / ( 8 * np.pi ) * 4 * mytc.sigma_t / ( 3 * mytc.m_ec )
 
     return Ccool * g * p
 
@@ -153,7 +153,7 @@ def comp_T_with_c():
     a = 3
     T = [ cre_Tbar( a, i ) for i in p ]
     T = np.array( T )
-    T = T / tc.m_ec2
+    T = T / mytc.m_ec2
 
     del_t = ( c_dat[:,1] - T ) / T
 
@@ -185,7 +185,7 @@ def plot_cooling_timescale():
     c = 1
     a = 2.1
     B = 1e-6
-    n = 1000 * tc.rho_bar_crit0 / tc.m_p
+    n = 1000 * mytc.rho_bar_crit0 / mytc.m_p
     title = r'$\rho=10^3\,\rho_{\rm bar}, B=1\mu \rm G$'
     ne = n
     pmin = 1e-2
@@ -229,7 +229,7 @@ def plot_cooling_timescale():
 
     for i in range( 4 ):
         tau = np.array([ dx_f[i]( c, a, pp) / np.abs(dx_dt_f[i]( c, a, pp,  dpdt_f[i] )) for pp in p ])
-        tau = tau / tc.Myr
+        tau = tau / mytc.Myr
         ax.plot( p, tau, ls[i], label=labels[i] )
         #print( tau )
 
@@ -447,8 +447,8 @@ def plot_dfs_dns():
             ]
 
 
-    ns = np.array( ni ) * tc.rho_bar_crit0 / tc.m_p
-    dt = 0.1 * tc.Myr
+    ns = np.array( ni ) * mytc.rho_bar_crit0 / mytc.m_p
+    dt = 0.1 * mytc.Myr
     alpha = 3
 
     pmin = 1e-1
@@ -496,10 +496,10 @@ def plot_dfs_dns():
 
 def plot_for_paper():
 
-    dt = 0.1 * tc.Myr
+    dt = 0.1 * mytc.Myr
     alpha = 2.1
     B = 1e-6
-    n = 100 * tc.rho_bar_crit0 / tc.m_p
+    n = 100 * mytc.rho_bar_crit0 / mytc.m_p
     ne = n
     pmin = 1e-1
     pmax = 1e9
@@ -518,9 +518,9 @@ def plot_for_paper():
 def compare_dpdt_dp2dpdt_with_c(  ):
 
     B = 1e-5
-    #n1 = tc.rho_bar_crit0 / tc.m_p
-    n = 1 / tc.m_p
-    ne = n * tc.Xh * ( 1+tc.Xh ) / ( 2*tc.Xh )
+    #n1 = mytc.rho_bar_crit0 / mytc.m_p
+    n = 1 / mytc.m_p
+    ne = n * mytc.Xh * ( 1+mytc.Xh ) / ( 2*mytc.Xh )
 
     c_dat = np.loadtxt( output_dir + 'c_dpdt_dp2dpdt.dat' )
 
@@ -568,7 +568,7 @@ def compare_dpdt_dp2dpdt_with_c(  ):
 def rad_cooling():
 
     B = 1e-6
-    n = 100 * tc.rho_bar_crit0 / tc.m_p
+    n = 100 * mytc.rho_bar_crit0 / mytc.m_p
     ne = n
     pmin = 1e-1
     pmax = 1e9
@@ -579,10 +579,10 @@ def rad_cooling():
     fs = np.array([ cre_f( c, a, p, pmin ) for p in ps ])
     plt.loglog( ps, fs, label='0' )
 
-    dt = 0.1 * tc.Myr
+    dt = 0.1 * mytc.Myr
     print( "dt: ", dt )
 
-    Ccool = B**2 / ( 8 * np.pi ) * 4 * tc.sigma_t / ( 3 * tc.m_ec )
+    Ccool = B**2 / ( 8 * np.pi ) * 4 * mytc.sigma_t / ( 3 * mytc.m_ec )
     print( "Ccool: ", Ccool )
 
     pmax = 1 / ( dt * Ccool * ( a-1 ) )
@@ -617,6 +617,21 @@ def rad_cooling():
 
     exit()
 
+def cooling_func_output():
+
+    B = 1e-6
+    pmin = 1e-4
+    pmax = 1e8
+    pN = 100
+
+    p = np.logspace( np.log10(pmin), np.log10(pmax), pN )
+    rad = dp_dt_syn( p, B )
+
+    fd = open( 'func_output.dat', 'w' )
+    for i in range( len(p) ):
+        fd.write( "%g %g\n"%(p[i], rad[i]) )
+    fd.close()
+
 
 
 def main():
@@ -627,7 +642,8 @@ def main():
     #comp_T_with_c()
     #plot_cooling_timescale()
     #plot_cre_e();
-    rad_cooling()
+    #rad_cooling()
+    cooling_func_output()
 
 
 
