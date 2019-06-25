@@ -47,7 +47,7 @@ void analysis(){
     //
     part_info();
 
-    endrun(20190625);
+ //   endrun(20190625);
 
     if ( ThisTask_Local == 0 ) {
         if ( (All.TemperatureSlice ||
