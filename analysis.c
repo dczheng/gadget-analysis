@@ -45,6 +45,10 @@ void analysis(){
     put_sep0;
     //printf( "%g\n", All.RedShift );
     //
+    part_info();
+
+    endrun(20190625);
+
     if ( ThisTask_Local == 0 ) {
         if ( (All.TemperatureSlice ||
               All.Phase ||

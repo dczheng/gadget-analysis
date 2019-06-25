@@ -623,13 +623,17 @@ def cooling_func_output():
     pmin = 1e-4
     pmax = 1e8
     pN = 100
+    n_e = 1e-3
 
     p = np.logspace( np.log10(pmin), np.log10(pmax), pN )
     rad = dp_dt_syn( p, B )
+    rad2 = dp2_dpdt_syn( p, B )
+    coul = dp_dt_coul( p, n_e )
+    coul2 = dp2_dpdt_coul( p, n_e )
 
     fd = open( 'func_output.dat', 'w' )
     for i in range( len(p) ):
-        fd.write( "%g %g\n"%(p[i], rad[i]) )
+        fd.write( "%g %g %g %g %g\n"%(p[i], rad[i], rad2[i], coul[i], coul2[i]) )
     fd.close()
 
 

@@ -235,6 +235,7 @@ void density_slice() {
     for ( i=All.SliceStart[0]; i<num; i++ ) {
         data[i] = SphP[i].Density * ( g2c.g / CUBE( g2c.cm ) );
     }
+
     field_slice( 0, data, "Density" );
     myfree( data );
 }

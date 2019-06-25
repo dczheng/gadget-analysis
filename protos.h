@@ -99,3 +99,5 @@ void task_sync_test( char *s );
 void test_cos();
 
 void cre_pressure_pdf();
+
+void part_info();
