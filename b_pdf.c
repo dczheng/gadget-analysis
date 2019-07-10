@@ -43,10 +43,10 @@ void B_Pdf() {
     LogDensMax = log10( DensMax );
     LogBMin = log10( BMin );
     LogBMax = log10( BMax );
-    find_global_value( LogDensMin, GlobLogDensMin, MPI_DOUBLE, MPI_MIN );
-    find_global_value( LogDensMax, GlobLogDensMax, MPI_DOUBLE, MPI_MAX );
-    find_global_value( LogBMin, GlobLogBMin, MPI_DOUBLE, MPI_MIN );
-    find_global_value( LogBMax, GlobLogBMax, MPI_DOUBLE, MPI_MAX );
+    find_global_value( LogDensMin, GlobLogDensMin, MPI_DOUBLE, MPI_MIN, MpiComm_Master );
+    find_global_value( LogDensMax, GlobLogDensMax, MPI_DOUBLE, MPI_MAX, MpiComm_Master );
+    find_global_value( LogBMin, GlobLogBMin, MPI_DOUBLE, MPI_MIN, MpiComm_Master );
+    find_global_value( LogBMax, GlobLogBMax, MPI_DOUBLE, MPI_MAX, MpiComm_Master );
 
     //LogBMax = 7;
 
@@ -100,7 +100,7 @@ void B_Pdf() {
 
     sprintf( buf, "%sBPdf", All.OutputDir );
     create_dir( buf );
-    sprintf( buf, "%s/BPdf_%.2f.dat", buf, All.RedShift );
+    sprintf( buf, "%s/BPdf_%03i.dat", buf, All.SnapIndex );
 
     img_xmin = LogDensMin;
     img_xmax = LogDensMax;

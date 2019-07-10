@@ -162,7 +162,7 @@ void cre_pressure_pdf() {
 
     sprintf( buf, "%s/CrePressurePdf", All.OutputDir );
     create_dir( buf );
-    sprintf( buf, "%s/CrePressurePdf_%.2f.dat", buf, All.RedShift );
+    sprintf( buf, "%s/CrePressurePdf_%03i.dat", buf, All.SnapIndex );
 
 
     img_xmin = log10( cr_r_min );
@@ -197,7 +197,7 @@ void cre_pressure_pdf() {
         cr_bar[ii] ++;
     }
 
-    sprintf( buf, "./CrePressurePdf/CrePressure_%0.2f.dat", All.RedShift );
+    sprintf( buf, "./CrePressurePdf/CrePressure_%03i.dat", All.SnapIndex );
     fd = fopen( buf, "w" );
 
     for ( i=0; i<bins; i++ ){

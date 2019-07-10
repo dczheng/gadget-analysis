@@ -172,6 +172,6 @@ for i in range(N):
 
     #----------------------------------#
 
-plt.savefig( figs_dir + 'slices.pdf', dpi=800 )
+plt.savefig( figs_dir + 'slices.pdf', dpi=300 )
 #plt.show()
 

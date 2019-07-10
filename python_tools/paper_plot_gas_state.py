@@ -5,9 +5,9 @@ import matplotlib.gridspec as gridspec
 import matplotlib.ticker as tik
 
 
-data_dir = "./"
-data_name = [ '256_GasState_0.00.dat', \
-                'cre_256_no_turb_GasState_0.00.dat' \
+#matplotlib.style.use( 'default' )
+data_name = [ 'Phase.dat', \
+                'cre_Phase.dat' \
                 ]
 titlelist =[ "S1" , \
 "S2" \
@@ -140,6 +140,7 @@ for i in range( 2 ):
     #exit()
 
     ax.invert_yaxis()
+    ax.grid()
 
     ax.xaxis.set_major_locator( xloc )
     ax.xaxis.set_major_formatter( xfmt )
@@ -148,6 +149,7 @@ for i in range( 2 ):
     ax.yaxis.set_major_locator( yloc )
     ax.yaxis.set_major_formatter( yfmt )
     ax.yaxis.set_tick_params(labelsize=5)
+
     if i == 0:
         #cbar.set_label( r'$\frac{dF(<T, <\frac{\rho}{\rho_{bar}})}{dlog_{10}(T)dlog_{10}({\rho}/{\rho_{Bar}})}$',
         #        fontsize=6)
@@ -235,4 +237,4 @@ for i in range( 2 ):
 
 
 plt.tight_layout()
-fig.savefig( output_dir + 'GasPhase.pdf' )
+fig.savefig( figs_dir + 'GasPhase.pdf' )

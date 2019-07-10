@@ -148,7 +148,7 @@ void save_particle_radio() {
 
     hid_t hdf5_file, hdf5_dataset, hdf5_dataspace, hdf5_attribute, hdf5_type;
 
-    sprintf( fn, "%s/rad_%.2f.hdf5", All.RadDir, All.RedShift );
+    sprintf( fn, "%s/rad_%03i.hdf5", All.RadDir, All.SnapIndex );
 
     hdf5_file = H5Fcreate( fn, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT );
 
@@ -195,7 +195,7 @@ int read_particle_radio() {
 
     writelog( "read radio ...\n" );
 
-    sprintf( fn, "%s/rad_%.2f.hdf5", All.RadDir, All.RedShift );
+    sprintf( fn, "%s/rad_%03i.hdf5", All.RadDir, All.SnapIndex );
 
     hdf5_file = H5Fopen( fn, H5F_ACC_RDWR, H5P_DEFAULT );
 
@@ -245,21 +245,17 @@ void compute_particle_radio() {
     long i, t;
     char fn[ FILENAME_MAX ];
 
-    /*
-    if ( ThisTask_Local != 0 )
-        return;
-        */
-
     writelog( "Start compute particle radio ... \n" )
 
     init_compute_F();
 
-    mymalloc1_shared( PartRad, sizeof(double)*N_Gas * All.NuNum, sizeof(double), MpiWin_PartRad );
+
+    mymalloc1_shared( PartRad, sizeof(double)*N_Gas*All.NuNum, sizeof(double), MpiWin_PartRad );
 
     if ( ThisTask_Local == 0 ) {
         //printf( "Task: %i enter %s\n", ThisTask, __FUNCTION__ );
 
-        sprintf( fn, "%s/rad_%.2f.hdf5", All.RadDir, All.RedShift );
+        sprintf( fn, "%s/rad_%03i.hdf5", All.RadDir, All.SnapIndex );
         flag = 1;
 
         if ( access( fn, 0 ) != -1 ) {
@@ -279,6 +275,7 @@ void compute_particle_radio() {
 
     MPI_Bcast(  &num, 1, MPI_INT, 0, MpiComm_Local );
     MPI_Bcast(  &flag, 1, MPI_INT, 0, MpiComm_Local );
+
 
     if ( All.TabF  && num )
         init_tab_F();

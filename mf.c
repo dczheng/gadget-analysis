@@ -86,7 +86,7 @@ void mass_function() {
     }
 
     create_dir( "./MF" );
-    sprintf( buf, "./MF/MF_%.2f.dat", All.RedShift );
+    sprintf( buf, "./MF/MF_%03i.dat", All.SnapIndex );
 
     fd = fopen( buf, "w" );
 
@@ -115,7 +115,7 @@ void mass_function() {
     myfree( num );
     myfree( cum_num );
 
-    sprintf( buf, "./MF/PS_%.2f.dat", All.RedShift );
+    sprintf( buf, "./MF/PS_%03i.dat", All.SnapIndex );
 
     fd = fopen( buf, "w" );
 

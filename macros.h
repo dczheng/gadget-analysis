@@ -24,10 +24,10 @@
 #define put_sep    writelog( sep_str )
 #define put_sep0    writelog( sep_str0 )
 
-#define find_global_value( a, A, type, op ) { \
-    MPI_Reduce( &a, &A, 1, type, op, 0, MPI_COMM_WORLD ); \
-    MPI_Bcast( &A, 1, type, 0, MPI_COMM_WORLD ); \
-    MPI_Barrier( MPI_COMM_WORLD ); \
+#define find_global_value( a, A, type, op, comm ) { \
+    MPI_Reduce( &a, &A, 1, type, op, 0, comm ); \
+    MPI_Bcast( &A, 1, type, 0, comm ); \
+    MPI_Barrier( comm ); \
 }
 
 #define check_var_num() {\

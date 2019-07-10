@@ -9,9 +9,6 @@ void phase() {
     int i, j, k, PicSize;
     char buf[200];
 
-    if ( ThisTask_Local != 0 )
-        return;
-
     TempMin = DensMin = DBL_MAX;
     TempMax = DensMax = DBL_MIN;
     writelog( "plot gas phase...\n" );
@@ -33,10 +30,10 @@ void phase() {
     LogDensMax = log10( DensMax );
     LogTempMin = log10( TempMin );
     LogTempMax = log10( TempMax );
-    find_global_value( LogDensMin, GlobLogDensMin, MPI_DOUBLE, MPI_MIN );
-    find_global_value( LogDensMax, GlobLogDensMax, MPI_DOUBLE, MPI_MAX );
-    find_global_value( LogTempMin, GlobLogTempMin, MPI_DOUBLE, MPI_MIN );
-    find_global_value( LogTempMax, GlobLogTempMax, MPI_DOUBLE, MPI_MAX );
+    find_global_value( LogDensMin, GlobLogDensMin, MPI_DOUBLE, MPI_MIN, MpiComm_Master );
+    find_global_value( LogDensMax, GlobLogDensMax, MPI_DOUBLE, MPI_MAX, MpiComm_Master );
+    find_global_value( LogTempMin, GlobLogTempMin, MPI_DOUBLE, MPI_MIN, MpiComm_Master );
+    find_global_value( LogTempMax, GlobLogTempMax, MPI_DOUBLE, MPI_MAX, MpiComm_Master );
 
     //LogTempMax = 7;
 
@@ -85,7 +82,7 @@ void phase() {
 
     sprintf( buf, "%sPhase", All.OutputDir );
     create_dir( buf );
-    sprintf( buf, "%s/Phase_%.2f.dat", buf, All.RedShift );
+    sprintf( buf, "%s/Phase_%03i.dat", buf, All.SnapIndex );
 
     img_xmin = LogDensMin;
     img_xmax = LogDensMax;

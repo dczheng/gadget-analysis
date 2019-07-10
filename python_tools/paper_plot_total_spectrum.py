@@ -6,7 +6,7 @@ from scipy.optimize import curve_fit
 
 print( "plot total radiation spectrum ..." )
 
-rad_spec_file1 = './cre_256_no_turb_Spec_Tot.dat'
+rad_spec_file1 = data_dir + './Spec_Tot.dat'
 
 dat_1 = np.loadtxt( rad_spec_file1 )
 
@@ -20,7 +20,7 @@ ax.loglog( x, y ) #label=r'$S2$' )
 ax.set_xlabel( r'$\nu \, [\rm MHz]$', fontsize=20 )
 ax.set_ylabel( r'$ I_{\nu}\; \rm [erg \, cm^{-2} \, sr^{-1} \, Hz^{-1} ]$', fontsize=20 )
 #ax.legend( framealpha=0.1 )
-ax.grid()
+#ax.grid()
 ax.tick_params( axis='both', direction='in', which='both', labelsize=20, pad=5 )
 #ax.minorticks_off()
 
@@ -30,4 +30,4 @@ else:
     file_pre = sys.argv[1] + '-'
 
 fig.tight_layout()
-fig.savefig( output_dir + file_pre + 'rad_tot_spec.pdf' )
+fig.savefig( figs_dir + file_pre + 'rad_tot_spec.pdf' )

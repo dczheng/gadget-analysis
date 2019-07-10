@@ -350,7 +350,7 @@ void powerspec() {
     writelog( "[final] Kmin: %g, Kmax: %g [h/Mpc]\n", Kmin*1000, Kmax*1000 );
 
     create_dir( "./PowSpec" );
-    sprintf( buf, "./PowSpec/PowSpec_%.2f.dat", All.RedShift );
+    sprintf( buf, "./PowSpec/PowSpec_%03i.dat", All.SnapIndex );
 
 
     fd = fopen( buf, "w" );

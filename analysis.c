@@ -43,11 +43,10 @@ void analysis(){
     writelog( "analyais ...\n" );
 
     put_sep0;
-    //printf( "%g\n", All.RedShift );
     //
     part_info();
 
- //   endrun(20190625);
+//    endrun(20190625);
 
     if ( ThisTask_Local == 0 ) {
         if ( (All.TemperatureSlice ||
@@ -111,15 +110,13 @@ void analysis(){
         do_sync( "total radio spectrum" );
     }
 
-    if ( ThisTask_Local == 0 && All.FoF )
-            fof_free();
+    if ( ThisTask_Local == 0 && All.FoF ) {
+        fof_free();
+    }
 
-    if ( All.CrePressurePdf )
+    if ( All.CrePressurePdf ) {
        cre_pressure_pdf();
-
-
-
-
+    }
 
     //tree_build();
     //tree_free();

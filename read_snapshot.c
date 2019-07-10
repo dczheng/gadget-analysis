@@ -692,7 +692,7 @@ void read_snapshot_test() {
 }
 
 void read_snapshot() {
-    int pt, blk, nbytes, SnapIndex, io_i;
+    int pt, blk, nbytes, io_i;
     long i, file, offset, num;
     char file_name[MYFILENAME_MAX], buf[200], buf1[200];
     size_t BufferBytes;
@@ -712,10 +712,10 @@ void read_snapshot() {
         for( io_i = 0; io_i < IOGroups; io_i++ ) {
             if ( ThisTask_Master % IOGroups == io_i ) {
                 //printf( "Master: %i read header ...\n", ThisTask_Master );
-                SnapIndex = ThisTask / All.NumThreadsPerSnapshot + All.StartSnapIndex;
-                sprintf( file_name, "%s_%03d.%03i.hdf5", All.FilePrefix, SnapIndex, 0 );
+                All.SnapIndex = ThisTask / All.NumThreadsPerSnapshot + All.StartSnapIndex;
+                sprintf( file_name, "%s_%03d.%3i.hdf5", All.FilePrefix, All.SnapIndex, 0 );
                 if ( All.NumFilesPerSnapshot < 2 )
-                    sprintf( file_name, "%s_%03d.hdf5", All.FilePrefix, SnapIndex );
+                    sprintf( file_name, "%s_%03d.hdf5", All.FilePrefix, All.SnapIndex );
                 read_header( file_name );
             }
             do_sync_master( "" );
@@ -764,10 +764,10 @@ void read_snapshot() {
                     for ( pt=0, offset=0; pt<6; pt++ ) {
                         for (file=0; file<All.NumFilesPerSnapshot; file++) {
                             if ( All.NumFilesPerSnapshot < 2 )
-                                sprintf( file_name, "%s_%03d.hdf5", All.FilePrefix, SnapIndex );
+                                sprintf( file_name, "%s_%03d.hdf5", All.FilePrefix, All.SnapIndex );
                             else
                                 sprintf( file_name, "%s_%03d.%3li.hdf5",
-                                        All.FilePrefix, SnapIndex, file );
+                                        All.FilePrefix, All.SnapIndex, file );
                                 read_header( file_name );
 
                                 if ( blockpresent( blk, pt ) ) {

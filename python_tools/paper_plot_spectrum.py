@@ -101,7 +101,7 @@ def fit_f( x, a, b ):
 
 def my_plot0():
 
-    ele_spec_file = './cre_256_no_turb_Elec_Spec_0.00.dat'
+    ele_spec_file = data_dir + './EleSpec_0.dat'
 
     dat_e = np.loadtxt( ele_spec_file )
 
@@ -167,18 +167,18 @@ def my_plot0():
 
     fig.tight_layout()
 
-    fig.savefig( output_dir + 'ele0_spec.pdf', figsize=(5,5) )
+    fig.savefig( figs_dir + 'ele0_spec.pdf', figsize=(5,5) )
 
 
 def my_plot2():
 
-    rad_spec_file = data_dir + './Spec_0.20_nosr.dat'
-    ele_spec_file = data_dir + './EleSpec_0.20.dat'
+    rad_spec_file = data_dir + './Spec_0.1_nosr.dat'
+    ele_spec_file = data_dir + './EleSpec_0.1.dat'
 
     dat_r = np.loadtxt( rad_spec_file )
     dat_e = np.loadtxt( ele_spec_file )
 
-    fig, axs= plt.subplots( 1, 2 )
+    fig, axs= plt.subplots( 1, 2, figsize=(2*4,4) )
 
     m, n = dat_r.shape
 
@@ -261,7 +261,7 @@ def my_plot2():
             #ylim = list(axs[i].get_ylim())
             #ylim[0] = 1e-25
             #axs[i].set_ylim( ylim )
-            axs[i].set_xlim( [1, 1e7] )
+            #axs[i].set_xlim( [1, 1e7] )
         else:
             axs[i].set_xlabel( r'$\nu \, [\rm MHz]$', fontsize=20 )
             axs[i].set_ylabel( r'$S \, [\rm mJy]$', fontsize=20 )

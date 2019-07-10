@@ -54,13 +54,13 @@ void write_img( char *fn, char *nstr, int mode ) {
 
     if ( mode  ) {
 
-        find_global_value( img_min, img_globmin, MPI_DOUBLE, MPI_MIN );
-        find_global_value( img_max, img_globmax, MPI_DOUBLE, MPI_MAX );
+        find_global_value( img_min, img_globmin, MPI_DOUBLE, MPI_MIN, MpiComm_Master );
+        find_global_value( img_max, img_globmax, MPI_DOUBLE, MPI_MAX, MpiComm_Master );
 
-        find_global_value( img_xmin, img_globxmin, MPI_DOUBLE, MPI_MIN );
-        find_global_value( img_xmax, img_globxmax, MPI_DOUBLE, MPI_MAX );
-        find_global_value( img_ymin, img_globymin, MPI_DOUBLE, MPI_MIN );
-        find_global_value( img_ymax, img_globymax, MPI_DOUBLE, MPI_MAX );
+        find_global_value( img_xmin, img_globxmin, MPI_DOUBLE, MPI_MIN, MpiComm_Master );
+        find_global_value( img_xmax, img_globxmax, MPI_DOUBLE, MPI_MAX, MpiComm_Master );
+        find_global_value( img_ymin, img_globymin, MPI_DOUBLE, MPI_MIN, MpiComm_Master );
+        find_global_value( img_ymax, img_globymax, MPI_DOUBLE, MPI_MAX, MpiComm_Master );
 
         writelog( "globxmin: %g, globxmax: %g, globymin: %g, glogymax: %g\n",
                     img_globxmin, img_globxmax, img_globymin, img_globymax );

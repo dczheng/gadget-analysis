@@ -355,7 +355,9 @@ void compute_cosmo_quantities() {
     writelog1( "Luminosity Distance", All.LumDis );
     writelog1( "Hubble_a", All.Hubble_a );
     writelog1( "RhoBaryon", All.RhoBaryon );
+    writelog1( "RhoBaryon[cgs]", All.RhoBaryon * g2c.g / CUBE( g2c.cm ) );
     writelog1( "RhoCrit", All.RhoCrit );
+    writelog1( "RhoCrit[cgs]", All.RhoCrit * g2c.g / CUBE( g2c.cm ) );
     writelog1( "RhoM", All.RhoM );
 
     writelog( "compute cosmology quantities ... done.\n" );

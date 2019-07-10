@@ -3,12 +3,14 @@
 double LinkL, rhodm;
 
 void fof_allocate( long N ) {
+
     mymalloc1( Gprops, N * sizeof( struct group_properties ) );
     mymalloc1( FoFNext, NumPart * sizeof( long ) );
 }
 
 void fof_free() {
 
+    writelog( "fof free\n" );
     myfree( Gprops );
     myfree( FoFNext );
     put_sep;
@@ -24,6 +26,7 @@ int fof_compare_mass( const void *a, const void *b ) {
 }
 
 void fof_find_groups() {
+
     int ngbnum, k, ngbmax;
     double pos[3];
     long i, p, s, j, ss,
@@ -218,6 +221,7 @@ void fof_compute_group_properties() {
 }
 
 void fof_test() {
+
     int i, index;
     long p;
     FILE *fd;
@@ -235,6 +239,7 @@ void fof_test() {
 }
 
 void fof_save() {
+
     hid_t hdf5_file, hdf5_dataset, hdf5_dataspace, hdf5_attribute, hdf5_type;
     long *buf1, i, j;
     double *buf2;
@@ -245,7 +250,7 @@ void fof_save() {
     writelog( "FoF save groups ...\n" );
     mytimer_start();
 
-    sprintf( fn, "%s/fof_%.2f.hdf5", All.FoFDir, All.RedShift );
+    sprintf( fn, "%s/fof_%03i.hdf5", All.FoFDir, All.SnapIndex );
 
     hdf5_file = H5Fcreate( fn, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT );
 
@@ -412,6 +417,7 @@ void fof_save() {
 }
 
 void fof_read() {
+
     hid_t hdf5_file, hdf5_dataset, hdf5_attribute, hdf5_type;
     long *buf1, i, j;
     double *buf2;
@@ -420,7 +426,7 @@ void fof_read() {
     writelog( "read fof...\n" );
     mytimer_start();
 
-    sprintf( fn, "%s/fof_%.2f.hdf5", All.FoFDir, All.RedShift );
+    sprintf( fn, "%s/fof_%03i.hdf5", All.FoFDir, All.SnapIndex );
 
     hdf5_file = H5Fopen( fn, H5F_ACC_RDWR, H5P_DEFAULT );
 
@@ -540,6 +546,7 @@ void fof_read() {
 }
 
 void fof() {
+
     long i, npart;
     int flag, num;
     double masstot, mass;
@@ -549,7 +556,7 @@ void fof() {
 
     writelog( "Start FoF ...\n" );
     mytimer_start();
-    sprintf( fn, "%s/fof_%.2f.hdf5", All.FoFDir, All.RedShift );
+    sprintf( fn, "%s/fof_%03i.hdf5", All.FoFDir, All.SnapIndex );
 
     flag = 1;
 

@@ -115,7 +115,7 @@ void make_slice_img( int pt, double *data ) {
     h = All.SofteningTable[pt];
     dh = h / Nhalf;
 
-    for ( i=All.SliceStart[pt]; i<All.SliceEnd[pt]; i++ ){
+    for ( i=All.SliceStart[pt]; i<All.SliceEnd[pt]; i++ ) {
 
         x = P[i].Pos[All.proj_i];
         y = P[i].Pos[All.proj_j];
@@ -192,7 +192,7 @@ void field_slice( int pt, double *data, char *name ) {
 
     sprintf( buf, "%s%s", All.OutputDir, name );
     create_dir( buf );
-    sprintf( buf, "%s/%s_%.2f.dat", buf, name, All.RedShift );
+    sprintf( buf, "%s/%s_%03i.dat", buf, name, All.SnapIndex );
 
     make_slice_img( pt, data );
 
