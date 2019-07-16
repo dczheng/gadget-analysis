@@ -8,6 +8,12 @@ void init_analysis() {
     All.proj_j = ( All.ProjectDirection + 2 ) % 3;
     All.Sproj = All.ProjectDirection + 'x';
     All.PicSize2 = SQR( All.PicSize );
+
+    if ( All.RadSpec ) {
+        compute_particle_radio();
+    }
+    do_sync( "" );
+
     slice_init();
     if ( All.KernelInterpolation )
         init_kernel_matrix();
@@ -76,6 +82,10 @@ void analysis(){
             B_Pdf();
         }
 
+        if ( All.RadSlice ) {
+            radio_slice();
+        }
+
         if ( All.PowSpec )
             powerspec();
 
@@ -95,9 +105,11 @@ void analysis(){
 
     do_sync( "" );
 
-    if ( All.RadSpec )
+    /*
+    if ( All.RadSpec ) {
         compute_particle_radio();
-
+    }
+    */
 
     if ( ThisTask_Local == 0 && All.Group ) {
         sprintf( All.GroupDir, "%sgroup/", All.OutputDir );

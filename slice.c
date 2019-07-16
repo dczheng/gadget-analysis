@@ -265,3 +265,44 @@ void cren_slice() {
     field_slice( 0, data, "cre_n" );
     myfree( data );
 }
+
+void radio_slice() {
+
+    double dnu, *data, x, area, frac;
+    int num, index, index1, i;
+    char buf[20];
+
+    dnu = log( All.NuMax/All.NuMin ) / ( All.NuNum-1 );
+    num = All.SliceEnd[0] - All.SliceStart[0];
+
+    x = log( All.Freq/All.NuMin ) / dnu;
+    index = (int)(x);
+
+    if ( index >= All.NuNum || index < 0 ) {
+        endrun( 20190711 );
+    }
+
+    x -= index;
+
+    area = (All.End[All.proj_i] - All.Start[All.proj_i]) / All.PicSize;
+    area = SQR( area );
+
+    index1 = ( index == All.NuNum-1 ) ? All.NuNum-1 : index + 1;
+
+    mymalloc2( data, sizeof( double ) * num );
+
+    frac = 1.0 / (4.0 * PI * SQR( All.LumDis * g2c.cm )) / ( area / SQR(All.ComDis) );
+    for ( i=All.SliceStart[0]; i<All.SliceEnd[0]; i++ ) {
+        data[i] = exp (
+                log( PartRad[i*All.NuNum+index] ) * ( 1-x )
+              + log( PartRad[i*All.NuNum+index1] ) * x
+               ) * frac;
+    }
+
+
+    sprintf( buf, "radio_%.2f", All.Freq );
+    field_slice( 0, data, buf );
+
+    myfree( data );
+
+}

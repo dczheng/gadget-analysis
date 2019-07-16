@@ -4,9 +4,9 @@ from my_work_env import *
 import matplotlib.gridspec as gridspec
 
 
-ps_fn = 'PS_0.00.dat'
-mf_fn = '256_MF_0.00.dat'
-cre_mf_fn = 'cre_256_no_turb_MF_0.00.dat'
+ps_fn = data_dir + 'PS.dat'
+mf_fn = data_dir + 'MF.dat'
+cre_mf_fn = data_dir + 'cre_MF.dat'
 
 axN = 3
 axs = []
@@ -72,7 +72,7 @@ print( (cre_dndm-dndm) / dndm )
 for i in range( axN ):
     axs[i].set_xscale( 'log' )
     axs[i].set_yscale( 'log' )
-    axs[i].grid()
+    #axs[i].grid()
     axs[i].set_xlim( [M.min()/xlim_fac, M.max()*xlim_fac] )
 
     if i == 0:
@@ -99,4 +99,4 @@ fig = plt.gcf()
 fig.set_size_inches(8,8)
 fig.tight_layout()
 
-fig.savefig( output_dir + 'MF.pdf' )
+fig.savefig( figs_dir + 'MF.pdf' )

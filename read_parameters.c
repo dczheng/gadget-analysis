@@ -104,6 +104,7 @@ void read_parameters( char *fn ) {
         ADD_PARAI( All.Phase                    );
         ADD_PARAI( All.DensitySlice             );
         ADD_PARAI( All.BSlice                   );
+        ADD_PARAI( All.RadSlice                 );
         ADD_PARAI( All.CREnSlice                );
         ADD_PARAI( All.UnitAreaSlice            );
         ADD_PARAI( All.TemperatureSlice         );

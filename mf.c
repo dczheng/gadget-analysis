@@ -85,8 +85,9 @@ void mass_function() {
         cum_num[i] = cum_num[i+1] + num[i];
     }
 
-    create_dir( "./MF" );
-    sprintf( buf, "./MF/MF_%03i.dat", All.SnapIndex );
+    sprintf( buf, "%s/MF/", All.OutputDir );
+    create_dir( buf );
+    sprintf( buf, "%s/MF/MF_%03i.dat", All.OutputDir, All.SnapIndex );
 
     fd = fopen( buf, "w" );
 
@@ -115,7 +116,7 @@ void mass_function() {
     myfree( num );
     myfree( cum_num );
 
-    sprintf( buf, "./MF/PS_%03i.dat", All.SnapIndex );
+    sprintf( buf, "%s/MF/PS_%03i.dat", All.OutputDir, All.SnapIndex );
 
     fd = fopen( buf, "w" );
 

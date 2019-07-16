@@ -52,6 +52,7 @@ void slice_init();
 void make_slice_img( int pt, double *data );
 
 void temperature_slice();
+void radio_slice();
 void density_slice();
 void mach_slice();
 void mag_slice();

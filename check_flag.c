@@ -33,5 +33,7 @@ void check_flag() {
     A_NEED_B( All.Phase, All.ReadElec );
     A_NEED_B( All.Phase, All.Readu );
 
+    A_NEED_B( All.RadSlice, All.RadSpec );
+
 
 }

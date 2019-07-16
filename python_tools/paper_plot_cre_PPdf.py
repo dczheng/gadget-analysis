@@ -96,24 +96,23 @@ def gen_bin( x, y ):
     return ( xx, yy )
 
 def plot_pdf2():
-    fn = "cre_256_no_turb_CrePressure_0.00.dat"
+    fn = data_dir + "cre_pressure.dat"
 
     d = np.loadtxt( fn );
 
     fig, ax = plt.subplots( 1, 1 )
 
     x, y = gen_bin( d[:,0], d[:,1] )
-    ax.plot( x, y, label=r'$\frac{P_{\rm CRE}}{P_{\rm Gas}}$' )
+    ax.plot( x, y, label=r'$\frac{P_{\rm CRE}}{P_{\rm Tot}}$' )
 
     x, y = gen_bin( d[:,2], d[:,3] )
-    ax.plot( x, y, label=r'$\frac{P_{\rm CRP}}{P_{\rm Gas}}$' )
+    ax.plot( x, y, label=r'$\frac{P_{\rm CRP}}{P_{\rm Tot}}$' )
 
     #ax.set_yscale( 'log' )
     ax.set_xscale( 'log' )
     ax.set_ylabel( r'$\rm Percent$', fontsize=20 )
     ax.tick_params( axis='both', direction='in', pad=5, labelsize=10 )
     ax.legend( prop={'size': 20}, framealpha=0.1 )
-    ax.grid()
     ax.minorticks_off()
     ax.locator_params(numticks=12)
 
@@ -125,6 +124,6 @@ def plot_pdf2():
     xlim[0] = 1e-12
     ax.set_xlim( xlim )
 
-    plt.savefig( output_dir + 'PPdf.pdf')
+    plt.savefig( figs_dir + 'PPdf.pdf')
 
 plot_pdf2()

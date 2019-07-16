@@ -235,7 +235,7 @@ extern struct global_parameters_struct {
         MpcFlag,
         Group, MF, MFBins, BPdf,
         GroupDens, GroupTemp, GroupSfr, GroupB, GroupMach, GroupCre, MachSlice,
-        BSlice, UnitAreaSlice, CREnSlice,
+        BSlice, UnitAreaSlice, CREnSlice, RadSlice,
         GroupRad, GroupSpec, TotSpec,
         Phase, DensitySlice, TemperatureSlice,
         KernelInterpolation,
