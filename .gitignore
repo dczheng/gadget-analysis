@@ -2,12 +2,10 @@
 tags
 gadget-analysis
 test/
-*.txt
 *.png
 *data*
 __pycache__/
 *pyc
-3D_Render/
 *pdf
 *.dat
 bin/
