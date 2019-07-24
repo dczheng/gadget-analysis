@@ -35,5 +35,22 @@ void check_flag() {
 
     A_NEED_B( All.RadSlice, All.RadSpec );
 
+    A_NEED_B( All.GroupTemp, All.GroupTempBins );
+    A_NEED_B( All.GroupTemp, All.GroupTempRmin );
+
+    if ( All.CorrTdiffDens && NTask_Master != 2 ) {
+        printf( "`NTask_Master = 2` is required by All.CorrTdiffDens\n" );
+        endrun( 20190720 );
+    }
+
+    if ( All.CorrGrid <= 1 ) {
+        printf( "All.CorrGrid <= 1 !\n" );
+        endrun( 20190720 );
+    }
+
+    A_NEED_B( All.CorrTdiffDens, All.CorrGrid );
+    A_NEED_B( All.CorrTdiffDens, All.CorrRN );
+    A_NEED_B( All.CorrTdiffDens, All.CorrRMin );
+    A_NEED_B( All.CorrTdiffDens, All.CorrRMax );
 
 }

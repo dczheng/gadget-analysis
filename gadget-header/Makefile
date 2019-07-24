@@ -1,7 +1,7 @@
 CC      = gcc
 CFLAGS  =   -DH5_USE_16_API
 CLIBS   =   -lhdf5 -lm
-EXEC    = gadget-header
+EXEC    = ../bin/gadget-header
 OBJS    = gadget-header.o
 $(EXEC): $(OBJS)
 	$(CC) $(OBJS) $(CLIBS) -o $(EXEC)

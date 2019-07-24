@@ -11,6 +11,9 @@ from matplotlib import cm
 import matplotlib.colors as mplc
 import tools_and_constants as mytc
 
+from matplotlib.font_manager import FontProperties
+#https://matplotlib.org/2.0.0/examples/pylab_examples/fonts_demo.html
+
 plt.style.use( 'ggplot' )
 
 plt.rc( 'text', usetex=True )

@@ -89,6 +89,10 @@ void read_parameters( char *fn ) {
         ADD_PARAR( All.PosShiftX                );
         ADD_PARAR( All.PosShiftY                );
         ADD_PARAR( All.PosShiftZ                );
+        ADD_PARAR( All.GroupSize                );
+        ADD_PARAR( All.GroupTempRmin            );
+        ADD_PARAR( All.CorrRMin                 );
+        ADD_PARAR( All.CorrRMax                 );
 
         ADD_PARAI( All.NumFilesPerSnapshot      );
         ADD_PARAI( All.PicSize                  );
@@ -115,7 +119,7 @@ void read_parameters( char *fn ) {
         ADD_PARAI( All.GroupTemp                );
         ADD_PARAI( All.GroupB                   );
         ADD_PARAI( All.GroupMach                );
-        ADD_PARAI( All.MachSlice                  );
+        ADD_PARAI( All.MachSlice                );
         ADD_PARAI( All.GroupCre                 );
         ADD_PARAI( All.GroupRad                 );
         ADD_PARAI( All.ReadMach                 );
@@ -144,6 +148,10 @@ void read_parameters( char *fn ) {
         ADD_PARAI( All.ReadVel                  );
         ADD_PARAI( All.ReadElec                 );
         ADD_PARAI( All.Readu                    );
+        ADD_PARAI( All.GroupTempBins            );
+        ADD_PARAI( All.CorrTdiffDens            );
+        ADD_PARAI( All.CorrGrid                 );
+        ADD_PARAI( All.CorrRN                   );
 
         while( !feof( fd ) ) {
             *buf = 0;

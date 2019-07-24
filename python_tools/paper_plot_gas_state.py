@@ -62,6 +62,10 @@ ymin = int( TempMin ) + 1
 ymax = int( TempMax )
 yl = TempMax - TempMin
 
+x3 = (3 - DensMin) / ( DensMax - DensMin ) * n
+y5 = (5 - TempMin) / ( TempMax - TempMin ) * m
+y7 = (7 - TempMin) / ( TempMax - TempMin ) * m
+
 print( "xmin: %i, xmax: %i, ymin: %i, ymax: %i"%( xmin, xmax, ymin ,ymax ) )
 
 #xLocList = np.linspace( xmin, xmax, xmax - xmin + 1 )
@@ -92,6 +96,7 @@ axs = [plt.subplot(gs[0, 0]), \
 ds2 = [ ds[0], np.hstack( ds[1:] ) ]
 fig = plt.gcf()
 fig.set_size_inches(3*dN, 3)
+
 
 contour_levels = np.linspace( 1, 4, 4 )
 contour_levles = np.flip( 1 / np.power( 10, contour_levels ), 0)
@@ -132,7 +137,7 @@ for i in range( 2 ):
         #dd[ dd<-0.15 ] = np.nan
 
     img = axs[i].imshow( dd, norm=my_norm, cmap=my_cmap )
-    cbar = plt.colorbar( img, ax=ax, pad=0, shrink=0.75 )
+    cbar = plt.colorbar( img, ax=ax, pad=0, shrink=0.7 )
 
     t = cbar.ax.get_yticklabels()
     cbar.ax.set_yticklabels( t, fontsize=10 )
@@ -150,10 +155,28 @@ for i in range( 2 ):
     ax.yaxis.set_major_formatter( yfmt )
     ax.yaxis.set_tick_params(labelsize=5)
 
+    ax.plot( [x3, x3], [0, y5], 'w--' )
+    ax.plot( [0, n], [y5, y5], 'w--' )
+    ax.plot( [0, n], [y7, y7], 'w--' )
+    fc = 'black'
+    fs = 10
+    font = FontProperties()
+    #font.set_family('monospace')
+    font.set_size( 'large' )
+    font.set_weight('medium')
+
+    fx = [ x3*0.4, (n-x3)*0.1+x3, n*0.1, n*0.85 ]
+    fy = [ y5*0.1, y5*0.3, (y7-y5)*0.75+y5, (m-y7)*0.3+y7 ]
+    ft = [ 'Diffuse', 'Condensed', 'Warm-hot', 'Hot' ]
+
+    for kk in range(len(fx)):
+        ax.text( fx[kk], fy[kk], ft[kk], \
+            fontproperties=font )
+
     if i == 0:
         #cbar.set_label( r'$\frac{dF(<T, <\frac{\rho}{\rho_{bar}})}{dlog_{10}(T)dlog_{10}({\rho}/{\rho_{Bar}})}$',
         #        fontsize=6)
-        ax.set_title( r'$f(T, {\rho}/{\rho_{\rm bar}})$',)
+        ax.set_title( r'$f(T, {\rho}/{\bar{\rho}})$',)
         ax.set_ylabel( r"$T[K]$" )
         con = ax.contour( dd, levels=contour_levles, linestyles='dashdot', linewidths=1, colors=['black'] )
         #print( con )
@@ -229,7 +252,7 @@ for i in range( 2 ):
 
     #ax.set_title( titlelist[i] )
     #ax.set_xlabel( r"$\frac{\rho}{\rho_{bar}}$" )
-    ax.set_xlabel( r"${\rho}/{\rho_{\rm bar}}$" )
+    ax.set_xlabel( r"${\rho}/{\bar{\rho}}$" )
     ax.tick_params( axis='both', direction='in', pad=5, labelsize=10 )
 
 

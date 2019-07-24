@@ -234,7 +234,9 @@ extern struct global_parameters_struct {
         ReadElec, Readu,
         MpcFlag,
         Group, MF, MFBins, BPdf,
-        GroupDens, GroupTemp, GroupSfr, GroupB, GroupMach, GroupCre, MachSlice,
+        GroupDens, GroupTemp, GroupSfr, GroupB, GroupMach, GroupCre,
+        GroupTempBins,
+        MachSlice,
         BSlice, UnitAreaSlice, CREnSlice, RadSlice,
         GroupRad, GroupSpec, TotSpec,
         Phase, DensitySlice, TemperatureSlice,
@@ -242,6 +244,8 @@ extern struct global_parameters_struct {
         ConvN, GroupEleSpec, RadSpec,
         PowSpec, PowSpecNGrid, PowSpecPartType, PowSpecBins,
         CrePressurePdf, TabF, Tree, ParallelIO,
+        CorrTdiffDens,
+        CorrGrid, CorrRN,
 
         QNum, NuNum, FoFMinLen, proj_i, proj_j, proj_k,
         TreePartType, GroupIndexMin, GroupIndexMax,
@@ -267,7 +271,8 @@ extern struct global_parameters_struct {
            Sigma8,
            *ConvKernel, ConvSigma, NuMin, NuMax, GroupMassMin, Freq,
            QMin, QMax, MFMmin, MFMmax, MFMSplit,
-           PosShiftX, PosShiftY, PosShiftZ;
+            CorrRMin, CorrRMax,
+           PosShiftX, PosShiftY, PosShiftZ, GroupSize, GroupTempRmin;
 
     long SliceStart[6], SliceEnd[6];
 }All;

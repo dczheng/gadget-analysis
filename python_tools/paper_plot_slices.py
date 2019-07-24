@@ -2,7 +2,6 @@
 
 from my_work_env import *
 
-N = 4
 cmaps = [
         plt.get_cmap( 'ds9b' ),\
         plt.get_cmap( 'ds9a' ),\
@@ -29,30 +28,35 @@ norms = [
         ]
 
 FileNames1 = [
-        data_dir + '/Density_0.20.dat', \
-        data_dir + '/MachNumber_0.20.dat', \
-        data_dir + '/MagneticField_0.20.dat', \
-        data_dir + '/cre_n_0.20.dat', \
+        data_dir + '/Density_131.dat', \
+        data_dir + '/MachNumber_131.dat', \
+        data_dir + '/MagneticField_131.dat', \
+        data_dir + '/cre_n_131.dat', \
                 ]
 FileNames1_little = [
-        data_dir + '/Density2_0.20.dat', \
-        data_dir + '/MachNumber2_0.20.dat', \
-        data_dir + '/MagneticField2_0.20.dat', \
-        data_dir + '/cre_n2_0.20.dat'
+        data_dir + '/Density2_131.dat', \
+        data_dir + '/MachNumber2_131.dat', \
+        data_dir + '/MagneticField2_131.dat', \
+        data_dir + '/cre_n2_131.dat'
                 ]
 
 FileNames2 = [
-        data_dir + '/Density_0.00.dat', \
-        data_dir + '/MachNumber_0.00.dat', \
-        data_dir + '/MagneticField_0.00.dat', \
-        data_dir + '/cre_n_0.00.dat', \
+        data_dir + '/Density_141.dat', \
+        data_dir + '/MachNumber_141.dat', \
+        data_dir + '/MagneticField_141.dat', \
+        data_dir + '/cre_n_141.dat', \
                 ]
 FileNames2_little = [
-        data_dir + '/Density2_0.00.dat', \
-        data_dir + '/MachNumber2_0.00.dat', \
-        data_dir + '/MagneticField2_0.00.dat', \
-        data_dir + '/cre_n2_0.00.dat'
+        data_dir + '/Density2_141.dat', \
+        data_dir + '/MachNumber2_141.dat', \
+        data_dir + '/MagneticField2_141.dat', \
+        data_dir + '/cre_n2_141.dat'
                 ]
+#FileNames1 = [ data_dir + '/temp_141.dat' ]
+#FileNames1_little = [ data_dir + '/temp_zoom_141.dat' ]
+#FileNames2 = [ data_dir + '/cre_temp_141.dat' ]
+#FileNames2_little = [ data_dir + '/cre_temp_zoom_141.dat' ]
+N =  len( FileNames1 )
 
 
 data1 = [ np.loadtxt( FileNames1[i] ) for i in range(N) ]

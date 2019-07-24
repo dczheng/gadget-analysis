@@ -130,6 +130,11 @@ void analysis(){
        cre_pressure_pdf();
     }
 
+    if ( All.CorrTdiffDens ) {
+        corr_Tdiff_dens();
+    }
+
+
     //tree_build();
     //tree_free();
     //output_rho();

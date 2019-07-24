@@ -621,6 +621,131 @@ void output_group_info(  long index ) {
 
 }
 
+void group_temp_profile() {
+
+    long p;
+    struct group_properties g;
+    int g_index, i, rN, *num, ii;
+    double  *T, *Terr, L, dlogL, Lmin;
+    char buf[100], *dn="TempProfile";
+    FILE *fd;
+
+    rN = All.GroupTempBins;
+
+    mymalloc1( T,  sizeof(double) * rN );
+    mymalloc1( Terr,  sizeof(double) * rN );
+    mymalloc1( num,  sizeof(int) * rN );
+
+    writelog( "Temperature profile ....\n" );
+    sprintf( buf, "%s%s", All.GroupDir, dn );
+    create_dir( buf );
+
+    for ( g_index=0; g_index<Ngroups; g_index++ ) {
+
+        if ( !group_present( g_index ) )
+            break;
+
+        g = Gprops[g_index];
+
+        if ( All.GroupTempRmin > 0 ) {
+            Lmin = All.GroupTempRmin;
+        }
+        else {
+            Lmin = 1e10;
+            for ( i=0,p=g.Head; i<g.Len; i++, p=FoFNext[p] ) {
+                if ( P[p].Type != 0 )
+                    continue;
+
+                L = sqrt(
+                        SQR( PERIODIC_HALF( P[p].Pos[All.proj_i] - g.cm[All.proj_i] ) )
+                    + SQR( PERIODIC_HALF( P[p].Pos[All.proj_j] - g.cm[All.proj_j] ) )
+                    + SQR( PERIODIC_HALF( P[p].Pos[All.proj_k] - g.cm[All.proj_k] ) )
+                    );
+                Lmin = ( L < Lmin ) ? L : Lmin;
+            }
+
+            Lmin *= 1.1;
+        }
+
+        L = ( All.GroupSize > 0 ) ? All.GroupSize : get_group_size( &g );
+        dlogL = log( L / Lmin ) / ( rN - 1 );
+
+        for( i=0; i<rN; i++ ) {
+            num[i] = 0;
+            T[i] = 0;
+            Terr[i] = 0;
+        }
+
+        for ( i=0,p=g.Head; i<g.Len; i++, p=FoFNext[p] ) {
+            if ( P[p].Type != 0 )
+                continue;
+
+            L = sqrt(
+                    SQR( PERIODIC_HALF( P[p].Pos[All.proj_i] - g.cm[All.proj_i] ) )
+                  + SQR( PERIODIC_HALF( P[p].Pos[All.proj_j] - g.cm[All.proj_j] ) )
+                  + SQR( PERIODIC_HALF( P[p].Pos[All.proj_k] - g.cm[All.proj_k] ) )
+                    );
+
+            //printf( "%g\n", L );
+
+            ii = log( L / Lmin ) /  dlogL + 1;
+
+            ii = ( ii < 0 ) ? 0 : ii;
+            ii = ( ii > rN-1 ) ? rN-1 : ii;
+
+            num[ii] ++;
+            T[ii] += SphP[p].Temp;
+
+        }
+
+        for ( i=0; i<rN; i++ ) {
+            if ( num[i] > 0 )
+                T[i]  /= num[i];
+        }
+
+        for ( i=0,p=g.Head; i<g.Len; i++, p=FoFNext[p] ) {
+            if ( P[p].Type != 0 )
+                continue;
+
+            L = sqrt(
+                    SQR( PERIODIC_HALF( P[p].Pos[All.proj_i] - g.cm[All.proj_i] ) )
+                  + SQR( PERIODIC_HALF( P[p].Pos[All.proj_j] - g.cm[All.proj_j] ) )
+                  + SQR( PERIODIC_HALF( P[p].Pos[All.proj_k] - g.cm[All.proj_k] ) )
+                    );
+
+            //printf( "%g\n", L );
+
+            ii = log( L / Lmin ) /  dlogL + 1;
+
+            ii = ( ii < 0 ) ? 0 : ii;
+            ii = ( ii > rN-1 ) ? rN-1 : ii;
+
+            Terr[ii] += SQR(SphP[p].Temp - T[ii]);
+
+        }
+
+        for ( i=0; i<rN; i++ ) {
+            if ( num[i] > 1 )
+                Terr[i]  = sqrt(Terr[i] / (num[i]-1));
+        }
+
+        make_group_output_filename( buf, dn, g_index );
+        fd = fopen( buf, "w" );
+
+        for ( i=0; i<rN; i++ ) {
+            fprintf( fd, "%g %g %g\n", Lmin*exp( i*dlogL ), T[i], Terr[i] );
+        }
+
+        fclose( fd );
+
+    }
+
+    myfree( T );
+    myfree( Terr );
+    myfree( num );
+
+}
+
 void group_analysis() {
 
     long *npart, p;
@@ -657,6 +782,27 @@ void group_analysis() {
 
     }
 
+    if ( All.GroupSize > 0 ) {
+        L = All.GroupSize;
+    }
+    else{
+
+        L = 0;
+        for ( g_index=0; g_index<Ngroups; g_index++ ) {
+
+            if ( !group_present( g_index ) )
+                break;
+            g = Gprops[g_index];
+
+            for ( i=0,p=g.Head; i<g.Len; i++, p=FoFNext[p] ) {
+                if ( P[p].Type != 0 )
+                    continue;
+            vmax2( L, PERIODIC_HALF( P[p].Pos[x] - g.cm[x] ) * 1.001 );
+            vmax2( L, PERIODIC_HALF( P[p].Pos[y] - g.cm[y] ) * 1.001 );
+            }
+        }
+    }
+
     for ( g_index=0; g_index<Ngroups; g_index++ ) {
 
         if ( !group_present( g_index ) )
@@ -680,7 +826,7 @@ void group_analysis() {
         p = g.Head;
         mass = g.mass_table;
         npart = g.npart;
-        L = get_group_size( &g ) * 1.1;
+        //L = get_group_size( &g ) * 1.1;
 
         dL = 2 * L / PicSize;
         writelog( "npart: " );
@@ -698,7 +844,6 @@ void group_analysis() {
         writelog( "L: %g, dL:%g\n", 2*L, dL );
 
         p = g.Head;
-
         for ( i=0; i<g.Len; i++, p=FoFNext[p] ) {
             if ( P[p].Type != 0 )
                 continue;
@@ -725,8 +870,10 @@ void group_analysis() {
             if ( group_filed_present( GROUP_DENS ) )
                 data[GROUP_DENS][pic_index] += SphP[p].Density;
 
-            if ( group_filed_present( GROUP_TEMP ) )
+            if ( group_filed_present( GROUP_TEMP ) ) {
+                //printf( "%g\n", SphP[p].Temp );
                 data[GROUP_TEMP][pic_index] += SphP[p].Temp * SphP[p].Density;
+            }
 
             if ( group_filed_present( GROUP_SFR ) )
                 data[GROUP_SFR][pic_index] += SphP[p].sfr * SphP[p].Density;
@@ -881,6 +1028,10 @@ void group_analysis() {
     if ( All.GroupSpec ) {
         group_spectrum();
         //group_spectrum_index();
+    }
+
+    if ( All.GroupTemp ) {
+        group_temp_profile();
     }
 
     reset_img();

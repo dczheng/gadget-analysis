@@ -15,7 +15,7 @@ OPTS       = $(HDF5_OPTS) -Wall #-O2 #-O3
 DEBUG     ?=
 CC         =  mpicc
 
-EXEC       =  ./gadget-analysis
+EXEC       =  ./bin/gadget-analysis
 SRCS       =  $(wildcard *.c)
 MY_INCL    =  $(wildcard *.h)
 OBJS       =  $(SRCS:.c=.o)
