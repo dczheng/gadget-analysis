@@ -91,8 +91,6 @@ void read_parameters( char *fn ) {
         ADD_PARAR( All.PosShiftZ                );
         ADD_PARAR( All.GroupSize                );
         ADD_PARAR( All.GroupTempRmin            );
-        ADD_PARAR( All.CorrRMin                 );
-        ADD_PARAR( All.CorrRMax                 );
 
         ADD_PARAI( All.NumFilesPerSnapshot      );
         ADD_PARAI( All.PicSize                  );

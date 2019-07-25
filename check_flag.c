@@ -38,8 +38,8 @@ void check_flag() {
     A_NEED_B( All.GroupTemp, All.GroupTempBins );
     A_NEED_B( All.GroupTemp, All.GroupTempRmin );
 
-    if ( All.CorrTdiffDens && NTask_Master != 2 ) {
-        printf( "`NTask_Master = 2` is required by All.CorrTdiffDens\n" );
+    if ( All.CorrTdiffDens && NTask != 2 ) {
+        printf( "`Master = 2` is required by All.CorrTdiffDens\n" );
         endrun( 20190720 );
     }
 
@@ -49,8 +49,7 @@ void check_flag() {
     }
 
     A_NEED_B( All.CorrTdiffDens, All.CorrGrid );
-    A_NEED_B( All.CorrTdiffDens, All.CorrRN );
-    A_NEED_B( All.CorrTdiffDens, All.CorrRMin );
-    A_NEED_B( All.CorrTdiffDens, All.CorrRMax );
+
+    A_NEED_B( All.CorrGrid, All.CorrRN );
 
 }

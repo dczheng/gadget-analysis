@@ -271,7 +271,6 @@ extern struct global_parameters_struct {
            Sigma8,
            *ConvKernel, ConvSigma, NuMin, NuMax, GroupMassMin, Freq,
            QMin, QMax, MFMmin, MFMmax, MFMSplit,
-            CorrRMin, CorrRMax,
            PosShiftX, PosShiftY, PosShiftZ, GroupSize, GroupTempRmin;
 
     long SliceStart[6], SliceEnd[6];
