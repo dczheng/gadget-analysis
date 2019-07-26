@@ -148,7 +148,7 @@ void read_parameters( char *fn ) {
         ADD_PARAI( All.Readu                    );
         ADD_PARAI( All.GroupTempBins            );
         ADD_PARAI( All.CorrTdiffDens            );
-        ADD_PARAI( All.CorrGrid                 );
+        ADD_PARAI( All.NGrid                    );
         ADD_PARAI( All.CorrRN                   );
 
         while( !feof( fd ) ) {

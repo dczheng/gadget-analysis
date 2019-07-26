@@ -1,0 +1,57 @@
+#include "allvars.h"
+
+void field_to_grid( double *data, double *grid, double *num, long N, int flag ) {
+
+    double fac, v, t, dx[6];
+    int i, x[6], NGrid, NGrid2, NGrid3;
+    long p, index;
+
+    NGrid = All.NGrid;
+    NGrid2 = SQR( NGrid );
+    NGrid3 = NGrid2 * NGrid;
+    fac = NGrid / All.BoxSize;
+
+    memset( grid, 0, sizeof(double) * NGrid3 );
+    memset( num, 0, sizeof(double) * NGrid3 );
+
+    for( p=0; p<N; p+=4 ) {
+        for( i=0; i<3; i++ ) {
+
+                  t = data[p+i] * fac;
+
+               x[i] =  t;
+             x[i+3] = x[i] + 1;
+
+            dx[i+3] = t - x[i];
+            dx[i]   = 1 - dx[i+3];
+
+        }
+
+        for( i=0; i<6; i++ )
+            x[i] %= NGrid;
+
+        for ( i=0; i<8; i++ ) {
+
+            index = x[(i&1)*3] * NGrid2
+                  + x[1+((i>>1)&1)*3] * NGrid 
+                  + x[2+((i>>2)&1)*3];
+
+                v = dx[(i&1)*3]
+                  * dx[1+((i>>1)&1)*3]
+                  * dx[2+((i>>2)&1)*3];
+
+            grid[index] += data[p+3] * v;
+            num[index]  += v;
+
+        }
+
+    }
+
+    if ( flag )
+        return;
+
+    for( index=0; index<NGrid3; index++ )
+        if ( num[index]>0 )
+            grid[index] /= num[index];
+
+}

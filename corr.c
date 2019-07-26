@@ -56,8 +56,6 @@ void corr( double *x, double *y, double *c, int N ) {
     }
 */
 
-
-
     for( i=0; i<N; i++ )
         for( j=0; j<N; j++ )
                 for( k=0; k<N; k++ ) {
@@ -75,8 +73,8 @@ void corr_Tdiff_dens() {
     double z[2], *T, *Dens, dx, *T0, *Dens0, Tmin, Tmax, Densmin, Densmax,
           // Tmm[4], Densmm[4],
            *Tdiff, *Densdiff, Tdiffbar, Densbar,
-           *TDensCorr, *TDensCorr1d, dlogr, rmax, rmin, r;
-    int N, N2, N3, i, j, k, index, x[3], *num, rN;
+           *TDensCorr, *TDensCorr1d, dlogr, rmax, rmin, r, *data, *num;
+    int N, N2, N3, i, j, k, index, rN;
     MPI_Status status;
     long p;
     FILE *fd;
@@ -92,7 +90,7 @@ void corr_Tdiff_dens() {
         }
     }
 
-    N = All.CorrGrid;
+    N = All.NGrid;
     N2 = SQR(N);
     N3 = N2*N;
     dx = All.BoxSize / N;
@@ -101,13 +99,15 @@ void corr_Tdiff_dens() {
     rmax = All.BoxSize;
     dlogr = log( rmax/rmin ) / rN;
 
-    mymalloc2( T, sizeof( double ) * N3 );
-    mymalloc2( Dens, sizeof( double ) * N3 );
-    mymalloc2( num, sizeof( int ) * N3 );
+    mymalloc1( T, sizeof( double ) * N3 );
+    mymalloc1( Dens, sizeof( double ) * N3 );
+    mymalloc1( num, sizeof( double ) * N3 );
+    mymalloc1( data, sizeof( double ) * N_Gas * 4 );
 
     if ( ThisTask == 0 ) {
-        mymalloc2( T0, sizeof( double ) * N3 );
-        mymalloc2( Dens0, sizeof( double ) * N3 );
+        mymalloc1( T0, sizeof( double ) * N3 );
+        mymalloc1( Dens0, sizeof( double ) * N3 );
+
         mymalloc2( Densdiff, sizeof( double ) * N3 );
         mymalloc2( Tdiff, sizeof( double ) * N3 );
         mymalloc2( TDensCorr, sizeof( double ) * N3 );
@@ -121,26 +121,22 @@ void corr_Tdiff_dens() {
         Tmin = ( SphP[p].Temp < Tmin ) ? SphP[p].Temp : Tmin;
         Tmax = ( SphP[p].Temp > Tmax ) ? SphP[p].Temp : Tmax;
 
+        for( i=0; i<3; i++ )
+            data[p+i] = P[p].Pos[i];
+        data[p+3] = SphP[p].Temp;
+    }
+
+    field_to_grid( data, T, num, N_Gas, 1 );
+
+    for ( p=0; p<N_Gas; p++ ) {
         Densmin = ( SphP[p].Density < Densmin ) ? SphP[p].Density : Densmin;
         Densmax = ( SphP[p].Density < Densmax ) ? SphP[p].Density : Densmax;
-
-        for( i=0; i<3; i++ ) {
-            x[i] = P[p].Pos[i] / dx;
-            x[i] = x[i] % N;
-        }
-
-        index = x[0]*N*N + x[1]*N + x[2];
-        T[index] += SphP[p].Temp;
-        Dens[index] += SphP[p].Density;
-        num[index] ++;
+        for( i=0; i<3; i++ )
+            data[p+i] = P[p].Pos[i];
+        data[p+3] = SphP[p].Density;
     }
 
-    for( index=0; index<N3; index++ ) {
-        if ( num[index] > 0 ) {
-            T[index] /= num[index];
-            Dens[index] /= num[index];
-        }
-    }
+    field_to_grid( data, Dens, num, N_Gas, 1 );
 
     /*
     MPI_Gather( &Tmin, 1, MPI_DOUBLE, Tmm, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD );
@@ -211,26 +207,10 @@ void corr_Tdiff_dens() {
                 Dens[index] = ( Dens[index] - Densbar ) / Densbar;
             }
 
-            /*
-            fd = fopen( "Dens.dat", "w" );
-            for( p=0; p<N_Gas; p++ ) {
-                fprintf( fd, "%g %g %g %g\n",
-                        P[p].Pos[0],
-                        P[p].Pos[1],
-                        P[p].Pos[2],
-                        log10(SphP[p].Density)
-                        );
-            }
-            fclose( fd );
-            */
         }
 
     if ( ThisTask == 0 ) {
         corr( Tdiff, Dens, TDensCorr, N );
-        /*
-        for ( i=0; i<10; i++ )
-            printf( "%i, %g\n", TDensCorr[i] );
-        */
 
         memset( num, 0, sizeof(int) * rN );
         for( i=0; i<N; i++ )
@@ -259,6 +239,7 @@ void corr_Tdiff_dens() {
     myfree( T );
     myfree( num );
     myfree( Dens );
+    myfree( data );
 
     if ( ThisTask == 0 ) {
         myfree( T0 );

@@ -104,3 +104,5 @@ void cre_pressure_pdf();
 void part_info();
 
 void corr_Tdiff_dens();
+
+void field_to_grid( double *data, double *grid, double *num, long N, int flag );

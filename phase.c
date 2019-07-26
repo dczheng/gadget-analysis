@@ -16,7 +16,6 @@ void phase() {
     //PicSize_tmp = All.PicSize;
     PicSize = All.PicSize;
 
-
     reset_img();
 
     for ( i=0; i<N_Gas; i++ ) {

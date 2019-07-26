@@ -43,13 +43,12 @@ void check_flag() {
         endrun( 20190720 );
     }
 
-    if ( All.CorrGrid <= 1 ) {
-        printf( "All.CorrGrid <= 1 !\n" );
+    if ( All.NGrid <= 1 ) {
+        printf( "All.NGrid <= 1 !\n" );
         endrun( 20190720 );
     }
 
-    A_NEED_B( All.CorrTdiffDens, All.CorrGrid );
-
-    A_NEED_B( All.CorrGrid, All.CorrRN );
+    A_NEED_B( All.CorrTdiffDens, All.NGrid );
+    A_NEED_B( All.CorrTdiffDens, All.CorrRN );
 
 }

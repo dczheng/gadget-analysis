@@ -75,12 +75,12 @@ void compute_sigma8() {
 
 void powerspec() {
 
-    double fac, dis[3], mass, mass_tot, K[3], K2, k,
+    double fac, dis[6], mass, mass_tot, K[3], K2, k,
            f[3], ff, smth, po, ponorm,
            *SumPS, *SumPSUncorr, ktmp,
-           *PSUncorr, *Delta, *DeltaUncorr, ComputedKmin, ComputedKmax;
-    long p;
-    int i, x, y, z, m, xyz[3], xyz1[3], NGrid, NGrid3, index,
+           *PSUncorr, *Delta, *DeltaUncorr, ComputedKmin, ComputedKmax, t, v;
+    long p, index;
+    int i, x, y, z, m, xyz[6], NGrid, NGrid3,
         *CountModes;;
     double *pos;
     FILE *fd;
@@ -128,75 +128,35 @@ void powerspec() {
 
         for( i=0; i<3; i++ ) {
 
-            /*
-            while( pos[i] < 0 )
-                pos[i] += BoxSize;
+            t = pos[i] * fac;
 
-            while( pos[i] > BoxSize )
-                pos[i] -= BoxSize;
-                */
+            xyz[i] = t;
+            xyz[i+3] = xyz[i] + 1;
+            xyz[i+3] %= NGrid;
 
-            dis[i] = pos[i] * fac;
-            xyz[i] = dis[i];
-            dis[i] -= xyz[i];
-
-            //printf( "%i, dis: %g, xyz: %i\n", i, dis[i], xyz[i] );
-            xyz1[i] = xyz[i] + 1;
-
-            xyz1[i] %= NGrid;
+            dis[i+3] = t - xyz[i];
+            dis[i] = 1 - dis[i+3];
 
         }
-
-        //printf( "( %i, %i, %i )\n", xyz[0], xyz[1], xyz[2] );
 
         mass_tot += P[p].Mass;
         mass = P[p].Mass;
 
-            /*
-        if ( P[p].Type == 0  ) {
+        for( i=0; i<8; i++ ) {
 
-            if ( (1<<4) & All.PowSpecPartType )
-                for( i=0; i<SphP[p].Star_BH_Num[0]; i++ ) {
-                    mass_tot += P[ SphP[p].Star_BH_Index[0][i] ].Mass;
-                    mass += P[ SphP[p].Star_BH_Index[0][i] ].Mass;
-                }
+            index = xyz[(i&1)*3] * NGrid * NGrid3
+                  + xyz[1+((i>>1)&1)*3] * NGrid
+                  + xyz[2+((i>>2)&1)*3];
 
-            if ( (1<<5) & All.PowSpecPartType )
-                for( i=0; i<SphP[p].Star_BH_Num[1]; i++ ) {
-                    mass_tot += P[ SphP[p].Star_BH_Index[1][i] ].Mass;
-                    mass += P[ SphP[p].Star_BH_Index[1][i] ].Mass;
-                }
+            v = dis[(i&1)*3]
+              * dis[1+((i>>1)&1)*3]
+              * dis[2+((i>>2)&1)*3];
 
+            rhogrid[ index ] += mass * v;
+            
         }
-                */
-
-//        rhogrid[ NGrid3 * ( NGrid * xyz[0] + xyz[1] ) + xyz[2] ] += mass;
-        rhogrid[ NGrid3 * ( NGrid * xyz[0]  + xyz[1]  ) + xyz[2]  ]  += mass * ( 1-dis[0] ) * ( 1-dis[1] ) * ( 1-dis[2] );
-        rhogrid[ NGrid3 * ( NGrid * xyz[0]  + xyz[1]  ) + xyz1[2] ]  += mass * ( 1-dis[0] ) * ( 1-dis[1] ) * dis[2];
-        rhogrid[ NGrid3 * ( NGrid * xyz[0]  + xyz1[1] ) + xyz[2]  ]  += mass * ( 1-dis[0] ) * dis[1]       * ( 1-dis[2] );
-        rhogrid[ NGrid3 * ( NGrid * xyz[0]  + xyz1[1] ) + xyz1[2] ]  += mass * ( 1-dis[0] ) * dis[1]       * dis[2];
-        rhogrid[ NGrid3 * ( NGrid * xyz1[0] + xyz[1]  ) + xyz[2]  ]  += mass * dis[0]       * ( 1-dis[1] ) * ( 1-dis[2] );
-        rhogrid[ NGrid3 * ( NGrid * xyz1[0] + xyz[1]  ) + xyz1[2] ]  += mass * dis[0]       * ( 1-dis[1] ) * dis[2];
-        rhogrid[ NGrid3 * ( NGrid * xyz1[0] + xyz1[1] ) + xyz[2]  ]  += mass * dis[0]       * dis[1]       * ( 1-dis[2] );
-        rhogrid[ NGrid3 * ( NGrid * xyz1[0] + xyz1[1] ) + xyz1[2] ]  += mass * dis[0]       * dis[1]       * dis[2];
 
     }
-
-    /*
-    for( i=0; i<dim[0]; i++ )
-        for( j=0; j<NGrid; j++ )
-            for( k=0; k<NGrid3; k++ )
-                rhogrid[ NGrid3 * ( NGrid * i + j ) + 0 ] += rhogrid[ NGrid3 * ( NGrid * i + j ) + k ];
-
-    fd = fopen( "rhogrid.dat", "w" );
-    for( i=0; i<dim[0]; i++ ) {
-        for( j=0; j<NGrid; j++ )
-            fprintf( fd, "%g ", rhogrid[ NGrid3 * ( NGrid * i + j ) ] );
-        fprintf( fd, "\n" );
-    }
-    fclose( fd );
-    return;
-    */
 
     fft_plan = rfftw3d_create_plan( NGrid, NGrid, NGrid,
             FFTW_REAL_TO_COMPLEX, FFTW_ESTIMATE | FFTW_IN_PLACE );

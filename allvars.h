@@ -245,7 +245,7 @@ extern struct global_parameters_struct {
         PowSpec, PowSpecNGrid, PowSpecPartType, PowSpecBins,
         CrePressurePdf, TabF, Tree, ParallelIO,
         CorrTdiffDens,
-        CorrGrid, CorrRN,
+        NGrid, CorrRN,
 
         QNum, NuNum, FoFMinLen, proj_i, proj_j, proj_k,
         TreePartType, GroupIndexMin, GroupIndexMax,
