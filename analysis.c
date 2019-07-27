@@ -134,6 +134,10 @@ void analysis(){
         corr_Tdiff_dens();
     }
 
+    if ( All.CorrDens ) {
+        corr_dens();
+    }
+
 
     //tree_build();
     //tree_free();

@@ -51,4 +51,10 @@ void check_flag() {
     A_NEED_B( All.CorrTdiffDens, All.NGrid );
     A_NEED_B( All.CorrTdiffDens, All.CorrRN );
 
+    A_NEED_B( All.CorrDens, All.NGrid );
+    A_NEED_B( All.CorrDens, All.CorrRN );
+
+    A_NEED_B( All.CorrRN, All.CorrRmin );
+    A_NEED_B( All.CorrRN, All.CorrRmax );
+
 }

@@ -246,6 +246,7 @@ extern struct global_parameters_struct {
         CrePressurePdf, TabF, Tree, ParallelIO,
         CorrTdiffDens,
         NGrid, CorrRN,
+        CorrDens,
 
         QNum, NuNum, FoFMinLen, proj_i, proj_j, proj_k,
         TreePartType, GroupIndexMin, GroupIndexMax,
@@ -271,7 +272,8 @@ extern struct global_parameters_struct {
            Sigma8,
            *ConvKernel, ConvSigma, NuMin, NuMax, GroupMassMin, Freq,
            QMin, QMax, MFMmin, MFMmax, MFMSplit,
-           PosShiftX, PosShiftY, PosShiftZ, GroupSize, GroupTempRmin;
+           PosShiftX, PosShiftY, PosShiftZ, GroupSize, GroupTempRmin,
+           CorrRmin, CorrRmax;
 
     long SliceStart[6], SliceEnd[6];
 }All;
