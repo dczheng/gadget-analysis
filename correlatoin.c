@@ -1,8 +1,9 @@
 #include "allvars.h"
-#include "srfftw.h"
+#include "drfftw.h"
 
-double dr, rmax, rmin, r, *data, *num, dx;
-int rN, NGrid, NGrid2, NGrid3;
+double dr, rmax, rmin, r, *data, dx;
+int rN, NGrid, NGrid2;
+long NGrid3;
 
 void set_global_vars() {
 
@@ -11,91 +12,190 @@ void set_global_vars() {
     NGrid3 = NGrid2*NGrid;
 
     dx = All.BoxSize / NGrid;
-    rN = All.CorrRN;
-    rmin = All.CorrRmin;
-    rmax = All.CorrRmax;
-
-    if ( rmin < dx ) {
-        rmin = dx * 2;
-        writelog( "Warning: `rmin` is less than `dx`, set it to `2*dx [%g]`\n", rmin );
-    }
-
-    dr = ( rmax - rmin ) / rN;
-
-    if ( dr < dx ) {
-        dr = dx * 2;
-        rN = ( rmax - rmin ) / dr;
-        writelog( "Warning: `dr` is less than `dx`, set it to `2*dx [%g], rN: %i`\n",
-            dr, rN );
-    }
-
+    rmin = dx * 2;
+    rmax = All.BoxSize / 2.0;
+    dr = dx * 2;
+    rN = ( rmax - rmin ) / dr;
 
 }
 
-void corr( double *x, double *y, double *c, int N ) {
+void corr( double *x, double *y, double *c ) {
 
-    int NGrid3;
-    long i, j, k, index, index0;
-    double a, b;
+    /*
+    \int x(t) + y(t+r) dt  = \int x(-t) + y(r-t) dt
+    */
+
+    long i, j, k, index, index0, FFT_NGrid3;
+    double a, b, fac;
 
     fftw_real *xx, *yy;
     fftw_complex *kxx, *kyy;
     rfftwnd_plan fft_plan, fft_plan_inv;
-    NGrid3 = 2 * ( N/2+1 );
+    FFT_NGrid3 = 2 * ( NGrid/2+1 );
 
-    mymalloc2( xx, SQR(N)*NGrid3*sizeof( fftw_real ) );
-    mymalloc2( yy, SQR(N)*NGrid3*sizeof( fftw_real ) );
+    writelog( "compute correlation function ...\n" );
+    mymalloc2( xx, NGrid2*FFT_NGrid3*sizeof( fftw_real ) );
+    mymalloc2( yy, NGrid2*FFT_NGrid3*sizeof( fftw_real ) );
     kxx = ( fftw_complex* ) xx;
     kyy = ( fftw_complex* ) yy;
+    fac = SQR(1.0/NGrid3);
 
-    for( i=0; i<N; i++ )
-        for( j=0; j<N; j++ )
-                for( k=0; k<N; k++ ) {
-                    index = i*N*NGrid3 + j*NGrid3 + k;
-                    index0 = i*N*N + j*N + k;
+    //printf( "%i %i %li %li\n", NGrid, NGrid2, NGrid3, FFT_NGrid3 );
+    for( i=0; i<NGrid; i++ )
+        for( j=0; j<NGrid; j++ )
+                for( k=0; k<NGrid; k++ ) {
+                    index = i*NGrid*FFT_NGrid3 + j*FFT_NGrid3 + k;
+
+                    index0 = (NGrid-1-i)*NGrid2 + (NGrid-1-j)*NGrid + (NGrid-1-k);
                     xx[index] = x[index0];
+
+                    index0 = i*NGrid2 + j*NGrid + k;
                     yy[index] = y[index0];
                 }
 
-    fft_plan     = rfftw3d_create_plan( N, N, N, FFTW_REAL_TO_COMPLEX, FFTW_ESTIMATE | FFTW_IN_PLACE );
-    fft_plan_inv = rfftw3d_create_plan( N, N, N, FFTW_COMPLEX_TO_REAL, FFTW_ESTIMATE | FFTW_IN_PLACE );
+    fft_plan     = rfftw3d_create_plan( NGrid, NGrid, NGrid, FFTW_REAL_TO_COMPLEX, FFTW_ESTIMATE | FFTW_IN_PLACE );
+    fft_plan_inv = rfftw3d_create_plan( NGrid, NGrid, NGrid, FFTW_COMPLEX_TO_REAL, FFTW_ESTIMATE | FFTW_IN_PLACE );
 
-    rfftwnd_one_real_to_complex( fft_plan, xx, kxx );
-    rfftwnd_one_real_to_complex( fft_plan, yy, kyy );
+    rfftwnd_one_real_to_complex( fft_plan, xx, NULL );
+    rfftwnd_one_real_to_complex( fft_plan, yy, NULL );
 
-    for ( i=0; i<N; i++ )
-        for( j=0; j<N; j++ )
-                for( k=0; k<NGrid3/2; k++ ) {
-                    index = i*N*NGrid3/2 + j*NGrid3/2 + k;
+    for ( i=0; i<NGrid; i++ )
+        for( j=0; j<NGrid; j++ )
+                for( k=0; k<FFT_NGrid3/2; k++ ) {
+                    index = i*NGrid*FFT_NGrid3/2 + j*FFT_NGrid3/2 + k;
                     a = kxx[index].re;
                     b = kxx[index].im;
                     kxx[index].re = a * kyy[index].re - b * kyy[index].im;
                     kxx[index].im = a * kyy[index].im + b * kyy[index].re;
                 }
 
-    rfftwnd_one_complex_to_real( fft_plan_inv, kxx, xx );
+    rfftwnd_one_complex_to_real( fft_plan_inv, kxx, NULL );
 
     rfftwnd_destroy_plan( fft_plan );
     rfftwnd_destroy_plan( fft_plan_inv );
 
-/*
-    for( i=0; i<10; i++ ) {
-        printf( "[%i] %lf, %lf\n", i, x[i], (double)xx[i] / ( N*N*N ) );
-    }
-    for( i=0; i<10; i++ ) {
-        printf( "[%i] %lf, %lf\n", N-i-2, x[N-i-2], (double)xx[N-i-2] / ( N*N*N ) );
-    }
-*/
-
-    for( i=0; i<N; i++ )
-        for( j=0; j<N; j++ )
-                for( k=0; k<N; k++ ) {
-                    index = i*N*NGrid3 + j*NGrid3 + k;
-                    index0 = i*N*N + j*N + k;
-                    c[index0] = xx[index] / CUBE(N);
+    for( i=0; i<NGrid; i++ )
+        for( j=0; j<NGrid; j++ )
+                for( k=0; k<NGrid; k++ ) {
+                    index = i*NGrid*FFT_NGrid3 + j*FFT_NGrid3 + k;
+                    index0 = i*NGrid2 + j*NGrid + k;
+                    c[index0] = xx[index] * fac;
                 }
     myfree( xx );
     myfree( yy );
+    writelog( "compute correlation function... done.\n" );
+
+}
+
+void get_corr1d( double *corr3d, double *corr1d ) {
+
+    int i, j, k, ii, jj, kk, index, *num;
+    
+    mymalloc2( num, sizeof(int) * rN );
+    for( i=0; i<NGrid; i++ )
+        for ( j=0; j<NGrid; j++ )
+            for ( k=0; k<NGrid; k++ ) {
+
+                ii = ( i > NGrid/2 ) ? i-NGrid : i;
+                jj = ( j > NGrid/2 ) ? j-NGrid : j;
+                kk = ( k > NGrid/2 ) ? k-NGrid : k;
+
+                r = sqrt( ii*ii + jj*jj + kk*kk ) * dx;
+
+                index = (r-rmin) / dr + 1; 
+
+                if ( index<0 || index > rN-1 )
+                    continue;
+
+                corr1d[index] += corr3d[ i * NGrid2 + j * NGrid + k ];
+                num[index] ++;
+            }
+
+    for( i=0; i<rN; i++ )
+        if ( num[i] > 0 )
+           corr1d[i] /= num[i];
+
+    myfree( num );
+
+}
+
+void corr_dm() {
+
+    double *DM, *DMCorr, *DMCorr1d, DMBar;
+    long p, num_dm, offset_dm;
+    int i;
+    FILE *fd;
+    char buf[100];
+
+    writelog( "Correlation function of dark matter ...\n" );
+    set_global_vars();
+
+    offset_dm = OffsetPart6[1];
+    num_dm = NumPart6[1];
+
+    //printf( "%li, %li\n", offset_dm, num_dm );
+
+    mymalloc1( data, sizeof( double ) * num_dm * 4 );
+    mymalloc1( DM, sizeof( double ) * NGrid3 );
+
+    mymalloc1( DMCorr, sizeof( double ) * NGrid3 );
+    mymalloc1( DMCorr1d, sizeof( double ) * rN );
+
+    for( p=0; p<num_dm; p++ ) {
+        for( i=0; i<3; i++ )
+            data[4*p+i] = P[offset_dm+p].Pos[i];
+        data[4*p+3] = 1;
+    }
+
+    field_to_grid( data, DM, num_dm, 0 );
+
+/*
+    fd = fopen( "dm.dat", "w" );
+    for ( i=0; i<NGrid; i++ ) {
+        for( j=0; j<NGrid; j++ ) {
+            r = 0;
+            for( k=0; k<100; k++ )
+                r += DM[ i * NGrid2 + j * NGrid + k ];
+            fprintf( fd, "%g ", r );
+        }
+        fprintf( fd, "\n" );
+    }
+    fclose( fd );
+*/
+
+    DMBar = ((double)num_dm) / NGrid3;
+    for( p=0; p<NGrid3; p++ ) {
+        DM[p] = DM[p] / DMBar - 1;
+    }
+
+    corr( DM, DM, DMCorr );
+    get_corr1d( DMCorr, DMCorr1d );
+
+/*
+    fd = fopen( "dm_corr3d.dat", "w" );
+    for ( i=0; i<NGrid; i++ ) {
+        for( j=0; j<NGrid; j++ ) {
+            r = 0;
+            for( k=0; k<10; k++ )
+                r += DMCorr[ i * NGrid2 + j * NGrid + k ];
+            fprintf( fd, "%g ", r );
+        }
+        fprintf( fd, "\n" );
+    }
+    fclose( fd );
+*/
+
+    sprintf( buf, "DMCorr1d_%03i.dat", All.SnapIndex );
+    fd = fopen( buf, "w" );
+    for( i=0; i<rN; i++ )
+            fprintf( fd, "%g %e\n", rmin +  i*dr, DMCorr1d[i] );
+    fclose( fd );
+
+    myfree( data );
+    myfree( DM );
+    myfree( DMCorr );
+    myfree( DMCorr1d );
+    put_sep;
 
 }
 
@@ -103,10 +203,13 @@ void corr_dens() {
 
     double *Dens, Densbar, *DensCorr, *DensCorr1d;
     long p;
-    int i, j, k;
+    int i;
     FILE *fd;
+    char buf[100];
 
-    mymalloc1( num, sizeof( double ) * NGrid3 );
+    writelog( "Correlation function of gas density ...\n" );
+    set_global_vars();
+
     mymalloc1( data, sizeof( double ) * N_Gas * 4 );
     mymalloc1( Dens, sizeof( double ) * NGrid3 );
     mymalloc1( DensCorr, sizeof( double ) * NGrid3 );
@@ -120,40 +223,25 @@ void corr_dens() {
         Densbar += SphP[p].Density;
     }
     Densbar /= N_Gas;
-    field_to_grid( data, Dens, num, N_Gas, 1 );
+    field_to_grid( data, Dens, N_Gas, 1 );
 
     for ( p=0; p<NGrid3; p++ )
         Dens[p] = ( Dens[p] - Densbar ) / Densbar;
 
-    corr( Dens, Dens, DensCorr, NGrid );
+    corr( Dens, Dens, DensCorr );
+    get_corr1d( DensCorr, DensCorr1d );
 
-    memset( num, 0, sizeof(double) * rN );
-
-    for( i=0; i<NGrid; i++ )
-        for ( j=0; j<NGrid; j++ )
-            for ( k=0; k<NGrid; k++ ) {
-                r = sqrt( i*i + j*j + k*k ) * dx;
-                p = ( r - rmin ) / dr; 
-                p = ( p < 0 ) ? 0 : p;
-                p = ( p > rN-1 ) ? rN-1 : p;
-                DensCorr1d[p] += DensCorr[ i * NGrid2 + j * NGrid + k ];
-                num[p] ++;
-            }
-
-    for( i=0; i<rN; i++ )
-        if ( num[i] > 0 )
-           DensCorr1d[i] /= num[i];
-
-    fd = fopen( "DensCorr1d.dat", "w" );
+    sprintf( buf, "DensCorr1d_%03i.dat", All.SnapIndex );
+    fd = fopen( buf, "w" );
     for( i=0; i<rN; i++ )
         fprintf( fd, "%g %e\n", rmin +  i*dr, DensCorr1d[i] );
     fclose( fd );
 
-    myfree( num );
     myfree( data );
     myfree( Dens );
     myfree( DensCorr );
     myfree( DensCorr1d );
+    put_sep;
 
 }
 
@@ -163,13 +251,12 @@ void corr_Tdiff_dens() {
           // Tmm[4], Densmm[4],
            *Tdiff, *Densdiff, Tdiffbar, Densbar,
            *TDensCorr, *TDensCorr1d;
-    int i, j, k, index;
+    int i, index;
     MPI_Status status;
     long p;
     FILE *fd;
 
-    writelog( "Correlation of T difference and density ...\n" );
-
+    writelog( "Correlation function of T difference and density ...\n" );
     set_global_vars();
 
     MPI_Gather( &All.RedShift, 1, MPI_DOUBLE, z, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD );
@@ -183,7 +270,6 @@ void corr_Tdiff_dens() {
 
     mymalloc1( T, sizeof( double ) * NGrid3 );
     mymalloc1( Dens, sizeof( double ) * NGrid3 );
-    mymalloc1( num, sizeof( double ) * NGrid3 );
     mymalloc1( data, sizeof( double ) * N_Gas * 4 );
 
     if ( ThisTask == 0 ) {
@@ -209,7 +295,7 @@ void corr_Tdiff_dens() {
 
     }
 
-    field_to_grid( data, T, num, N_Gas, 1 );
+    field_to_grid( data, T, N_Gas, 1 );
 
     for( p=0; p<N_Gas; p++ ) {
         for( i=0; i<3; i++ )
@@ -221,7 +307,7 @@ void corr_Tdiff_dens() {
 
     }
 
-    field_to_grid( data, Dens, num, N_Gas, 1 );
+    field_to_grid( data, Dens, N_Gas, 1 );
 
     /*
     MPI_Gather( &Tmin, 1, MPI_DOUBLE, Tmm, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD );
@@ -307,28 +393,8 @@ void corr_Tdiff_dens() {
             Dens[index] = ( Dens[index] - Densbar ) / Densbar;
         }
 
-        corr( Tdiff, Dens, TDensCorr, NGrid );
-        /*
-        for ( i=0; i<10; i++ )
-            printf( "%i, %g\n", TDensCorr[i] );
-        */
-
-        memset( num, 0, sizeof(double) * rN );
-
-        for( i=0; i<NGrid; i++ )
-            for ( j=0; j<NGrid; j++ )
-                for ( k=0; k<NGrid; k++ ) {
-                    r = sqrt( i*i + j*j + k*k ) * dx;
-                    p = ( r - rmin ) / dr; 
-                    p = ( p < 0 ) ? 0 : p;
-                    p = ( p > rN-1 ) ? rN-1 : p;
-                    TDensCorr1d[p] += TDensCorr[ i * NGrid2 + j * NGrid + k ];
-                    num[p] ++;
-                }
-
-        for( i=0; i<rN; i++ )
-            if ( num[i] > 0 )
-                TDensCorr1d[i] /= num[i];
+        corr( Tdiff, Dens, TDensCorr);
+        get_corr1d( TDensCorr, TDensCorr1d );
 
         fd = fopen( "TDensCorr1d.dat", "w" );
         for( i=0; i<rN; i++ )
@@ -338,7 +404,6 @@ void corr_Tdiff_dens() {
     }
 
     myfree( T );
-    myfree( num );
     myfree( Dens );
 
     if ( ThisTask == 0 ) {
@@ -349,6 +414,8 @@ void corr_Tdiff_dens() {
         myfree( TDensCorr );
         myfree( TDensCorr1d );
     }
+
+    put_sep;
 
 
 }

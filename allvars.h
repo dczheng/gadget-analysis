@@ -245,8 +245,8 @@ extern struct global_parameters_struct {
         PowSpec, PowSpecNGrid, PowSpecPartType, PowSpecBins,
         CrePressurePdf, TabF, Tree, ParallelIO,
         CorrTdiffDens,
-        NGrid, CorrRN,
-        CorrDens,
+        NGrid,
+        CorrDens, CorrDM,
 
         QNum, NuNum, FoFMinLen, proj_i, proj_j, proj_k,
         TreePartType, GroupIndexMin, GroupIndexMax,
@@ -272,8 +272,7 @@ extern struct global_parameters_struct {
            Sigma8,
            *ConvKernel, ConvSigma, NuMin, NuMax, GroupMassMin, Freq,
            QMin, QMax, MFMmin, MFMmax, MFMSplit,
-           PosShiftX, PosShiftY, PosShiftZ, GroupSize, GroupTempRmin,
-           CorrRmin, CorrRmax;
+           PosShiftX, PosShiftY, PosShiftZ, GroupSize, GroupTempRmin;
 
     long SliceStart[6], SliceEnd[6];
 }All;

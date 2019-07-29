@@ -138,6 +138,10 @@ void analysis(){
         corr_dens();
     }
 
+    if ( All.CorrDM ) {
+        corr_dm();
+    }
+
 
     //tree_build();
     //tree_free();

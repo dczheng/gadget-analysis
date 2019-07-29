@@ -6,7 +6,7 @@ HDF5_OPTS  = -DH5_USE_16_API
 HDF5_LIBS  = -lhdf5
 
 FFTW_INCL  = -I/mnt/ddnfs/data_users/dczheng/local/usr/fftw-2.1.5_mpich/include
-FFTW_LIBS  = -L/mnt/ddnfs/data_users/dczheng/local/usr/fftw-2.1.5_mpich/lib -lsrfftw -lsfftw
+FFTW_LIBS  = -L/mnt/ddnfs/data_users/dczheng/local/usr/fftw-2.1.5_mpich/lib -ldrfftw -ldfftw
 
 LIBS       = $(GSL_LIBS) $(HDF5_LIBS) $(FFTW_LIBS) -lm
 INCL       = $(GSL_INCL) $(HDF5_INCL) $(FFTW_INCL)

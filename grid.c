@@ -1,8 +1,8 @@
 #include "allvars.h"
 
-void field_to_grid( double *data, double *grid, double *num, long N, int flag ) {
+void field_to_grid( double *data, double *grid, long N, int flag ) {
 
-    double fac, v, t, dx[6];
+    double fac, v, t, dx[6], *num;
     int i, x[6], NGrid, NGrid2, NGrid3;
     long p, index;
 
@@ -11,8 +11,9 @@ void field_to_grid( double *data, double *grid, double *num, long N, int flag ) 
     NGrid3 = NGrid2 * NGrid;
     fac = NGrid / All.BoxSize;
 
+    writelog( "put field to grid ...\n" );
     memset( grid, 0, sizeof(double) * NGrid3 );
-    memset( num, 0, sizeof(double) * NGrid3 );
+    mymalloc2( num, sizeof(double) * NGrid3 );
 
     for( p=0; p<N; p++ ) {
         for( i=0; i<3; i++ ) {
@@ -55,11 +56,14 @@ void field_to_grid( double *data, double *grid, double *num, long N, int flag ) 
 
     }
 
-    if ( !flag )
-        return;
+    if ( flag )
+        for( index=0; index<NGrid3; index++ )
+            if ( num[index]>0 )
+                grid[index] /= num[index];
 
-    for( index=0; index<NGrid3; index++ )
-        if ( num[index]>0 )
-            grid[index] /= num[index];
+
+    myfree( num );
+
+    writelog( "put field to grid ... done.\n" );
 
 }

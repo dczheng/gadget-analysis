@@ -535,6 +535,13 @@ void pre_proc() {
         P[i].Pos[2] = PERIODIC( P[i].Pos[2] + All.PosShiftZ );
     }
 
+/*
+    long offset;
+    offset = OffsetPart6[1];
+    for( i=offset; i<offset+10; i++ ) {
+        printf( "%g %g %g\n", P[i].Pos[0], P[i].Pos[1], P[i].Pos[2] );
+    }
+*/
 
     find_id();
 

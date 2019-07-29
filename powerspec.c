@@ -1,5 +1,5 @@
 #include "allvars.h"
-#include "srfftw.h"
+#include "drfftw.h"
 
 
 double *PS, binfac, Kmin, Kmax, BoxSize, *Kbin;

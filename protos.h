@@ -105,5 +105,6 @@ void part_info();
 
 void corr_Tdiff_dens();
 void corr_dens();
+void corr_dm();
 
-void field_to_grid( double *data, double *grid, double *num, long N, int flag );
+void field_to_grid( double *data, double *grid, long N, int flag );
