@@ -12,7 +12,7 @@ void part_info() {
 
     for( i=0; i<N_Gas; i++ ) {
         vmax2( rho_max, SphP[i].Density );
-        vmin2( rho_min, SphP[i].Density, 1 );
+        vmin20( rho_min, SphP[i].Density );
     }
 
     writelog( "[Baryon density] min: %g [%g gcm-3], max: %g [%g gcm-3]\n"

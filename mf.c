@@ -14,7 +14,7 @@ void mass_function() {
     gm_max = -DBL_MAX;
 
     for ( g=0; g<Ngroups; g++ ) {
-        vmin2( gm_min, Gprops[g].mass, 0 );
+        vmin2( gm_min, Gprops[g].mass );
         vmax2( gm_max, Gprops[g].mass );
     }
 

@@ -10,8 +10,6 @@ void init_img();
 void free_img();
 void reset_img();
 void write_img( char *fn, char *s, int mode );
-#define write_img1( fn, s )  write_img( fn, s, 0 )
-#define write_img2( fn, s )  write_img( fn, s, 1 )
 
 void create_dir( char *s );
 double second();
@@ -104,7 +102,11 @@ void cre_pressure_pdf();
 void part_info();
 
 void corr_Tdiff_dens();
-void corr_dens();
+void pdf_Tdiff_dens();
+void corr_gas();
 void corr_dm();
 
-void field_to_grid( double *data, double *grid, long N, int flag );
+void field_to_grid( double *data, double *grid, int pt, int Nmin, int flag );
+
+void dens_pdf();
+void T_pdf();

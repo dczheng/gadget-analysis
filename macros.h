@@ -9,7 +9,8 @@
 #define vmax( a, b ) ( ( (a) > (b) ) ? (a) : (b) )
 #define vmax2( a, b ) ( a = vmax( a, b ) )
 #define vmin( a, b, mode) ( ( mode == 0 ) ? ( ( (a) > (b) ) ? (b) : (a) ) : ( ( (a) > (b) && (b) > 0 ) ? (b) : (a) ) )
-#define vmin2( a, b, mode ) ( a = vmin( a, b, mode ) )
+#define vmin2( a, b ) ( a = vmin( a, b, 0 ) )
+#define vmin20( a, b ) ( a = vmin( a, b, 1 ) )
 #define check_picture_index( i )  i = ( ( (i)<0 || (i)>=All.PicSize ) ? ( ((i)<0) ? 0 : All.PicSize-1 ) : (i) )
 #define PERIODIC_HALF( x ) ( ( (x) > All.HalfBoxSize || (x) < -All.HalfBoxSize ) ? ( ( (x) > All.HalfBoxSize ) ? ( (x) - All.BoxSize ) : ( x + All.BoxSize )  ) : (x) )
 #define PERIODIC( x ) ( ( (x) > All.BoxSize || (x) <  0) ? ( ( (x) > All.BoxSize ) ? ( (x) - All.BoxSize ) : ( x + All.BoxSize )  ) : (x) )
@@ -232,3 +233,5 @@ writelog( "[Timer Start in `%s`]\n", __FUNCTION__ ); \
 #define mytimer_end() \
     writelog( "[Total Time in `%s`]: [%g sec]\n", __FUNCTION__, second() - timer1 ); \
 
+#define write_img1( fn, s )  write_img( fn, s, 0 )
+#define write_img2( fn, s )  write_img( fn, s, 1 )

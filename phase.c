@@ -4,7 +4,7 @@ void phase() {
 
     double TempMin, TempMax, DensMin, DensMax,
            LogTempMin, LogTempMax, LogDensMin, LogDensMax,
-           DLogTemp, DLogDens, LogDens, LogTemp, Dens, Temp, sum,
+           DLogTemp, DLogDens, LogDens, LogTemp, Dens, Temp,
            GlobLogTempMin, GlobLogTempMax, GlobLogDensMin, GlobLogDensMax;
     int i, j, k, PicSize;
     char buf[200];
@@ -19,11 +19,30 @@ void phase() {
     reset_img();
 
     for ( i=0; i<N_Gas; i++ ) {
-        vmin2( TempMin, SphP[i].Temp,  1 );
+        vmin20( TempMin, SphP[i].Temp );
         vmax2( TempMax, SphP[i].Temp );
-        vmin2( DensMin, SphP[i].Density/All.RhoBaryon, 1 );
+        vmin20( DensMin, SphP[i].Density/All.RhoBaryon );
         vmax2( DensMax, SphP[i].Density/All.RhoBaryon );
     }
+
+    /*
+    printf( "%g %g %g %g\n",
+        All.PhaseDensMin,
+        All.PhaseDensMax,
+        All.PhaseTempMin,
+        All.PhaseTempMax
+        );
+    */
+
+    if ( All.PhaseTempMin > 0 )
+        TempMin = All.PhaseTempMin;
+    if ( All.PhaseTempMax > 0 )
+        TempMax = All.PhaseTempMax;
+
+    if ( All.PhaseDensMin > 0 )
+        DensMin = All.PhaseDensMin;
+    if ( All.PhaseDensMax > 0 )
+        DensMax = All.PhaseDensMax;
 
     LogDensMin = log10( DensMin );
     LogDensMax = log10( DensMax );
@@ -71,6 +90,7 @@ void phase() {
     }
 
 
+/*
     for ( i=0, sum=0; i<SQR(PicSize); i++ )
         sum += image.img[i];
 
@@ -78,6 +98,9 @@ void phase() {
 
     for ( i=0; i<SQR(PicSize); i++ )
         image.img[i] /= sum * DLogTemp * DLogDens;
+*/
+    for ( i=0; i<SQR(PicSize); i++ )
+        image.img[i] /= DLogTemp * DLogDens;
 
     sprintf( buf, "%sPhase", All.OutputDir );
     create_dir( buf );

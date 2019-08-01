@@ -1,6 +1,6 @@
 #include "allvars.h"
 
-#define MAXTAGS 300
+#define MAXTAGS 500
 #define REAL 1
 #define STRING 2
 #define INT 3
@@ -91,6 +91,14 @@ void read_parameters( char *fn ) {
         ADD_PARAR( All.PosShiftZ                );
         ADD_PARAR( All.GroupSize                );
         ADD_PARAR( All.GroupTempRmin            );
+        ADD_PARAR( All.PhaseTempMin             );
+        ADD_PARAR( All.PhaseTempMax             );
+        ADD_PARAR( All.PhaseDensMin             );
+        ADD_PARAR( All.PhaseDensMax             );
+        ADD_PARAR( All.DensPdfMin               );
+        ADD_PARAR( All.DensPdfMax               );
+        ADD_PARAR( All.TPdfMin                  );
+        ADD_PARAR( All.TPdfMax                  );
 
         ADD_PARAI( All.NumFilesPerSnapshot      );
         ADD_PARAI( All.PicSize                  );
@@ -148,9 +156,14 @@ void read_parameters( char *fn ) {
         ADD_PARAI( All.Readu                    );
         ADD_PARAI( All.GroupTempBins            );
         ADD_PARAI( All.CorrTdiffDens            );
+        ADD_PARAI( All.PdfTdiffDens             );
         ADD_PARAI( All.NGrid                    );
-        ADD_PARAI( All.CorrDens                 );
+        ADD_PARAI( All.CorrGas                  );
         ADD_PARAI( All.CorrDM                   );
+        ADD_PARAI( All.DensPdf                  );
+        ADD_PARAI( All.DensPdfN                 );
+        ADD_PARAI( All.TPdf                     );
+        ADD_PARAI( All.TPdfN                    );
 
         while( !feof( fd ) ) {
             *buf = 0;

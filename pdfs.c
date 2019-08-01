@@ -32,10 +32,10 @@ void B_Pdf() {
         if ( B == 0 )
             continue;
 
-        vmin2( BMin, B, 1 );
+        vmin20( BMin, B );
         vmax2( BMax, B );
 
-        vmin2( DensMin, SphP[i].Density/All.RhoBaryon, 1 );
+        vmin20( DensMin, SphP[i].Density/All.RhoBaryon);
         vmax2( DensMax, SphP[i].Density/All.RhoBaryon );
     }
 
@@ -112,3 +112,96 @@ void B_Pdf() {
     put_sep;
 
 }
+
+void dens_pdf() {
+
+    double *num, dlogDens, Densmin, Densmax;
+    int N, i;
+    long p;
+    FILE *fd;
+    char buf[100];
+    
+    N = All.DensPdfN;
+
+    get_gas_density_min_max( Densmin, Densmax );
+    Densmin /= All.RhoBaryon;
+    Densmax /= All.RhoBaryon;
+
+    if ( All.DensPdfMin > 0 )
+        Densmin = All.DensPdfMin;
+    if ( All.DensPdfMax > 0 )
+        Densmax = All.DensPdfMax;
+
+    writelog( "Den, min: %g, max: %g\n", Densmin, Densmax );
+
+    dlogDens = log10( Densmax / Densmin ) / N;
+    mymalloc2( num, sizeof(double) * N );
+
+    for( p=0; p<N_Gas; p++ ) {
+        i = log10( SphP[p].Density / (Densmin * All.RhoBaryon) ) / dlogDens;
+        if ( i > N-1 || i < 0 )
+            continue;
+        num[i] ++;
+    }
+
+    for( i=0; i<N; i++ )
+        num[i] /= dlogDens;
+
+    sprintf( buf, "%s/DensPdf", All.OutputDir );
+    create_dir( buf );
+    sprintf( buf, "%s/DensPdf_%03i.dat", buf, All.SnapIndex );
+    fd = fopen( buf, "w" );
+    fprintf( fd, "%g %g\n", All.RedShift, All.RedShift );
+    for( i=0; i<N; i++ )
+        fprintf( fd, "%g %g\n", Densmin*pow( 10, i*dlogDens ), num[i] );
+
+    fclose( fd );
+
+}
+
+void T_pdf() {
+
+    double *num, dlogT, Tmin, Tmax;
+    int N, i;
+    long p;
+    FILE *fd;
+    char buf[100];
+    
+    N = All.TPdfN;
+
+    get_gas_temp_min_max( Tmin, Tmax );
+
+    //printf( "%g %g\n", All.TPdfMin, All.TPdfMax );
+
+    if ( All.TPdfMin > 0 )
+        Tmin = All.TPdfMin;
+    if ( All.TPdfMax > 0 )
+        Tmax = All.TPdfMax;
+    writelog( "T, min: %g, max: %g\n", Tmin, Tmax );
+
+    dlogT = log10( Tmax / Tmin ) / N;
+    mymalloc2( num, sizeof(double) * N );
+
+    for( p=0; p<N_Gas; p++ ) {
+        i = log10( SphP[p].Temp / Tmin ) / dlogT;
+        if ( i > N-1 || i < 0 )
+            continue;
+        num[i] ++;
+    }
+
+    for( i=0; i<N; i++ )
+        num[i] /= dlogT;
+
+    sprintf( buf, "%s/TPdf", All.OutputDir );
+    create_dir( buf );
+    sprintf( buf, "%s/TPdf_%03i.dat", buf, All.SnapIndex );
+
+    fd = fopen( buf, "w" );
+    fprintf( fd, "%g %g\n", All.RedShift, All.RedShift );
+    for( i=0; i<N; i++ )
+        fprintf( fd, "%g %g\n", Tmin*pow( 10, i*dlogT ), num[i] );
+
+    fclose( fd );
+
+}
+

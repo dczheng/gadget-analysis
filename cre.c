@@ -123,8 +123,8 @@ void cre_pressure_pdf() {
         vmax2( cre_r_max, cre_r );
         vmax2( cr_r_max, cr_r );
 
-        vmin2( cre_r_min, cre_r, 0);
-        vmin2( cr_r_min, cr_r, 0 );
+        vmin2( cre_r_min, cre_r );
+        vmin2( cr_r_min, cr_r );
 
     }
 

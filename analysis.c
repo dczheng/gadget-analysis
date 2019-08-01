@@ -134,12 +134,24 @@ void analysis(){
         corr_Tdiff_dens();
     }
 
-    if ( All.CorrDens ) {
-        corr_dens();
+    if ( All.PdfTdiffDens ) {
+        pdf_Tdiff_dens();
+    }
+
+    if ( All.CorrGas ) {
+        corr_gas();
     }
 
     if ( All.CorrDM ) {
         corr_dm();
+    }
+
+    if ( All.DensPdf ) {
+        dens_pdf();
+    }
+
+    if ( All.TPdf ) {
+        T_pdf();
     }
 
 

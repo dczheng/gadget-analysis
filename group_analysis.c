@@ -208,7 +208,7 @@ void group_electron_spectrum() {
                             SphP[p].CRE_qmax);
                             */
                 vmax2( qmax_max, SphP[p].CRE_qmax );
-                vmin2( qmin_min, SphP[p].CRE_qmin, 1 );
+                vmin20( qmin_min, SphP[p].CRE_qmin );
             }
             p = FoFNext[p];
         }

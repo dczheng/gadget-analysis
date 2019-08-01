@@ -14,16 +14,21 @@ void init_img() {
 
 void free_img() {
     myfree( image.props );
-    myfree( image.img );
+    myfree( image.img_tmp );
     myfree( image.num );
 }
 
 void reset_img() {
+
+    int i;
     image.img = image.img_tmp;
     image.num = image.num_tmp;
     memset( image.props, 0, All.PicSize * sizeof(double) );
     memset( image.img, 0, SQR(All.PicSize) * sizeof(double) );
     memset( image.num, 0, SQR(All.PicSize) * sizeof(double) );
+
+    for( i=0; i<IMG_PROPS_START; i++ )
+        image.props[i] = 0;
 }
 
 void write_img( char *fn, char *nstr, int mode ) {
@@ -41,8 +46,8 @@ void write_img( char *fn, char *nstr, int mode ) {
     img_max = -DBL_MAX;
 
     for ( i=0; i<All.PicSize2; i++ ) {
-        vmin2( img_min, image.img[i], 0 );
-        vmax2( img_max, image.img[i]);
+        vmin2( img_min, image.img[i] );
+        vmax2( img_max, image.img[i] );
     }
 
     /*
