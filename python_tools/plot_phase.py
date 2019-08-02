@@ -34,6 +34,8 @@ for h in hs:
 
 Nmin = 1e4
 Errmin = 1e-2
+err_lognorm = 1
+
 for i in range(2):
     index = np.where( ds[i*2] < Nmin )
     t1 = ds[i*2].copy()
@@ -52,8 +54,20 @@ for i in range(2):
     else:
         vmin[i] = np.min( [ ds[i].min(), ds[i+2].min() ] )
     vmax[i] = np.max( [ ds[i].max(), ds[i+2].max() ] )
+
+    if vmin[i] * vmax[i] < 0:
+        vv = np.max( [ np.abs(vmin[i]), np.abs(vmax[i]) ] )
+        vmin[i] = -vv
+        vmax[i] = vv
+
     vmin[i+2] = vmin[i]
     vmax[i+2] = vmax[i]
+
+#print( vmin, vmax )
+
+if not(err_lognorm):
+    for i in range(2):
+        ds[i*2+1][ds[i*2+1] == 0] = np.nan
 
 
 d1 = ds[0]
@@ -84,11 +98,21 @@ ax2_err_cbar = fig.add_axes(  [2*rc+2*raw,  rc, rc*rrc, rah] )
 axs = [ ax1, ax1_err, ax2, ax2_err ]
 axs_cbar = [ ax1_cbar, ax1_err_cbar, ax2_cbar, ax2_err_cbar ]
 
-cmaps = [ cm.jet, cm.PiYG, cm.jet, cm.PiYG ]
-norms = [ mplc.LogNorm(), \
-          mplc.SymLogNorm( linthresh=Errmin),\
-          mplc.LogNorm(), \
-          mplc.SymLogNorm( linthresh=Errmin ) ]
+cmap1 = cm.jet
+#cmap2 = cm.jet
+#cmap2 = cm.viridis
+#cmap2 = cm.tab20
+#cmap2 = cm.tab10
+cmap2 = cm.seismic
+cmaps = [ cmap1, cmap2, cmap1, cmap2 ]
+
+norm1 = mplc.LogNorm()
+if err_lognorm:
+    norm2 = mplc.SymLogNorm( linthresh=Errmin )
+else:
+    norm2 = None
+
+norms = [ norm1, norm2, norm1, norm2 ] 
 
 print( "xmin: %g, xmax: %g, ymin: %g, ymax: %g"%( xmin, xmax, ymin, ymax ) )
 xloc = np.arange( int(xmin-1), int(xmax+2), 2 )
@@ -200,15 +224,12 @@ fig.savefig( f_out )
 #my_cmap = cm.Set1
 #my_cmap = cm.cubehelix
 #my_cmap = cm.ocean
-#my_cmap = cm.magma
 #my_cmap = cm.Paired
 #my_cmap = cm.tab10
-#my_cmap = cm.tab20
 #my_cmap = cm.tab20b
 #my_cmap = cm.tab20c
 #my_cmap = cm.Set2
 #my_cmap = cm.Set3
-#my_cmap = cm.viridis
 #my_cmap = cm.PiYG
 #my_cmap = cm.BrBG
 #my_cmap = cm.RdYlBu
