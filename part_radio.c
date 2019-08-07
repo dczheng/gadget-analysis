@@ -1,32 +1,5 @@
 #include "allvars.h"
 
-
-/*
-void compute_radio( double v ) {
-
-    mymalloc( img, sizeof( double ) * SQR( PicSize ) );
-    memset( img, 0, sizeof( double ) * SQR( PicSize ) );
-
-    dy = dx = BoxSize / PicSize;
-    h = All.SofteningTable[0] * ( g2c.cm );
-    V = 4.0 / 3.0 * PI * pow( h, 3 );
-    ang = h / ang_dis / PI * 180.0 * 60;
-    beam = pow( 10.0 / 60, 2.0 ) / ( 4.0 * log(2) );
-    img_max = DBL_MIN;
-    img_min = DBL_MAX;
-    for ( i=0; i<N_Gas; i++ ) {
-        xi = (int)( P[i].Pos[0] / dx );
-        yi = (int)( P[i].Pos[1] / dy );
-        tmp = img[xi * PicSize + yi] += SphP[i].P * V / ( 4*PI*pow(lum_dis,2) ) / SQR(ang)
-            * beam * 1e25;
-        //tmp = img[xi * PicSize + yi] += SphP[i].P * V / ( 4*PI*pow(lum_dis,2) ) / SQR(ang)
-        //    * 1e25;
-        img_max = ( tmp > img_max ) ? tmp : img_max;
-        img_min = ( tmp < img_min && tmp > 0 ) ? tmp : img_min;
-    }
-}
-*/
-
 /*
 double particle_radio( double nu, long i ) {
 

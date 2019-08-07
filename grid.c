@@ -75,3 +75,31 @@ void field_to_grid( double *data, double *grid, int pt, int Nmin, int flag ) {
     //writelog( "put field to grid ... done.\n" );
 
 }
+
+void data_to_grid2d( double *data, double *grid, long Ndata, int NGrid, double L ) {
+
+    double dx;
+    long p;
+    int i, j, *num, NGrid2;
+
+    dx = L / ( NGrid-1 );
+    NGrid2 = SQR( NGrid );
+    mymalloc2( num, sizeof(int) * NGrid2 );
+    memset( grid, 0, sizeof(double) * NGrid2 );
+
+    for( p=0; p<Ndata; p++ ) {
+        i = data[p*3] / dx;
+        j = data[p*3+1] / dx;
+        if ( i<0 || i > NGrid-1 )
+            continue;
+        num[i*NGrid+j] ++;
+        grid[i*NGrid+j] += data[p*3+2];
+    }
+
+    for( p=0; p<NGrid2; p++ )
+        if ( num[p] > 0 )
+            grid[p] /= num[p];
+
+    myfree( num );
+
+}

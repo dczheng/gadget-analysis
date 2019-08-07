@@ -11,6 +11,7 @@
 
 void check_flag() {
 
+    A_NEED_B( All.FoF, All.Tree );
     A_NEED_B( All.MF, All.FoF);
 
     A_NEED_B( All.Group, All.FoF );
@@ -34,9 +35,6 @@ void check_flag() {
     A_NEED_B( All.Phase, All.Readu );
 
     A_NEED_B( All.RadSlice, All.RadSpec );
-
-    A_NEED_B( All.GroupTemp, All.GroupTempBins );
-    A_NEED_B( All.GroupTemp, All.GroupTempRmin );
 
     if ( All.CorrTdiffDens && NTask != 2 ) {
         printf( "`NTask = 2` is required by `CorrTdiffDens`\n" );
@@ -76,5 +74,12 @@ void check_flag() {
     A_NEED_B( All.GroupTempStack, All.GroupTempStackRN );
     A_NEED_B( All.GroupTempStack, All.Group );
     A_NEED_B( All.GroupTempStack, All.FoF );
+    A_NEED_B( All.GroupTempStack, All.Tree );
+
+    A_NEED_B( All.GroupTempProfile, All.Group );
+    A_NEED_B( All.GroupTempProfile, All.FoF );
+    A_NEED_B( All.GroupTempProfile, All.Tree );
+    A_NEED_B( All.GroupTempProfile, All.GroupTempProfileRmin );
+    A_NEED_B( All.GroupTempProfile, All.GroupTempProfileRmax );
 
 }

@@ -156,6 +156,7 @@ void dens_pdf() {
         fprintf( fd, "%g %g\n", Densmin*pow( 10, i*dlogDens ), num[i] );
 
     fclose( fd );
+    myfree( num );
 
 }
 
@@ -202,6 +203,7 @@ void T_pdf() {
         fprintf( fd, "%g %g\n", Tmin*pow( 10, i*dlogT ), num[i] );
 
     fclose( fd );
+    myfree( num );
 
 }
 

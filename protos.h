@@ -34,6 +34,7 @@ void fof_free();
 void fof_save();
 void fof_read();
 int ngb_fof(  double *searchcenter, double h );
+int ngb(  double *searchcenter, double h );
 
 void conv( double ds );
 void init_conv_kernel();
@@ -111,3 +112,4 @@ void dens_pdf();
 void T_pdf();
 
 void group_temp_stack();
+void data_to_grid2d( double *data, double *grid, long Ndata, int NGrid, double L );

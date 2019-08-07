@@ -235,7 +235,8 @@ extern struct global_parameters_struct {
         MpcFlag,
         Group, MF, MFBins, BPdf,
         GroupDens, GroupTemp, GroupSfr, GroupB, GroupMach, GroupCre,
-        GroupTempBins,
+        GroupTempProfileRN,
+        GroupTempProfile,
         MachSlice,
         BSlice, UnitAreaSlice, CREnSlice, RadSlice,
         GroupRad, GroupSpec, TotSpec,
@@ -286,8 +287,10 @@ extern struct global_parameters_struct {
            TPdfMin, TPdfMax,
            GroupTempStackRmin,
            GroupTempStackRmax,
+           GroupTempProfileRmin,
+           GroupTempProfileRmax,
 
-           PosShiftX, PosShiftY, PosShiftZ, GroupSize, GroupTempRmin;
+           PosShiftX, PosShiftY, PosShiftZ, GroupSize;
 
     long SliceStart[6], SliceEnd[6];
 }All;
@@ -385,7 +388,7 @@ extern struct physical_constants_in_cgs_unit{
 #define MALLOC_VAR_LEN 200
 
 struct malloc_struct {
-    char var[MALLOC_VAR_NUM][MALLOC_VAR_LEN], str[100];
+    char var[MALLOC_VAR_NUM][MALLOC_VAR_LEN], str[100], mem_str[100];
     long mem, var_bytes[MALLOC_VAR_NUM],
        i, nn, b, max_mem;
 };

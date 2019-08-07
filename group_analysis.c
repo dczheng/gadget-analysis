@@ -624,131 +624,86 @@ void group_temp_profile() {
 
     long p;
     struct group_properties g;
-    int g_index, i, rN, *num, ii;
-    double  *T, *Terr, L, dlogL, Lmin;
-    char buf[100], *dn="TempProfile";
+    int g_index, i, RN, *num, ii, ngbnum, x, y, z, k;
+    double  *T, *data, Rmin, Rmax, dlogR, r;
+    char buf[100], buf1[100], *dn="TempProfile";
     FILE *fd;
 
-    rN = All.GroupTempBins;
+    RN = All.GroupTempProfileRN;
+    Rmin = All.GroupTempProfileRmin;
+    Rmax = All.GroupTempProfileRmax;
+    dlogR = log10( Rmax/Rmin ) / ( RN-1 );
 
-    mymalloc1( T,  sizeof(double) * rN );
-    mymalloc1( Terr,  sizeof(double) * rN );
-    mymalloc1( num,  sizeof(int) * rN );
+    mymalloc2( T,  sizeof(double) * RN );
+    mymalloc2( num,  sizeof(int) * RN );
+    mymalloc1( data, sizeof(double) * N_Gas * 3 );
+    mymalloc1( Ngblist, NumPart * sizeof(long) );
 
     writelog( "Temperature profile ....\n" );
     sprintf( buf, "%s%s", All.GroupDir, dn );
     create_dir( buf );
 
+    reset_img();
     for ( g_index=0; g_index<Ngroups; g_index++ ) {
 
         if ( !group_present( g_index ) )
             break;
 
         g = Gprops[g_index];
-
-        if ( All.GroupTempRmin > 0 ) {
-            Lmin = All.GroupTempRmin;
-        }
-        else {
-            Lmin = 1e10;
-            for ( i=0,p=g.Head; i<g.Len; i++, p=FoFNext[p] ) {
+        ngbnum = ngb( g.cm, Rmax*0.9 );
+        for( k=0; k<3; k++ ) {
+            x = k;
+            y = (k+1) % 3;
+            z = (k+2) % 3;
+            for( i=0; i<ngbnum; i++ ) {
+                p = Ngblist[i];
                 if ( P[p].Type != 0 )
                     continue;
-
-                L = sqrt(
-                        SQR( PERIODIC_HALF( P[p].Pos[All.proj_i] - g.cm[All.proj_i] ) )
-                    + SQR( PERIODIC_HALF( P[p].Pos[All.proj_j] - g.cm[All.proj_j] ) )
-                    + SQR( PERIODIC_HALF( P[p].Pos[All.proj_k] - g.cm[All.proj_k] ) )
-                    );
-                Lmin = ( L < Lmin ) ? L : Lmin;
+                data[i*3] = PERIODIC_HALF( P[p].Pos[x] - g.cm[x] ) + Rmax;
+                data[i*3+1] = PERIODIC_HALF( P[p].Pos[y] - g.cm[y] ) + Rmax;
+                data[i*3+2] = SphP[p].Density / All.RhoBaryon;
             }
-
-            Lmin *= 1.1;
+            data_to_grid2d( data, image.img, ngbnum, All.PicSize,  2*Rmax );
+            sprintf( buf, "%s%s/Density_%04i_%c.dat", All.GroupDir, dn, g_index, 'x'+z );
+            sprintf( buf1, "Density_%04i_%c.dat", g_index, 'x'+k );
+            write_img1( buf, buf1 );
         }
 
-        L = ( All.GroupSize > 0 ) ? All.GroupSize : get_group_size( &g );
-        dlogL = log( L / Lmin ) / ( rN - 1 );
-
-        for( i=0; i<rN; i++ ) {
-            num[i] = 0;
-            T[i] = 0;
-            Terr[i] = 0;
-        }
-
-        for ( i=0,p=g.Head; i<g.Len; i++, p=FoFNext[p] ) {
+        for( i=0; i<ngbnum; i++ ) {
+            p = Ngblist[i];
             if ( P[p].Type != 0 )
                 continue;
-
-            L = sqrt(
-                    SQR( PERIODIC_HALF( P[p].Pos[All.proj_i] - g.cm[All.proj_i] ) )
-                  + SQR( PERIODIC_HALF( P[p].Pos[All.proj_j] - g.cm[All.proj_j] ) )
-                  + SQR( PERIODIC_HALF( P[p].Pos[All.proj_k] - g.cm[All.proj_k] ) )
-                    );
-
-            //printf( "%g\n", L );
-
-            ii = log( L / Lmin ) /  dlogL + 1;
-
-            ii = ( ii < 0 ) ? 0 : ii;
-            ii = ( ii > rN-1 ) ? rN-1 : ii;
-
-            num[ii] ++;
+            for ( k=0, r=0; k<3; k++ )
+                r += SQR( PERIODIC_HALF( P[p].Pos[k] - g.cm[k] ) );
+            r = sqrt(r);
+            ii = log10( r / Rmin ) / dlogR;
+            if ( ii < 0 || ii > RN-1 )
+                continue;
             T[ii] += SphP[p].Temp;
-
+            num[ii] ++;
         }
-
-        for ( i=0; i<rN; i++ ) {
+        for( i=0; i<RN; i++ )
             if ( num[i] > 0 )
-                T[i]  /= num[i];
-        }
-
-        for ( i=0,p=g.Head; i<g.Len; i++, p=FoFNext[p] ) {
-            if ( P[p].Type != 0 )
-                continue;
-
-            L = sqrt(
-                    SQR( PERIODIC_HALF( P[p].Pos[All.proj_i] - g.cm[All.proj_i] ) )
-                  + SQR( PERIODIC_HALF( P[p].Pos[All.proj_j] - g.cm[All.proj_j] ) )
-                  + SQR( PERIODIC_HALF( P[p].Pos[All.proj_k] - g.cm[All.proj_k] ) )
-                    );
-
-            //printf( "%g\n", L );
-
-            ii = log( L / Lmin ) /  dlogL + 1;
-
-            ii = ( ii < 0 ) ? 0 : ii;
-            ii = ( ii > rN-1 ) ? rN-1 : ii;
-
-            Terr[ii] += SQR(SphP[p].Temp - T[ii]);
-
-        }
-
-        for ( i=0; i<rN; i++ ) {
-            if ( num[i] > 1 )
-                Terr[i]  = sqrt(Terr[i] / (num[i]-1));
-        }
-
-        make_group_output_filename( buf, dn, g_index );
+                T[i] /= num[i];
+        sprintf( buf, "%s%s/TempProfile_%04i.dat", All.GroupDir, dn, g_index );
         fd = fopen( buf, "w" );
-
-        for ( i=0; i<rN; i++ ) {
-            fprintf( fd, "%g %g %g\n", Lmin*exp( i*dlogL ), T[i], Terr[i] );
-        }
-
+        for( i=0; i<RN; i++ )
+            fprintf( fd, "%g %g %i\n", Rmin*pow(10, i*dlogR), T[i], num[i]  );
         fclose( fd );
 
     }
 
     myfree( T );
-    myfree( Terr );
     myfree( num );
+    myfree( data );
+    myfree( Ngblist );
 
 }
 
 void group_temp_stack() {
 
     double Rmin, Rmax, dlogR, r;
-    int RN, g_index, i, ii, mi;
+    int RN, g_index, i, ii, mi, k, ngbnum;
     long p;
     struct group_properties g;
     char buf[100];
@@ -760,16 +715,20 @@ void group_temp_stack() {
     m[1] = 5e3;
     m[2] = 1e4;
 
+    mymalloc1( Ngblist, NumPart * sizeof(long) );
+    
     RN = All.GroupTempStackRN;
     Rmin = All.GroupTempStackRmin;
     Rmax = All.GroupTempStackRmax;
-
     dlogR = log10( Rmax/Rmin ) / (RN-1);
 
     for( i=0; i<MS; i++ ) {
-        mymalloc2( T[i], sizeof(double) * RN );
-        mymalloc2( Terr[i], sizeof(double) * RN );
-        mymalloc2( num[i], sizeof(int) * RN );
+        T[i] = malloc( sizeof(double) * RN );
+        memset( T[i], 0, sizeof(double)*RN );
+        Terr[i] = malloc( sizeof(double) * RN );
+        memset( Terr[i], 0, sizeof(double)*RN );
+        num[i] = malloc( sizeof(int) * RN );
+        memset( num[i], 0, sizeof(int)*RN );
     }
 
     for ( g_index=0; g_index<Ngroups; g_index++ ) {
@@ -780,25 +739,39 @@ void group_temp_stack() {
         mi = 0;
         while( mi < MS-1 && g.mass > m[mi+1] ) mi ++;
 
-        for ( i=0,p=g.Head; i<g.Len; i++, p=FoFNext[p] ) {
+        ngbnum = ngb( g.cm, All. GroupTempStackRmax * 1.1 );
+        for( i=0; i<ngbnum; i++ ) {
+            p = Ngblist[i];
             if ( P[p].Type != 0 )
                 continue;
 
-            r = sqrt(
-                    SQR( PERIODIC_HALF( P[p].Pos[All.proj_i] - g.cm[All.proj_i] ) )
-                  + SQR( PERIODIC_HALF( P[p].Pos[All.proj_j] - g.cm[All.proj_j] ) )
-                  + SQR( PERIODIC_HALF( P[p].Pos[All.proj_k] - g.cm[All.proj_k] ) )
-                    );
-
+            for ( k=0, r=0; k<3; k++ )
+                r += SQR( PERIODIC_HALF( P[p].Pos[k] - g.cm[k] ) );
+            r = sqrt(r);
             ii = log10( r / Rmin ) /  dlogR;
-
             if ( ii < 0 || ii > RN-1 )
                 continue;
-
             T[mi][ii] += SphP[p].Temp;
             num[mi][ii] ++;
 
         }
+
+    /*
+        for ( i=0,p=g.Head; i<g.Len; i++, p=FoFNext[p] ) {
+            if ( P[p].Type != 0 )
+                continue;
+
+            for ( k=0, r=0; k<3; k++ )
+                r += SQR( PERIODIC_HALF( P[p].Pos[k] - g.cm[k] ) );
+            r = sqrt(r);
+            ii = log10( r / Rmin ) /  dlogR;
+            if ( ii < 0 || ii > RN-1 )
+                continue;
+            T[mi][ii] += SphP[p].Temp;
+            num[mi][ii] ++;
+
+        }
+    */
     }
 
     for( mi=0; mi<MS; mi++ )
@@ -813,24 +786,37 @@ void group_temp_stack() {
         mi = 0;
         while( mi < MS-1 && g.mass > m[mi+1] ) mi ++;
 
+        ngbnum = ngb( g.cm, All. GroupTempStackRmax );
+        for( i=0; i<ngbnum; i++ ) {
+            p = Ngblist[i];
+            if ( P[p].Type != 0 )
+                continue;
+
+            for ( k=0, r=0; k<3; k++ )
+                r += SQR( PERIODIC_HALF( P[p].Pos[k] - g.cm[k] ) );
+            r = sqrt(r);
+            ii = log10( r / Rmin ) /  dlogR;
+            if ( ii < 0 || ii > RN-1 )
+                continue;
+            Terr[mi][ii] += SQR( SphP[p].Temp - T[mi][ii] );
+
+        }
+
+/*
         for ( i=0,p=g.Head; i<g.Len; i++, p=FoFNext[p] ) {
             if ( P[p].Type != 0 )
                 continue;
 
-            r = sqrt(
-                    SQR( PERIODIC_HALF( P[p].Pos[All.proj_i] - g.cm[All.proj_i] ) )
-                  + SQR( PERIODIC_HALF( P[p].Pos[All.proj_j] - g.cm[All.proj_j] ) )
-                  + SQR( PERIODIC_HALF( P[p].Pos[All.proj_k] - g.cm[All.proj_k] ) )
-                    );
-
+            for ( k=0, r=0; k<3; k++ )
+                r += SQR( PERIODIC_HALF( P[p].Pos[k] - g.cm[k] ) );
+            r = sqrt(r);
             ii = log10( r / Rmin ) /  dlogR;
-
             if ( ii < 0 || ii > RN-1 )
                 continue;
-
             Terr[mi][ii] += SQR( SphP[p].Temp - T[mi][ii] );
 
         }
+    */
     }
 
     for( mi=0; mi<MS; mi++ )
@@ -860,10 +846,13 @@ void group_temp_stack() {
 
 
     for( mi=0; mi<MS; mi++ ) {
-        myfree( T[mi] );
-        myfree( Terr[mi] );
-        myfree( num[mi] );
+        free( T[mi] );
+        free( Terr[mi] );
+        free( num[mi] );
     }
+
+    myfree( Ngblist );
+
 }
 
 void group_analysis() {
@@ -918,8 +907,8 @@ void group_analysis() {
                 for ( i=0,p=g.Head; i<g.Len; i++, p=FoFNext[p] ) {
                     if ( P[p].Type != 0 )
                         continue;
-                vmax2( L, PERIODIC_HALF( P[p].Pos[x] - g.cm[x] ) * 1.001 );
-                vmax2( L, PERIODIC_HALF( P[p].Pos[y] - g.cm[y] ) * 1.001 );
+                vmax2( L, PERIODIC_HALF( P[p].Pos[x] - g.cm[x] ) * 1.01 );
+                vmax2( L, PERIODIC_HALF( P[p].Pos[y] - g.cm[y] ) * 1.01 );
                 }
             }
         }
@@ -949,9 +938,7 @@ void group_analysis() {
         mass = g.mass_table;
         npart = g.npart;
         r200 = g.vr200;
-        //L = get_group_size( &g ) * 1.1;
 
-        dL = 2 * L / PicSize;
         writelog( "npart: " );
         for ( i=0; i<6; i++ )
             writelog( "%li ", npart[i] );
@@ -968,11 +955,13 @@ void group_analysis() {
             for ( i=0,p=g.Head; i<g.Len; i++, p=FoFNext[p] ) {
                 if ( P[p].Type != 0 )
                     continue;
-            vmax2( L, PERIODIC_HALF( P[p].Pos[x] - g.cm[x] ) * 1.001 );
-            vmax2( L, PERIODIC_HALF( P[p].Pos[y] - g.cm[y] ) * 1.001 );
+            vmax2( L, PERIODIC_HALF( P[p].Pos[x] - g.cm[x] ) * 1.1 );
+            vmax2( L, PERIODIC_HALF( P[p].Pos[y] - g.cm[y] ) * 1.1 );
             }
         }
 
+        //L = get_group_size( &g ) * 1.1;
+        dL = 2 * L / PicSize;
         writelog( "\n" );
         writelog( "L: %g, dL:%g\n", 2*L, dL );
 
@@ -1164,7 +1153,7 @@ void group_analysis() {
         //group_spectrum_index();
     }
 
-    if ( All.GroupTemp )
+    if ( All.GroupTempProfile )
         group_temp_profile();
 
     if ( All.GroupTempStack )

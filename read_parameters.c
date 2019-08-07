@@ -90,7 +90,6 @@ void read_parameters( char *fn ) {
         ADD_PARAR( All.PosShiftY                );
         ADD_PARAR( All.PosShiftZ                );
         ADD_PARAR( All.GroupSize                );
-        ADD_PARAR( All.GroupTempRmin            );
         ADD_PARAR( All.PhaseTempMin             );
         ADD_PARAR( All.PhaseTempMax             );
         ADD_PARAR( All.PhaseDensMin             );
@@ -101,6 +100,8 @@ void read_parameters( char *fn ) {
         ADD_PARAR( All.TPdfMax                  );
         ADD_PARAR( All.GroupTempStackRmin       );
         ADD_PARAR( All.GroupTempStackRmax       );
+        ADD_PARAR( All.GroupTempProfileRmin       );
+        ADD_PARAR( All.GroupTempProfileRmax       );
 
         ADD_PARAI( All.NumFilesPerSnapshot      );
         ADD_PARAI( All.PicSize                  );
@@ -123,6 +124,7 @@ void read_parameters( char *fn ) {
         ADD_PARAI( All.Group                    );
         ADD_PARAI( All.GroupSfr                 );
         ADD_PARAI( All.GroupTemp                );
+        ADD_PARAI( All.GroupTempProfile         );
         ADD_PARAI( All.GroupB                   );
         ADD_PARAI( All.GroupMach                );
         ADD_PARAI( All.MachSlice                );
@@ -154,7 +156,7 @@ void read_parameters( char *fn ) {
         ADD_PARAI( All.ReadVel                  );
         ADD_PARAI( All.ReadElec                 );
         ADD_PARAI( All.Readu                    );
-        ADD_PARAI( All.GroupTempBins            );
+        ADD_PARAI( All.GroupTempProfileRN            );
         ADD_PARAI( All.CorrTdiffDens            );
         ADD_PARAI( All.PdfTdiffDens             );
         ADD_PARAI( All.NGrid                    );

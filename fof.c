@@ -592,7 +592,6 @@ void fof() {
         return;
 
     fof_allocate( NumPart );
-    tree_build();
 
     //if ( flag == 1 ) {
 
@@ -614,8 +613,6 @@ void fof() {
         fof_save();
 
     //}
-
-    tree_free();
 
     mytimer_end();
     writelog( "FoF ... done\n" );

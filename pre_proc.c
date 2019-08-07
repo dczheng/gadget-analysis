@@ -76,7 +76,10 @@ void construct_id_to_index() {
     idn = idmax - idmin + 1;
     writelog( "Min ID: %li, Max ID: %li, ID Num: %li\n", idmin, idmax, idn );
 
-    mymalloc3( id_to_index, idn * sizeof( long ), -1 );
+    mymalloc1( id_to_index, idn * sizeof( long ) );
+
+    for( i=0; i<idn; i++ )
+        id_to_index[i] = -1;
 
     id_to_index--;
 
@@ -99,6 +102,7 @@ void construct_id_to_index() {
 
     writelog( "construct id to index ... done.\n" );
     mytimer_end();
+    myfree( id_to_index );
 
     put_sep0;
 }

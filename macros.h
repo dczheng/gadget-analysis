@@ -45,76 +45,55 @@
     }\
 }
 
+#define fmt_mem_used( mm ) {\
+    if ( mm > CUBE( 1024 ) ) {\
+        sprintf( ms.mem_str, "%g Gb", mm / CUBE( 1024. )  );\
+    }\
+    else if ( mm > SQR( 1024 ) ) {\
+        sprintf( ms.mem_str, "%g Mb", mm / SQR( 1024. )  );\
+    }\
+    else if( mm > 1024 ) {\
+        sprintf( ms.mem_str, "%g Kb", mm / 1024. );\
+    }\
+    else {\
+        sprintf( ms.mem_str, "%li b", (long)mm );\
+    }\
+\
+}
+
 #define malloc_report() { \
-    sprintf( ms.str, "memory info:" );\
-    if ( ms.mem > CUBE( 1024 ) ) {\
-        sprintf( ms.str, "%s Total %g Gb,", ms.str, ms.mem / CUBE( 1024. )  );\
+    fprintf( UsedMemFileFd, "Memory info:\n" ); \
+    fprintf( UsedMemFileFd, sep_str0 ); \
+    for ( ms.i=0; ms.i<ms.nn; ms.i++ ) {\
+        fmt_mem_used( ms.var_bytes[ms.i] );\
+        fprintf( UsedMemFileFd, "%-20s: %s\n", ms.var[ms.i], ms.mem_str ); \
     }\
-    else if ( ms.mem > SQR( 1024 ) ) {\
-        sprintf( ms.str, "%s Total %g Mb,", ms.str, ms.mem / SQR( 1024. )  );\
-    }\
-    else if( ms.mem > 1024 ) {\
-        sprintf( ms.str, "%s Total %g Kb,", ms.str, ms.mem / 1024. );\
-    }\
-    else {\
-        sprintf( ms.str, "%s Total %li b,", ms.str, ms.mem );\
-    }\
-\
-    if ( ms.max_mem > CUBE( 1024 ) ) {\
-        sprintf( ms.str, "%s Max %g Gb,", ms.str, ms.max_mem / CUBE( 1024. ) );\
-    }\
-    else if ( ms.max_mem > SQR( 1024 ) ) {\
-        sprintf( ms.str, "%s Max %g Mb,", ms.str, ms.max_mem / SQR( 1024. ) );\
-    }\
-    else if( ms.max_mem > 1024 ) {\
-        sprintf( ms.str, "%s Max %g Kb,", ms.str, ms.max_mem / 1024. );\
-    }\
-    else {\
-        sprintf( ms.str, "%s Max %li b,", ms.str, ms.max_mem );\
-    }\
-\
+    fprintf( UsedMemFileFd, sep_str0 ); \
+    fmt_mem_used( ms.mem );\
+    sprintf( ms.str, "Total %s,", ms.mem_str  );\
+    fmt_mem_used( ms.max_mem );\
+    sprintf( ms.str, "%s Max %s,", ms.str, ms.mem_str  );\
     sprintf( ms.str, "%s Nvars %li.\n", ms.str, ms.nn );\
     fprintf( UsedMemFileFd, ms.str ); \
+    fprintf( UsedMemFileFd, sep_str ); \
     fflush( UsedMemFileFd ); \
 }
 
 
 #define mymalloc0( a, n, flag, b, shared, disp_unit, mpi_win ) {\
+    fprintf( UsedMemFileFd, "%s %s %i\n", __FILE__, __FUNCTION__, __LINE__ ); \
         if ( shared ) \
             MPI_Win_allocate_shared( n, disp_unit, MPI_INFO_NULL,\
                     MpiComm_Local, &a, &mpi_win ); \
         else \
             a = malloc( n ); \
     \
+    fmt_mem_used( n );\
     if ( (!a) && (n > 0) ) { \
-        if ( n > CUBE( 1024 ) ) {\
-            writelog( "Failed to allocate memory for `%s` ( %g Gb )\n", #a, n / CUBE( 1024. ) ); \
-        }\
-        else if ( n > SQR( 1024 ) ) {\
-            writelog( "Failed to allocate memory for `%s` ( %g Mb )\n", #a, n / SQR( 1024. ) ); \
-        }\
-        else if( n > 1024 ) {\
-            writelog( "Failed to allocate memory for `%s` ( %g Kb )\n", #a, n /  1024. ); \
-        }\
-        else {\
-            writelog( "Failed to allocate memory for `%s` ( %li b )\n", #a, (long)n ); \
-        }\
+        writelog( "Failed to allocate memory for `%s` ( %s )\n", #a, ms.mem_str ); \
         endrun( 20180430 ); \
     }\
-\
-    if ( n > CUBE( 1024 ) ) {\
-        fprintf( UsedMemFileFd, "allocate memory for `%s` ( %g Gb )\n", #a, n / CUBE( 1024. ) ); \
-    }\
-    else if ( n > SQR( 1024 ) ) {\
-        fprintf( UsedMemFileFd, "allocate memory for `%s` ( %g Mb )\n", #a, n / SQR(  1024. ) ); \
-    }\
-    else if( n > 1024 ) {\
-        fprintf( UsedMemFileFd, "allocate memory for `%s` ( %g Kb )\n", #a, n /  1024. ); \
-    }\
-    else {\
-        fprintf( UsedMemFileFd, "allocate memory for `%s` ( %li b )\n", #a, (long)n ); \
-    }\
-\
+    fprintf( UsedMemFileFd, "allocate memory for `%s` ( %s )\n", #a, ms.mem_str ); \
     if ( flag == 1 ){\
         fprintf( UsedMemFileFd, "initialize `%s` ...\n", #a ); \
         memset( a, b, n ); \
@@ -130,8 +109,6 @@
     ms.max_mem = vmax( ms.max_mem, ms.mem ); \
     check_var_num();\
     malloc_report(); \
-    fprintf( UsedMemFileFd, sep_str ); \
-    fflush( UsedMemFileFd ); \
 }
 
 #define mymalloc( a, n, flag, b ) mymalloc0( a, n, flag, b, 0, ThisTask, MpiWin_P ) // here ThisTask and MpiWin_P are useless.
@@ -154,7 +131,8 @@
 #define mymalloc3_shared( a, n, b, disp_unit, mpi_win )  mymalloc_shared( a, n, 1, b, disp_unit, mpi_win )
 
 #define myfree0( a, shared, mpi_win ) {\
-    for ( ms.i=0; ms.i<ms.nn; ms.i++ ) {\
+    fprintf( UsedMemFileFd, "%s %s %i\n", __FILE__, __FUNCTION__, __LINE__ ); \
+    for ( ms.i=ms.nn-1; ms.i>=0; ms.i-- ) {\
         if ( shared ) {\
             if ( !( strcmp( ms.var[ms.i], &((#mpi_win)[7]) ) ) ) {\
                 ms.b = ms.var_bytes[ms.i];\
@@ -169,19 +147,8 @@
         }\
     }\
 \
-    if ( ms.b > CUBE( 1024 ) ) {\
-        fprintf( UsedMemFileFd, "Free memory for `%s` ( %g Gb )\n", ms.var[ms.i], ms.b / CUBE( 1024. ) ); \
-    }\
-    else if ( ms.b > SQR( 1024 ) ) {\
-        fprintf( UsedMemFileFd, "Free memory for `%s` ( %g Mb )\n", ms.var[ms.i], ms.b / SQR(  1024. ) ); \
-    }\
-    else if( ms.b > 1024 ) {\
-        fprintf( UsedMemFileFd, "Free memory for `%s` ( %g Kb )\n", ms.var[ms.i], ms.b /  1024. ); \
-    }\
-    else {\
-        fprintf( UsedMemFileFd, "Free memory for `%s` ( %li b )\n", ms.var[ms.i], ms.b ); \
-    }\
-\
+    fmt_mem_used( ms.b );\
+    fprintf( UsedMemFileFd, "Free memory for `%s` ( %s )\n", ms.var[ms.i], ms.mem_str ); \
     for ( ; ms.i<ms.nn-1; ms.i++ ) {\
         sprintf( ms.var[ms.i], "%s",  ms.var[ms.i+1] ); \
         ms.var_bytes[ms.i] = ms.var_bytes[ms.i+1]; \
@@ -195,8 +162,6 @@
         free( a ); \
 \
     malloc_report(); \
-    fprintf( UsedMemFileFd, sep_str ); \
-    fflush( UsedMemFileFd ); \
 }
 
 #define myfree( a )        myfree0( a, 0, MpiWin_P )

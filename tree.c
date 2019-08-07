@@ -3,6 +3,7 @@
 long last, parent, father, npart;
 
 void tree_allocate() {
+
     MaxNodes = npart * All.TreeAllocFactor;
     writelog( "TreeAllocateFactor = %g, MaxNodes = %ld\n",
             All.TreeAllocFactor, MaxNodes );
@@ -210,6 +211,7 @@ void tree_build() {
     All.TreeAllocFactor = 2;
     */
     put_sep;
+
     mytimer_start();
     for ( i=0, npart=0; i<NumPart; i++ )
         if ( ( 1 << P[i].Type ) & All.TreePartType )

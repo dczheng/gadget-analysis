@@ -13,8 +13,9 @@ void init_img() {
 }
 
 void free_img() {
+    reset_img();
     myfree( image.props );
-    myfree( image.img_tmp );
+    myfree( image.img );
     myfree( image.num );
 }
 

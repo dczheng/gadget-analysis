@@ -62,6 +62,12 @@ void analysis(){
             compute_temperature();
         }
 
+        if ( All.Tree )
+            tree_build();
+
+        if ( All.FoF )
+            fof();
+
         if ( All.Phase ) {
             phase();
         }
@@ -95,9 +101,6 @@ void analysis(){
         if ( All.TemperatureSlice )
             temperature_slice();
 
-        if ( All.FoF )
-            fof();
-
         if ( All.MF )
             mass_function();
 
@@ -120,10 +123,6 @@ void analysis(){
     if ( All.TotSpec ) {
         total_radio_spectrum();
         do_sync( "total radio spectrum" );
-    }
-
-    if ( ThisTask_Local == 0 && All.FoF ) {
-        fof_free();
     }
 
     if ( All.CrePressurePdf ) {
@@ -160,8 +159,20 @@ void analysis(){
     //output_rho();
     //vel_value();
     //
+
+    if ( ThisTask_Local == 0 ) {
+
+        if ( All.FoF )
+            fof_free();
+        if ( All.Tree )
+            tree_free();
+
+    }
+
+
     writelog( "analyais ... done.\n" );
     put_sep;
+
 
     free_analysis();
 }
