@@ -250,9 +250,12 @@ extern struct global_parameters_struct {
         CorrGas, CorrDM,
         DensPdf, DensPdfN,
         TPdf, TPdfN,
+        GroupTempStack,
+        GroupTempStackRN,
+        GroupFixedSize,
 
         QNum, NuNum, FoFMinLen, proj_i, proj_j, proj_k,
-        TreePartType, GroupIndexMin, GroupIndexMax,
+        TreePartType,
         StartSnapIndex, SnapIndex, ProjectDirection, KernelN,
         PicSize, PicSize2, NumFilesPerSnapshot, NumThreadsPerSnapshot;
 
@@ -281,6 +284,8 @@ extern struct global_parameters_struct {
            PhaseDensMin,
            DensPdfMin, DensPdfMax,
            TPdfMin, TPdfMax,
+           GroupTempStackRmin,
+           GroupTempStackRmax,
 
            PosShiftX, PosShiftY, PosShiftZ, GroupSize, GroupTempRmin;
 

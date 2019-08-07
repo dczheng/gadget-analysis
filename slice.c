@@ -95,10 +95,11 @@ void slice_init() {
 
 }
 
-void make_slice_img( int pt, double *data ) {
+void make_slice_img( int pt, double *data, long NPart ) {
 
     double *img, *num, dx, dy, x, y, h, dh, lx, ly, v;
     int i, xi, yi, N, Nhalf, i1, i2, j1, j2, li, lj, PicSize;
+    long start, end;
 
     PicSize = All.PicSize;
     writelog( "make slice imgage  ...\n" );
@@ -115,13 +116,29 @@ void make_slice_img( int pt, double *data ) {
     h = All.SofteningTable[pt];
     dh = h / Nhalf;
 
-    for ( i=All.SliceStart[pt]; i<All.SliceEnd[pt]; i++ ) {
+    if ( NPart ) {
+        start = 0;
+        end = NPart;
+    }
+    else {
+        start = All.SliceStart[pt];
+        end = All.SliceEnd[pt];
+    }
 
-        x = P[i].Pos[All.proj_i];
-        y = P[i].Pos[All.proj_j];
-        x -= All.Start[All.proj_i];
-        y -= All.Start[All.proj_j];
-        v = data[ i-All.SliceStart[pt] ];
+    for ( i=start; i<end; i++ ) {
+
+        if ( NPart ) {
+            x = data[i*3];
+            y = data[i*3+1];
+            v = data[i*3+2];
+        }
+        else {
+            x = P[i].Pos[All.proj_i];
+            y = P[i].Pos[All.proj_j];
+            x -= All.Start[All.proj_i];
+            y -= All.Start[All.proj_j];
+            v = data[ i-All.SliceStart[pt] ];
+        }
 
         //printf( "%g\n", v );
         xi = x / dx;
@@ -183,7 +200,7 @@ void make_slice_img( int pt, double *data ) {
 
 }
 
-void field_slice( int pt, double *data, char *name ) {
+void field_slice( int pt, double *data, char *name, long N ) {
 
     char buf[100];
 
@@ -194,7 +211,10 @@ void field_slice( int pt, double *data, char *name ) {
     create_dir( buf );
     sprintf( buf, "%s/%s_%03i.dat", buf, name, All.SnapIndex );
 
-    make_slice_img( pt, data );
+    if ( N )
+        make_slice_img( 0, data, N );
+    else
+        make_slice_img( pt, data, 0 );
 
     write_img1( buf, NULL );
 
@@ -209,7 +229,7 @@ void mag_slice() {
     for ( i=All.SliceStart[0]; i<All.SliceEnd[0]; i++ ) {
         data[i] = get_B( i );
     }
-    field_slice( 0, data, "MagneticField" );
+    field_slice( 0, data, "MagneticField", 0 );
     myfree( data );
 }
 
@@ -222,21 +242,70 @@ void mach_slice() {
     for ( i=All.SliceStart[0]; i<All.SliceEnd[0]; i++ ) {
         data[i] = SphP[i].MachNumber;
     }
-    field_slice( 0, data, "MachNumber" );
+    field_slice( 0, data, "MachNumber", 0 );
     myfree( data );
 }
 
 void density_slice() {
     int num, i;
-    double *data;
+    long index;
+    double *data, *data3;
 
     num = All.SliceEnd[0] - All.SliceStart[0];
     mymalloc2( data, sizeof( double ) * num );
+    mymalloc2( data3, sizeof( double ) * num * 3 );
+
     for ( i=All.SliceStart[0]; i<num; i++ ) {
         data[i] = SphP[i].Density * ( g2c.g / CUBE( g2c.cm ) );
     }
 
-    field_slice( 0, data, "Density" );
+    field_slice( 0, data, "Density", 0 );
+
+    index = 0;
+    for ( i=All.SliceStart[0]; i<num; i++ ) {
+        if ( SphP[i].Temp > 1e7 ) {
+            data3[3*index] = P[i].Pos[All.proj_i] - All.Start[All.proj_i];
+            data3[3*index+1] = P[i].Pos[All.proj_j] - All.Start[All.proj_j];
+            data3[3*index+2] = SphP[i].Density * ( g2c.g / CUBE( g2c.cm ) );
+            index ++;
+        }
+    }
+    field_slice( 0, data3, "Density_hot", index );
+
+    index = 0;
+    for ( i=All.SliceStart[0]; i<num; i++ ) {
+        if ( SphP[i].Temp < 1e7 && SphP[i].Temp > 1e5 ) {
+            data3[3*index] = P[i].Pos[All.proj_i] - All.Start[All.proj_i];
+            data3[3*index+1] = P[i].Pos[All.proj_j] - All.Start[All.proj_j];
+            data3[3*index+2] = SphP[i].Density * ( g2c.g / CUBE( g2c.cm ) );
+            index ++;
+        }
+    }
+    field_slice( 0, data3, "Density_warm-hot", index );
+
+    index = 0;
+    for ( i=All.SliceStart[0]; i<num; i++ ) {
+        if ( ( SphP[i].Density / All.RhoBaryon ) < 1e3 && SphP[i].Temp < 1e5 ) {
+            data3[3*index] = P[i].Pos[All.proj_i] - All.Start[All.proj_i];
+            data3[3*index+1] = P[i].Pos[All.proj_j] - All.Start[All.proj_j];
+            data3[3*index+2] = SphP[i].Density * ( g2c.g / CUBE( g2c.cm ) );
+            index ++;
+        }
+    }
+    field_slice( 0, data3, "Density_diffuse", index );
+
+    index = 0;
+    for ( i=All.SliceStart[0]; i<num; i++ ) {
+        if ( ( SphP[i].Density / All.RhoBaryon ) > 1e3 && SphP[i].Temp < 1e5 ) {
+            data3[3*index] = P[i].Pos[All.proj_i] - All.Start[All.proj_i];
+            data3[3*index+1] = P[i].Pos[All.proj_j] - All.Start[All.proj_j];
+            data3[3*index+2] = SphP[i].Density * ( g2c.g / CUBE( g2c.cm ) );
+            index ++;
+        }
+    }
+    field_slice( 0, data3, "Density_condensed", index );
+
+    myfree( data3 );
     myfree( data );
 }
 
@@ -249,7 +318,7 @@ void temperature_slice() {
     for ( i=All.SliceStart[0]; i<num; i++ ) {
         data[i] = SphP[i].Temp;
     }
-    field_slice( 0, data, "Temperature" );
+    field_slice( 0, data, "Temperature", 0 );
     myfree( data );
 }
 
@@ -262,7 +331,7 @@ void cren_slice() {
     for ( i=All.SliceStart[0]; i<All.SliceEnd[0]; i++ ) {
         data[i] = SphP[i].CRE_n * SphP[i].Density / guc.m_e / CUBE( g2c.cm );
     }
-    field_slice( 0, data, "cre_n" );
+    field_slice( 0, data, "cre_n", 0 );
     myfree( data );
 }
 
@@ -301,7 +370,7 @@ void radio_slice() {
 
 
     sprintf( buf, "radio_%.2f", All.Freq );
-    field_slice( 0, data, buf );
+    field_slice( 0, data, buf, 0 );
 
     myfree( data );
 

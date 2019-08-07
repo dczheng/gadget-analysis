@@ -77,7 +77,7 @@ for i in range( axN ):
 
     if i == 0:
         #axs[i].set_ylabel( r'$\frac{dn} {dlog_{10}(M/M_{\odot})} \,\rm [(h/Mpc)^3]$', fontsize=20 )
-        axs[i].set_ylabel( r'$\rm MF\;[\frac{(h/Mpc)^3}{dlog_10(M/M_{\odot})}]$', fontsize=20 )
+        axs[i].set_ylabel( r'$\rm MF\;[\frac{(h/Mpc)^3}{dlog_{10}(M/M_{\odot})}]$', fontsize=20 )
         axs[i].legend( prop={'size':20}, framealpha=0.1)
     if i == 1:
         axs[i].set_ylabel( r'$\frac{{\rm MF_{S2}-MF_{S1}}}{\rm MF_{S1}}$', fontsize=20 )

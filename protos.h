@@ -47,7 +47,6 @@ void test_radio();
 void phase();
 
 void slice_init();
-void make_slice_img( int pt, double *data );
 
 void temperature_slice();
 void radio_slice();
@@ -110,3 +109,5 @@ void field_to_grid( double *data, double *grid, int pt, int Nmin, int flag );
 
 void dens_pdf();
 void T_pdf();
+
+void group_temp_stack();

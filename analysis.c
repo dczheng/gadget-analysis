@@ -57,7 +57,7 @@ void analysis(){
     if ( ThisTask_Local == 0 ) {
         if ( (All.TemperatureSlice ||
               All.Phase ||
-              All.Group )
+              All.Group || All.DensitySlice )
              && All.ReadTemp == 0  ) {
             compute_temperature();
         }

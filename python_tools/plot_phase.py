@@ -13,7 +13,6 @@ for i in range(4):
     hs.append( ds[i][0,:] )
     ds[i] = ds[i][1:,:]
 
-
 zs = [hs[0][10], hs[2][10]]
 if zs[0] != hs[1][10] or zs[1] != hs[3][10]:
     print( "error" )
@@ -32,9 +31,12 @@ for h in hs:
        print( "error" )
        exit()
 
-Nmin = 1e4
+Nmin = 1e5
+contour_levles = [ 1e4, 1e5, 1e6, 5e6 ]
+print( "contour levels: ", contour_levles )
 Errmin = 1e-2
 err_lognorm = 1
+zfmt = r'$z:%.0f$'
 
 for i in range(2):
     index = np.where( ds[i*2] < Nmin )
@@ -43,7 +45,6 @@ for i in range(2):
     t1[index] = 1
     t2[index] = 1
     t = (t2 - t1) / t1
-    t[ (t<Errmin) * (t>-Errmin)] = 0 
     ds[i*2+1] = t
 
 vmin = [0] * 4
@@ -103,7 +104,8 @@ cmap1 = cm.jet
 #cmap2 = cm.viridis
 #cmap2 = cm.tab20
 #cmap2 = cm.tab10
-cmap2 = cm.seismic
+#cmap2 = cm.seismic
+cmap2 = cm.nipy_spectral
 cmaps = [ cmap1, cmap2, cmap1, cmap2 ]
 
 norm1 = mplc.LogNorm()
@@ -146,9 +148,6 @@ xfmt = tik.FixedFormatter(xfmt)
 yloc = tik.FixedLocator(yloc)
 yfmt = tik.FixedFormatter(yfmt)
 
-contour_levles = [ 1e3, 1e4, 1e5, 2e5 ]
-print( "contour levels: ", contour_levles )
-
 x3 = (3 - xmin) / ( xmax - xmin ) * (n-1)
 y5 = (5 - ymin) / ( ymax - ymin ) * (m-1)
 y7 = (7 - ymin) / ( ymax - ymin ) * (m-1)
@@ -159,8 +158,8 @@ font = FontProperties()
 font.set_size( 'xx-large' )
 font.set_weight('medium')
 
-fx = [ x3*0.4, (n-x3)*0.1+x3, n*0.1, n*0.85 ]
-fy = [ y5*0.1, y5*0.3, (y7-y5)*0.75+y5, (m-y7)*0.3+y7 ]
+fx = [ x3*0.4, (n-x3)*0.1+x3, n*0.2, n*0.85 ]
+fy = [ y5*0.1, y5*0.3, (y7-y5)*0.6+y5, (m-y7)*0.3+y7 ]
 ft = [ 'Diffuse', 'Condensed', 'Warm-hot', 'Hot' ]
 
 for i in range(4):
@@ -175,6 +174,11 @@ for i in range(4):
                 x = v[:,0]
                 y = v[:,1]
                 axs[i+1].plot( x, y, 'b-.', linewidth=1 )
+
+    if i % 2:
+        t = ds[i]
+        index = ds[i-1] < Nmin 
+        t[index] = np.nan
 
     ds[i][0,0] = vmin[i]
     ds[i][0,1] = vmax[i]
@@ -216,7 +220,7 @@ for i in range(4):
         axs[i].text( fx[kk], fy[kk], ft[kk], \
             fontproperties=font )
 
-    axs[i].text( 0, 1, r'$z:%.2f$'%zs[i//2], fontproperties=font  )
+    axs[i].text( 0, 1, zfmt%zs[i//2], fontproperties=font  )
 
 
 fig.savefig( f_out )

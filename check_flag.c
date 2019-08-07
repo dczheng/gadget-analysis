@@ -71,4 +71,10 @@ void check_flag() {
         endrun( 20190801 );
     }
 
+    A_NEED_B( All.GroupTempStack, All.GroupTempStackRmin );
+    A_NEED_B( All.GroupTempStack, All.GroupTempStackRmax );
+    A_NEED_B( All.GroupTempStack, All.GroupTempStackRN );
+    A_NEED_B( All.GroupTempStack, All.Group );
+    A_NEED_B( All.GroupTempStack, All.FoF );
+
 }

@@ -91,3 +91,13 @@ cm.register_cmap('ds9aips0', data=ds9aips0)
 cm.register_cmap('ds9rainbow', data=ds9rainbow)
 cm.register_cmap('ds9he', data=ds9he)
 cm.register_cmap('ds9heat', data=ds9heat)
+
+def real2tex( x, b=0, n=0 ):
+    x = ('%e'%x).split( 'e' )
+    if float(x[0]) == 1:
+        x = r'10^{%i}'%( int( x[1] )+b )
+    else:
+        fmt = '%%.%if'%(n)
+        fmt = r'%s \times'%(fmt) + '\, 10^{%i}'
+        x = (fmt)%( float(x[0]), int( x[1] )+b )
+    return x

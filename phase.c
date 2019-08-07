@@ -84,8 +84,8 @@ void phase() {
         check_picture_index( j );
 
         //image.img[ i*PicSize + j ] += P[k].Mass / Temp / Dens;
-        image.img[ i*PicSize + j ] += P[k].Mass;
-  //      image.img[ i*PicSize + j ] ++;
+        //image.img[ i*PicSize + j ] += P[k].Mass;
+        image.img[ i*PicSize + j ] ++;
      //  printf( "%g ", image.img[ i*PicSize +j ] ) ;
     }
 

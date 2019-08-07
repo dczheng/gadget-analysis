@@ -6,9 +6,7 @@
 
 int group_present( long index ) {
 
-    if ( ( index >= All.GroupIndexMin ) &&
-         ( index <= All.GroupIndexMax ) &&
-         ( Gprops[index].mass >= All.GroupMassMin) )
+    if ( Gprops[index].mass >= All.GroupMassMin) 
             return 1;
     else {
 
@@ -16,6 +14,7 @@ int group_present( long index ) {
     }
 
 }
+
 /*
 
 void group_particle_spectrum() {
@@ -746,11 +745,132 @@ void group_temp_profile() {
 
 }
 
+void group_temp_stack() {
+
+    double Rmin, Rmax, dlogR, r;
+    int RN, g_index, i, ii, mi;
+    long p;
+    struct group_properties g;
+    char buf[100];
+    FILE *fd;
+#define MS 3
+    double m[MS], *T[MS], *Terr[MS];
+    int *num[MS]; 
+    m[0] = 1e3;
+    m[1] = 5e3;
+    m[2] = 1e4;
+
+    RN = All.GroupTempStackRN;
+    Rmin = All.GroupTempStackRmin;
+    Rmax = All.GroupTempStackRmax;
+
+    dlogR = log10( Rmax/Rmin ) / (RN-1);
+
+    for( i=0; i<MS; i++ ) {
+        mymalloc2( T[i], sizeof(double) * RN );
+        mymalloc2( Terr[i], sizeof(double) * RN );
+        mymalloc2( num[i], sizeof(int) * RN );
+    }
+
+    for ( g_index=0; g_index<Ngroups; g_index++ ) {
+        g = Gprops[g_index];
+        if ( g.mass < m[0] )
+            continue;
+
+        mi = 0;
+        while( mi < MS-1 && g.mass > m[mi+1] ) mi ++;
+
+        for ( i=0,p=g.Head; i<g.Len; i++, p=FoFNext[p] ) {
+            if ( P[p].Type != 0 )
+                continue;
+
+            r = sqrt(
+                    SQR( PERIODIC_HALF( P[p].Pos[All.proj_i] - g.cm[All.proj_i] ) )
+                  + SQR( PERIODIC_HALF( P[p].Pos[All.proj_j] - g.cm[All.proj_j] ) )
+                  + SQR( PERIODIC_HALF( P[p].Pos[All.proj_k] - g.cm[All.proj_k] ) )
+                    );
+
+            ii = log10( r / Rmin ) /  dlogR;
+
+            if ( ii < 0 || ii > RN-1 )
+                continue;
+
+            T[mi][ii] += SphP[p].Temp;
+            num[mi][ii] ++;
+
+        }
+    }
+
+    for( mi=0; mi<MS; mi++ )
+        for( i=0; i<RN; i++ )
+            if ( num[mi][i] > 0 )
+                T[mi][i] /= num[mi][i];
+
+    for ( g_index=0; g_index<Ngroups; g_index++ ) {
+        g = Gprops[g_index];
+        if ( g.mass < m[0] )
+            continue;
+        mi = 0;
+        while( mi < MS-1 && g.mass > m[mi+1] ) mi ++;
+
+        for ( i=0,p=g.Head; i<g.Len; i++, p=FoFNext[p] ) {
+            if ( P[p].Type != 0 )
+                continue;
+
+            r = sqrt(
+                    SQR( PERIODIC_HALF( P[p].Pos[All.proj_i] - g.cm[All.proj_i] ) )
+                  + SQR( PERIODIC_HALF( P[p].Pos[All.proj_j] - g.cm[All.proj_j] ) )
+                  + SQR( PERIODIC_HALF( P[p].Pos[All.proj_k] - g.cm[All.proj_k] ) )
+                    );
+
+            ii = log10( r / Rmin ) /  dlogR;
+
+            if ( ii < 0 || ii > RN-1 )
+                continue;
+
+            Terr[mi][ii] += SQR( SphP[p].Temp - T[mi][ii] );
+
+        }
+    }
+
+    for( mi=0; mi<MS; mi++ )
+        for ( i=0; i<RN; i++ )
+            if ( num[mi][i] > 1 )
+                Terr[mi][i]  = sqrt(Terr[mi][i] / (num[mi][i]-1));
+
+
+    sprintf( buf, "%sGroupTempStack", All.OutputDir );
+    create_dir( buf );
+
+    sprintf( buf, "%s/GroupTempStack_%03i.dat", buf, All.SnapIndex );
+    fd = fopen( buf, "w" );
+
+    fprintf( fd, "%g ", All.RedShift );
+    for( mi=0; mi<MS; mi++ )
+        fprintf( fd, "%g 0 0 ", m[mi] );
+
+    for( i=0; i<RN; i++ ) {
+        fprintf( fd, "\n%g ", Rmin*pow( 10, i*dlogR ) );
+        for( mi=0; mi<MS; mi++ )
+            fprintf( fd, "%g %g %i ",
+                T[mi][i], Terr[mi][i], num[mi][i] );
+    }
+
+    fclose( fd );
+
+
+    for( mi=0; mi<MS; mi++ ) {
+        myfree( T[mi] );
+        myfree( Terr[mi] );
+        myfree( num[mi] );
+    }
+}
+
 void group_analysis() {
 
     long *npart, p;
     struct group_properties g;
-    double L, dL, *mass, B, PP, nu, n, e,
+    double L, dL, *mass, B, PP, nu, n, e, r200,
             lum_dis, com_dis;// com_dis, lum_dis, h, ang;
     int *num, g_index, i, j, PicSize, x, y,
          xo, yo, PicSize2, pic_index, ii, jj;
@@ -782,23 +902,25 @@ void group_analysis() {
 
     }
 
-    if ( All.GroupSize > 0 ) {
-        L = All.GroupSize;
-    }
-    else{
-
-        L = 0;
-        for ( g_index=0; g_index<Ngroups; g_index++ ) {
-
-            if ( !group_present( g_index ) )
-                break;
-            g = Gprops[g_index];
-
-            for ( i=0,p=g.Head; i<g.Len; i++, p=FoFNext[p] ) {
-                if ( P[p].Type != 0 )
-                    continue;
-            vmax2( L, PERIODIC_HALF( P[p].Pos[x] - g.cm[x] ) * 1.001 );
-            vmax2( L, PERIODIC_HALF( P[p].Pos[y] - g.cm[y] ) * 1.001 );
+    if ( All.GroupFixedSize ){
+        if ( All.GroupSize > 0 ) {
+            L = All.GroupSize;
+        }
+        else{
+    
+            L = 0;
+            for ( g_index=0; g_index<Ngroups; g_index++ ) {
+    
+                if ( !group_present( g_index ) )
+                    break;
+                g = Gprops[g_index];
+    
+                for ( i=0,p=g.Head; i<g.Len; i++, p=FoFNext[p] ) {
+                    if ( P[p].Type != 0 )
+                        continue;
+                vmax2( L, PERIODIC_HALF( P[p].Pos[x] - g.cm[x] ) * 1.001 );
+                vmax2( L, PERIODIC_HALF( P[p].Pos[y] - g.cm[y] ) * 1.001 );
+                }
             }
         }
     }
@@ -826,6 +948,7 @@ void group_analysis() {
         p = g.Head;
         mass = g.mass_table;
         npart = g.npart;
+        r200 = g.vr200;
         //L = get_group_size( &g ) * 1.1;
 
         dL = 2 * L / PicSize;
@@ -838,6 +961,16 @@ void group_analysis() {
         for ( i=0; i<6; i++ ) {
             mass[i] *= 1e10;
             writelog( "%g ", mass[i] );
+        }
+
+        if ( !All.GroupFixedSize ) {
+            L = 0;
+            for ( i=0,p=g.Head; i<g.Len; i++, p=FoFNext[p] ) {
+                if ( P[p].Type != 0 )
+                    continue;
+            vmax2( L, PERIODIC_HALF( P[p].Pos[x] - g.cm[x] ) * 1.001 );
+            vmax2( L, PERIODIC_HALF( P[p].Pos[y] - g.cm[y] ) * 1.001 );
+            }
         }
 
         writelog( "\n" );
@@ -960,6 +1093,7 @@ void group_analysis() {
 
         for ( i=0; i<6; i++ )
             img_props(i) = mass[i];
+        img_props( 6 ) = r200;
         img_xmin =  -L;
         img_xmax =  L;
         img_ymin =  -L;
@@ -1030,9 +1164,11 @@ void group_analysis() {
         //group_spectrum_index();
     }
 
-    if ( All.GroupTemp ) {
+    if ( All.GroupTemp )
         group_temp_profile();
-    }
+
+    if ( All.GroupTempStack )
+        group_temp_stack();
 
     reset_img();
 

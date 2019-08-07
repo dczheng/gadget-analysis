@@ -99,6 +99,8 @@ void read_parameters( char *fn ) {
         ADD_PARAR( All.DensPdfMax               );
         ADD_PARAR( All.TPdfMin                  );
         ADD_PARAR( All.TPdfMax                  );
+        ADD_PARAR( All.GroupTempStackRmin       );
+        ADD_PARAR( All.GroupTempStackRmax       );
 
         ADD_PARAI( All.NumFilesPerSnapshot      );
         ADD_PARAI( All.PicSize                  );
@@ -109,8 +111,6 @@ void read_parameters( char *fn ) {
         ADD_PARAI( All.TreePartType             );
         ADD_PARAI( All.ConvN                    );
         ADD_PARAI( All.FoF                      );
-        ADD_PARAI( All.GroupIndexMin            );
-        ADD_PARAI( All.GroupIndexMax            );
         ADD_PARAI( All.Phase                    );
         ADD_PARAI( All.DensitySlice             );
         ADD_PARAI( All.BSlice                   );
@@ -164,6 +164,9 @@ void read_parameters( char *fn ) {
         ADD_PARAI( All.DensPdfN                 );
         ADD_PARAI( All.TPdf                     );
         ADD_PARAI( All.TPdfN                    );
+        ADD_PARAI( All.GroupTempStack           );
+        ADD_PARAI( All.GroupTempStackRN         );
+        ADD_PARAI( All.GroupFixedSize             );
 
         while( !feof( fd ) ) {
             *buf = 0;
