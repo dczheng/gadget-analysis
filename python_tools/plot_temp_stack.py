@@ -121,9 +121,7 @@ for i in range(4):
     a.set_xlim( [R[0], R[-1]] )
     #a.grid()
     if i % 2 == 0:
-        t = [l.get_text() for l in a.get_xticklabels()]
-        ll = ['']*len(t)
-        a.set_xticklabels( ll )
+        remove_tick_labels( a, 'x' )
     else:
         a.set_xlabel( r'$\rm Mpc$', fontsize=20 )
 
@@ -135,9 +133,7 @@ for i in range(4):
     '''
 
     if i > 1:
-        t = [l.get_text() for l in a.get_yticklabels()]
-        ll = ['']*len(t)
-        a.set_yticklabels( ll )
+        remove_tick_labels( a, 'y' )
     else:
         a.set_ylabel( r'$\rm 10^7 \, K$', fontsize=20 )
 

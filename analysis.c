@@ -57,7 +57,11 @@ void analysis(){
     if ( ThisTask_Local == 0 ) {
         if ( (All.TemperatureSlice ||
               All.Phase ||
-              All.Group || All.DensitySlice )
+              All.Group ||
+              All.DensitySlice ||
+              All.FieldCrenTDens ||
+              All.HsmlTPdf ||
+              All.CrenTPdf )
              && All.ReadTemp == 0  ) {
             compute_temperature();
         }
@@ -104,6 +108,38 @@ void analysis(){
         if ( All.MF )
             mass_function();
 
+        if ( All.CorrGas ) {
+            corr_gas();
+        }
+    
+        if ( All.CorrDM ) {
+            corr_dm();
+        }
+    
+        if ( All.DensPdf ) {
+            dens_pdf();
+        }
+        
+        if ( All.CrenTPdf ) {
+            cren_T_pdf();
+        }
+    
+        if ( All.TPdf ) {
+            T_pdf();
+        }
+
+        if ( All.GasRatio ) {
+            gas_ratio();
+        }
+
+        if ( All.HsmlTPdf ) {
+            hsml_T_pdf();
+        }
+
+        if ( All.HsmlDensPdf ) {
+            hsml_dens_pdf();
+        }
+
     }
 
     do_sync( "" );
@@ -135,22 +171,6 @@ void analysis(){
 
     if ( All.PdfTdiffDens ) {
         pdf_Tdiff_dens();
-    }
-
-    if ( All.CorrGas ) {
-        corr_gas();
-    }
-
-    if ( All.CorrDM ) {
-        corr_dm();
-    }
-
-    if ( All.DensPdf ) {
-        dens_pdf();
-    }
-
-    if ( All.TPdf ) {
-        T_pdf();
     }
 
 

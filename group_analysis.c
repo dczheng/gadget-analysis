@@ -401,13 +401,13 @@ void group_spectrum_index() {
 
         image.img = spec_index;
         make_group_output_filename( buf, spec_index_str, index )
-        write_img1( buf, spec_index_str );
+        write_img( buf, spec_index_str );
 
         image.img = spec_index_err;
         sprintf( buf, "%s%s/%s_%03i_%04i_%c.dat",
             All.GroupDir, spec_index_str, spec_index_err_str,
             All.SnapIndex, index, All.Sproj );
-        write_img1( buf, spec_index_err_str );
+        write_img( buf, spec_index_err_str );
 
     }
 
@@ -651,6 +651,17 @@ void group_temp_profile() {
 
         g = Gprops[g_index];
         ngbnum = ngb( g.cm, Rmax*0.9 );
+        /*
+        ngbnum = 0;
+        for ( p=0; p<N_Gas; p++ ) {
+            for ( k=0, r=0; k<3; k++ )
+                r += SQR( PERIODIC_HALF( P[p].Pos[k] - g.cm[k] ) );
+            r = sqrt(r);
+            if ( r < Rmax*0.9 )
+                Ngblist[ngbnum++] = p;
+        }
+        */
+
         for( k=0; k<3; k++ ) {
             x = k;
             y = (k+1) % 3;
@@ -662,11 +673,12 @@ void group_temp_profile() {
                 data[i*3] = PERIODIC_HALF( P[p].Pos[x] - g.cm[x] ) + Rmax;
                 data[i*3+1] = PERIODIC_HALF( P[p].Pos[y] - g.cm[y] ) + Rmax;
                 data[i*3+2] = SphP[p].Density / All.RhoBaryon;
+                //data[i*3+2] = SphP[p].Temp;
             }
             data_to_grid2d( data, image.img, ngbnum, All.PicSize,  2*Rmax );
             sprintf( buf, "%s%s/Density_%04i_%c.dat", All.GroupDir, dn, g_index, 'x'+z );
             sprintf( buf1, "Density_%04i_%c.dat", g_index, 'x'+k );
-            write_img1( buf, buf1 );
+            write_img( buf, buf1 );
         }
 
         for( i=0; i<ngbnum; i++ ) {
@@ -679,7 +691,8 @@ void group_temp_profile() {
             ii = log10( r / Rmin ) / dlogR;
             if ( ii < 0 || ii > RN-1 )
                 continue;
-            T[ii] += SphP[p].Temp;
+            //T[ii] += SphP[p].Temp;
+            T[ii] += SphP[p].Density / All.RhoBaryon;
             num[ii] ++;
         }
         for( i=0; i<RN; i++ )
@@ -853,6 +866,66 @@ void group_temp_stack() {
 
     myfree( Ngblist );
 
+}
+
+void group_gas_ratio() {
+
+    long p;
+    struct group_properties g;
+    int g_index, i;
+    FILE *fd;
+    char buf[100];
+
+    double r_gas, r_condensed, r_diffuse, r_hot, r_warmhot, T, m_tot, m_gas;
+
+    sprintf( buf, "%sGroupGasRatio", All.OutputDir );
+    create_dir( buf );
+    sprintf( buf, "%s/GroupGasRatio_%03i.dat", buf, All.SnapIndex );
+    fd = fopen( buf, "w" );
+    for ( g_index=0; g_index<Ngroups; g_index++ ) {
+        if ( !group_present( g_index ) )
+            break;
+        g = Gprops[g_index];
+
+        for( i=0,m_tot=0; i<6; i++ )
+            m_tot += g.mass_table[i];
+        m_gas = g.mass_table[0];
+        r_gas = m_gas / m_tot;
+
+        r_condensed = r_diffuse = r_hot = r_warmhot = 0; 
+        p = g.Head;
+        while( p >= 0 ) {
+            if ( P[p].Type != 0 ) {
+                p = FoFNext[p];
+                continue;
+            }
+
+            if ( SphP[p].Temp >= 1e7 )
+                r_hot += P[p].Mass;
+
+            if ( SphP[p].Temp < 1e7 && SphP[p].Temp >= 1e5 )
+                r_warmhot += P[p].Mass;
+
+            if ( SphP[p].Temp < 1e5 && SphP[p].Density / All.RhoBaryon < 1e3 )
+                r_diffuse += P[p].Mass;
+
+            if ( SphP[p].Temp < 1e5 && SphP[p].Density / All.RhoBaryon >= 1e3 )
+                r_condensed += P[p].Mass;
+
+            p = FoFNext[p];
+        }
+
+        r_hot /= m_gas;
+        r_warmhot /= m_gas; 
+        r_condensed /= m_gas;
+        r_diffuse /= m_gas;
+
+        fprintf( fd, "%i %g %g %g %g %g\n", g_index,
+            r_gas, r_hot, r_warmhot, r_condensed, r_diffuse );
+
+    }
+
+    fclose( fd );
 }
 
 void group_analysis() {
@@ -1099,7 +1172,7 @@ void group_analysis() {
             //conv( dL );
             get_group_filed_name( i, buf1 );
             make_group_output_filename( buf, buf1, g_index );
-            write_img1( buf, buf1 );
+            write_img( buf, buf1 );
 
         }
 
@@ -1124,7 +1197,7 @@ void group_analysis() {
                 image.img = data[GROUP_RADP];
                 get_group_filed_name( GROUP_RADP, buf1 );
                 make_group_output_filename( buf, buf1, g_index );
-                write_img1( buf, buf1 );
+                write_img( buf, buf1 );
 
         }
 
@@ -1158,6 +1231,9 @@ void group_analysis() {
 
     if ( All.GroupTempStack )
         group_temp_stack();
+
+    if ( All.GroupGasRatio )
+        group_gas_ratio();
 
     reset_img();
 

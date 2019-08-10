@@ -12,36 +12,23 @@
 #define vmin2( a, b ) ( a = vmin( a, b, 0 ) )
 #define vmin20( a, b ) ( a = vmin( a, b, 1 ) )
 #define check_picture_index( i )  i = ( ( (i)<0 || (i)>=All.PicSize ) ? ( ((i)<0) ? 0 : All.PicSize-1 ) : (i) )
+
 #define PERIODIC_HALF( x ) ( ( (x) > All.HalfBoxSize || (x) < -All.HalfBoxSize ) ? ( ( (x) > All.HalfBoxSize ) ? ( (x) - All.BoxSize ) : ( x + All.BoxSize )  ) : (x) )
 #define PERIODIC( x ) ( ( (x) > All.BoxSize || (x) <  0) ? ( ( (x) > All.BoxSize ) ? ( (x) - All.BoxSize ) : ( x + All.BoxSize )  ) : (x) )
 #define NGB_PERIODIC( x ) ( (fabs(x) > All.HalfBoxSize) ? ( All.BoxSize-fabs(x) ) : fabs(x) )
 
-#define DATA_SWAP( a, b, tmp ) {\
-   tmp = a; \
-   a = b; \
-   b = t1; \
-}
-
 #define put_sep    writelog( sep_str )
 #define put_sep0    writelog( sep_str0 )
 
-#define find_global_value( a, A, type, op, comm ) { \
-    MPI_Reduce( &a, &A, 1, type, op, 0, comm ); \
-    MPI_Bcast( &A, 1, type, 0, comm ); \
-    MPI_Barrier( comm ); \
-}
-
 #define check_var_num() {\
     if ( ms.nn > MALLOC_VAR_NUM ) {\
-        writelog( "MALLOC_VAR_NUM IS TOO SMALL ...\n" );\
-        endrun( 20180430 ); \
+        endruns( "MALLOC_VAR_NUM IS TOO SMALL ..." );\
     }\
 }
 
 #define check_var_len( a ) {\
     if ( strlen( #a ) > MALLOC_VAR_LEN ) {\
-        writelog( "MALLOC_VAR_LEN IS TOO SMALL ...\n" );\
-        endrun( 20180430 ); \
+        endruns( "MALLOC_VAR_LEN IS TOO SMALL ...\n" );\
     }\
 }
 
@@ -90,8 +77,7 @@
     \
     fmt_mem_used( n );\
     if ( (!a) && (n > 0) ) { \
-        writelog( "Failed to allocate memory for `%s` ( %s )\n", #a, ms.mem_str ); \
-        endrun( 20180430 ); \
+        endrun0( "Failed to allocate memory for `%s` ( %s )\n", #a, ms.mem_str ); \
     }\
     fprintf( UsedMemFileFd, "allocate memory for `%s` ( %s )\n", #a, ms.mem_str ); \
     if ( flag == 1 ){\
@@ -198,5 +184,20 @@ writelog( "[Timer Start in `%s`]\n", __FUNCTION__ ); \
 #define mytimer_end() \
     writelog( "[Total Time in `%s`]: [%g sec]\n", __FUNCTION__, second() - timer1 ); \
 
-#define write_img1( fn, s )  write_img( fn, s, 0 )
-#define write_img2( fn, s )  write_img( fn, s, 1 )
+#define PDF2D_BIT_MODE     1 
+#define PDF2D_BIT_XLOG     2 
+#define PDF2D_BIT_YLOG     4 
+#define PDF2D_BIT_FIXEDX   8 
+#define PDF2D_BIT_FIXEDY   16 
+#define PDF2D_BIT_NORM     32 
+
+#define pdf2d( x, y, w, num, dn, flag, mm ) {\
+    flag = (flag>>1) << 1;\
+    pdf2d_or_field2d( x, y, w, num, dn, flag, mm, 0 );\
+}
+
+#define field2d( x, y, z, num, dn, flag, mm, Nmin ) {\
+    flag = (flag>>1) << 1;\
+    flag |= PDF2D_BIT_MODE;\
+    pdf2d_or_field2d( x, y, z, num, dn, flag, mm, Nmin );\
+}

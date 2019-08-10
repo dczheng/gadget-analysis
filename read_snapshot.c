@@ -9,7 +9,7 @@ int ndims;
 void *CommBuffer;
 
 #define blockpresent_check( A )  { \
-    if ( A ) \
+    if ( (A) ) \
         return 1; \
     else \
         return 0; \
@@ -32,6 +32,7 @@ int blockpresent0( enum iofields blk, int pt ) {
         case IO_DBDT:
         case IO_U:
         case IO_TEMP:
+        case IO_HSML:
         case IO_RHO:
         case IO_POT:
         case IO_NE:
@@ -47,7 +48,7 @@ int blockpresent0( enum iofields blk, int pt ) {
         case IO_CRE_ALPHA:
         case IO_CRE_N:
         case IO_CRE_E:
-            blockpresent_check( (pt == 0 && header.mass[pt] == 0) );
+            blockpresent_check( (pt == 0 && header.npart[pt] > 0) );
         default:
             return 0;
     }
@@ -66,6 +67,9 @@ int blockpresent( enum iofields blk, int pt ) {
 
         case IO_TEMP:
             blockpresent_check( blockpresent0(blk,pt) && All.ReadTemp );
+
+        case IO_HSML:
+            blockpresent_check( blockpresent0(blk,pt) && All.ReadHsml );
 
         case IO_U:
             blockpresent_check( blockpresent0(blk,pt) && All.Readu );
@@ -122,6 +126,7 @@ int get_block_nbytes( enum iofields blk ) {
         case IO_MASS:
         case IO_U:
         case IO_TEMP:
+        case IO_HSML:
         case IO_RHO:
         case IO_POT:
         case IO_NE:
@@ -161,6 +166,7 @@ void get_block_dims( int pt, enum iofields blk, hsize_t (*dims)[2] ) {
         case IO_MASS:
         case IO_U:
         case IO_TEMP:
+        case IO_HSML:
         case IO_RHO:
         case IO_POT:
         case IO_NE:
@@ -214,6 +220,9 @@ void get_dataset_name( enum iofields blk, char *buf ) {
             break;
         case IO_TEMP:
             strcpy( buf, "Temperature" );
+            break;
+        case IO_HSML:
+            strcpy( buf, "SmoothingLength" );
             break;
         case IO_RHO:
             strcpy( buf, "Density" );
@@ -359,6 +368,10 @@ void empty_buffer( enum iofields blk, int offset, int pt ) {
         case IO_TEMP:
             for ( i=0; i<n; i++ )
                 SphP[offset+i].Temp = *fp++;
+            break;
+        case IO_HSML:
+            for ( i=0; i<n; i++ )
+                SphP[offset+i].Hsml = *fp++;
             break;
         case IO_NE:
             for ( i=0; i<n; i++ )

@@ -9,7 +9,7 @@ void set_units();
 void init_img();
 void free_img();
 void reset_img();
-void write_img( char *fn, char *s, int mode );
+void write_img( char *fn, char *s );
 
 void create_dir( char *s );
 double second();
@@ -113,3 +113,11 @@ void T_pdf();
 
 void group_temp_stack();
 void data_to_grid2d( double *data, double *grid, long Ndata, int NGrid, double L );
+void cren_T_pdf();
+
+void gas_ratio();
+
+void pdf2d_or_field2d( double *x, double *y, double *w, long num, char *dn, int flag, double *mm, int Nmin ); 
+
+void hsml_T_pdf();
+void hsml_dens_pdf();

@@ -171,7 +171,7 @@ void cre_pressure_pdf() {
     img_ymin = log10( cre_r_min );
     img_ymax = log10( cre_r_max );
 
-    write_img1( buf, "CrePressurePdf" );
+    write_img( buf, "CrePressurePdf" );
 
     dlogcre_bar = log10( cre_r_max / cre_r_min ) / ( bins-1 );
     dlogcr_bar = log10( cr_r_max / cr_r_min ) / ( bins-1 );

@@ -37,6 +37,7 @@ axs.append( fig.add_axes( [ dx+t_pad/2, t_pad/2, dx-t_pad, (dy-t_pad)*t_diff ] )
 for i in range(3):
     ax = axs[i]
     ax.imshow( ds[i], norm=mplc.LogNorm(), cmap=cm.plasma )
+    #ax.imshow( ds[i], cmap=cm.plasma )
     ax.grid()
     ax.set_xticks( [] )
     ax.set_yticks( [] )
@@ -45,12 +46,17 @@ ax = axs[3]
 ax_diff = axs[4]
 labels = [ 'no', 'CRE' ]
 Tunit = 1e7
+Nmin = 1000
 for i in range(2):
     ds[3+i][:,0] = ds[3+i][:,0] / 1000
     ds[3+i][:,1] = ds[3+i][:,1] / Tunit
 for i in range(2):
     x = ds[3+i][:,0]
     y = ds[3+i][:,1]
+    n = ds[3+i][:,2]
+    index = n > Nmin
+    x = x[index]
+    y = y[index]
     ax.plot( x, y, label=labels[i] )
 rmin = ds[3][:,0].min()
 rmax = ds[3][:,0].max()
@@ -60,7 +66,9 @@ ax.set_xscale( 'log' )
 
 index1 = ds[3][:,1] > 0
 index2 = ds[4][:,1] > 0
-index = index1 * index2
+index3 = ds[3][:,2] > Nmin
+index4 = ds[4][:,2] > Nmin
+index = index1 * index2 * index3 * index4
 x = ds[3][:,0][index]
 y = ds[3][:,1][index]
 y_cre = ds[4][:,1][index]

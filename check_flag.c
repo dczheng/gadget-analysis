@@ -82,4 +82,11 @@ void check_flag() {
     A_NEED_B( All.GroupTempProfile, All.GroupTempProfileRmin );
     A_NEED_B( All.GroupTempProfile, All.GroupTempProfileRmax );
 
+    A_NEED_B( All.CrenTPdf, All.ReadCre );
+    A_NEED_B( All.FieldCrenTDens, All.ReadCre );
+
+    A_NEED_B( All.GroupGasRatio, All.FoF );
+    A_NEED_B( All.GroupGasRatio, All.Group );
+    A_NEED_B( All.HsmlTPdf, All.ReadHsml );
+
 }

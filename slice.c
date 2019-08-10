@@ -216,7 +216,7 @@ void field_slice( int pt, double *data, char *name, long N ) {
     else
         make_slice_img( pt, data, 0 );
 
-    write_img1( buf, NULL );
+    write_img( buf, NULL );
 
 }
 
@@ -263,7 +263,7 @@ void density_slice() {
 
     index = 0;
     for ( i=All.SliceStart[0]; i<num; i++ ) {
-        if ( SphP[i].Temp > 1e7 ) {
+        if ( SphP[i].Temp >= 1e7 ) {
             data3[3*index] = P[i].Pos[All.proj_i] - All.Start[All.proj_i];
             data3[3*index+1] = P[i].Pos[All.proj_j] - All.Start[All.proj_j];
             data3[3*index+2] = SphP[i].Density * ( g2c.g / CUBE( g2c.cm ) );
@@ -274,7 +274,7 @@ void density_slice() {
 
     index = 0;
     for ( i=All.SliceStart[0]; i<num; i++ ) {
-        if ( SphP[i].Temp < 1e7 && SphP[i].Temp > 1e5 ) {
+        if ( SphP[i].Temp < 1e7 && SphP[i].Temp >= 1e5 ) {
             data3[3*index] = P[i].Pos[All.proj_i] - All.Start[All.proj_i];
             data3[3*index+1] = P[i].Pos[All.proj_j] - All.Start[All.proj_j];
             data3[3*index+2] = SphP[i].Density * ( g2c.g / CUBE( g2c.cm ) );
@@ -296,7 +296,7 @@ void density_slice() {
 
     index = 0;
     for ( i=All.SliceStart[0]; i<num; i++ ) {
-        if ( ( SphP[i].Density / All.RhoBaryon ) > 1e3 && SphP[i].Temp < 1e5 ) {
+        if ( ( SphP[i].Density / All.RhoBaryon ) >= 1e3 && SphP[i].Temp < 1e5 ) {
             data3[3*index] = P[i].Pos[All.proj_i] - All.Start[All.proj_i];
             data3[3*index+1] = P[i].Pos[All.proj_j] - All.Start[All.proj_j];
             data3[3*index+2] = SphP[i].Density * ( g2c.g / CUBE( g2c.cm ) );

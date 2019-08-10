@@ -513,7 +513,7 @@ void pdf_Tdiff_dens() {
         img_props(8) = dlogDens;
 
         image.img =imgDens; 
-        write_img1( "PdfTdiffDens.dat", "PpdfTdiffDens" );
+        write_img( "PdfTdiffDens.dat", "PpdfTdiffDens" );
 
         img_xmin = Densmin; 
         img_xmax = Densmax; 
@@ -523,7 +523,7 @@ void pdf_Tdiff_dens() {
         img_props(8) = dlogT;
 
         image.img =imgT; 
-        write_img1( "PdfTdiffT.dat", "PpdfTdiffT" );
+        write_img( "PdfTdiffT.dat", "PpdfTdiffT" );
 
         myfree( imgT );
         myfree( imgDens );

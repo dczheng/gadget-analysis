@@ -100,8 +100,16 @@ void read_parameters( char *fn ) {
         ADD_PARAR( All.TPdfMax                  );
         ADD_PARAR( All.GroupTempStackRmin       );
         ADD_PARAR( All.GroupTempStackRmax       );
-        ADD_PARAR( All.GroupTempProfileRmin       );
-        ADD_PARAR( All.GroupTempProfileRmax       );
+        ADD_PARAR( All.GroupTempProfileRmin     );
+        ADD_PARAR( All.GroupTempProfileRmax     );
+        ADD_PARAR( All.CrenTPdfTMin             );
+        ADD_PARAR( All.CrenTPdfTMax             );
+        ADD_PARAR( All.CrenTPdfnMin             );
+        ADD_PARAR( All.CrenTPdfnMax             );
+        ADD_PARAR( All.FieldCrenTDensDensMin    );
+        ADD_PARAR( All.FieldCrenTDensDensMax    );
+        ADD_PARAR( All.FieldCrenTDensTMin       );
+        ADD_PARAR( All.FieldCrenTDensTMax       );
 
         ADD_PARAI( All.NumFilesPerSnapshot      );
         ADD_PARAI( All.PicSize                  );
@@ -131,6 +139,7 @@ void read_parameters( char *fn ) {
         ADD_PARAI( All.GroupCre                 );
         ADD_PARAI( All.GroupRad                 );
         ADD_PARAI( All.ReadMach                 );
+        ADD_PARAI( All.ReadHsml                 );
         ADD_PARAI( All.ReadTemp                 );
         ADD_PARAI( All.ReadCre                  );
         ADD_PARAI( All.ReadCr                   );
@@ -168,7 +177,13 @@ void read_parameters( char *fn ) {
         ADD_PARAI( All.TPdfN                    );
         ADD_PARAI( All.GroupTempStack           );
         ADD_PARAI( All.GroupTempStackRN         );
-        ADD_PARAI( All.GroupFixedSize             );
+        ADD_PARAI( All.GroupFixedSize           );
+        ADD_PARAI( All.CrenTPdf                 );
+        ADD_PARAI( All.HsmlTPdf                 );
+        ADD_PARAI( All.HsmlDensPdf                 );
+        ADD_PARAI( All.GroupGasRatio            );
+        ADD_PARAI( All.GasRatio            );
+        ADD_PARAI( All.FieldCrenTDens            );
 
         while( !feof( fd ) ) {
             *buf = 0;

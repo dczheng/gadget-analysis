@@ -130,6 +130,7 @@ enum iofields {
     IO_DIVB,
     IO_DBDT,
     IO_SFR,
+    IO_HSML,
     IO_TEMP
 };
 
@@ -198,6 +199,7 @@ typedef struct Sph_Particle_Data {
     double dBdt;
     double elec;
     double Temp;
+    double Hsml;
     /*
     int Star_BH_Num[2];
     int Star_BH_MaxNum[2];
@@ -231,7 +233,7 @@ extern struct global_parameters_struct {
 
     int FoF,
         ReadCre, ReadCr, ReadB, ReadMach, ReadSfr, ReadTemp, ReadVel,
-        ReadElec, Readu,
+        ReadElec, Readu, ReadHsml,
         MpcFlag,
         Group, MF, MFBins, BPdf,
         GroupDens, GroupTemp, GroupSfr, GroupB, GroupMach, GroupCre,
@@ -251,9 +253,15 @@ extern struct global_parameters_struct {
         CorrGas, CorrDM,
         DensPdf, DensPdfN,
         TPdf, TPdfN,
+        CrenTPdf,
         GroupTempStack,
         GroupTempStackRN,
         GroupFixedSize,
+        GroupGasRatio,
+        GasRatio,
+        FieldCrenTDens,
+        HsmlTPdf,
+        HsmlDensPdf,
 
         QNum, NuNum, FoFMinLen, proj_i, proj_j, proj_k,
         TreePartType,
@@ -289,6 +297,14 @@ extern struct global_parameters_struct {
            GroupTempStackRmax,
            GroupTempProfileRmin,
            GroupTempProfileRmax,
+           CrenTPdfTMin,
+           CrenTPdfTMax,
+           CrenTPdfnMin,
+           CrenTPdfnMax,
+           FieldCrenTDensDensMin,
+           FieldCrenTDensDensMax,
+           FieldCrenTDensTMin,
+           FieldCrenTDensTMax,
 
            PosShiftX, PosShiftY, PosShiftZ, GroupSize;
 
@@ -310,23 +326,16 @@ extern struct global_parameters_struct {
 #define EndY  End[1]
 #define EndZ  End[2]
 
-#define IMG_PROPS_START 15
+#define IMG_PROPS_START 8 
 #define IMG_PROPS_OTHERS ( All.PicSize - IMG_PROPS_START )
-#define img_nprops     ( images.nprops[0] )
+#define img_z          ( image.props[0] )
 #define img_xmin       ( image.props[1] )
 #define img_xmax       ( image.props[2] )
-#define img_ymin       ( image.props[3] )
-#define img_ymax       ( image.props[4] )
-#define img_globxmin   ( image.props[5] )
-#define img_globxmax   ( image.props[6] )
-#define img_globymin   ( image.props[7] )
-#define img_globymax   ( image.props[8] )
-#define img_proj       ( image.props[9] )
-#define img_z          ( image.props[10] )
-#define img_min        ( image.props[11] )
-#define img_max        ( image.props[12] )
-#define img_globmin    ( image.props[13] )
-#define img_globmax    ( image.props[14] )
+#define img_xlog       ( image.props[3] )
+#define img_ymin       ( image.props[4] )
+#define img_ymax       ( image.props[5] )
+#define img_ylog       ( image.props[6] )
+#define img_proj       ( image.props[7] )
 #define img_props(i)   ( image.props[ IMG_PROPS_START+i ] )
 struct image_struct{
     double *img,  *num, *img_tmp, *num_tmp,

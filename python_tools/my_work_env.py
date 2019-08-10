@@ -10,6 +10,7 @@ import sys
 from matplotlib import cm
 import matplotlib.colors as mplc
 import tools_and_constants as mytc
+import matplotlib.ticker as tik
 
 from matplotlib.font_manager import FontProperties
 #https://matplotlib.org/2.0.0/examples/pylab_examples/fonts_demo.html
@@ -93,6 +94,8 @@ cm.register_cmap('ds9he', data=ds9he)
 cm.register_cmap('ds9heat', data=ds9heat)
 
 def real2tex( x, b=0, n=0 ):
+    if x == '':
+        return x
     x = ('%e'%x).split( 'e' )
     if float(x[0]) == 1:
         x = r'10^{%i}'%( int( x[1] )+b )
@@ -101,3 +104,59 @@ def real2tex( x, b=0, n=0 ):
         fmt = r'%s \times'%(fmt) + '\, 10^{%i}'
         x = (fmt)%( float(x[0]), int( x[1] )+b )
     return x
+
+def remove_tick_labels( ax, xy, bar=0 ):
+    if 'x' in xy:
+        t = [ l.get_text() for l in ax.get_xticklabels() ]
+        print( "remove xtick labels:" )
+        print( t )
+        ll = [''] * len(t)
+        ax.set_xticklabels( ll )
+        if bar == 0:
+            ax.tick_params( axis='x', width=0 )
+        t = [ l.get_text() for l in ax.get_xticklabels() ]
+        print( t )
+    if 'y' in xy:
+        t = [ l.get_text() for l in ax.get_yticklabels() ]
+        print( "remove ytick labels:" )
+        print( t )
+        ll = [''] * len(t)
+        ax.set_yticklabels( ll )
+        if bar == 0:
+            ax.tick_params( axis='y', width=0 )
+
+def fmt_tick_labels( ax, xy ):
+    if 'x' in xy:
+        t = [ l.get_text() for l in ax.get_xticklabels() ]
+        tt = []
+        for x in t:
+            xx = x.split( '$' )
+            if len(xx) < 2:
+                tt.append( xx )
+            else:
+                tt.append( r'$%s$'%real2tex( float(xx[1]) ) )
+        ax.set_xticklabels( tt )
+    if 'y' in xy:
+        t = [ l.get_text() for l in ax.get_yticklabels() ]
+        tt = []
+        for x in t:
+            xx = x.split( '$' )
+            if len(xx) < 2:
+                tt.append( xx )
+            else:
+                tt.append( r'$%s$'%real2tex( float(xx[1]) ) )
+        ax.set_yticklabels( tt )
+
+def make_log_ticks( xmin, xmax, n, a=1 ):
+    xmin = np.log10( xmin )
+    xmax = np.log10( xmax )
+    loc = np.arange( int(xmin)-1, int(xmax)+2, a )
+    fmt = [ r'$10^{%.0f}$'%i for i in loc ] 
+    loc = ( loc - xmin ) / ( xmax-xmin ) * ( n-1 )
+    t1 = []
+    t2 = []
+    for i in range( len(loc) ):
+        if loc[i]>0 and loc[i]<n:
+            t1.append( loc[i] )
+            t2.append( fmt[i] )
+    return ( t1, t2 )

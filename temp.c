@@ -4,6 +4,8 @@ void compute_temperature() {
     double yhelium, u, ne, mu, XH;
     int i;
 
+    if ( All.Readu == 0 )
+        endruns( "require All.Readu" );
     writelog( "compute gas temprature...\n" );
     XH = HYDROGEN_MASSFRAC;
     yhelium = ( 1 - XH ) / ( 4 * XH );
