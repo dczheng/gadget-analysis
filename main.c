@@ -104,7 +104,7 @@ void create_mpi_comms() {
 
     writelog( "create mpi comms ...\n" );
 
-    NTask_Local = All.NumThreadsPerSnapshot;
+    NTask_Local = NumThreadsPerSnapshot;
     NTask_Master = NTask / NTask_Local;
 
     MasterTask = ThisTask / NTask_Local * NTask_Local;
@@ -238,13 +238,13 @@ int main( int argc, char *argv[] ){
     }
 
     if ( argc >= 3 )
-        All.NumThreadsPerSnapshot = atoi( argv[2] );
+        NumThreadsPerSnapshot = atoi( argv[2] );
     else
-        All.NumThreadsPerSnapshot = 1;
+        NumThreadsPerSnapshot = 1;
 
-    if ( NTask % All.NumThreadsPerSnapshot != 0 ) {
+    if ( NTask % NumThreadsPerSnapshot != 0 ) {
         printf( "NTask `%i` must be NumThreadsPerSnapshot `%i` * n\n",
-                NTask, All.NumThreadsPerSnapshot );
+                NTask, NumThreadsPerSnapshot );
         endrun( 20181205 );
     }
 
@@ -286,7 +286,7 @@ int main( int argc, char *argv[] ){
     if ( NULL == UsedMemFileFd )
         endrun0( "Failed open file %s\n", buf );
 
-    sprintf( All.OutputDir, "./output_%s/", bname );
+    sprintf( OutputDir, "./output_%s/", bname );
 
     create_mpi_comms();
     put_sep;
@@ -299,14 +299,14 @@ int main( int argc, char *argv[] ){
     init_sig();
 #endif
 
-    All.ToolsPath = getenv( "GADGET_TOOLS" );
-    if ( strcmp( All.ToolsPath, "" ) == 0 ){
+    ToolsPath = getenv( "GADGET_TOOLS" );
+    if ( strcmp( ToolsPath, "" ) == 0 ){
         writelog( "Please set `GADGET_TOOLS` evironment variable.\n" );
         put_sep;
         endrun(20181107);
     }
-    writelog( "GADGET_TOOLS: %s\n", All.ToolsPath );
-    writelog( "NumThreadsPerSnapshot: %i\n", All.NumThreadsPerSnapshot );
+    writelog( "GADGET_TOOLS: %s\n", ToolsPath );
+    writelog( "NumThreadsPerSnapshot: %i\n", NumThreadsPerSnapshot );
     writelog( "Parameters file: %s\n", argv[1] );
 
 

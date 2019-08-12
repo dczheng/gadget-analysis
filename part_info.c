@@ -24,8 +24,8 @@ void part_info() {
             rho_max * g2c.g / CUBE( g2c.cm ),
             rho_min * g2c.g / CUBE( g2c.cm ) / cuc.m_p,
             rho_max * g2c.g / CUBE( g2c.cm ) / cuc.m_p,
-            All.RhoBaryon * g2c.g / CUBE( g2c.cm ),
-            All.RhoBaryon * g2c.g / CUBE( g2c.cm ) / cuc.m_p
+            RhoBaryon * g2c.g / CUBE( g2c.cm ),
+            RhoBaryon * g2c.g / CUBE( g2c.cm ) / cuc.m_p
             );
 
     put_sep;

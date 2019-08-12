@@ -58,7 +58,6 @@
 #define GSL_INTE_ERR_ABS ((double)(0.0))
 #define GSL_INTE_ERR_REL ((double)(1e-4))
 #define GSL_INTE_KEY GSL_INTEG_GAUSS61
-extern gsl_integration_workspace *inte_ws;
 
 #define SQR(X) ( (X)*(X) )
 #define CUBE(X) ( SQR(X) * (X) )
@@ -78,7 +77,7 @@ typedef double OutputFloat;
 typedef float OutputFloat;
 #endif
 
-struct io_header{
+typedef struct io_header{
   int npart[6];
   double mass[6];
   double time;
@@ -101,7 +100,7 @@ struct io_header{
   float lpt_scalingfactor;
   char fill[18];
   char names[15][2];
-};
+} io_header;
 
 #define IO_NBLOCKS 1000
 enum iofields {
@@ -159,7 +158,7 @@ struct radio_inte_struct{
 };
 
 
-typedef struct Particle_Data {
+typedef struct ParticleData {
     double Pos[3];
     double Mass;
     double Vel[3];
@@ -168,9 +167,8 @@ typedef struct Particle_Data {
     MyIDType ID;
     int Type;
 } ParticleData;
-extern ParticleData  *P;
 
-typedef struct Sph_Particle_Data {
+typedef struct SphParticleData {
     double Density;
     double u;
 
@@ -207,36 +205,18 @@ typedef struct Sph_Particle_Data {
     */
     double sfr;
 } SphParticleData;
-extern SphParticleData *SphP;
 
-extern char sep_str[ SEP_LEN ], sep_str0[ SEP_LEN0 ];
-extern int ThisTask, NTask, MasterTask, ThisTask_Local, NTask_Local,
-       ThisTask_Master, NTask_Master, IOGroups;
-
-extern MPI_Win MpiWin_P, MpiWin_SphP, MpiWin_PartRad;
-extern MPI_Comm  MpiComm_Local, MpiComm_Master;
-extern MPI_Aint WinSize;
-extern int WinDisp;
-extern long *id_to_index, NumPart, N_Gas, OffsetPart6[6], NumPart6[6];
-extern FILE *LogFileFd, *UsedMemFileFd;
-extern struct io_header header;
-
-extern double *PartRad;
-
-extern struct global_parameters_struct {
+typedef struct GlobalParams{
     char FilePrefix[ MYFILENAME_MAX ],
-         OutputDir[ MYFILENAME_MAX ],
-         FoFDir[ MYFILENAME_MAX ],
-         RadDir[ MYFILENAME_MAX ],
-         GroupDir[ MYFILENAME_MAX ],
-         *ToolsPath, Sproj;
+            FoFDir[ MYFILENAME_MAX ],
+         RadDir[ MYFILENAME_MAX ];
 
     int FoF,
         ReadCre, ReadCr, ReadB, ReadMach, ReadSfr, ReadTemp, ReadVel,
         ReadElec, Readu, ReadHsml,
         MpcFlag,
         Group, MF, MFBins, BPdf,
-        GroupDens, GroupTemp, GroupSfr, GroupB, GroupMach, GroupCre,
+        GroupTemp, GroupSfr, GroupB, GroupMach, GroupCre,
         GroupTempProfileRN,
         GroupTempProfile,
         MachSlice,
@@ -261,70 +241,100 @@ extern struct global_parameters_struct {
         GasRatio,
         FieldCrenTDens,
         HsmlTPdf,
+        UTPdf,
         HsmlDensPdf,
+        Gadget2,
+        NumFilesPerSnapshot,
 
-        QNum, NuNum, FoFMinLen, proj_i, proj_j, proj_k,
+        QNum, NuNum, FoFMinLen,
         TreePartType,
-        StartSnapIndex, SnapIndex, ProjectDirection, KernelN,
-        PicSize, PicSize2, NumFilesPerSnapshot, NumThreadsPerSnapshot;
+        StartSnapIndex, ProjectDirection, KernelN,
+        PicSize;
 
-    double SofteningTable[6],
-           UnitTime_in_s,
-           UnitMass_in_g,
-           UnitLength_in_cm,
-           UnitDensity_in_cgs,
-           UnitEnergy_in_cgs,
-           UnitPressure_in_cgs,
-           UnitVelocity_in_cm_per_s,
-           Start[3], End[3],
-           TreeAllocFactor, LinkLength,
-           BoxSize, HalfBoxSize,
-           *KernelMat2D[6], *KernelMat3D[6],
-           Time, Time2, Time3, Hubble_a, RhoBaryon,
-           ComDis, AngDis, LumDis,
-           RedShift, HubbleParam, RhoCrit, RhoM, G,
-           Hubble, Omega0, OmegaLambda, OmegaBaryon,
-           Sigma8,
-           *ConvKernel, ConvSigma, NuMin, NuMax, GroupMassMin, Freq,
-           QMin, QMax, MFMmin, MFMmax, MFMSplit,
-           PhaseTempMin, 
-           PhaseTempMax,
-           PhaseDensMax,
-           PhaseDensMin,
-           DensPdfMin, DensPdfMax,
-           TPdfMin, TPdfMax,
-           GroupTempStackRmin,
-           GroupTempStackRmax,
-           GroupTempProfileRmin,
-           GroupTempProfileRmax,
-           CrenTPdfTMin,
-           CrenTPdfTMax,
-           CrenTPdfnMin,
-           CrenTPdfnMax,
-           FieldCrenTDensDensMin,
-           FieldCrenTDensDensMax,
-           FieldCrenTDensTMin,
-           FieldCrenTDensTMax,
+    double 
+            SofteningGas   ,
+            SofteningHalo  ,
+            SofteningDisk  ,
+            SofteningBulge ,
+            SofteningStar  ,
+            SofteningBndry ,
+            StartX,
+            StartY,
+            StartZ,
+            EndX,
+            EndY,
+            EndZ,
+            UnitMass_in_g,
+            UnitVelocity_in_cm_per_s,
+            TreeAllocFactor, LinkLength,
+            UnitLength_in_cm,
+            Sigma8,
+            ConvSigma, NuMin, NuMax, GroupMassMin, Freq,
+            QMin, QMax, MFMmin, MFMmax, MFMSplit,
+            PhaseTempMin, 
+            PhaseTempMax,
+            PhaseDensMax,
+            PhaseDensMin,
+            DensPdfMin, DensPdfMax,
+            OmegaBaryon,
+            TPdfMin, TPdfMax,
+            GroupTempStackRmin,
+            GroupTempStackRmax,
+            GroupTempProfileRmin,
+            GroupTempProfileRmax,
+            CrenTPdfTMin,
+            CrenTPdfTMax,
+            CrenTPdfnMin,
+            CrenTPdfnMax,
+            FieldCrenTDensDensMin,
+            FieldCrenTDensDensMax,
+            FieldCrenTDensTMin,
+            FieldCrenTDensTMax,
+            PosShiftX, PosShiftY, PosShiftZ, GroupSize;
 
-           PosShiftX, PosShiftY, PosShiftZ, GroupSize;
+} GlobalParams;
 
-    long SliceStart[6], SliceEnd[6];
-}All;
+typedef struct NODE {
+    double center[3];
+    double len;
+    long suns[8], sibling, father;
+    long nextnode;
+    int bitflags;
+} NODE;
 
-#define SofteningGas   SofteningTable[0]
-#define SofteningHalo  SofteningTable[1]
-#define SofteningDisk  SofteningTable[2]
-#define SofteningBulge SofteningTable[3]
-#define SofteningStar  SofteningTable[4]
-#define SofteningBndry SofteningTable[5]
+typedef struct group_properties{
+    double mass, cm[3], vr200, vel[3], mass_table[6], size[3];
+    long Head, Tail, Len, npart[6];
+} group_properties;
 
-#define StartX  Start[0]
-#define StartY  Start[1]
-#define StartZ  Start[2]
+typedef struct gadget_2_cgs_unit{
+    double cm, g, s, erg;
+} gadget_2_cgs_unit;
 
-#define EndX  End[0]
-#define EndY  End[1]
-#define EndZ  End[2]
+typedef struct physical_constants_in_gadget_unit{
+    double e, m_e, m_p, c, G, mec2, c2, e_mec, sigma_t;
+}physical_constants_in_gadget_unit;
+
+typedef struct physical_constants_in_cgs_unit{
+    double e, m_e, m_p, c, G, mec2, c2, e_mec, sigma_t;
+} physical_constants_in_cgs_unit;
+
+typedef struct sigma_struct{
+
+    double norm;
+    double (*P) ( double );
+    double (*filter) ( double, void* );
+    void (*FilterKLimit) ( double *, double *, void * );
+    void *FilterParams;
+
+    void ( *MtoFilterParams ) ( double, void* );
+
+    double (*dsigma2dmdk) ( double, void* );
+    void *dsigma2dmdk_params;
+
+} sigma_struct;
+
+
 
 #define IMG_PROPS_START 8 
 #define IMG_PROPS_OTHERS ( All.PicSize - IMG_PROPS_START )
@@ -337,7 +347,7 @@ extern struct global_parameters_struct {
 #define img_ylog       ( image.props[6] )
 #define img_proj       ( image.props[7] )
 #define img_props(i)   ( image.props[ IMG_PROPS_START+i ] )
-struct image_struct{
+typedef struct image_struct{
     double *img,  *num, *img_tmp, *num_tmp,
            *props;
     /* props:
@@ -358,66 +368,78 @@ struct image_struct{
      *      14 globmax_i
      *      15 ~ end others ... */
 
-};
-extern struct image_struct image;
-
-extern struct NODE {
-    double center[3];
-    double len;
-    long suns[8], sibling, father;
-    long nextnode;
-    int bitflags;
-} *Nodes, *Nodes_Base;
-extern long MaxNodes;
-extern long *NextNode;
-extern long *Ngblist;
-
-struct group_properties{
-    double mass, cm[3], vr200, vel[3], mass_table[6], size[3];
-    long Head, Tail, Len, npart[6];
-};
-
-extern struct group_properties *Gprops;
-extern long *FoFNext;
-extern int Ngroups;
-
-extern struct gadget_2_cgs_unit{
-    double cm, g, s, erg;
-}g2c;
-
-extern struct physical_constants_in_gadget_unit{
-    double e, m_e, m_p, c, G, mec2, c2, e_mec, sigma_t;
-}guc;
-
-extern struct physical_constants_in_cgs_unit{
-    double e, m_e, m_p, c, G, mec2, c2, e_mec, sigma_t;
-}cuc;
+}image_struct;
 
 #define MALLOC_VAR_NUM 1000
 #define MALLOC_VAR_LEN 200
 
-struct malloc_struct {
+typedef struct malloc_struct {
     char var[MALLOC_VAR_NUM][MALLOC_VAR_LEN], str[100], mem_str[100];
     long mem, var_bytes[MALLOC_VAR_NUM],
        i, nn, b, max_mem;
-};
+} malloc_struct;
 
-extern struct malloc_struct ms;
 
-typedef struct sigma_struct{
+//extern_start
+extern SphParticleData *SphP;
+extern ParticleData  *P;
+extern GlobalParams All;
+extern io_header header;
+extern image_struct image;
+extern gadget_2_cgs_unit g2c;
+extern physical_constants_in_cgs_unit guc;
+extern physical_constants_in_cgs_unit cuc;
+extern NODE *Nodes, *Nodes_Base;
+extern image_struct image;
+extern group_properties *Gprops;
+extern malloc_struct ms;
 
-    double norm;
-    double (*P) ( double );
-    double (*filter) ( double, void* );
-    void (*FilterKLimit) ( double *, double *, void * );
-    void *FilterParams;
+extern long 
+            MaxNodes, *NextNode, *Ngblist,
+            *FoFNext,
+            SliceStart[6], SliceEnd[6],
+            *ConvKernel,
+            *id_to_index, NumPart, N_Gas, OffsetPart6[6], NumPart6[6] ;
+extern int 
+            proj_i, proj_j, proj_k, SnapIndex,
+            PicSize, PicSize2,
+            Ngroups,
+            StartSnapIndex,
+            ThisTask, NTask, MasterTask, ThisTask_Local, NTask_Local,
+            ThisTask_Master, NTask_Master, IOGroups,
+            WinDisp,
+            NumThreadsPerSnapshot;
 
-    void ( *MtoFilterParams ) ( double, void* );
+extern char 
+            Sproj,
+         GroupDir[ MYFILENAME_MAX ],
+            OutputDir[ MYFILENAME_MAX ],
+            sep_str[ SEP_LEN ], sep_str0[ SEP_LEN0 ],
+            *ToolsPath ;
 
-    double (*dsigma2dmdk) ( double, void* );
-    void *dsigma2dmdk_params;
-
-} sigma_struct;
+extern MPI_Win 
+            MpiWin_P, MpiWin_SphP, MpiWin_PartRad ;
+extern MPI_Comm  
+            MpiComm_Local, MpiComm_Master ;
+extern MPI_Aint WinSize;
+extern FILE 
+            *LogFileFd, *UsedMemFileFd ;
+extern double 
+            UnitDensity_in_cgs,
+            UnitEnergy_in_cgs,
+            BoxSize, HalfBoxSize,
+            Time, Time2, Time3,
+            Hubble_a, RhoBaryon,
+            ComDis, AngDis, LumDis,
+            Redshift, HubbleParam,
+            RhoCrit, RhoM, G,
+            Hubble, Omega0, OmegaLambda,
+            UnitPressure_in_cgs,
+            UnitTime_in_s,
+            SofteningTable[6], Start[6], End[6],
+            *PartRad, *KernelMat2D[6], *KernelMat3D[6] ;
+extern gsl_integration_workspace *inte_ws;
+//extern_end
 
 #include "protos.h"
 #include "auxfuns.h"

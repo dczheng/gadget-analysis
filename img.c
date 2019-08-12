@@ -30,6 +30,7 @@ void reset_img() {
 
     for( i=0; i<IMG_PROPS_START; i++ )
         image.props[i] = 0;
+
 }
 
 void write_img( char *fn, char *nstr ) {
@@ -46,7 +47,7 @@ void write_img( char *fn, char *nstr ) {
     }
 
     img_proj = All.ProjectDirection;
-    img_z = All.RedShift;
+    img_z = Redshift;
 
     for ( i=0; i<All.PicSize; i++ ) {
         fprintf( fd, "%g ", image.props[i] );

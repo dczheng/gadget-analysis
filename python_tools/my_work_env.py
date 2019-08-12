@@ -9,7 +9,7 @@ import os
 import sys
 from matplotlib import cm
 import matplotlib.colors as mplc
-import tools_and_constants as mytc
+import cos_and_const as mycc
 import matplotlib.ticker as tik
 
 from matplotlib.font_manager import FontProperties
@@ -147,7 +147,7 @@ def fmt_tick_labels( ax, xy ):
                 tt.append( r'$%s$'%real2tex( float(xx[1]) ) )
         ax.set_yticklabels( tt )
 
-def make_log_ticks( xmin, xmax, n, a=1 ):
+def make_log_ticks( xmin, xmax, n, a=1, axis=None ):
     xmin = np.log10( xmin )
     xmax = np.log10( xmax )
     loc = np.arange( int(xmin)-1, int(xmax)+2, a )
@@ -159,4 +159,12 @@ def make_log_ticks( xmin, xmax, n, a=1 ):
         if loc[i]>0 and loc[i]<n:
             t1.append( loc[i] )
             t2.append( fmt[i] )
-    return ( t1, t2 )
+    loc = tik.FixedLocator( t1 )
+    fmt = tik.FixedFormatter( t2 )
+    if axis:
+        axis.set_major_locator( loc )
+        axis.set_major_formatter( fmt )
+    return ( loc, fmt )
+
+def set_tick_params( ax, ls, axis='both' ):
+    ax.tick_params( axis=axis, direction='in', pad=5, labelsize=ls )

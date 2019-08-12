@@ -18,15 +18,15 @@ void init_kernel_matrix() {
     for( pt=0; pt<6; pt++ ) {
         num = header.npartTotal[pt] + ( ( ( long )header.npartTotalHighWord[pt] ) << 32 );
         if ( num != 0 ) {
-            All.KernelMat2D[pt] = malloc( sizeof( double ) * N * N );
-            All.KernelMat3D[pt] = malloc( sizeof( double ) * N * N * N );
-            memset( All.KernelMat2D[pt], 0, sizeof( double ) * N * N );
-            memset( All.KernelMat3D[pt], 0, sizeof( double ) * N * N * N );
+            KernelMat2D[pt] = malloc( sizeof( double ) * N * N );
+            KernelMat3D[pt] = malloc( sizeof( double ) * N * N * N );
+            memset( KernelMat2D[pt], 0, sizeof( double ) * N * N );
+            memset( KernelMat3D[pt], 0, sizeof( double ) * N * N * N );
 
-            if ( All.SofteningTable[pt] == 0 )
+            if ( SofteningTable[pt] == 0 )
                 endrun0( "SofteningTable[%d] is zeros !!!\n", pt );
 
-            h = All.SofteningTable[pt];
+            h = SofteningTable[pt];
             dh = h / Nhalf;
             for ( i=0; i<N; i++ )
                 for ( j=0; j<N; j++ )
@@ -36,28 +36,28 @@ void init_kernel_matrix() {
                                   SQR( j-Nhalf ) +
                                   SQR( k-Nhalf ) );
                         q = q / Nhalf;
-                        All.KernelMat3D[pt][ i*N*N + j*N + k ] = kernel( q ) / pow( h, 3 )
+                        KernelMat3D[pt][ i*N*N + j*N + k ] = kernel( q ) / pow( h, 3 )
                             * pow( dh, 3 );
-                        All.KernelMat2D[pt][ i*N + j ] += All.KernelMat3D[pt][ i*N*N + j*N + k ];
-                        //writelog( "%f, %f\n", q, All.KernelMat2D[pt][i*N+j] );
+                        KernelMat2D[pt][ i*N + j ] += KernelMat3D[pt][ i*N*N + j*N + k ];
+                        //writelog( "%f, %f\n", q, KernelMat2D[pt][i*N+j] );
                     }
             /*
             double t;
             t = 0;
             for ( i=0; i<N; i++ )
                 for ( j=0; j<N; j++ ) {
-                    t += All.KernelMat2D[pt][ i*N + j ];
+                    t += KernelMat2D[pt][ i*N + j ];
                 }
             writelog( "%f\n", t );
             endrun( 0 );
             */
 
             for ( i=0, q=0; i<N*N*N; i++ ) {
-                q += All.KernelMat3D[pt][i];
+                q += KernelMat3D[pt][i];
             }
             writelog( "sum of 3d kernel[%d] = %g\n", pt, q );
             for ( i=0, q=0; i<N*N; i++ )
-                q += All.KernelMat2D[pt][i];
+                q += KernelMat2D[pt][i];
             writelog( "sum of 2d kernel[%d] = %g\n", pt, q );
         }
     }
@@ -72,8 +72,8 @@ void free_kernel_matrix() {
     for ( pt=0; pt<6; pt++ ) {
         num = header.npartTotal[pt] + ( ( ( long )header.npartTotalHighWord[pt] ) << 32 );
         if ( num != 0 ) {
-            free( All.KernelMat2D[pt] );
-            free( All.KernelMat3D[pt] );
+            free( KernelMat2D[pt] );
+            free( KernelMat3D[pt] );
         }
     }
 }

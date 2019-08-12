@@ -161,9 +161,9 @@ void cre_pressure_pdf() {
     for( i=0; i<SQR(PicSize); i++ )
         image.img[i] /= sum * dlogcre_r * dlogcr_r;
 
-    sprintf( buf, "%s/CrePressurePdf", All.OutputDir );
+    sprintf( buf, "%s/CrePressurePdf", OutputDir );
     create_dir( buf );
-    sprintf( buf, "%s/CrePressurePdf_%03i.dat", buf, All.SnapIndex );
+    sprintf( buf, "%s/CrePressurePdf_%03i.dat", buf, SnapIndex );
 
 
     img_xmin = log10( cr_r_min );
@@ -198,7 +198,7 @@ void cre_pressure_pdf() {
         cr_bar[ii] ++;
     }
 
-    sprintf( buf, "%s/CrePressurePdf/CrePressure_%03i.dat", All.OutputDir, All.SnapIndex );
+    sprintf( buf, "%s/CrePressurePdf/CrePressure_%03i.dat", OutputDir, SnapIndex );
     fd = fopen( buf, "w" );
 
     for ( i=0; i<bins; i++ ){

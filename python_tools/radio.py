@@ -5,7 +5,7 @@ matplotlib.use( 'agg' )
 import scipy.special as ss
 from scipy.integrate import quad
 
-import tools_and_constants as tc
+import phys_and_const as tc
 from my_work_env import *
 
 def _K( x ):

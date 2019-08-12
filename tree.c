@@ -107,7 +107,7 @@ void tree_build_single() {
 
 
                 /*dealing with particles at identical locations ( or extremely close ). */
-                if ( nfreep -> len < 1.0e-3 * All.SofteningTable[P[n].Type] ) {
+                if ( nfreep -> len < 1.0e-3 * SofteningTable[P[n].Type] ) {
 
                     printf( "[task: %i] extremely close particle:\n"
                             "[1][%i][%i]( %.10f, %.10f, %.10f )\n"

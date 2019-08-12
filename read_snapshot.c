@@ -463,9 +463,16 @@ void read_header( char *fn ) {
     H5Aread(hdf5_attribute, H5T_NATIVE_INT, &header.num_files);
     H5Aclose(hdf5_attribute);
 
-    hdf5_attribute = H5Aopen_name(hdf5_group, "Flag_IC_Info");
-    H5Aread(hdf5_attribute, H5T_NATIVE_INT, &header.flag_ic_info);
-    H5Aclose(hdf5_attribute);
+    if ( All.Gadget2 == 0 ) {
+        hdf5_attribute = H5Aopen_name(hdf5_group, "Flag_IC_Info");
+        H5Aread(hdf5_attribute, H5T_NATIVE_INT, &header.flag_ic_info);
+        H5Aclose(hdf5_attribute);
+
+        hdf5_attribute = H5Aopen_name(hdf5_group, "Flag_DoublePrecision");
+        H5Aread(hdf5_attribute, H5T_NATIVE_INT, &header.flag_doubleprecision);
+        H5Aclose(hdf5_attribute);
+
+    }
 
     hdf5_attribute = H5Aopen_name(hdf5_group, "Flag_Sfr");
     H5Aread(hdf5_attribute, H5T_NATIVE_INT, &header.flag_sfr);
@@ -485,10 +492,6 @@ void read_header( char *fn ) {
 
     hdf5_attribute = H5Aopen_name(hdf5_group, "Flag_Feedback");
     H5Aread(hdf5_attribute, H5T_NATIVE_INT, &header.flag_feedback);
-    H5Aclose(hdf5_attribute);
-
-    hdf5_attribute = H5Aopen_name(hdf5_group, "Flag_DoublePrecision");
-    H5Aread(hdf5_attribute, H5T_NATIVE_INT, &header.flag_doubleprecision);
     H5Aclose(hdf5_attribute);
 
     hdf5_attribute = H5Aopen_name(hdf5_group, "HubbleParam");
@@ -511,50 +514,65 @@ void read_header( char *fn ) {
     H5Fclose(hdf5_file);
 }
 
-void show_header( struct io_header header ) {
+void show_header( io_header header ) {
+
     int i;
 
     put_sep0;
-    writelog( "header Info:\n" );
 
-    writelog( "%-25s: ", "npart" );
+#define fmt "%-25s: "
+
+    writelog( "Header Info:\n" );
+
+    writelog( fmt, "npart" );
     for ( i=0; i<6; i++ )
         writelog(  "%i ", header.npart[i] );
     writelog( "\n" );
 
-    writelog(  "%-25s: ", "mass" );
+    writelog( fmt, "mass" );
     for ( i=0; i<6; i++ )
-        writelog(  "%lf ", header.mass[i] );
+        if ( header.mass[i] == 0 ) {
+            writelog( "0 " );
+        }
+        else {
+            writelog(  "%lf ", header.mass[i] );
+        }
     writelog( "\n" );
 
-    writelog( "%-25s: ", "npartTotal" );
+    writelog( fmt, "npartTotal" );
     for ( i=0; i<6; i++ )
         writelog( "%i ", header.npartTotal[i] );
     writelog( "\n" );
 
-    writelog( "%-25s: ", "npartTotalHighWord" );
+    writelog( fmt, "npartTotalHighWord" );
     for ( i=0; i<6; i++ )
         writelog( "%i ", header.npartTotalHighWord[i] );
     writelog( "\n" );
 
-    writelog( "%-25s: %lf\n", "readshift",             header.redshift );
-    writelog( "%-25s: %lf\n", "HubbleParam",           header.HubbleParam );
-    writelog( "%-25s: %i\n", "flag_sfr",               header.flag_sfr );
-    writelog( "%-25s: %i\n", "flag_feedback",          header.flag_feedback );
-    writelog( "%-25s: %i\n", "num_files",              header.num_files );
-    writelog( "%-25s: %lf\n", "BoxSize",               header.BoxSize );
-    writelog( "%-25s: %lf\n", "Omega0",                header.Omega0 );
-    writelog( "%-25s: %lf\n", "OmegaLambda",           header.OmegaLambda );
-    writelog( "%-25s: %i\n", "flag_stellarge",         header.flag_stellarage );
-    writelog( "%-25s: %i\n", "flag_metals",            header.flag_metals );
-    writelog( "%-25s: %i\n", "flag_entropy_instead_u", header.flag_entropy_instead_u );
-    writelog( "%-25s: %i\n", "flag_doubleprecision",   header.flag_doubleprecision );
-    writelog( "%-25s: %i\n", "flag_ic_info",           header.flag_ic_info );
-    writelog( "%-25s: %f\n", "lpt_scalingfactor",      header.lpt_scalingfactor );
+#define write_header_i( a ) writelog( fmt"%i\n", &((#a)[7]), a )
+#define write_header_f( a ) writelog( fmt"%lf\n", &((#a)[7]), a )
+    write_header_f( header.redshift );
+    write_header_f( header.HubbleParam );
+    write_header_f( header.BoxSize );
+    write_header_f( header.Omega0 );
+    write_header_f( header.OmegaLambda );
+
+    write_header_i( header.num_files );
+    write_header_i( header.flag_sfr );
+    write_header_i( header.flag_feedback );
+    write_header_i( header.flag_stellarage );
+    write_header_i( header.flag_metals );
+    write_header_i( header.flag_entropy_instead_u );
+    write_header_i( header.flag_doubleprecision );
+    write_header_i( header.flag_ic_info );
+    write_header_f( header.lpt_scalingfactor );
+#undef write_header_i
+#undef write_header_f
+#undef fmt
     put_sep0;
 }
 
-void write_header( char *fn, struct io_header header ) {
+void write_header( char *fn, io_header header ) {
 
     writelog( "write header To %s\n", fn  );
     hdf5_file = H5Fcreate( fn, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT );
@@ -609,7 +627,7 @@ void write_header( char *fn, struct io_header header ) {
     H5Sclose( hdf5_dataspace );
 
     hdf5_dataspace = H5Screate( H5S_SCALAR );
-    hdf5_attribute = H5Acreate( hdf5_group, "NumFilesPerSnapshot", H5T_NATIVE_INT, hdf5_dataspace, H5P_DEFAULT );
+    hdf5_attribute = H5Acreate( hdf5_group, "All.NumFilesPerSnapshot", H5T_NATIVE_INT, hdf5_dataspace, H5P_DEFAULT );
     H5Awrite( hdf5_attribute, H5T_NATIVE_INT, &header.num_files );
     H5Aclose( hdf5_attribute );
     H5Sclose( hdf5_dataspace );
@@ -725,17 +743,17 @@ void read_snapshot() {
         for( io_i = 0; io_i < IOGroups; io_i++ ) {
             if ( ThisTask_Master % IOGroups == io_i ) {
                 //printf( "Master: %i read header ...\n", ThisTask_Master );
-                All.SnapIndex = ThisTask / All.NumThreadsPerSnapshot + All.StartSnapIndex;
-                sprintf( file_name, "%s_%03d.%3i.hdf5", All.FilePrefix, All.SnapIndex, 0 );
+                SnapIndex = ThisTask / NumThreadsPerSnapshot + StartSnapIndex;
+                sprintf( file_name, "%s_%03d.%3i.hdf5", All.FilePrefix, SnapIndex, 0 );
                 if ( All.NumFilesPerSnapshot < 2 )
-                    sprintf( file_name, "%s_%03d.hdf5", All.FilePrefix, All.SnapIndex );
+                    sprintf( file_name, "%s_%03d.hdf5", All.FilePrefix, SnapIndex );
                 read_header( file_name );
             }
             do_sync_master( "" );
         }
     }
 
-    MPI_Bcast( &header, sizeof( struct io_header ), MPI_BYTE,
+    MPI_Bcast( &header, sizeof( io_header ), MPI_BYTE,
             0, MpiComm_Local );
 
     N_Gas = NumPart = 0;
@@ -744,12 +762,12 @@ void read_snapshot() {
     }
     N_Gas = header.npartTotal[0] + ( ( (long)header.npartTotalHighWord[0] ) << 32 );
 
-    All.BoxSize = header.BoxSize;
-    All.HalfBoxSize = All.BoxSize / 2;
-    All.RedShift = header.redshift;
-    All.Omega0 = header.Omega0;
-    All.OmegaLambda = header.OmegaLambda;
-    All.HubbleParam = header.HubbleParam;
+    BoxSize = header.BoxSize;
+    HalfBoxSize = BoxSize / 2;
+    Redshift = header.redshift;
+    Omega0 = header.Omega0;
+    OmegaLambda = header.OmegaLambda;
+    HubbleParam = header.HubbleParam;
     writelog( "NumPart = %ld, N_Gas = %ld\n", NumPart, N_Gas );
 
     show_header( header );
@@ -759,8 +777,8 @@ void read_snapshot() {
     //do_sync( "" );
     //endrun( 20181208 );
 
-    mymalloc1_shared( P, NumPart * sizeof( struct Particle_Data ), sizeof( struct Particle_Data ), MpiWin_P );
-    mymalloc1_shared( SphP, N_Gas * sizeof( struct Sph_Particle_Data ), sizeof( struct Particle_Data ), MpiWin_SphP );
+    mymalloc1_shared( P, NumPart * sizeof( ParticleData ), sizeof( ParticleData ), MpiWin_P );
+    mymalloc1_shared( SphP, N_Gas * sizeof( SphParticleData ), sizeof( ParticleData ), MpiWin_SphP );
 
     if ( ThisTask_Local == 0 ) {
         writelog( "Parallel ( %i ) read data ...\n", All.ParallelIO );
@@ -777,10 +795,10 @@ void read_snapshot() {
                     for ( pt=0, offset=0; pt<6; pt++ ) {
                         for (file=0; file<All.NumFilesPerSnapshot; file++) {
                             if ( All.NumFilesPerSnapshot < 2 )
-                                sprintf( file_name, "%s_%03d.hdf5", All.FilePrefix, All.SnapIndex );
+                                sprintf( file_name, "%s_%03d.hdf5", All.FilePrefix, SnapIndex );
                             else
                                 sprintf( file_name, "%s_%03d.%3li.hdf5",
-                                        All.FilePrefix, All.SnapIndex, file );
+                                        All.FilePrefix, SnapIndex, file );
                                 read_header( file_name );
 
                                 if ( blockpresent( blk, pt ) ) {

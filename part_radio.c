@@ -10,7 +10,7 @@ double particle_radio( double nu, long i ) {
 
     B = sqrt( pow( SphP[i].B[0], 2 ) + pow( SphP[i].B[1], 2 ) + pow( SphP[i].B[2], 2 ) );
     Ub = B * B / ( 8 * PI );
-    Ub += SQR( BCMB0 ) * pow( All.Time, -4 ) / ( 8*PI );
+    Ub += SQR( BCMB0 ) * pow( Time, -4 ) / ( 8*PI );
 
     nuL = cuc.e * B / ( 2 * PI * cuc.m_e * cuc.c );
 
@@ -23,7 +23,7 @@ double particle_radio( double nu, long i ) {
 
     //printf( "%g\n", P );
     //
-    P = P * ( 4.0/3.0 * PI * CUBE( All.SofteningTable[0] * g2c.cm ) );
+    P = P * ( 4.0/3.0 * PI * CUBE( SofteningTable[0] * g2c.cm ) );
 
     // Unit: erg / Hz / s
     //
@@ -101,7 +101,7 @@ double particle_radio2( double nu,  SphParticleData *part ) {
 
     r = radio( &particle_df, params, B, nu, params[2], params[3], 1e-2 );
 
-    r = r * ( 4.0/3.0 * PI * CUBE( All.SofteningTable[0] * g2c.cm ) );
+    r = r * ( 4.0/3.0 * PI * CUBE( SofteningTable[0] * g2c.cm ) );
 
     return r;
 
@@ -121,7 +121,7 @@ void save_particle_radio() {
 
     hid_t hdf5_file, hdf5_dataset, hdf5_dataspace, hdf5_attribute, hdf5_type;
 
-    sprintf( fn, "%s/rad_%03i.hdf5", All.RadDir, All.SnapIndex );
+    sprintf( fn, "%s/rad_%03i.hdf5", All.RadDir, SnapIndex );
 
     hdf5_file = H5Fcreate( fn, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT );
 
@@ -168,7 +168,7 @@ int read_particle_radio() {
 
     writelog( "read radio ...\n" );
 
-    sprintf( fn, "%s/rad_%03i.hdf5", All.RadDir, All.SnapIndex );
+    sprintf( fn, "%s/rad_%03i.hdf5", All.RadDir, SnapIndex );
 
     hdf5_file = H5Fopen( fn, H5F_ACC_RDWR, H5P_DEFAULT );
 
@@ -228,7 +228,7 @@ void compute_particle_radio() {
     if ( ThisTask_Local == 0 ) {
         //printf( "Task: %i enter %s\n", ThisTask, __FUNCTION__ );
 
-        sprintf( fn, "%s/rad_%03i.hdf5", All.RadDir, All.SnapIndex );
+        sprintf( fn, "%s/rad_%03i.hdf5", All.RadDir, SnapIndex );
         flag = 1;
 
         if ( access( fn, 0 ) != -1 ) {
@@ -279,7 +279,7 @@ void compute_particle_radio() {
 
             //printf( "nu: %g\n", nu );
 
-            PartRad[ i*All.NuNum + j ] = particle_radio( nu/All.Time, i );
+            PartRad[ i*All.NuNum + j ] = particle_radio( nu/Time, i );
 
         }
 
@@ -307,14 +307,14 @@ void d2PdVdv_qmax() {
     int i, N, qmaxn, k;
     FILE *fd;
 
-    part.CRE_C = CUBE(g2c.cm) * ( guc.m_e ) / All.RhoBaryon;
+    part.CRE_C = CUBE(g2c.cm) * ( guc.m_e ) / RhoBaryon;
     part.CRE_Alpha = 2.01;
     part.CRE_qmin = 1;
     part.CRE_qmax = 1e8;
-    part.Density = All.RhoBaryon;
+    part.Density = RhoBaryon;
 
     part.B[0] = 1e-6;
-    //part.B[0] = sqrt( SQR(B) - SQR(BCMB0) * pow( All.Time, -2 ) );
+    //part.B[0] = sqrt( SQR(B) - SQR(BCMB0) * pow( Time, -2 ) );
     part.B[1] = part.B[2] = 0;
 
     N = 100;
@@ -372,7 +372,7 @@ void d2PdVdv_qmax() {
 
             nu = log10(nu_min) + i * dlognu;
             nu = pow( 10, nu );
-            J[i] = particle_radio2( nu, &part ) / ( 4.0/3.0 * PI * CUBE( All.SofteningTable[0] * g2c.cm ) );
+            J[i] = particle_radio2( nu, &part ) / ( 4.0/3.0 * PI * CUBE( SofteningTable[0] * g2c.cm ) );
             //printf( "nu: %g, P: %g\n", nu, P );
             //break;
         }
@@ -462,13 +462,13 @@ void output_radio_inte() {
 void test_radio() {
 
 
-    All.Time = header.time = 1;
-    All.HubbleParam = 0.7;
+    Time = header.time = 1;
+    HubbleParam = 0.7;
     All.TabF = 0;
-    All.Omega0 = 0.302;
-    All.OmegaLambda = 0.698;
-    All.HubbleParam = 0.68;
-    All.RedShift = 0;
+    Omega0 = 0.302;
+    OmegaLambda = 0.698;
+    HubbleParam = 0.68;
+    Redshift = 0;
     set_units();
     compute_cosmo_quantities();
     init_compute_F();

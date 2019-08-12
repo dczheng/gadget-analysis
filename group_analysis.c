@@ -2,7 +2,7 @@
 
 #define make_group_output_filename( buf, nstr, group_index ) \
     sprintf( buf, "%s%s/%s_%03i_%04i_%c.dat",\
-            All.GroupDir, nstr, nstr, All.SnapIndex, group_index, All.Sproj );
+            GroupDir, nstr, nstr, SnapIndex, group_index, Sproj );
 
 int group_present( long index ) {
 
@@ -114,7 +114,7 @@ double group_luminosity( int nu_index, long index ) {
 }
 
 inline double get_group_size( struct group_properties *g ) {
-    return vmax( g->size[All.proj_i], g->size[All.proj_j] );
+    return vmax( g->size[proj_i], g->size[proj_j] );
 }
 
 void group_flux( int nu_index, long index, double *flux, double *flux_nosr ) {
@@ -124,8 +124,8 @@ void group_flux( int nu_index, long index, double *flux, double *flux_nosr ) {
     double size;
 
     g = &Gprops[index];
-    com_dis = comoving_distance( All.Time );
-    lum_dis = luminosity_distance( All.Time ) * g2c.cm;
+    com_dis = comoving_distance( Time );
+    lum_dis = luminosity_distance( Time ) * g2c.cm;
 
     L = group_luminosity( nu_index, index );
 
@@ -163,11 +163,11 @@ void group_electron_spectrum() {
 
     dlogq = log( qmax/qmin ) / ( qn-1 );
 
-    sprintf( buf, "%sElectronSpectrum", All.GroupDir );
+    sprintf( buf, "%sElectronSpectrum", GroupDir );
     create_dir( buf );
 
     sprintf( buf, "%sElectronSpectrum/EleSpec_%03i.dat",
-            All.GroupDir, All.SnapIndex );
+            GroupDir, SnapIndex );
 
     fd = fopen( buf, "w" );
 
@@ -241,16 +241,16 @@ void group_spectrum() {
 
     dv = log( vmax/vmin ) / ( vN-1 );
 
-    sprintf( buf, "%sSpectrum", All.GroupDir );
+    sprintf( buf, "%sSpectrum", GroupDir );
     create_dir( buf );
 
     sprintf( buf, "%sSpectrum/Spec_%03i.dat",
-            All.GroupDir, All.SnapIndex );
+            GroupDir, SnapIndex );
 
     fd1 = fopen( buf, "w" );
 
     sprintf( buf, "%sSpectrum/Spec_%03i_nosr.dat",
-            All.GroupDir, All.SnapIndex );
+            GroupDir, SnapIndex );
 
     mymalloc1( flux, sizeof(double) * vN );
     mymalloc1( flux_nosr, sizeof(double) * vN );
@@ -316,14 +316,14 @@ void group_spectrum_index() {
     vmax = All.NuMax;
     PicS = All.PicSize;
     PicS2 = SQR( PicS );
-    x = All.proj_i;
-    y = All.proj_j;
+    x = proj_i;
+    y = proj_j;
     xo = PicS / 2;
     yo = PicS / 2;
 
     dv = log10( vmax/vmin) / vN;
 
-    sprintf( buf, "%s%s", All.GroupDir, spec_index_str );
+    sprintf( buf, "%s%s", GroupDir, spec_index_str );
     create_dir( buf );
 
     mymalloc1( v, sizeof( double ) * vN );
@@ -405,8 +405,8 @@ void group_spectrum_index() {
 
         image.img = spec_index_err;
         sprintf( buf, "%s%s/%s_%03i_%04i_%c.dat",
-            All.GroupDir, spec_index_str, spec_index_err_str,
-            All.SnapIndex, index, All.Sproj );
+            GroupDir, spec_index_str, spec_index_err_str,
+            SnapIndex, index, Sproj );
         write_img( buf, spec_index_err_str );
 
     }
@@ -640,7 +640,7 @@ void group_temp_profile() {
     mymalloc1( Ngblist, NumPart * sizeof(long) );
 
     writelog( "Temperature profile ....\n" );
-    sprintf( buf, "%s%s", All.GroupDir, dn );
+    sprintf( buf, "%s%s", GroupDir, dn );
     create_dir( buf );
 
     reset_img();
@@ -672,11 +672,11 @@ void group_temp_profile() {
                     continue;
                 data[i*3] = PERIODIC_HALF( P[p].Pos[x] - g.cm[x] ) + Rmax;
                 data[i*3+1] = PERIODIC_HALF( P[p].Pos[y] - g.cm[y] ) + Rmax;
-                data[i*3+2] = SphP[p].Density / All.RhoBaryon;
+                data[i*3+2] = SphP[p].Density / RhoBaryon;
                 //data[i*3+2] = SphP[p].Temp;
             }
             data_to_grid2d( data, image.img, ngbnum, All.PicSize,  2*Rmax );
-            sprintf( buf, "%s%s/Density_%04i_%c.dat", All.GroupDir, dn, g_index, 'x'+z );
+            sprintf( buf, "%s%s/Density_%04i_%c.dat", GroupDir, dn, g_index, 'x'+z );
             sprintf( buf1, "Density_%04i_%c.dat", g_index, 'x'+k );
             write_img( buf, buf1 );
         }
@@ -692,13 +692,13 @@ void group_temp_profile() {
             if ( ii < 0 || ii > RN-1 )
                 continue;
             //T[ii] += SphP[p].Temp;
-            T[ii] += SphP[p].Density / All.RhoBaryon;
+            T[ii] += SphP[p].Density / RhoBaryon;
             num[ii] ++;
         }
         for( i=0; i<RN; i++ )
             if ( num[i] > 0 )
                 T[i] /= num[i];
-        sprintf( buf, "%s%s/TempProfile_%04i.dat", All.GroupDir, dn, g_index );
+        sprintf( buf, "%s%s/TempProfile_%04i.dat", GroupDir, dn, g_index );
         fd = fopen( buf, "w" );
         for( i=0; i<RN; i++ )
             fprintf( fd, "%g %g %i\n", Rmin*pow(10, i*dlogR), T[i], num[i]  );
@@ -838,13 +838,13 @@ void group_temp_stack() {
                 Terr[mi][i]  = sqrt(Terr[mi][i] / (num[mi][i]-1));
 
 
-    sprintf( buf, "%sGroupTempStack", All.OutputDir );
+    sprintf( buf, "%sGroupTempStack", OutputDir );
     create_dir( buf );
 
-    sprintf( buf, "%s/GroupTempStack_%03i.dat", buf, All.SnapIndex );
+    sprintf( buf, "%s/GroupTempStack_%03i.dat", buf, SnapIndex );
     fd = fopen( buf, "w" );
 
-    fprintf( fd, "%g ", All.RedShift );
+    fprintf( fd, "%g ", Redshift );
     for( mi=0; mi<MS; mi++ )
         fprintf( fd, "%g 0 0 ", m[mi] );
 
@@ -878,9 +878,9 @@ void group_gas_ratio() {
 
     double r_gas, r_condensed, r_diffuse, r_hot, r_warmhot, T, m_tot, m_gas;
 
-    sprintf( buf, "%sGroupGasRatio", All.OutputDir );
+    sprintf( buf, "%sGroupGasRatio", OutputDir );
     create_dir( buf );
-    sprintf( buf, "%s/GroupGasRatio_%03i.dat", buf, All.SnapIndex );
+    sprintf( buf, "%s/GroupGasRatio_%03i.dat", buf, SnapIndex );
     fd = fopen( buf, "w" );
     for ( g_index=0; g_index<Ngroups; g_index++ ) {
         if ( !group_present( g_index ) )
@@ -906,10 +906,10 @@ void group_gas_ratio() {
             if ( SphP[p].Temp < 1e7 && SphP[p].Temp >= 1e5 )
                 r_warmhot += P[p].Mass;
 
-            if ( SphP[p].Temp < 1e5 && SphP[p].Density / All.RhoBaryon < 1e3 )
+            if ( SphP[p].Temp < 1e5 && SphP[p].Density / RhoBaryon < 1e3 )
                 r_diffuse += P[p].Mass;
 
-            if ( SphP[p].Temp < 1e5 && SphP[p].Density / All.RhoBaryon >= 1e3 )
+            if ( SphP[p].Temp < 1e5 && SphP[p].Density / RhoBaryon >= 1e3 )
                 r_condensed += P[p].Mass;
 
             p = FoFNext[p];
@@ -934,8 +934,8 @@ void group_analysis() {
     struct group_properties g;
     double L, dL, *mass, B, PP, nu, n, e, r200,
             lum_dis, com_dis;// com_dis, lum_dis, h, ang;
-    int *num, g_index, i, j, PicSize, x, y,
-         xo, yo, PicSize2, pic_index, ii, jj;
+    int *num, g_index, i, j, x, y,
+         xo, yo, pic_index, ii, jj;
 
     char buf[100], buf1[100];
     double *data[GROUP_FILED_NBLOCKS];
@@ -943,10 +943,8 @@ void group_analysis() {
     if ( ThisTask == 0 )
         output_group_info( 0 );
 
-    PicSize = All.PicSize;
-    PicSize2 = All.PicSize2;
-    x = All.proj_i;
-    y = All.proj_j;
+    x = proj_i;
+    y = proj_j;
     xo = PicSize / 2;
     yo = PicSize / 2;
 
@@ -959,7 +957,7 @@ void group_analysis() {
 
         mymalloc1( data[i], PicSize2 * sizeof( double ) );
         get_group_filed_name( i, buf1 );
-        sprintf( buf, "%s%s", All.GroupDir, buf1 );
+        sprintf( buf, "%s%s", GroupDir, buf1 );
         create_dir( buf );
 
     }
@@ -1146,9 +1144,9 @@ void group_analysis() {
             if ( num[i] == 0 )
                 continue;
             data[GROUP_DENS][i] /= num[i];
-            data[GROUP_DENS][i] /= CUBE( All.Time );
-            data[GROUP_DENS][i] /= All.RhoBaryon;
-            //data[GROUP_DENS][i]  *= (( g2c.g ) / CUBE( g2c.cm ) / CUBE( All.Time ));
+            data[GROUP_DENS][i] /= CUBE( Time );
+            data[GROUP_DENS][i] /= RhoBaryon;
+            //data[GROUP_DENS][i]  *= (( g2c.g ) / CUBE( g2c.cm ) / CUBE( Time ));
 
         }
 
@@ -1177,13 +1175,13 @@ void group_analysis() {
         }
 
         if ( group_filed_present( GROUP_RADP ) )
-            if ( All.RedShift > 1e-10 ) {
-                lum_dis = luminosity_distance( All.Time ) * ( g2c.cm );
-                com_dis = comoving_distance( All.Time );
-     //           printf( "z:%g lum_dis: %g\n", All.RedShift, lum_dis);
+            if ( Redshift > 1e-10 ) {
+                lum_dis = luminosity_distance( Time ) * ( g2c.cm );
+                com_dis = comoving_distance( Time );
+     //           printf( "z:%g lum_dis: %g\n", Redshift, lum_dis);
      //
-                //ang_dis = angular_distance( All.Time );
-                //h = All.SofteningTable[0];
+                //ang_dis = angular_distance( Time );
+                //h = SofteningTable[0];
                 //ang = h / com_dis / PI * 180;
                 //
                 for ( i=0; i<SQR(PicSize); i++ ) {

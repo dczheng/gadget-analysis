@@ -69,6 +69,6 @@ axs = [ ax, ax_diff ]
 
 for a in axs:
     a.legend()
-    a.tick_params( axis='both', labelsize=10, direction='in', pad=5 )
+    set_tick_params( a, 10 )
 
 fig.savefig( fn_out )

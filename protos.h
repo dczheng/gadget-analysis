@@ -120,4 +120,5 @@ void gas_ratio();
 void pdf2d_or_field2d( double *x, double *y, double *w, long num, char *dn, int flag, double *mm, int Nmin ); 
 
 void hsml_T_pdf();
+void u_T_pdf();
 void hsml_dens_pdf();

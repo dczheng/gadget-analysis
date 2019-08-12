@@ -5,7 +5,8 @@ void gas_ratio() {
            *m_diffuse_cool_all,
            *m_diffuse_warm_all,
            *m_diffuse_hot_all,
-           *m_dense_all, *z_all ;
+           *m_dense_all, *z_all,
+           T7, T5, D3;
     long p;
     int i;
     char buf[100];
@@ -13,25 +14,31 @@ void gas_ratio() {
 
     m_tot = m_diffuse_cool = m_diffuse_warm = m_diffuse_hot = m_dense = 0;
 
+    T5 = 1e5;
+    T7 = 1e7;
+    D3 = 1e3;
+
     for( p=0; p<N_Gas; p++ ) {
         m = P[p].Mass;
-        dens = SphP[p].Density / All.RhoBaryon;
+        dens = SphP[p].Density / RhoBaryon;
         T = SphP[p].Temp;
 
         m_tot += m;
         
-        if ( dens >= 1e3 ) {
+        if ( dens >= D3 ) {
             m_dense += m;
             continue;
         }
 
-        if ( dens < 1e3 ) {
-            if ( T < 1e5 )
+        if ( dens < D3 ) {
+            if ( T < T5 )
                 m_diffuse_cool += m;
-            if ( T >= 1e5 && T < 1e7 )
+            if ( T >= T5 && T < T7 )
                 m_diffuse_warm += m;
-            if ( T >= 1e7 )
+            if ( T >= T7 ) {
                 m_diffuse_hot += m;
+                //printf( "%g %g\n", T, SphP[p].u );
+            }
         }
     }
 
@@ -49,14 +56,14 @@ void gas_ratio() {
         mymalloc2( m_dense_all, sizeof(double) * NTask );
     }
 
-    MPI_Gather( &All.RedShift, 1, MPI_DOUBLE, z_all, 1, MPI_DOUBLE, 0, MpiComm_Master );
+    MPI_Gather( &Redshift, 1, MPI_DOUBLE, z_all, 1, MPI_DOUBLE, 0, MpiComm_Master );
     MPI_Gather( &m_diffuse_cool, 1, MPI_DOUBLE, m_diffuse_cool_all, 1, MPI_DOUBLE, 0, MpiComm_Master );
     MPI_Gather( &m_diffuse_warm, 1, MPI_DOUBLE, m_diffuse_warm_all, 1, MPI_DOUBLE, 0, MpiComm_Master );
     MPI_Gather( &m_diffuse_hot, 1, MPI_DOUBLE, m_diffuse_hot_all, 1, MPI_DOUBLE, 0, MpiComm_Master );
     MPI_Gather( &m_dense, 1, MPI_DOUBLE, m_dense_all, 1, MPI_DOUBLE, 0, MpiComm_Master );
 
     if ( ThisTask_Master == 0 ) {
-        sprintf( buf, "%s/gas_ratio.dat", All.OutputDir );
+        sprintf( buf, "%s/gas_ratio.dat", OutputDir );
         fd = fopen( buf, "w" );
         for( i=0; i<NTask_Master; i++ )
             fprintf( fd, "%g %g %g %g %g\n",

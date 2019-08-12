@@ -52,7 +52,7 @@ for i in range( 5 ):
     if i == 0:
         plt.colorbar( img, cax=ax_cbar, orientation='horizontal' )
         ax_cbar.minorticks_off()
-        ax_cbar.tick_params( direction='in', labelsize=15 )
+        set_tick_params( ax_cbar, 15 )
     else:
         ax.text( m*0.05, n*0.05, ss[i][1:], color='y', size=30 )
 

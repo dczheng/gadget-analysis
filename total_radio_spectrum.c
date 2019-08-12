@@ -24,8 +24,8 @@ void total_radio_spectrum() {
         nu[i] = exp(log(numin) + i * dnu);
     }
 
-    //tmp = 1.0 / ( SQR(All.Time) * ( 4.0 * PI * SQR( All.ComDis * g2c.cm ) ) * ( SQR( All.BoxSize / All.ComDis ) ) );
-    tmp = 1.0 / ( ( 4.0 * PI * SQR( All.LumDis * g2c.cm ) ) * ( SQR( All.BoxSize / All.ComDis ) ) );
+    //tmp = 1.0 / ( SQR(Time) * ( 4.0 * PI * SQR( ComDis * g2c.cm ) ) * ( SQR( BoxSize / ComDis ) ) );
+    tmp = 1.0 / ( ( 4.0 * PI * SQR( LumDis * g2c.cm ) ) * ( SQR( BoxSize / ComDis ) ) );
 
     t = N_Gas / 10;
     for ( index=0; index<N_Gas; index++ ) {
@@ -38,8 +38,8 @@ void total_radio_spectrum() {
             continue;
 
         for ( i=0; i<Nnu; i++ ) {
-            //nu_i = log( nu[i]/All.Time / numin ) / dnu;
-            //tmp = particle_radio( nu[i]*1e6 / All.Time, index );
+            //nu_i = log( nu[i]/Time / numin ) / dnu;
+            //tmp = particle_radio( nu[i]*1e6 / Time, index );
             //if ( tmp < 0 )
              //   endrun( 20181006 );
              //
@@ -76,7 +76,7 @@ void total_radio_spectrum() {
         flux[i] *= tmp;
 
     create_dir( "TotalSpec" );
-    sprintf( buf, "./TotalSpec/Spec_Tot_%03i.dat", All.SnapIndex );
+    sprintf( buf, "./TotalSpec/Spec_Tot_%03i.dat", SnapIndex );
     fd = fopen( buf, "w" );
     for( i=0; i<Nnu; i++ )
         fprintf( fd, "%g %g\n", exp(log(numin) + i * dnu), flux[i] );
@@ -90,7 +90,7 @@ void total_radio_spectrum() {
         mymalloc2( fluxlist, sizeof( double ) * NTask_Master * Nnu );
     }
 
-    MPI_Gather( &All.Time, 1, MPI_DOUBLE, alist, 1, MPI_DOUBLE, 0, MpiComm_Master );
+    MPI_Gather( &Time, 1, MPI_DOUBLE, alist, 1, MPI_DOUBLE, 0, MpiComm_Master );
     MPI_Gather( flux, Nnu, MPI_DOUBLE, fluxlist, Nnu, MPI_DOUBLE, 0, MpiComm_Master );
 
     if ( ThisTask_Master == 0 ) {
@@ -115,7 +115,7 @@ void total_radio_spectrum() {
         }
 
         for ( i=0; i<NTask_Master*Nnu; i++ ) {
-            fluxlist[i] /= All.BoxSize; // unit distance
+            fluxlist[i] /= BoxSize; // unit distance
         }
 
         memset( flux, 0, sizeof(double)*Nnu );

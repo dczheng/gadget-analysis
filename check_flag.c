@@ -31,9 +31,6 @@ void check_flag() {
     A_NEED_B( All.CrePressurePdf, All.ReadCr );
     A_NEED_B( All.CrePressurePdf, All.Readu );
 
-    A_NEED_B( All.Phase, All.ReadElec );
-    A_NEED_B( All.Phase, All.Readu );
-
     A_NEED_B( All.RadSlice, All.RadSpec );
 
     if ( All.CorrTdiffDens && NTask != 2 ) {
@@ -88,5 +85,6 @@ void check_flag() {
     A_NEED_B( All.GroupGasRatio, All.FoF );
     A_NEED_B( All.GroupGasRatio, All.Group );
     A_NEED_B( All.HsmlTPdf, All.ReadHsml );
+    A_NEED_B( All.UTPdf, All.Readu );
 
 }

@@ -527,9 +527,9 @@ void pre_proc() {
 
     writelog( "Shift Position: (%g, %g, %g)\n", All.PosShiftX, All.PosShiftY, All.PosShiftZ );
 
-    if ( fabs( All.PosShiftX) >= All.BoxSize ||
-        fabs( All.PosShiftY) >= All.BoxSize ||
-        fabs( All.PosShiftZ) >= All.BoxSize ) {
+    if ( fabs( All.PosShiftX) >= BoxSize ||
+        fabs( All.PosShiftY) >= BoxSize ||
+        fabs( All.PosShiftZ) >= BoxSize ) {
         endruns( "Shift distance is invalid." );
     }
 

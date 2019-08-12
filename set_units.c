@@ -1,36 +1,36 @@
 #include "allvars.h"
 
-#define writelog1( a ) writelog( "%-35s: %g\n", &((#a)[4]), a )
-#define writelog2( a ) writelog( "%-6s: %g\n", &((#a)[4]), a )
+#define writelog1( a ) writelog( "%-35s: %g\n", #a, a )
+#define writelog2( a ) writelog( "%-6s: %g\n", #a, a )
 
 void set_units() {
 
     writelog( "Set Units...\n" );
-    All.UnitTime_in_s = All.UnitLength_in_cm / All.UnitVelocity_in_cm_per_s;
-    All.UnitDensity_in_cgs = All.UnitMass_in_g / pow( All.UnitLength_in_cm, 3 );
-    All.UnitEnergy_in_cgs = All.UnitMass_in_g * pow( All.UnitLength_in_cm,2 ) / pow( All.UnitTime_in_s, 2 );
-    All.UnitPressure_in_cgs = All.UnitMass_in_g / All.UnitLength_in_cm / pow( All.UnitTime_in_s, 2 );
-    All.Hubble = HUBBLE * All.UnitTime_in_s;
-    All.G = GRAVITY / pow( All.UnitLength_in_cm, 3 ) * All.UnitMass_in_g * pow( All.UnitTime_in_s, 2 );
+    UnitTime_in_s = All.UnitLength_in_cm / All.UnitVelocity_in_cm_per_s;
+    UnitDensity_in_cgs = All.UnitMass_in_g / pow( All.UnitLength_in_cm, 3 );
+    UnitEnergy_in_cgs = All.UnitMass_in_g * pow( All.UnitLength_in_cm,2 ) / pow( UnitTime_in_s, 2 );
+    UnitPressure_in_cgs = All.UnitMass_in_g / All.UnitLength_in_cm / pow( UnitTime_in_s, 2 );
+    Hubble = HUBBLE * UnitTime_in_s;
+    G = GRAVITY / pow( All.UnitLength_in_cm, 3 ) * All.UnitMass_in_g * pow( UnitTime_in_s, 2 );
 
     writelog1( All.UnitMass_in_g );
-    writelog1( All.UnitTime_in_s );
     writelog1( All.UnitLength_in_cm );
-    writelog1( All.UnitDensity_in_cgs );
-    writelog1( All.UnitEnergy_in_cgs );
-    writelog1( All.UnitPressure_in_cgs );
     writelog1( All.UnitVelocity_in_cm_per_s );
-    writelog1( All.Hubble );
-    writelog1( All.G );
+    writelog1( UnitTime_in_s );
+    writelog1( UnitDensity_in_cgs );
+    writelog1( UnitEnergy_in_cgs );
+    writelog1( UnitPressure_in_cgs );
+    writelog1( Hubble );
+    writelog1( G );
 
     if ( All.MpcFlag != 1 ) {
         All.MpcFlag = 1000;
     }
 
-    g2c.cm       = All.UnitLength_in_cm / All.HubbleParam;
-    g2c.g        = All.UnitMass_in_g / All.HubbleParam;
-    g2c.s        = All.UnitTime_in_s;
-    g2c.erg      = g2c.g * pow(g2c.cm, 2) / SQR( g2c.s );
+    g2c.cm       = All.UnitLength_in_cm / HubbleParam;
+    g2c.g        = All.UnitMass_in_g    / HubbleParam;
+    g2c.s        = UnitTime_in_s    / HubbleParam;
+    g2c.erg      = g2c.g * SQR(g2c.cm)  / SQR(g2c.s);
 
     cuc.m_e = ELECTRON_MASS;
     cuc.m_p = PROTONMASS;
@@ -61,8 +61,21 @@ void set_units() {
     guc.e_mec = guc.e / ( guc.m_e * guc.c );
     guc.c2 = guc.c * guc.c;
     guc.mec2 = guc.m_e * guc.c2;
-    guc.G = All.G;
+    guc.G = G;
     guc.sigma_t = cuc.sigma_t / ( SQR(g2c.cm) );
+
+    SofteningTable[0] = All.SofteningGas;
+    SofteningTable[1] = All.SofteningHalo;
+    SofteningTable[2] = All.SofteningDisk;
+    SofteningTable[3] = All.SofteningBulge;
+    SofteningTable[4] = All.SofteningStar;
+    SofteningTable[5] = All.SofteningBndry;
+    Start[0] = All.StartX;
+    Start[1] = All.StartY;
+    Start[2] = All.StartZ;
+    End[0] = All.EndX;
+    End[1] = All.EndY;
+    End[2] = All.EndZ;
 
     /*
     writelog( "gadget: \n" );

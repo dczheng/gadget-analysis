@@ -37,7 +37,7 @@ for i in range(2):
     axs[i].set_xlabel( xlabels[i], fontsize=15 )
     axs[i].set_xscale( 'log' )
     axs[i].set_yscale( 'log' )
-    axs[i].tick_params( axis='both', direction='in', pad=3 )
+    set_tick_params( axs[i], 15 )
     axs[i].minorticks_off()
     axs[i].legend( loc=legend_loc[i], framealpha=0.1 )
     #axs[i].grid()
@@ -57,7 +57,7 @@ for i in range(2):
     axs[i].set_xscale( 'log' )
     #axs[i].set_yscale( 'log' )
     axs[i].set_xlabel( xlabels[i], fontsize=15 )
-    axs[i].tick_params( axis='both', direction='in', pad=3 )
+    set_tick_params( axs[i], 15 )
     axs[i].minorticks_off()
     axs[i].legend( loc=legend_loc[i], framealpha=0.1 )
     if i == 0:

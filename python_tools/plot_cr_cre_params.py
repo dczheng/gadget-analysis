@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 from my_work_env import *
-import tools_and_constants as tc
+import phys_and_const as tc
 
 f = h5py.File( sys.argv[1] )
 

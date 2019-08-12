@@ -11,10 +11,10 @@ void set_global_vars() {
     NGrid2 = SQR(NGrid);
     NGrid3 = NGrid2*NGrid;
 
-    dx = All.BoxSize / NGrid;
+    dx = BoxSize / NGrid;
     dx3 = CUBE( dx );
     rmin = dx * 2;
-    rmax = All.BoxSize / 2.0;
+    rmax = BoxSize / 2.0;
     dr = dx * 2;
     rN = ( rmax - rmin ) / dr;
 
@@ -129,7 +129,7 @@ void output_grid_slice( double *grid, int N, char *fn_prefix ){
     char fn[3][100];
 
     for( m=0; m<3; m++ ) {
-        sprintf( fn[m], "%s_%03i_%c.dat", fn_prefix, All.SnapIndex, 'x'+m );
+        sprintf( fn[m], "%s_%03i_%c.dat", fn_prefix, SnapIndex, 'x'+m );
         fd = fopen( fn[m], "w" );
         for ( i=0; i<NGrid; i++ ) {
             for( j=0; j<NGrid; j++ ) {
@@ -242,7 +242,7 @@ void corr_dm() {
     corr( DM, DM, DMCorr );
     get_corr1d( DMCorr, DMCorr1d );
 
-    sprintf( buf, "DMCorr1d_%03i.dat", All.SnapIndex );
+    sprintf( buf, "DMCorr1d_%03i.dat", SnapIndex );
     fd = fopen( buf, "w" );
     for( i=0; i<rN; i++ )
             fprintf( fd, "%g %e\n", rmin +  i*dr, DMCorr1d[i] );
@@ -277,7 +277,7 @@ void corr_gas() {
         Gasbar += Gas[p];
     }
     Gasbar /= NGrid3;
-    //printf( "%g %g\n", Gasbar, All.RhoBaryon );
+    //printf( "%g %g\n", Gasbar, RhoBaryon );
 
     for ( p=0; p<NGrid3; p++ )
         Gas[p] = ( Gas[p] - Gasbar ) / Gasbar;
@@ -285,7 +285,7 @@ void corr_gas() {
     corr( Gas, Gas, GasCorr );
     get_corr1d( GasCorr, GasCorr1d );
 
-    sprintf( buf, "GasCorr1d_%03i.dat", All.SnapIndex );
+    sprintf( buf, "GasCorr1d_%03i.dat", SnapIndex );
     fd = fopen( buf, "w" );
     for( i=0; i<rN; i++ )
         fprintf( fd, "%g %e\n", rmin +  i*dr, GasCorr1d[i] );
@@ -314,7 +314,7 @@ void pdf_Tdiff_dens() {
     int N, Nhalf, N_p, N_m, i, j;
     MPI_Status status;
 
-    MPI_Gather( &All.RedShift, 1, MPI_DOUBLE, z, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD );
+    MPI_Gather( &Redshift, 1, MPI_DOUBLE, z, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD );
     if ( ThisTask == 0 )
         if ( fabs( z[0] - z[1] ) > 1e-5 ) {
             printf( "The same redshift is required by corralation of "
@@ -344,7 +344,7 @@ void pdf_Tdiff_dens() {
     put_temp_on_grid( T, Nmin );
 
     for( p=0; p<NGrid3; p++ )
-        Dens[p] /= All.RhoBaryon;
+        Dens[p] /= RhoBaryon;
 
     if ( ThisTask == 0 ) {
         MPI_Recv( Dens0, NGrid3, MPI_DOUBLE, 1, 0, MPI_COMM_WORLD, &status  );

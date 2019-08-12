@@ -10,7 +10,7 @@ void phase() {
     mymalloc2( phase_y, sizeof(double) * N_Gas );
 
     for( p=0; p<N_Gas; p++ ) {
-        phase_x[p] = SphP[p].Density / All.RhoBaryon;
+        phase_x[p] = SphP[p].Density / RhoBaryon;
         phase_y[p] = SphP[p].Temp;
     }
     writelog( "plot gas phase...\n" );

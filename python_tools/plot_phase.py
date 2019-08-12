@@ -200,8 +200,8 @@ for i in range(4):
     else:
         axs[i].set_yticks( [] )
 
-    axs_cbar[i].tick_params( direction='in', labelsize=15 )
-    axs[i].tick_params( axis='both', direction='in', pad=5, labelsize=15 )
+    set_tick_params( axs_cbar[i], 15 )
+    set_tick_params( axs[i], 15 )
 
     axs[i].invert_yaxis()
     axs[i].grid()

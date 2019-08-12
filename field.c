@@ -10,7 +10,7 @@ void field_cren_T_dens() {
     mymalloc1( ntd_y, sizeof(double) * N_Gas );
     mymalloc1( ntd_z, sizeof(double) * N_Gas );
     for( p=0; p<N_Gas; p++ ) {
-        ntd_x[p] = SphP[p].Density / All.RhoBaryon;
+        ntd_x[p] = SphP[p].Density / RhoBaryon;
         ntd_y[p] = SphP[p].Temp;
         ntd_z[p] = SphP[p].CRE_n * SphP[p].Density / guc.m_e * ( 1/CUBE(g2c.cm) ) ;
     }

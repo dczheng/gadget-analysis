@@ -13,9 +13,9 @@
 #define vmin20( a, b ) ( a = vmin( a, b, 1 ) )
 #define check_picture_index( i )  i = ( ( (i)<0 || (i)>=All.PicSize ) ? ( ((i)<0) ? 0 : All.PicSize-1 ) : (i) )
 
-#define PERIODIC_HALF( x ) ( ( (x) > All.HalfBoxSize || (x) < -All.HalfBoxSize ) ? ( ( (x) > All.HalfBoxSize ) ? ( (x) - All.BoxSize ) : ( x + All.BoxSize )  ) : (x) )
-#define PERIODIC( x ) ( ( (x) > All.BoxSize || (x) <  0) ? ( ( (x) > All.BoxSize ) ? ( (x) - All.BoxSize ) : ( x + All.BoxSize )  ) : (x) )
-#define NGB_PERIODIC( x ) ( (fabs(x) > All.HalfBoxSize) ? ( All.BoxSize-fabs(x) ) : fabs(x) )
+#define PERIODIC_HALF( x ) ( ( (x) > HalfBoxSize || (x) < -HalfBoxSize ) ? ( ( (x) > HalfBoxSize ) ? ( (x) - BoxSize ) : ( x + BoxSize )  ) : (x) )
+#define PERIODIC( x ) ( ( (x) > BoxSize || (x) <  0) ? ( ( (x) > BoxSize ) ? ( (x) - BoxSize ) : ( x + BoxSize )  ) : (x) )
+#define NGB_PERIODIC( x ) ( (fabs(x) > HalfBoxSize) ? ( BoxSize-fabs(x) ) : fabs(x) )
 
 #define put_sep    writelog( sep_str )
 #define put_sep0    writelog( sep_str0 )

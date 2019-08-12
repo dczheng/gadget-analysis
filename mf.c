@@ -85,17 +85,17 @@ void mass_function() {
         cum_num[i] = cum_num[i+1] + num[i];
     }
 
-    sprintf( buf, "%s/MF/", All.OutputDir );
+    sprintf( buf, "%s/MF/", OutputDir );
     create_dir( buf );
-    sprintf( buf, "%s/MF/MF_%03i.dat", All.OutputDir, All.SnapIndex );
+    sprintf( buf, "%s/MF/MF_%03i.dat", OutputDir, SnapIndex );
 
     fd = fopen( buf, "w" );
 
     for ( i=0; i<N1; i++ ) {
 
         fprintf( fd, "%e %g %g %i\n", pow( 10, i*dlogm + log10(m_min) ) * 1e10,
-                num[i] / CUBE( All.BoxSize / All.MpcFlag ) / dlogm,
-                cum_num[i] / CUBE( All.BoxSize / All.MpcFlag ),
+                num[i] / CUBE( BoxSize / All.MpcFlag ) / dlogm,
+                cum_num[i] / CUBE( BoxSize / All.MpcFlag ),
                 num[i]
                 );
 
@@ -104,8 +104,8 @@ void mass_function() {
     for ( i=0; i<N2; i++ ) {
 
         fprintf( fd, "%e %g %g %i\n", pow( 10, i ) * m_split * 1e10,
-                num[N1+i] / CUBE( All.BoxSize / All.MpcFlag ),
-                cum_num[N1+i] / CUBE( All.BoxSize / All.MpcFlag ),
+                num[N1+i] / CUBE( BoxSize / All.MpcFlag ),
+                cum_num[N1+i] / CUBE( BoxSize / All.MpcFlag ),
                 num[N1+i]
                 );
 
@@ -116,12 +116,12 @@ void mass_function() {
     myfree( num );
     myfree( cum_num );
 
-    sprintf( buf, "%s/MF/PS_%03i.dat", All.OutputDir, All.SnapIndex );
+    sprintf( buf, "%s/MF/PS_%03i.dat", OutputDir, SnapIndex );
 
     fd = fopen( buf, "w" );
 
     for( M=m_min; M<=m_max; M*=1.1 )
-        fprintf( fd, "%g %g\n", M*1e10, PS_dndM( All.Time, M ) * CUBE( All.MpcFlag ) * M );
+        fprintf( fd, "%g %g\n", M*1e10, PS_dndM( Time, M ) * CUBE( All.MpcFlag ) * M );
 
 
     fclose( fd );

@@ -19,8 +19,8 @@ void dens_pdf() {
 
     get_gas_density_min_max( Densmin, Densmax );
 
-    Densmin /= All.RhoBaryon;
-    Densmax /= All.RhoBaryon;
+    Densmin /= RhoBaryon;
+    Densmax /= RhoBaryon;
 
     if ( All.DensPdfMin > 0 )
         Densmin = All.DensPdfMin;
@@ -34,13 +34,13 @@ void dens_pdf() {
     mymalloc2( num_warm_hot, sizeof(double) * N );
 
     for( p=0; p<N_Gas; p++ ) {
-        i = log10( SphP[p].Density / (Densmin * All.RhoBaryon) ) / dlogDens;
+        i = log10( SphP[p].Density / (Densmin * RhoBaryon) ) / dlogDens;
         if ( i < N && i > 0 )
             num[i] ++;
 
         if ( SphP[p].Temp < 1e5 || SphP[p].Temp > 1e7 )
             continue;
-        i = log10( SphP[p].Density / (Densmin * All.RhoBaryon) ) / dlogDens;
+        i = log10( SphP[p].Density / (Densmin * RhoBaryon) ) / dlogDens;
         if ( i < N && i > 0 )
             num_warm_hot[i] ++;
     }
@@ -48,11 +48,11 @@ void dens_pdf() {
     for( i=0; i<N; i++ )
         num[i] /= dlogDens;
 
-    sprintf( buf, "%s/DensPdf", All.OutputDir );
+    sprintf( buf, "%s/DensPdf", OutputDir );
     create_dir( buf );
-    sprintf( buf, "%s/DensPdf_%03i.dat", buf, All.SnapIndex );
+    sprintf( buf, "%s/DensPdf_%03i.dat", buf, SnapIndex );
     fd = fopen( buf, "w" );
-    fprintf( fd, "%g 0 0\n", All.RhoBaryon );
+    fprintf( fd, "%g 0 0\n", RhoBaryon );
     fprintf( fd, "%g %g 0\n", Densmax, Densmin );
     for( i=0; i<N; i++ )
         fprintf( fd, "%g %g %g\n", Densmin*pow( 10, i*dlogDens ), num[i], 
@@ -97,12 +97,12 @@ void T_pdf() {
     for( i=0; i<N; i++ )
         num[i] /= dlogT;
 
-    sprintf( buf, "%s/TPdf", All.OutputDir );
+    sprintf( buf, "%s/TPdf", OutputDir );
     create_dir( buf );
-    sprintf( buf, "%s/TPdf_%03i.dat", buf, All.SnapIndex );
+    sprintf( buf, "%s/TPdf_%03i.dat", buf, SnapIndex );
 
     fd = fopen( buf, "w" );
-    fprintf( fd, "%g %g\n", All.RedShift, All.RedShift );
+    fprintf( fd, "%g %g\n", Redshift, Redshift );
     for( i=0; i<N; i++ )
         fprintf( fd, "%g %g\n", Tmin*pow( 10, i*dlogT ), num[i] );
 
@@ -219,9 +219,9 @@ void pdf2d_or_field2d( double *x, double *y, double *w, long num, char *dn,
         }
     }
 
-    sprintf( buf, "%s%s", All.OutputDir, dn );
+    sprintf( buf, "%s%s", OutputDir, dn );
     create_dir( buf );
-    sprintf( buf, "%s/%s_%03i.dat", buf, dn, All.SnapIndex );
+    sprintf( buf, "%s/%s_%03i.dat", buf, dn, SnapIndex );
 
     img_xmin = xmin;
     img_xmax = xmax;
@@ -320,6 +320,29 @@ void hsml_T_pdf() {
     myfree( htp_y );
 }
 
+void u_T_pdf() {
+
+    double *utp_x, *utp_y;
+    long p; 
+    int flag;
+
+    mymalloc1( utp_x, sizeof(double) * N_Gas );
+    mymalloc1( utp_y, sizeof(double) * N_Gas );
+    for( p=0; p<N_Gas; p++ ) {
+        utp_x[p] = SphP[p].u;
+        utp_y[p] = SphP[p].Temp;
+    }
+
+    flag = 0;
+    flag |= PDF2D_BIT_XLOG;
+    flag |= PDF2D_BIT_YLOG;
+
+    pdf2d( utp_x, utp_y, NULL, N_Gas, "UTPdf", flag, NULL );
+
+    myfree( utp_x );
+    myfree( utp_y );
+}
+
 void hsml_dens_pdf() {
 
     double *htp_x, *htp_y;
@@ -334,7 +357,7 @@ void hsml_dens_pdf() {
         printf( "%g %g %g\n", SphP[p].Hsml, SphP[p].Density,
             SphP[p].Hsml*SphP[p].Density );
         */
-        htp_y[p] = SphP[p].Density / All.RhoBaryon;
+        htp_y[p] = SphP[p].Density / RhoBaryon;
     }
 
     flag = 0;

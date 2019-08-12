@@ -45,6 +45,7 @@ gadget_mass_in_g               =              1e10 * Msun / HubbleParam
 gadget_velocity_in_cm_per_s    =              1e5
 gadget_time_in_s               =              gadget_length_in_cm / gadget_velocity_in_cm_per_s
 gadget_energy_in_erg           =              gadget_mass_in_g * gadget_length_in_cm**2 / (gadget_time_in_s**2)
+gadget_density                 =              gadget_mass_in_g / gadget_length_in_cm**3
 
 cosmology = LambdaCDM( H0 = HubbleParam*100, Om0=Omega0, Ode0 = OmegaLambda )
 
@@ -55,12 +56,19 @@ D_l = lambda z: cosmology.luminosity_distance( z ).cgs.value
 rho_crit = lambda z: cosmology.critical_density( z ).cgs.value
 rho_crit0  = cosmology.critical_density0.cgs.value
 
-rho_bar_crit = lambda z: rho_crit( z ) * OmegaBaryon
-rho_bar_crit0 = rho_crit0 * OmegaBaryon
+rho_crit_in_gadget = lambda z: rho_crit( z ) / gadget_density 
+rho_crit0_in_gadget = rho_crit0 / gadget_density
 
-n_p_crit = lambda z: rho_bar_crit(z) / m_p * Xh
-n_p_crit0 = rho_bar_crit0 / m_p * Xh
+rho_bar = lambda z: rho_crit( z ) * OmegaBaryon
+rho_bar0 = rho_crit0 * OmegaBaryon
+
+rho_bar_in_gadget = lambda z: rho_crit_in_gadget( z ) * OmegaBaryon
+rho_bar0_in_gadget = rho_crit0_in_gadget * OmegaBaryon
+
+n_p_z = lambda z: rho_bar(z) / m_p * Xh
+n_p_0 = rho_bar0 / m_p * Xh
 
 
-n_e_crit =  lambda z: n_p_crit( z ) * elec_frac
-n_e_crit0 = n_p_crit0 * elec_frac
+n_e_z =  lambda z: n_p_z( z ) * elec_frac
+n_e_0 = n_p_0 * elec_frac
+

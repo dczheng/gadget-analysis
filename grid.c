@@ -9,7 +9,7 @@ void field_to_grid( double *data, double *grid, int pt, int Nmin, int flag ) {
     NGrid = All.NGrid;
     NGrid2 = SQR( NGrid );
     NGrid3 = NGrid2 * NGrid;
-    fac = NGrid / All.BoxSize;
+    fac = NGrid / BoxSize;
 
     //writelog( "put field to grid ...\n" );
     memset( grid, 0, sizeof(double) * NGrid3 );

@@ -96,7 +96,7 @@ void powerspec() {
 
     writelog( "start compute power spectrum ...\n" );
 
-    BoxSize = All.BoxSize;
+    BoxSize = BoxSize;
     NGrid = All.PowSpecNGrid;
     NGrid3 = 2 * ( NGrid / 2 + 1 );
     mymalloc2( rhogrid, SQR(NGrid) * NGrid3 * sizeof(fftw_real) );
@@ -166,7 +166,7 @@ void powerspec() {
 
     fac = 1.0 / mass_tot;
     Kmin = 2 * M_PI / BoxSize;
-    Kmax = Kmin * BoxSize / All.SofteningTable[1];
+    Kmax = Kmin * BoxSize / SofteningTable[1];
 
     writelog( "mass tot: %g\n", mass_tot );
     writelog( "[initial] Kmin: %g, Kmax: %g [h/Mpc]\n", Kmin*1000, Kmax*1000 );
@@ -310,7 +310,7 @@ void powerspec() {
     writelog( "[final] Kmin: %g, Kmax: %g [h/Mpc]\n", Kmin*1000, Kmax*1000 );
 
     create_dir( "./PowSpec" );
-    sprintf( buf, "./PowSpec/PowSpec_%03i.dat", All.SnapIndex );
+    sprintf( buf, "./PowSpec/PowSpec_%03i.dat", SnapIndex );
 
 
     fd = fopen( buf, "w" );

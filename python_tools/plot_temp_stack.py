@@ -138,6 +138,7 @@ for i in range(4):
         a.set_ylabel( r'$\rm 10^7 \, K$', fontsize=20 )
 
     a.tick_params( axis='both', direction='in', labelsize=15 )
+    set_tick_params( a, 15 )
 
 
 fig.savefig( fn_out )

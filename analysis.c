@@ -3,11 +3,11 @@
 void init_analysis() {
 
     writelog( "initialize analysis...\n" );
-    All.proj_k = All.ProjectDirection;
-    All.proj_i = ( All.ProjectDirection + 1 ) % 3;
-    All.proj_j = ( All.ProjectDirection + 2 ) % 3;
-    All.Sproj = All.ProjectDirection + 'x';
-    All.PicSize2 = SQR( All.PicSize );
+    proj_k = All.ProjectDirection;
+    proj_i = ( All.ProjectDirection + 1 ) % 3;
+    proj_j = ( All.ProjectDirection + 2 ) % 3;
+    Sproj = All.ProjectDirection + 'x';
+    PicSize2 = SQR( All.PicSize );
 
     if ( All.RadSpec ) {
         compute_particle_radio();
@@ -20,7 +20,7 @@ void init_analysis() {
     init_conv_kernel();
     init_img();
 
-    create_dir( All.OutputDir );
+    create_dir( OutputDir );
 
     writelog( "initialize analysis... done.\n" );
     put_sep;
@@ -55,14 +55,14 @@ void analysis(){
 //    endrun(20190625);
 
     if ( ThisTask_Local == 0 ) {
-        if ( (All.TemperatureSlice ||
+        if ( All.TemperatureSlice ||
               All.Phase ||
               All.Group ||
               All.DensitySlice ||
               All.FieldCrenTDens ||
               All.HsmlTPdf ||
-              All.CrenTPdf )
-             && All.ReadTemp == 0  ) {
+              All.UTPdf ||
+              All.GasRatio ) {
             compute_temperature();
         }
 
@@ -140,6 +140,10 @@ void analysis(){
             hsml_dens_pdf();
         }
 
+        if ( All.UTPdf ) {
+            u_T_pdf();
+        }
+
     }
 
     do_sync( "" );
@@ -151,8 +155,8 @@ void analysis(){
     */
 
     if ( ThisTask_Local == 0 && All.Group ) {
-        sprintf( All.GroupDir, "%sgroup/", All.OutputDir );
-        create_dir( All.GroupDir );
+        sprintf( GroupDir, "%sgroup/", OutputDir );
+        create_dir( GroupDir );
         group_analysis();
     }
 

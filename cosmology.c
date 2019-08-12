@@ -6,16 +6,16 @@ int init_ps_flag=1;
 double E_a ( double a ) {
 
     double E2;
-    E2 =  All.Omega0 / ( a*a*a ) +
-          ( 1-All.Omega0-All.OmegaLambda ) / ( a*a ) +
-          All.OmegaLambda;
+    E2 =  Omega0 / ( a*a*a ) +
+          ( 1-Omega0-OmegaLambda ) / ( a*a ) +
+          OmegaLambda;
     return sqrt( E2 );
 
 }
 
 double hubble_function( double a ) {
 
-    return All.Hubble * E_a( a );
+    return Hubble * E_a( a );
 
 }
 
@@ -33,8 +33,8 @@ double comoving_distance( double a ) {
     gsl_integration_qag( &F, a, 1,
             GSL_INTE_ERR_ABS, GSL_INTE_ERR_REL, GSL_INTE_WS_LEN,
             GSL_INTE_KEY, inte_ws, &d, &err );
-    //d *= LIGHT_SPEED / ( HUBBLE * All.HubbleParam );
-    d *= guc.c / ( All.Hubble );
+    //d *= LIGHT_SPEED / ( HUBBLE * HubbleParam );
+    d *= guc.c / ( Hubble );
     //printf( "%g, %g\n", a, d );
     return d;
 
@@ -56,16 +56,16 @@ double OmegaM( double a ) {
 
     // only for Omega_r = Omega_k = 0
     // C.P. Dullemond
-    return  All.Omega0 /
-        ( a + All.Omega0 * ( 1-a )  + All.OmegaLambda * ( CUBE(a)-a ) );
+    return  Omega0 /
+        ( a + Omega0 * ( 1-a )  + OmegaLambda * ( CUBE(a)-a ) );
 
 }
 
-double OmegaLambda( double a ) {
+double OmegaLambda_a( double a ) {
     // only for Omega_r = Omega_k = 0
     // C.P. Dullemond
-    return  All.OmegaLambda * CUBE(a) /
-        ( a + All.Omega0 * ( 1-a )  + All.OmegaLambda * ( CUBE(a)-a ) );
+    return  OmegaLambda * CUBE(a) /
+        ( a + Omega0 * ( 1-a )  + OmegaLambda * ( CUBE(a)-a ) );
 
 }
 
@@ -74,7 +74,7 @@ double growth_factor( double a ){
     //
     double Om, OL;
     Om = OmegaM( a );
-    OL = OmegaLambda( a );
+    OL = OmegaLambda_a( a );
     return 2.5 * Om / ( pow( Om, 4/7 ) - OL + ( 1+0.5*Om ) * ( 1+1/70.0*OL ) );
 
 }
@@ -220,7 +220,7 @@ double top_hat_dsigma2dmdk( double k, void *params) {
     else
         dwdr = 9 * cos( kR ) * k / kR3 + 3.0 * sin(kR) * ( 1-3/kR2 ) / (kR* *R);
 
-    drdm = 1 / ( 4 * M_PI * All.RhoM * R2 );
+    drdm = 1 / ( 4 * M_PI * RhoM * R2 );
 
     return SQR(k) * p * 2 * w * dwdr * drdm;
 
@@ -249,7 +249,7 @@ void MtoFilterParams( double M, void *params ) {
     double R, *p;
     sigma_struct *ss;
     ss = params;
-    R =  pow( 3.0 * M / (4 * M_PI * All.RhoM), 1.0/3.0 );
+    R =  pow( 3.0 * M / (4 * M_PI * RhoM), 1.0/3.0 );
     p = ss->FilterParams;
     p[0] = R;
 
@@ -303,9 +303,9 @@ double PS_dndM( double a, double M ) {
 
     Deltac = 1.68;
 
-    //printf( "growth: %g, sigmaM: %g, dsig2dm: %g\n", growth, sigmaM, dsigma2dm( ps_ss ) * All.RhoM / M );
+    //printf( "growth: %g, sigmaM: %g, dsig2dm: %g\n", growth, sigmaM, dsigma2dm( ps_ss ) * RhoM / M );
 
-    return ( -All.RhoM/M ) * sqrt( 2.0/M_PI ) * ( Deltac / ( SQR(sigmaM) ) ) *
+    return ( -RhoM/M ) * sqrt( 2.0/M_PI ) * ( Deltac / ( SQR(sigmaM) ) ) *
         dsig2dm * exp( -SQR(Deltac)/(2*SQR(sigmaM)) );
 
 }
@@ -317,10 +317,10 @@ void test_ps() {
     double M = 1e3, a = 1, m;
 
 
-    printf( "RhoM: %g\n", All.RhoM );
+    printf( "RhoM: %g\n", RhoM );
     for( M=1e8; M<1e14; M*=1.1 ) {
         m = M / 1e10;
-        printf( "M: %g, dNdM: %g\n", M, PS_dndM( a, m ) * 1e9 / 1e10 * ( CUBE(All.HubbleParam) * All.HubbleParam ) );
+        printf( "M: %g, dNdM: %g\n", M, PS_dndM( a, m ) * 1e9 / 1e10 * ( CUBE(HubbleParam) * HubbleParam ) );
     }
 
     endrun( 20181026 );
@@ -331,34 +331,34 @@ void test_ps() {
 void compute_cosmo_quantities() {
     writelog( "compute cosmology quantities ...\n" );
 
-    All.Time = header.time;
-    All.Time2 = SQR( All.Time );
-    All.Time3 = CUBE( All.Time );
-    All.Hubble_a = hubble_function( All.Time );
-    All.RhoCrit = 3 * SQR( All.Hubble_a ) / ( 8*PI*All.G );
-    All.RhoBaryon = All.OmegaBaryon * All.RhoCrit;
-    All.RhoM = All.Omega0 * All.RhoCrit;
+    Time = header.time;
+    Time2 = SQR( Time );
+    Time3 = CUBE( Time );
+    Hubble_a = hubble_function( Time );
+    RhoCrit = 3 * SQR( Hubble_a ) / ( 8*PI*G );
+    RhoBaryon = All.OmegaBaryon * RhoCrit;
+    RhoM = Omega0 * RhoCrit;
 
-    if ( All.Time > 1e-10 ){
-        All.ComDis = comoving_distance( All.Time );
-        All.AngDis = angular_distance( All.Time );
-        All.LumDis = luminosity_distance( All.Time );
+    if ( Time > 1e-10 ){
+        ComDis = comoving_distance( Time );
+        AngDis = angular_distance( Time );
+        LumDis = luminosity_distance( Time );
     }
     else
-        All.ComDis = All.AngDis = All.LumDis = 0;
+        ComDis = AngDis = LumDis = 0;
 
-    writelog1( "Time", All.Time );
-    writelog1( "Time2", All.Time2 );
-    writelog1( "Time3", All.Time3 );
-    writelog1( "Comoving Distance", All.ComDis );
-    writelog1( "Angular Distance", All.AngDis );
-    writelog1( "Luminosity Distance", All.LumDis );
-    writelog1( "Hubble_a", All.Hubble_a );
-    writelog1( "RhoBaryon", All.RhoBaryon );
-    writelog1( "RhoBaryon[cgs]", All.RhoBaryon * g2c.g / CUBE( g2c.cm ) );
-    writelog1( "RhoCrit", All.RhoCrit );
-    writelog1( "RhoCrit[cgs]", All.RhoCrit * g2c.g / CUBE( g2c.cm ) );
-    writelog1( "RhoM", All.RhoM );
+    writelog1( "Time", Time );
+    writelog1( "Time2", Time2 );
+    writelog1( "Time3", Time3 );
+    writelog1( "Comoving Distance", ComDis );
+    writelog1( "Angular Distance", AngDis );
+    writelog1( "Luminosity Distance", LumDis );
+    writelog1( "Hubble_a", Hubble_a );
+    writelog1( "RhoBaryon", RhoBaryon );
+    writelog1( "RhoBaryon[cgs]", RhoBaryon * g2c.g / CUBE( g2c.cm ) );
+    writelog1( "RhoCrit", RhoCrit );
+    writelog1( "RhoCrit[cgs]", RhoCrit * g2c.g / CUBE( g2c.cm ) );
+    writelog1( "RhoM", RhoM );
 
     writelog( "compute cosmology quantities ... done.\n" );
     put_sep;
@@ -367,9 +367,9 @@ void compute_cosmo_quantities() {
 void test_cos() {
 
     double z, La, Ll, Lc, a;
-    All.HubbleParam = 0.68;
-    All.OmegaLambda = 0.698;
-    All.Omega0 = 0.302;
+    HubbleParam = 0.68;
+    OmegaLambda = 0.698;
+    Omega0 = 0.302;
     set_units();
 
     if ( ThisTask == 0 ) {

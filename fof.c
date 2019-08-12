@@ -206,7 +206,7 @@ void fof_compute_group_properties() {
         }
 
         g->vr200 = pow( g->mass /
-            ( All.RhoCrit * 200 * 4.0 / 3.0 * PI ), 1.0/3.0 );
+            ( RhoCrit * 200 * 4.0 / 3.0 * PI ), 1.0/3.0 );
 
         //printf( "%g %g\n", g->size, g->mass_table[0] );
 
@@ -250,7 +250,7 @@ void fof_save() {
     writelog( "FoF save groups ...\n" );
     mytimer_start();
 
-    sprintf( fn, "%s/fof_%03i.hdf5", All.FoFDir, All.SnapIndex );
+    sprintf( fn, "%s/fof_%03i.hdf5", All.FoFDir, SnapIndex );
 
     hdf5_file = H5Fcreate( fn, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT );
 
@@ -426,7 +426,7 @@ void fof_read() {
     writelog( "read fof...\n" );
     mytimer_start();
 
-    sprintf( fn, "%s/fof_%03i.hdf5", All.FoFDir, All.SnapIndex );
+    sprintf( fn, "%s/fof_%03i.hdf5", All.FoFDir, SnapIndex );
 
     hdf5_file = H5Fopen( fn, H5F_ACC_RDWR, H5P_DEFAULT );
 
@@ -556,7 +556,7 @@ void fof() {
 
     writelog( "Start FoF ...\n" );
     mytimer_start();
-    sprintf( fn, "%s/fof_%03i.hdf5", All.FoFDir, All.SnapIndex );
+    sprintf( fn, "%s/fof_%03i.hdf5", All.FoFDir, SnapIndex );
 
     flag = 1;
 
@@ -595,14 +595,14 @@ void fof() {
 
     //if ( flag == 1 ) {
 
-        rhodm = (All.Omega0-All.OmegaBaryon) * 3 *  SQR(All.Hubble) / ( 8 * PI * All.G );
+        rhodm = (Omega0-All.OmegaBaryon) * 3 *  SQR(Hubble) / ( 8 * PI * G );
         mass = masstot / npart;
         LinkL = All.LinkLength * pow( mass / rhodm, 1.0/3 );
         //LinkL = 65.5483;
         /*
         printf( "%.10f %.10f %.10f %.10f %.20f %.10f %.10f %li \n",
-             All.Omega0, All.OmegaBaryon,
-             All.Hubble, All.G, rhodm, M_PI, masstot, npart );
+             Omega0, All.OmegaBaryon,
+             Hubble, G, rhodm, M_PI, masstot, npart );
              */
 
         writelog( "critical density of dark matter: %g\n"
