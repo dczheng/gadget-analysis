@@ -1,6 +1,6 @@
 #include "allvars.h"
 
-double kernel_func( x ) {
+double kernel_func( double x ) {
     return ( 1 / sqrt( 2 * PI ) / All.ConvSigma *
         exp( -0.5 * SQR(  x / All.ConvSigma ) ) );
 }

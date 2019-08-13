@@ -214,6 +214,10 @@ void merge_log_file() {
 
 }
 
+/*
+
+*/
+
 int main( int argc, char *argv[] ){
 
     time_t time1, time2;
@@ -384,7 +388,7 @@ int main( int argc, char *argv[] ){
     if ( ThisTask == 0 )
         merge_log_file();
 
-    MPI_Finalize();
+    MPI_Finalize(); 
     return 0;
 }
 

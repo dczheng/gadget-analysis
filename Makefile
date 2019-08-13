@@ -28,13 +28,14 @@ $(EXEC): $(OBJS)
 %.o:%.c $(MY_INCL) Makefile
 	$(CC) $(OPTS) $(DEBUG) $(INCL) -c $< -o $@
 
-allvars.c: allvars.h
-	$(shell ${PYTHON} ./gen_allvars.c.py)
-add_params.h: allvars.h
-	$(shell ${PYTHON} ./gen_add_params.h.py)
+allvars.c: allvars.h preprocessor.py
+	$(shell ${PYTHON} ./preprocessor.py)
+
+add_params.h: allvars.h preprocessor.py
+protos.h: $(SRCS) preprocessor.py
 
 
 .PHONY: clean
 
 clean:
-	-rm  $(EXEC)  $(OBJS) allvars.c add_params.h
+	-rm  $(EXEC)  $(OBJS) allvars.c add_params.h protos.h

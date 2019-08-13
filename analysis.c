@@ -17,7 +17,6 @@ void init_analysis() {
     slice_init();
     if ( All.KernelInterpolation )
         init_kernel_matrix();
-    init_conv_kernel();
     init_img();
 
     create_dir( OutputDir );
@@ -31,7 +30,6 @@ void free_analysis() {
     writelog( "free analysis ...\n" );
     if ( All.KernelInterpolation )
         free_kernel_matrix();
-    free_conv_kernel();
     free_img();
 
     if ( All.RadSpec ) {

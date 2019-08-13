@@ -76,6 +76,7 @@ void set_units() {
     End[0] = All.EndX;
     End[1] = All.EndY;
     End[2] = All.EndZ;
+    PicSize = All.PicSize;
 
     /*
     writelog( "gadget: \n" );

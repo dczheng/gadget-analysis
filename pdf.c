@@ -131,7 +131,7 @@ void pdf2d_or_field2d( double *x, double *y, double *w, long num, char *dn,
     char buf[100];
     reset_img();
 
-    N = All.PicSize;
+    N = PicSize;
     N2 = SQR(N);
 
     if ( (flag & PDF2D_BIT_FIXEDX ) == 0  ||

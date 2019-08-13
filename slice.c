@@ -98,10 +98,9 @@ void slice_init() {
 void make_slice_img( int pt, double *data, long NPart ) {
 
     double *img, *num, dx, dy, x, y, h, dh, lx, ly, v;
-    int i, xi, yi, N, Nhalf, i1, i2, j1, j2, li, lj, PicSize;
+    int i, xi, yi, N, Nhalf, i1, i2, j1, j2, li, lj;
     long start, end;
 
-    PicSize = All.PicSize;
     writelog( "make slice imgage  ...\n" );
 
     reset_img();
@@ -353,7 +352,7 @@ void radio_slice() {
 
     x -= index;
 
-    area = (End[proj_i] - Start[proj_i]) / All.PicSize;
+    area = (End[proj_i] - Start[proj_i]) / PicSize;
     area = SQR( area );
 
     index1 = ( index == All.NuNum-1 ) ? All.NuNum-1 : index + 1;
