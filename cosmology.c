@@ -338,6 +338,7 @@ void compute_cosmo_quantities() {
     RhoCrit = 3 * SQR( Hubble_a ) / ( 8*PI*G );
     RhoBaryon = All.OmegaBaryon * RhoCrit;
     RhoM = Omega0 * RhoCrit;
+    //test_cos();
 
     if ( Time > 1e-10 ){
         ComDis = comoving_distance( Time );

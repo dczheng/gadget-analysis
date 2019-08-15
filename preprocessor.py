@@ -55,7 +55,7 @@ def gen_allvars():
     f.write( '#include "allvars.h"\n\n' )
     for l in s:
         if ';' in l:
-            f.write( l.strip() + '\n' )
+            f.write( l.strip().split( '//' )[0] + '\n' )
     f.close()
 
 def make_protos_single( f ):
@@ -174,6 +174,6 @@ def make_protos():
     ff.close()
 
 
+make_protos()
 gen_add_params()
 gen_allvars()
-make_protos()

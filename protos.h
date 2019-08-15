@@ -56,6 +56,18 @@ void check_data( int err );
 void gas_ratio();
 
 
+//%------>>>>>>file : main.c
+//%
+void init_sep_str();
+void global_init();
+void global_free();
+void mpi_comms_test();
+void create_mpi_comms();
+void free_comms();
+void merge_log_file();
+int main( int argc, char *argv[] );
+
+
 //%------>>>>>>file : part_info.c
 //%
 void part_info();
@@ -237,34 +249,6 @@ double radio_inte( double p, void *params );
 double radio( double (*f)( double, void* ), double *params,double B, double nu, double pmin, double pmax, double err );
 
 
-//%------>>>>>>file : cosmology.c
-//%
-double E_a ( double a );
-double hubble_function( double a );
-double com_integ( double a, void *params );
-double comoving_distance( double a );
-double angular_distance( double a );
-double luminosity_distance( double a );
-double OmegaM( double a );
-double OmegaLambda_a( double a );
-double growth_factor( double a );
-double growth_factor0( double a );
-double PowerSpec_Efstathiou(double k);
-double top_hat_filter( double k, void *params );
-void top_hat_filter_k_limit( double *k0, double *k1, void *params );
-double dsigma_dk( double k, void *params );
-double sigma( sigma_struct ss );
-void test_sigma();
-double top_hat_dsigma2dmdk( double k, void *params);
-double dsigma2dm( sigma_struct ss );
-void MtoFilterParams( double M, void *params );
-void init_ps();
-double PS_dndM( double a, double M );
-void test_ps();
-void compute_cosmo_quantities();
-void test_cos();
-
-
 //%------>>>>>>file : set_units.c
 //%
 void set_units();
@@ -273,18 +257,6 @@ void set_units();
 //%------>>>>>>file : field.c
 //%
 void field_cren_T_dens();
-
-
-//%------>>>>>>file : main.c
-//%
-void init_sep_str();
-void global_init();
-void global_free();
-void mpi_comms_test();
-void create_mpi_comms();
-void free_comms();
-void merge_log_file();
-int main( int argc, char *argv[] );
 
 
 //%------>>>>>>file : temp.c
@@ -319,5 +291,33 @@ void cren_T_pdf();
 void hsml_T_pdf();
 void u_T_pdf();
 void hsml_dens_pdf();
+
+
+//%------>>>>>>file : cosmology.c
+//%
+double E_a ( double a );
+double hubble_function( double a );
+double com_integ( double a, void *params );
+double comoving_distance( double a );
+double angular_distance( double a );
+double luminosity_distance( double a );
+double OmegaM( double a );
+double OmegaLambda_a( double a );
+double growth_factor( double a );
+double growth_factor0( double a );
+double PowerSpec_Efstathiou(double k);
+double top_hat_filter( double k, void *params );
+void top_hat_filter_k_limit( double *k0, double *k1, void *params );
+double dsigma_dk( double k, void *params );
+double sigma( sigma_struct ss );
+void test_sigma();
+double top_hat_dsigma2dmdk( double k, void *params);
+double dsigma2dm( sigma_struct ss );
+void MtoFilterParams( double M, void *params );
+void init_ps();
+double PS_dndM( double a, double M );
+void test_ps();
+void compute_cosmo_quantities();
+void test_cos();
 
 
