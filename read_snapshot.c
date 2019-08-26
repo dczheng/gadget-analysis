@@ -743,7 +743,9 @@ void read_snapshot() {
         for( io_i = 0; io_i < IOGroups; io_i++ ) {
             if ( ThisTask_Master % IOGroups == io_i ) {
                 //printf( "Master: %i read header ...\n", ThisTask_Master );
-                SnapIndex = ThisTask / NumThreadsPerSnapshot + StartSnapIndex;
+                SnapIndex = ThisTask / NumThreadsPerSnapshot + All.StartSnapIndex;
+                //printf( "%i\n", All.StartSnapIndex );
+                //endrun(0);
                 sprintf( file_name, "%s_%03d.%3i.hdf5", All.FilePrefix, SnapIndex, 0 );
                 if ( All.NumFilesPerSnapshot < 2 )
                     sprintf( file_name, "%s_%03d.hdf5", All.FilePrefix, SnapIndex );

@@ -126,11 +126,9 @@ void output_grid_slice( double *grid, int N, char *fn_prefix ){
     FILE *fd;
     int i, j, k, m;
     long index;
-    char fn[3][100];
 
     for( m=0; m<3; m++ ) {
-        sprintf( fn[m], "%s_%03i_%c.dat", fn_prefix, SnapIndex, 'x'+m );
-        fd = fopen( fn[m], "w" );
+        fd = myfopen( "w", "%s_%03i_%c.dat", fn_prefix, SnapIndex, 'x'+m );
         for ( i=0; i<NGrid; i++ ) {
             for( j=0; j<NGrid; j++ ) {
                 r = 0;
@@ -219,7 +217,6 @@ void corr_dm() {
     long p, num_dm;
     int i;
     FILE *fd;
-    char buf[100];
 
     writelog( "Correlation function of dark matter ...\n" );
     set_global_vars();
@@ -242,8 +239,7 @@ void corr_dm() {
     corr( DM, DM, DMCorr );
     get_corr1d( DMCorr, DMCorr1d );
 
-    sprintf( buf, "DMCorr1d_%03i.dat", SnapIndex );
-    fd = fopen( buf, "w" );
+    fd = myfopen( "w", "DMCorr1d_%03i.dat", SnapIndex );
     for( i=0; i<rN; i++ )
             fprintf( fd, "%g %e\n", rmin +  i*dr, DMCorr1d[i] );
     fclose( fd );
@@ -261,7 +257,6 @@ void corr_gas() {
     long p;
     int i;
     FILE *fd;
-    char buf[100];
 
     writelog( "Correlation function of gas density ...\n" );
     set_global_vars();
@@ -285,8 +280,7 @@ void corr_gas() {
     corr( Gas, Gas, GasCorr );
     get_corr1d( GasCorr, GasCorr1d );
 
-    sprintf( buf, "GasCorr1d_%03i.dat", SnapIndex );
-    fd = fopen( buf, "w" );
+    fd = myfopen( "w", "GasCorr1d_%03i.dat", SnapIndex );
     for( i=0; i<rN; i++ )
         fprintf( fd, "%g %e\n", rmin +  i*dr, GasCorr1d[i] );
     fclose( fd );

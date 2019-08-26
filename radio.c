@@ -104,7 +104,7 @@ void test_tab_F() {
         return;
 
     dx = log( xmax/xmin ) / ( N-1 );
-    fd = fopen( "test_tab_F.dat", "w" );
+    fd = myfopen( "w", "test_tab_F.dat" );
 
     /*
     i = 0;
@@ -156,7 +156,7 @@ void output_F_x() {
 
     dlogx = ( logx_max-logx_min ) / ( logx_N - 1 );
 
-    fd = fopen( "F_x.dat", "w" );
+    fd = myfopen( "w", "F_x.dat" );
 
     err_max = err_mean = 0;
 
@@ -190,7 +190,7 @@ void output_tab_F() {
         return;
 
     dlogx = log(F_X_MAX/F_X_MIN) / ( TAB_F_N - 1 );
-    fd = fopen( "tab_F.dat", "w" );
+    fd = myfopen( "w", "tab_F.dat" );
 
     for( i=0; i<=TAB_F_N; i++ ) {
 

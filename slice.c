@@ -206,8 +206,7 @@ void field_slice( int pt, double *data, char *name, long N ) {
     sprintf( buf, "`%s` slice\n", name );
     writelog( buf );
 
-    sprintf( buf, "%s%s", OutputDir, name );
-    create_dir( buf );
+    create_dir( "%s%s", OutputDir, name );
     sprintf( buf, "%s/%s_%03i.dat", buf, name, SnapIndex );
 
     if ( N )

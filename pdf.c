@@ -13,7 +13,6 @@ void dens_pdf() {
     int N, i;
     long p;
     FILE *fd;
-    char buf[100];
     
     N = All.DensPdfN;
 
@@ -48,10 +47,9 @@ void dens_pdf() {
     for( i=0; i<N; i++ )
         num[i] /= dlogDens;
 
-    sprintf( buf, "%s/DensPdf", OutputDir );
-    create_dir( buf );
-    sprintf( buf, "%s/DensPdf_%03i.dat", buf, SnapIndex );
-    fd = fopen( buf, "w" );
+    create_dir( "%s/DensPdf", OutputDir );
+    fd = myfopen( "w", "%s/DensPdf/DensPdf_%03i.dat", OutputDir, SnapIndex );
+
     fprintf( fd, "%g 0 0\n", RhoBaryon );
     fprintf( fd, "%g %g 0\n", Densmax, Densmin );
     for( i=0; i<N; i++ )
@@ -70,7 +68,6 @@ void T_pdf() {
     int N, i;
     long p;
     FILE *fd;
-    char buf[100];
     
     N = All.TPdfN;
 
@@ -97,11 +94,9 @@ void T_pdf() {
     for( i=0; i<N; i++ )
         num[i] /= dlogT;
 
-    sprintf( buf, "%s/TPdf", OutputDir );
-    create_dir( buf );
-    sprintf( buf, "%s/TPdf_%03i.dat", buf, SnapIndex );
+    create_dir( "%s/TPdf", OutputDir );
+    fd = myfopen( "w", "%s/TPdf/TPdf_%03i.dat", OutputDir, SnapIndex );
 
-    fd = fopen( buf, "w" );
     fprintf( fd, "%g %g\n", Redshift, Redshift );
     for( i=0; i<N; i++ )
         fprintf( fd, "%g %g\n", Tmin*pow( 10, i*dlogT ), num[i] );
@@ -219,8 +214,7 @@ void pdf2d_or_field2d( double *x, double *y, double *w, long num, char *dn,
         }
     }
 
-    sprintf( buf, "%s%s", OutputDir, dn );
-    create_dir( buf );
+    create_dir( "%s%s", OutputDir, dn );
     sprintf( buf, "%s/%s_%03i.dat", buf, dn, SnapIndex );
 
     img_xmin = xmin;

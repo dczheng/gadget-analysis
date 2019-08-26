@@ -6,6 +6,26 @@
     }\
 }
 
+#define myfopen( opt, fmt, ... ) ({\
+    char buf[100];\
+    FILE *fd;\
+    do {\
+        sprintf( buf, fmt, ##__VA_ARGS__ );\
+        fd = fopen( buf, opt );\
+        if ( NULL == fd ) {\
+            printf( "can not open `%s`.", buf );\
+            endrun(20190826);\
+        }\
+    }while(0);\
+    fd;\
+})
+
+#define create_dir( fmt, ... ) {\
+    char buf[100];\
+    sprintf( buf, fmt, ##__VA_ARGS__ );\
+    create_dir0( buf );\
+}
+
 #define vmax( a, b ) ( ( (a) > (b) ) ? (a) : (b) )
 #define vmax2( a, b ) ( a = vmax( a, b ) )
 #define vmin( a, b, mode) ( ( mode == 0 ) ? ( ( (a) > (b) ) ? (b) : (a) ) : ( ( (a) > (b) && (b) > 0 ) ? (b) : (a) ) )
@@ -161,11 +181,11 @@
 }
 
 #define endruns( s ) {\
-    endrun0( "%s\n", s ); \
+    endrun0( "error info: %s\n", s ); \
 }
 
 #define endrun( i ) {\
-    endrun0( "%i\n", i ); \
+    endrun0( "error level: %i\n", i ); \
 }
 
 

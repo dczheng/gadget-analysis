@@ -404,7 +404,6 @@ extern int
             proj_i, proj_j, proj_k, SnapIndex,
             PicSize, PicSize2,
             Ngroups,
-            StartSnapIndex,
             ThisTask, NTask, MasterTask, ThisTask_Local, NTask_Local,
             ThisTask_Master, NTask_Master, IOGroups,
             WinDisp,

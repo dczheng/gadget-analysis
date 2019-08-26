@@ -9,7 +9,6 @@ void gas_ratio() {
            T7, T5, D3;
     long p;
     int i;
-    char buf[100];
     FILE *fd;
 
     m_tot = m_diffuse_cool = m_diffuse_warm = m_diffuse_hot = m_dense = 0;
@@ -63,8 +62,7 @@ void gas_ratio() {
     MPI_Gather( &m_dense, 1, MPI_DOUBLE, m_dense_all, 1, MPI_DOUBLE, 0, MpiComm_Master );
 
     if ( ThisTask_Master == 0 ) {
-        sprintf( buf, "%s/gas_ratio.dat", OutputDir );
-        fd = fopen( buf, "w" );
+        fd = myfopen( "w", "%s/gas_ratio.dat", OutputDir );
         for( i=0; i<NTask_Master; i++ )
             fprintf( fd, "%g %g %g %g %g\n",
             z_all[i],

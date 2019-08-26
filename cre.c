@@ -198,8 +198,7 @@ void cre_pressure_pdf() {
         cr_bar[ii] ++;
     }
 
-    sprintf( buf, "%s/CrePressurePdf/CrePressure_%03i.dat", OutputDir, SnapIndex );
-    fd = fopen( buf, "w" );
+    fd = myfopen( "w", "%s/CrePressurePdf/CrePressure_%03i.dat", OutputDir, SnapIndex );
 
     for ( i=0; i<bins; i++ ){
         fprintf( fd, "%g %i %g %i\n",

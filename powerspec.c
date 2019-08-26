@@ -38,7 +38,7 @@ void test_powerspec_interp() {
     printf( "test powerspec_interp ...\n" );
     N = 100;
     dlogk = log( Kmax / Kmin ) / ( N-1 );
-    fd = fopen( "test_powerspec_interp.dat", "w" );
+    fd = myfopen(  "w", "test_powerspec_interp.dat" );
 
     for ( i=0; i<N; i++ ) {
 
@@ -84,7 +84,6 @@ void powerspec() {
         *CountModes;;
     double *pos;
     FILE *fd;
-    char buf[100];
 
     if ( ThisTask_Local != 0 )
         return;
@@ -310,10 +309,7 @@ void powerspec() {
     writelog( "[final] Kmin: %g, Kmax: %g [h/Mpc]\n", Kmin*1000, Kmax*1000 );
 
     create_dir( "./PowSpec" );
-    sprintf( buf, "./PowSpec/PowSpec_%03i.dat", SnapIndex );
-
-
-    fd = fopen( buf, "w" );
+    fd = myfopen( "w", "./PowSpec/PowSpec_%03i.dat", SnapIndex );
 
     for( i=0; i<KN; i++ ) {
         fprintf( fd, "%g %g %g %g %g %g\n",

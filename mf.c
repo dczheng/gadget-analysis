@@ -5,7 +5,6 @@ void mass_function() {
     int g, *num, i, *cum_num, N1, N2, N;
     double m_min, m_max, M, dlogm,
            gm_min, gm_max, m_split, t;
-    char buf[100];
     FILE *fd;
 
     writelog( "compute mass function ...\n" );
@@ -85,11 +84,8 @@ void mass_function() {
         cum_num[i] = cum_num[i+1] + num[i];
     }
 
-    sprintf( buf, "%s/MF/", OutputDir );
-    create_dir( buf );
-    sprintf( buf, "%s/MF/MF_%03i.dat", OutputDir, SnapIndex );
-
-    fd = fopen( buf, "w" );
+    create_dir( "%s/MF/", OutputDir );
+    fd = myfopen( "w", "%s/MF/MF_%03i.dat", OutputDir, SnapIndex );
 
     for ( i=0; i<N1; i++ ) {
 
@@ -116,9 +112,7 @@ void mass_function() {
     myfree( num );
     myfree( cum_num );
 
-    sprintf( buf, "%s/MF/PS_%03i.dat", OutputDir, SnapIndex );
-
-    fd = fopen( buf, "w" );
+    fd = myfopen( "w", "%s/MF/PS_%03i.dat", OutputDir, SnapIndex );
 
     for( M=m_min; M<=m_max; M*=1.1 )
         fprintf( fd, "%g %g\n", M*1e10, PS_dndM( Time, M ) * CUBE( All.MpcFlag ) * M );

@@ -28,7 +28,14 @@ def gen_add_params():
                 else:
                     my_vars[ ts[j] ] = s[i][len(ts[j]):].split( ',' )
     
+    #print( my_vars )
+    n = 0
+    for k in my_vars.keys():
+        n += len( my_vars[k] )
+    #print( n )
+
     f = open( 'add_params.h', 'w' )
+    f.write( '#define MAXTAGS %i\n'%n )
     f.write( '#define ADD_PARAM_SINGLE(s, t){\\\n' )
     f.write( "\tstrcpy( tag[nt], #s );\\\n" )
     f.write( "\taddr[nt] =&All.s;\\\n" )

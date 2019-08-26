@@ -6,7 +6,6 @@ void total_radio_spectrum() {
     int Nnu, i, j, k, t;
     double *nu, *flux_local, *flux, numin, numax, dnu, tmp,
            *alist, *fluxlist, *dislist;
-    char buf[100];
     FILE *fd;
 
     do_sync( "before total radio spectrum" );
@@ -75,9 +74,8 @@ void total_radio_spectrum() {
     for ( i=0; i<Nnu; i++ )
         flux[i] *= tmp;
 
-    create_dir( "TotalSpec" );
-    sprintf( buf, "./TotalSpec/Spec_Tot_%03i.dat", SnapIndex );
-    fd = fopen( buf, "w" );
+    create_dir( "%sTotalSpec", OutputDir );
+    fd = myfopen( "w", "%s/TotalSpc/Spec_Tot_%03i.dat", OutputDir, SnapIndex );
     for( i=0; i<Nnu; i++ )
         fprintf( fd, "%g %g\n", exp(log(numin) + i * dnu), flux[i] );
     fclose( fd );
@@ -128,8 +126,7 @@ void total_radio_spectrum() {
             flux[i] += fluxlist[i] * dislist[0];  // low redshift
         }
 
-        sprintf( buf, "./TotalSpec/Spec_Tot.dat" );
-        fd = fopen( buf, "w" );
+        fd = myfopen( "w", "%s/TotalSpec/Spec_Tot.dat", OutputDir );
 
         for ( i=0; i<Nnu; i++ )
             fprintf( fd, "%g %g\n", exp(log(numin) + i * dnu), flux[i] );

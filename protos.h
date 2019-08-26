@@ -6,26 +6,6 @@ void free_conv_kernel();
 void conv( double ds );
 
 
-//%------>>>>>>file : group_analysis.c
-//%
-int group_present( long index );
-double group_luminosity( int nu_index, long index );
-inline double get_group_size( struct group_properties *g );
-void group_flux( int nu_index, long index, double *flux, double *flux_nosr );
-double particle_f( SphParticleData *part, double p );
-void group_electron_spectrum();
-void group_spectrum();
-void group_spectrum_index();
-int group_filed_present( enum group_fields blk );
-void get_group_filed_name( enum group_fields blk, char *buf );
-void check_group_flag();
-void output_group_info(  long index );
-void group_temp_profile();
-void group_temp_stack();
-void group_gas_ratio();
-void group_analysis();
-
-
 //%------>>>>>>file : tree.c
 //%
 void tree_allocate();
@@ -51,11 +31,6 @@ void pre_proc();
 void check_data( int err );
 
 
-//%------>>>>>>file : gas_ratio.c
-//%
-void gas_ratio();
-
-
 //%------>>>>>>file : main.c
 //%
 void init_sep_str();
@@ -66,11 +41,6 @@ void create_mpi_comms();
 void free_comms();
 void merge_log_file();
 int main( int argc, char *argv[] );
-
-
-//%------>>>>>>file : part_info.c
-//%
-void part_info();
 
 
 //%------>>>>>>file : part_radio.c
@@ -85,6 +55,47 @@ void free_particle_radio();
 void d2PdVdv_qmax();
 void output_radio_inte();
 void test_radio();
+
+
+//%------>>>>>>file : group_analysis.c
+//%
+int group_present( long index );
+double group_luminosity( int nu_index, long index );
+inline double get_group_size( struct group_properties *g );
+void group_flux( int nu_index, long index, double *flux, double *flux_nosr );
+double particle_f( SphParticleData *part, double p );
+void group_electron_spectrum();
+void group_spectrum();
+void group_spectrum_index();
+int group_filed_present( enum group_fields blk );
+void get_group_filed_name( enum group_fields blk, char *buf );
+void check_group_flag();
+void output_group_info(  long index );
+void group_temp_profile();
+void group_temp_stack();
+void group_gas_ratio();
+void group_analysis();
+
+
+//%------>>>>>>file : part_info.c
+//%
+void part_info();
+
+
+//%------>>>>>>file : radio.c
+//%
+double F_integrand( double x, void *params );
+void F0( double x, double *r, double *err );
+void init_compute_F();
+void F( double x, double *r, double *err );
+double tab_F( double x );
+void test_tab_F();
+void output_F_x();
+void output_tab_F();
+void init_tab_F();
+void free_tab_F();
+double radio_inte( double p, void *params );
+double radio( double (*f)( double, void* ), double *params,double B, double nu, double pmin, double pmax, double err );
 
 
 //%------>>>>>>file : mymath.c
@@ -106,72 +117,20 @@ void init_kernel_matrix();
 void free_kernel_matrix();
 
 
-//%------>>>>>>file : mf.c
+//%------>>>>>>file : total_radio_spectrum.c
 //%
-void mass_function();
+void total_radio_spectrum();
 
 
 //%------>>>>>>file : system.c
 //%
-void create_dir( char *s );
+void create_dir0( char *s );
 void do_sync0( char *s, MPI_Comm comm );
 void do_sync( char *s );
 void do_sync_local( char *s );
 void do_sync_master( char *s );
 double second();
 void task_sync_test( char *s );
-
-
-//%------>>>>>>file : img.c
-//%
-void init_img();
-void free_img();
-void reset_img();
-void write_img( char *fn, char *nstr );
-
-
-//%------>>>>>>file : total_radio_spectrum.c
-//%
-void total_radio_spectrum();
-
-
-//%------>>>>>>file : fof.c
-//%
-void fof_allocate( long N );
-void fof_free();
-int fof_compare_len( const void *a, const void *b );
-int fof_compare_mass( const void *a, const void *b );
-void fof_find_groups();
-void fof_compute_group_properties();
-void fof_test();
-void fof_save();
-void fof_read();
-void fof();
-
-
-//%------>>>>>>file : powerspec.c
-//%
-double powerspec_interp( double k );
-void test_powerspec_interp();
-void compute_sigma8();
-void powerspec();
-
-
-//%------>>>>>>file : check_flag.c
-//%
-void check_flag();
-
-
-//%------>>>>>>file : read_params.c
-//%
-void read_parameters( char *fn );
-
-
-//%------>>>>>>file : analysis.c
-//%
-void init_analysis();
-void free_analysis();
-void analysis();
 
 
 //%------>>>>>>file : correlation.c
@@ -190,21 +149,73 @@ void corr_Tdiff_dens();
 void pdf_Tdiff_dens();
 
 
-//%------>>>>>>file : read_snapshot.c
+//%------>>>>>>file : img.c
 //%
-int blockpresent0( enum iofields blk, int pt );
-int blockpresent( enum iofields blk, int pt );
-int get_block_nbytes( enum iofields blk );
-void get_block_dims( int pt, enum iofields blk, hsize_t (*dims)[2] );
-void get_dataset_name( enum iofields blk, char *buf );
-void get_hdf5_native_type( enum iofields blk, hid_t *hdf5_type );
-void empty_buffer( enum iofields blk, int offset, int pt );
-void read_header( char *fn );
-void show_header( io_header header );
-void write_header( char *fn, io_header header );
-void free_particle_memory();
-void read_snapshot_test();
-void read_snapshot();
+void init_img();
+void free_img();
+void reset_img();
+void write_img( char *fn, char *nstr );
+
+
+//%------>>>>>>file : read_params.c
+//%
+void read_parameters( char *fn );
+
+
+//%------>>>>>>file : gas_ratio.c
+//%
+void gas_ratio();
+
+
+//%------>>>>>>file : fof.c
+//%
+void fof_allocate( long N );
+void fof_free();
+int fof_compare_len( const void *a, const void *b );
+int fof_compare_mass( const void *a, const void *b );
+void fof_find_groups();
+void fof_compute_group_properties();
+void fof_test();
+void fof_save();
+void fof_read();
+void fof();
+
+
+//%------>>>>>>file : pdf.c
+//%
+void B_Pdf();
+void dens_pdf();
+void T_pdf();
+void pdf2d_or_field2d( double *x, double *y, double *w, long num, char *dn,int flag, double *mm, int Nmin );
+void cren_T_pdf();
+void hsml_T_pdf();
+void u_T_pdf();
+void hsml_dens_pdf();
+
+
+//%------>>>>>>file : check_flag.c
+//%
+void check_flag();
+
+
+//%------>>>>>>file : analysis.c
+//%
+void init_analysis();
+void free_analysis();
+void analysis();
+
+
+//%------>>>>>>file : powerspec.c
+//%
+double powerspec_interp( double k );
+void test_powerspec_interp();
+void compute_sigma8();
+void powerspec();
+
+
+//%------>>>>>>file : mf.c
+//%
+void mass_function();
 
 
 //%------>>>>>>file : grid.c
@@ -233,22 +244,6 @@ void cre_pressure_pdf();
 void phase();
 
 
-//%------>>>>>>file : radio.c
-//%
-double F_integrand( double x, void *params );
-void F0( double x, double *r, double *err );
-void init_compute_F();
-void F( double x, double *r, double *err );
-double tab_F( double x );
-void test_tab_F();
-void output_F_x();
-void output_tab_F();
-void init_tab_F();
-void free_tab_F();
-double radio_inte( double p, void *params );
-double radio( double (*f)( double, void* ), double *params,double B, double nu, double pmin, double pmax, double err );
-
-
 //%------>>>>>>file : set_units.c
 //%
 void set_units();
@@ -259,13 +254,26 @@ void set_units();
 void field_cren_T_dens();
 
 
+//%------>>>>>>file : read_snapshot.c
+//%
+int blockpresent0( enum iofields blk, int pt );
+int blockpresent( enum iofields blk, int pt );
+int get_block_nbytes( enum iofields blk );
+void get_block_dims( int pt, enum iofields blk, hsize_t (*dims)[2] );
+void get_dataset_name( enum iofields blk, char *buf );
+void get_hdf5_native_type( enum iofields blk, hid_t *hdf5_type );
+void empty_buffer( enum iofields blk, int offset, int pt );
+void read_header( char *fn );
+void show_header( io_header header );
+void write_header( char *fn, io_header header );
+void free_particle_memory();
+void read_snapshot_test();
+void read_snapshot();
+
+
 //%------>>>>>>file : temp.c
 //%
 void compute_temperature();
-
-
-//%------>>>>>>file : allvars.c
-//%
 
 
 //%------>>>>>>file : slice.c
@@ -279,18 +287,6 @@ void density_slice();
 void temperature_slice();
 void cren_slice();
 void radio_slice();
-
-
-//%------>>>>>>file : pdf.c
-//%
-void B_Pdf();
-void dens_pdf();
-void T_pdf();
-void pdf2d_or_field2d( double *x, double *y, double *w, long num, char *dn,int flag, double *mm, int Nmin );
-void cren_T_pdf();
-void hsml_T_pdf();
-void u_T_pdf();
-void hsml_dens_pdf();
 
 
 //%------>>>>>>file : cosmology.c

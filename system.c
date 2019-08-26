@@ -2,7 +2,7 @@
 
 double t0, t1;
 
-void create_dir( char *s ) {
+void create_dir0( char *s ) {
 
     if ( ThisTask_Local != 0 )
         return;

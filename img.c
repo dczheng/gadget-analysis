@@ -36,7 +36,7 @@ void reset_img() {
 void write_img( char *fn, char *nstr ) {
 
     FILE *fd;
-    fd = fopen( fn, "w" );
+    fd = myfopen( "w", fn );
     double v;
     int i, j;
     if ( nstr == NULL ) {

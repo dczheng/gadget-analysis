@@ -48,5 +48,6 @@ make_log_ticks( xmin, xmax, n, axis=ax.xaxis )
 make_log_ticks( ymin, ymax, n, axis=ax.yaxis )
 set_tick_params( ax, 15 )
 set_tick_params( ax_cbar, 15 )
+ax.set_title( 'z=%.2f'%z )
 
 fig.savefig( fn_out )

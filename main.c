@@ -169,24 +169,11 @@ void merge_log_file() {
 
     printf( "merge log file ...\n" );
     for ( i=0; i<2; i++ ) {
-        sprintf( buf, "./gadget-analysis.log/%s%s.log", bname, t[i] );
-        //printf( "%s\n", buf );
-        fd = fopen( buf, "w" );
-        if ( NULL == fd ) {
-            printf( "Failed to open file %s\n", buf );
-            endrun( 20181213 );
-        }
+        fd = myfopen( "w", "./gadget-analysis.log/%s%s.log", bname, t[i] );
 
         for( j=0; j<NTask; j++ ) {
-            sprintf( buf, "./gadget-analysis.log/%s%s-%03i.log", bname, t[i], j );
-       // printf( "%s\n", buf );
 
-            fd1 = fopen( buf, "r" );
-            if ( NULL == fd1 ) {
-                printf( "Failed to open file %s\n", buf );
-                endrun( 20181213 );
-            }
-
+            fd1 = myfopen( "r", "./gadget-analysis.log/%s%s-%03i.log", bname, t[i], j );
             fprintf( fd, "%s", sep_str );
             fprintf( fd, "Task: %i\n", j );
             fprintf( fd, "%s", sep_str );
@@ -198,6 +185,7 @@ void merge_log_file() {
 
             fclose( fd1 );
 
+            sprintf( buf, "./gadget-analysis.log/%s%s-%03i.log", bname, t[i], j );
             status = remove( buf );
 
             if ( status ) {
@@ -278,17 +266,9 @@ int main( int argc, char *argv[] ){
     merge_log_file();
     */
 
-    sprintf( buf, "./gadget-analysis.log/%s-%03d.log", bname, ThisTask );
-    LogFileFd = fopen( buf, "w" );
+    LogFileFd = myfopen( "w", "./gadget-analysis.log/%s-%03d.log", bname, ThisTask );
 
-    if ( NULL == LogFileFd )
-        endrun0( "Failed open file %s\n", buf );
-
-    sprintf( buf, "./gadget-analysis.log/%s-usedmem-%03d.log", bname, ThisTask );
-    UsedMemFileFd = fopen( buf, "w" );
-
-    if ( NULL == UsedMemFileFd )
-        endrun0( "Failed open file %s\n", buf );
+    UsedMemFileFd = myfopen( "w", "./gadget-analysis.log/%s-usedmem-%03d.log", bname, ThisTask );
 
     sprintf( OutputDir, "./output_%s/", bname );
 

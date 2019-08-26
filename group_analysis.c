@@ -154,8 +154,7 @@ void group_electron_spectrum() {
     long p;
     int i, qn, index;
     double dlogq, qmin, qmax, *f, q, rho, qmax_max, qmin_min;
-    char buf[100];
-    FILE *fd;
+    FILE *fd, *fd2;
 
     qn = All.QNum;
     qmin = All.QMin;
@@ -163,13 +162,9 @@ void group_electron_spectrum() {
 
     dlogq = log( qmax/qmin ) / ( qn-1 );
 
-    sprintf( buf, "%sElectronSpectrum", GroupDir );
-    create_dir( buf );
+    create_dir(  "%sElectronSpectrum", GroupDir );
 
-    sprintf( buf, "%sElectronSpectrum/EleSpec_%03i.dat",
-            GroupDir, SnapIndex );
-
-    fd = fopen( buf, "w" );
+    fd = myfopen( "w", "%sElectronSpectrum/EleSpec_%03i.dat", GroupDir, SnapIndex );
 
     fprintf( fd, "0  0  " );
     for ( i=0; i<qn; i++ ) {
@@ -190,6 +185,7 @@ void group_electron_spectrum() {
         qmax_max = 0;
         qmin_min = 1e10;
         memset( f, 0, sizeof(double) * qn );
+
         while( p >= 0 ) {
             if ( P[p].Type == 0 ) {
                 for( i=0; i<qn; i++ ) {
@@ -198,14 +194,6 @@ void group_electron_spectrum() {
                     f[i] += particle_f( &SphP[p], q ) * SphP[p].Density;
                     rho += SphP[p].Density;
                 }
-                /*
-                if ( SphP[p].CRE_qmax > 1e4 )
-                    printf( "[%i] %g, %g, %g\n",
-                            index,
-                            SphP[p].CRE_Alpha,
-                            SphP[p].CRE_qmin,
-                            SphP[p].CRE_qmax);
-                            */
                 vmax2( qmax_max, SphP[p].CRE_qmax );
                 vmin20( qmin_min, SphP[p].CRE_qmin );
             }
@@ -230,7 +218,6 @@ void group_spectrum() {
 
     int vN, i, index;
     double v, *flux, vmin, vmax, dv, *flux_nosr;
-    char buf[100];
     FILE *fd1, *fd2;
 
     writelog( "group spectrum ...\n" );
@@ -241,21 +228,16 @@ void group_spectrum() {
 
     dv = log( vmax/vmin ) / ( vN-1 );
 
-    sprintf( buf, "%sSpectrum", GroupDir );
-    create_dir( buf );
+    create_dir( "%sSpectrum", GroupDir );
 
-    sprintf( buf, "%sSpectrum/Spec_%03i.dat",
+    fd1 = myfopen("w", "%sSpectrum/Spec_%03i.dat",
             GroupDir, SnapIndex );
 
-    fd1 = fopen( buf, "w" );
-
-    sprintf( buf, "%sSpectrum/Spec_%03i_nosr.dat",
+    fd2 = myfopen( "w", "%sSpectrum/Spec_%03i_nosr.dat",
             GroupDir, SnapIndex );
 
     mymalloc1( flux, sizeof(double) * vN );
     mymalloc1( flux_nosr, sizeof(double) * vN );
-
-    fd2 = fopen( buf, "w" );
 
     fprintf( fd1, "0  0  " );
     fprintf( fd2, "0  0  " );
@@ -323,8 +305,7 @@ void group_spectrum_index() {
 
     dv = log10( vmax/vmin) / vN;
 
-    sprintf( buf, "%s%s", GroupDir, spec_index_str );
-    create_dir( buf );
+    create_dir( "%s%s", GroupDir, spec_index_str );
 
     mymalloc1( v, sizeof( double ) * vN );
     mymalloc1( spec, sizeof( double ) * vN * PicS2 );
@@ -564,11 +545,8 @@ void output_group_info(  long index ) {
     long p;
     struct group_properties *g;
     FILE *fd;
-    char buf[20];
 
-    sprintf( buf, "group_%04li.dat", index );
-
-    fd = fopen( buf, "w" );
+    fd = myfopen( "w", "group_%04li.dat", index );
     g = &Gprops[index];
 
     p = g->Head;
@@ -640,8 +618,7 @@ void group_temp_profile() {
     mymalloc1( Ngblist, NumPart * sizeof(long) );
 
     writelog( "Temperature profile ....\n" );
-    sprintf( buf, "%s%s", GroupDir, dn );
-    create_dir( buf );
+    create_dir( "%s%s", GroupDir, dn );
 
     reset_img();
     for ( g_index=0; g_index<Ngroups; g_index++ ) {
@@ -698,8 +675,7 @@ void group_temp_profile() {
         for( i=0; i<RN; i++ )
             if ( num[i] > 0 )
                 T[i] /= num[i];
-        sprintf( buf, "%s%s/TempProfile_%04i.dat", GroupDir, dn, g_index );
-        fd = fopen( buf, "w" );
+        fd = myfopen( "w", "%s%s/TempProfile_%04i.dat", GroupDir, dn, g_index );
         for( i=0; i<RN; i++ )
             fprintf( fd, "%g %g %i\n", Rmin*pow(10, i*dlogR), T[i], num[i]  );
         fclose( fd );
@@ -719,7 +695,6 @@ void group_temp_stack() {
     int RN, g_index, i, ii, mi, k, ngbnum;
     long p;
     struct group_properties g;
-    char buf[100];
     FILE *fd;
 #define MS 3
     double m[MS], *T[MS], *Terr[MS];
@@ -838,11 +813,8 @@ void group_temp_stack() {
                 Terr[mi][i]  = sqrt(Terr[mi][i] / (num[mi][i]-1));
 
 
-    sprintf( buf, "%sGroupTempStack", OutputDir );
-    create_dir( buf );
-
-    sprintf( buf, "%s/GroupTempStack_%03i.dat", buf, SnapIndex );
-    fd = fopen( buf, "w" );
+    create_dir( "%sGroupTempStack", OutputDir );
+    fd = myfopen( "w", "%s/GroupTempStack/GroupTempStack_%03i.dat", OutputDir, SnapIndex );
 
     fprintf( fd, "%g ", Redshift );
     for( mi=0; mi<MS; mi++ )
@@ -874,14 +846,12 @@ void group_gas_ratio() {
     struct group_properties g;
     int g_index, i;
     FILE *fd;
-    char buf[100];
 
-    double r_gas, r_condensed, r_diffuse, r_hot, r_warmhot, T, m_tot, m_gas;
+    double r_gas, r_condensed, r_diffuse, r_hot, r_warmhot, m_tot, m_gas;
 
-    sprintf( buf, "%sGroupGasRatio", OutputDir );
-    create_dir( buf );
-    sprintf( buf, "%s/GroupGasRatio_%03i.dat", buf, SnapIndex );
-    fd = fopen( buf, "w" );
+    create_dir( "%sGroupGasRatio", OutputDir );
+    fd = myfopen( "w", "%s/GroupGasRatio/GroupGasRatio_%03i.dat", OutputDir, SnapIndex );
+
     for ( g_index=0; g_index<Ngroups; g_index++ ) {
         if ( !group_present( g_index ) )
             break;
@@ -957,8 +927,7 @@ void group_analysis() {
 
         mymalloc1( data[i], PicSize2 * sizeof( double ) );
         get_group_filed_name( i, buf1 );
-        sprintf( buf, "%s%s", GroupDir, buf1 );
-        create_dir( buf );
+        create_dir( "%s%s", GroupDir, buf1 );
 
     }
 

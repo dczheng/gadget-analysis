@@ -331,7 +331,7 @@ void d2PdVdv_qmax() {
 
     if ( ThisTask == 0 ) {
         mymalloc2( J0, N * sizeof(double) );
-        fd = fopen( "./d2PdVdv_qmax.dat", "w" );
+        fd = myfopen( "w", "./d2PdVdv_qmax.dat");
         fprintf( fd, "0 " );
 
         for( i=0; i<N; i++ ) {
@@ -444,7 +444,7 @@ void output_radio_inte() {
 
     if ( ThisTask_Local == 0 ) {
 
-        fd = fopen( "radio_inte.dat", "w" );
+        fd = myfopen( "w", "radio_inte.dat");
 
         for( i=0; i<N; i++ )
             fprintf( fd, "%g %g\n", q[i], r[i] );

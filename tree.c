@@ -191,7 +191,7 @@ void tree_walk_test(){
     FILE *fd;
     long n;
     n = NumPart;
-    fd = fopen( "walk.txt", "w" );
+    fd = myfopen( "w", "walk.txt" );
     while ( n>=0 ) {
         if ( n<NumPart ){
             fprintf( fd, "%li\n", n );
