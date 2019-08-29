@@ -55,6 +55,7 @@ void check_flag() {
 
     A_NEED_B( All.TPdf, All.TPdfN );
     A_NEED_B( All.DensPdf, All.DensPdfN );
+    A_NEED_B( All.RadSpec, All.ReadHsml );
 
     if ( All.TPdf && All.TPdfN < 1 ) {
         printf( "`TPdfN > 1` is required by TPdf\n" );

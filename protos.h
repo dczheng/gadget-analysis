@@ -31,30 +31,11 @@ void pre_proc();
 void check_data( int err );
 
 
-//%------>>>>>>file : main.c
+//%------>>>>>>file : analysis.c
 //%
-void init_sep_str();
-void global_init();
-void global_free();
-void mpi_comms_test();
-void create_mpi_comms();
-void free_comms();
-void merge_log_file();
-int main( int argc, char *argv[] );
-
-
-//%------>>>>>>file : part_radio.c
-//%
-double particle_df( double p, void *params );
-double particle_radio2( double nu,  SphParticleData *part );
-double particle_radio( double nu, long i );
-void save_particle_radio();
-int read_particle_radio();
-void compute_particle_radio();
-void free_particle_radio();
-void d2PdVdv_qmax();
-void output_radio_inte();
-void test_radio();
+void init_analysis();
+void free_analysis();
+void analysis();
 
 
 //%------>>>>>>file : group_analysis.c
@@ -70,7 +51,6 @@ void group_spectrum_index();
 int group_filed_present( enum group_fields blk );
 void get_group_filed_name( enum group_fields blk, char *buf );
 void check_group_flag();
-void output_group_info(  long index );
 void group_temp_profile();
 void group_temp_stack();
 void group_gas_ratio();
@@ -193,18 +173,6 @@ void u_T_pdf();
 void hsml_dens_pdf();
 
 
-//%------>>>>>>file : check_flag.c
-//%
-void check_flag();
-
-
-//%------>>>>>>file : analysis.c
-//%
-void init_analysis();
-void free_analysis();
-void analysis();
-
-
 //%------>>>>>>file : powerspec.c
 //%
 double powerspec_interp( double k );
@@ -231,6 +199,32 @@ void empty_sig_buf();
 void init_sig();
 
 
+//%------>>>>>>file : part_radio.c
+//%
+double particle_df( double p, void *params );
+double particle_radio2( double nu,  SphParticleData *part );
+double particle_radio( double nu, long i );
+void save_particle_radio();
+int read_particle_radio();
+void compute_particle_radio();
+void free_particle_radio();
+void d2PdVdv_qmax();
+void output_radio_inte();
+void test_part_radio();
+
+
+//%------>>>>>>file : main.c
+//%
+void init_sep_str();
+void global_init();
+void global_free();
+void mpi_comms_test();
+void create_mpi_comms();
+void free_comms();
+void merge_log_file();
+int main( int argc, char *argv[] );
+
+
 //%------>>>>>>file : cre.c
 //%
 double beta_inte( double x, void *params );
@@ -247,6 +241,11 @@ void phase();
 //%------>>>>>>file : set_units.c
 //%
 void set_units();
+
+
+//%------>>>>>>file : check_flag.c
+//%
+void check_flag();
 
 
 //%------>>>>>>file : field.c

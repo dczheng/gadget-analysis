@@ -5,7 +5,6 @@ matplotlib.use( 'agg' )
 import scipy.special as ss
 from scipy.integrate import quad
 
-import phys_and_const as tc
 from my_work_env import *
 
 def _K( x ):
@@ -26,11 +25,11 @@ def _f( p, c, a, pmin, pmax ):
 
 def dp2dVdv( B, nu, c, a, pmin, pmax ):
 
-    fac = np.sqrt(3) * np.pi / 4 * tc.e3 * B / tc.m_ec2
+    fac = np.sqrt(3) * np.pi / 4 * mycc.e3 * B / mycc.m_ec2
     #print( fac )
 
     ff = lambda p: _f( p, c, a, pmin, pmax ) \
-            * _F( nu / ( 3 * ( 1+p*p ) * tc.e * B / ( 16.0 * tc.m_ec) ) )
+            * _F( nu / ( 3 * ( 1+p*p ) * mycc.e * B / ( 16.0 * mycc.m_ec) ) )
 
     r = quad( ff, pmin, pmax, epsabs=0, epsrel=1e-3 )
     #print( r )
@@ -39,8 +38,8 @@ def dp2dVdv( B, nu, c, a, pmin, pmax ):
 
 def dp2dVdv2( B, nu, c, a, pmin, pmax ):
 
-    fac1 = 2 * np.pi * c * tc.e2 * nu / (np.sqrt(3) * tc.c)
-    fac2 = 16 * tc.m_ec * nu / ( 3 * tc.e * B  )
+    fac1 = 2 * np.pi * c * mycc.e2 * nu / (np.sqrt(3) * mycc.c)
+    fac2 = 16 * mycc.m_ec * nu / ( 3 * mycc.e * B  )
     print( 'fac1: %g, fac2: %g'%(fac1, fac2) )
 
     ff = lambda t: np.power( fac2 / t - 1, -(1+a)/2 ) * _F(t) / (t*t)
@@ -74,7 +73,7 @@ def test_B():
     Ba = np.power( 10, np.linspace( -6, -9, 10 ) )
 
     ff = lambda p: _f( p, c, a, pmin, pmax ) \
-            * _F( nu / ( 3 * ( 1+p*p ) * tc.e * B / ( 16.0 * tc.m_ec) ) )
+            * _F( nu / ( 3 * ( 1+p*p ) * mycc.e * B / ( 16.0 * mycc.m_ec) ) )
 
     fff = []
     for B in Ba:
@@ -117,57 +116,6 @@ def plot_F():
 
 #plot_F()
 
-
-def plot_B_C():
-
-    d = np.loadtxt( sys.argv[1] )
-    index = d[:,-1] > 0
-    dd = d[index,:]
-    B = dd[:,3]
-    C = dd[:,4]
-    a = dd[:,5]
-    pmin = dd[:,6]
-    pmax = dd[:,7]
-    n = dd[:,8]
-    e = dd[:,9]
-    z = 0.09
-
-    print( "mean, C: %g, B: %g"%(C.mean(), B.mean()) )
-
-    L = 5 * tc.Kpc
-    lc = tc.D_c( z )
-    la = tc.D_a( z )
-    ll = tc.D_l( z )
-
-    fac1 = np.sqrt(3) * np.pi / 4 * tc.e3 / tc.m_ec2
-    fac1 = fac1 * ( 4/3 * np.pi * L**3 ) / ( np.pi * 4 * ll * ll ) / tc.mJy
-    fac2 = 3 * tc.e / ( 16.0 * tc.m_ec)
-    print( len(e) )
-    print( 'fac1: %g, fac2: %g'%(fac1, fac2) )
-
-    fig,axs = plt.subplots( 1, 2 )
-    #ax.plot( B, C, '.', ms=1 )
-
-    ax = axs[0]
-    ax.hist2d( np.log10(B), np.log10(C), bins=30 )
-    #plt.colorbar( img )
-    #ax.set_xscale( 'log' )
-    #ax.set_yscale( 'log' )
-    ax.set_xlabel( 'B' )
-    ax.set_ylabel( 'C' )
-
-    ax = axs[1]
-    CB = C * np.power( B, (a+1)/2 )
-    print( "CB sum: %g"%CB.sum() )
-
-    ax.hist( np.log10( CB ), bins=30 )
-    ax.set_xlabel( r'$C B^{\frac{\alpha+1}{2}}$' )
-    ax.set_ylabel( 'N' )
-    ax.set_yscale( 'log' )
-
-    fig.tight_layout()
-    fig.savefig( "B_C.png" )
-
 def calc_test():
     B = 1e-10
     z = 0.09
@@ -176,23 +124,23 @@ def calc_test():
     pmax = 1e7
     C = 1e-9
 
-    #L = 0.1 * tc.Mpc
-    L = 1 * tc.Kpc
-    lc = tc.D_c( z )
-    la = tc.D_a( z )
-    ll = tc.D_l( z )
+    #L = 0.1 * mycc.Mpc
+    L = 1 * mycc.Kpc
+    lc = mycc.D_c( z )
+    la = mycc.D_a( z )
+    ll = mycc.D_l( z )
     nu = 1e9
     print( "nu: %g, B: %g, z: %g, a: %g, pmin: %g, " \
             "pmax: %g, c: %g, L^2: %g, ll^2: %g"
             %(nu, B, z, a, pmin, pmax, C, L**3, ll**2 ) )
     flux =  dp2dVdv( B, nu, C, a, pmin, pmax )
     print( "dp2dVdv: %g"%flux )
-    flux = flux * ( 4/3 * np.pi * L**3 ) / ( np.pi * 4 * ll * ll ) / tc.mJy #/  ( L*L/(lc*lc) ) # tc.mJy
+    flux = flux * ( 4/3 * np.pi * L**3 ) / ( np.pi * 4 * ll * ll ) / mycc.mJy #/  ( L*L/(lc*lc) ) # mycc.mJy
     print( "flux: %g"%flux )
 
     '''
     flux =  dp2dVdv2( B, nu, C, a, pmin, pmax )
-    flux = flux * ( 4/3 * np.pi * L**3 ) / ( np.pi * 4 * ll * ll ) / tc.mJy #/  ( L*L/(lc*lc) ) # tc.mJy
+    flux = flux * ( 4/3 * np.pi * L**3 ) / ( np.pi * 4 * ll * ll ) / mycc.mJy #/  ( L*L/(lc*lc) ) # mycc.mJy
     print( "flux2: %g"%flux )
     '''
 
@@ -224,10 +172,10 @@ def calc_group_radio():
     #exit()
 
     z = 0.09
-    L = 5 * tc.Kpc / (1+z) / 0.68
-    lc = tc.D_c( z )
-    la = tc.D_a( z )
-    ll = tc.D_l( z )
+    L = 5 * mycc.Kpc / (1+z) / 0.68
+    lc = mycc.D_c( z )
+    la = mycc.D_a( z )
+    ll = mycc.D_l( z )
     N = len(e)
 
     '''
@@ -264,12 +212,12 @@ def calc_group_radio():
                     %(i, N, B[i], C[i], a[i], pmin[i], pmax[i] ) )
 
         r = dp2dVdv( B[i], nu1, C[i], a[i], pmin[i], pmax[i] )
-        r = r * ( 4/3 * np.pi * L**3 ) / ( np.pi * 4 * ll * ll ) / tc.mJy
+        r = r * ( 4/3 * np.pi * L**3 ) / ( np.pi * 4 * ll * ll ) / mycc.mJy
         print( "r: %g, flux1: %g"%(r, flux1) )
         flux1 += r
 
         r = dp2dVdv( B[i], nu2, C[i], a[i], pmin[i], pmax[i] )
-        r = r * ( 4/3 * np.pi * L**3 ) / ( np.pi * 4 * ll * ll ) / tc.mJy
+        r = r * ( 4/3 * np.pi * L**3 ) / ( np.pi * 4 * ll * ll ) / mycc.mJy
         print( "r: %g, flux2: %g"%(r, flux2) )
         flux2 += r
 
@@ -285,68 +233,9 @@ def calc_group_radio():
     '''
 
 
-def plot_flux():
-    B = 1e-6
-    z = 0.1
-    a = 1 / ( 1+z )
-    pmin = 0.1
-    alpha = 3
-
-    #nu = 1.4 * 1e9
-    nua = np.power( 10, np.linspace( 0, 3, 50 ) ) # MHz
-    pmaxa = np.power( 10, np.linspace(4,5, 8) )
-    L = 0.1 * tc.Mpc
-
-    lc = tc.D_c( z )
-    la = tc.D_a( z )
-    ll = tc.D_l( z )
-
-    print( "z: %g, a: %g"%(z, a) )
-    print( "lc: %e, la: %e, ll: %e"%( lc, la, ll ) )
-    print( "la/lc: %g, lc/ll: %g"%(la/lc, lc/ll) )
-
-    fig, ax = plt.subplots( 1, 1 )
-
-    C = 1
-    for pmax in pmaxa:
-        print( pmin, pmax )
-        r = np.array([ dp2dVdv( B, nu*1e6, C, alpha, pmin, pmax ) for nu in nua ])
-        r = r * ( 4/3 * np.pi * L**3 ) / ( np.pi * 4 * ll * ll ) / tc.mJy
-        t = "%e"%pmax
-        t = t.split('e')
-        ax.plot( nua, r, label=r'$p_{\rm max} = %.1f \times 10^{%i}$'%(float(t[0]), int(t[1])) )
-
-    ax.set_xlabel( r'$\nu \, [\rm MHz]$', fontsize=20 )
-    ax.set_ylabel( r'$\frac{1}{C}\frac{d^{2}P(\nu)}{dVd\nu}\,[\rm erg\,s^{-1}\,Hz^{-1}]$', fontsize=20)
-    ax.set_xscale( 'log' )
-    ax.set_yscale( 'log' )
-    ax.minorticks_off()
-
-    ax.tick_params( axis='both', direction='in', labelsize=20, pad=5 )
-    ax.grid()
-    ax.legend()
-    fig.tight_layout()
-
-    fig.savefig( output_dir + 'Flux.pdf', figsize=(5,5) )
-
-def part_angle():
-    L = 0.1 * tc.Mpc
-    z = 0.09
-    lc = tc.D_c( z )
-    print( "angle: %g"%(L**2 / lc**2) )
-
-#print( "e: %e"%tc.e )
-#print( "e3: %e"%tc.e3 )
-#print( "m: %e"%tc.m_e )
-#print( "c: %e"%tc.c )
-#print( "mc: %e"%tc.m_ec )
-#print( "mc2: %e"%tc.m_ec2 )
-
-print( 16 / 3.0 / 0.3 * tc.m_ec / tc.e )
-#test_B()
-#plot_B_C()
-
-
-#part_angle()
-#calc_test()
-#calc_group_radio()
+#print( "e: %e"%mycc.e )
+#print( "e3: %e"%mycc.e3 )
+#print( "m: %e"%mycc.m_e )
+#print( "c: %e"%mycc.c )
+#print( "mc: %e"%mycc.m_ec )
+#print( "mc2: %e"%mycc.m_ec2 )

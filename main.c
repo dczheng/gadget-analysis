@@ -308,9 +308,6 @@ int main( int argc, char *argv[] ){
         IOGroups ++;
 
     //test_sigma();
-    //
-    //test_radio();
-
     //test_cos();
 
     read_snapshot();

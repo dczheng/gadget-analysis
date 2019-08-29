@@ -1,43 +1,5 @@
 #include "allvars.h"
 
-/*
-double particle_radio( double nu, long i ) {
-
-    C = SphP[i].CRE_C;
-    //printf( "%g\n", C );
-    C = C * SphP[i].Density / ( cuc.m_e /(g2c.g) );
-    C /= CUBE( g2c.cm );
-
-    B = sqrt( pow( SphP[i].B[0], 2 ) + pow( SphP[i].B[1], 2 ) + pow( SphP[i].B[2], 2 ) );
-    Ub = B * B / ( 8 * PI );
-    Ub += SQR( BCMB0 ) * pow( Time, -4 ) / ( 8*PI );
-
-    nuL = cuc.e * B / ( 2 * PI * cuc.m_e * cuc.c );
-
-    if ( sqrt( nu/nuL-1 ) < SphP[i].CRE_qmin ||
-         sqrt( nu/nuL-1 ) > SphP[i].CRE_qmax )
-        return 0;
-
-    P = C * 2.0 / 3.0 * cuc.c * Ub * THOMSON_CROSS_SECTION *
-        pow( nu / nuL-1, (1-SphP[i].CRE_Alpha) / 2 ) / nuL;
-
-    //printf( "%g\n", P );
-    //
-    P = P * ( 4.0/3.0 * PI * CUBE( SofteningTable[0] * g2c.cm ) );
-
-    // Unit: erg / Hz / s
-    //
-    //printf( "Ub: %g, nuL: %g, P: %g\n",  Ub, nuL, P );
-
-    printf( "P: %g, P2: %g\n", P, P2 );
-
-    endrun( 20181005 );
-
-    return P;
-
-}
-*/
-
 double particle_df( double p, void *params ) {
 
     double *pa;
@@ -101,7 +63,7 @@ double particle_radio2( double nu,  SphParticleData *part ) {
 
     r = radio( &particle_df, params, B, nu, params[2], params[3], 1e-2 );
 
-    r = r * ( 4.0/3.0 * PI * CUBE( SofteningTable[0] * g2c.cm ) );
+    r = r * ( 4.0/3.0 * PI * CUBE(  part->Hsml* g2c.cm ) );
 
     return r;
 
@@ -213,7 +175,7 @@ int read_particle_radio() {
 
 void compute_particle_radio() {
 
-    double numin, numax, dlognu, nu;
+    double numin, numax, dlognu, nu, tt;
     int nuN, j, num, flag;
     long i, t;
     char fn[ FILENAME_MAX ];
@@ -221,7 +183,6 @@ void compute_particle_radio() {
     writelog( "Start compute particle radio ... \n" )
 
     init_compute_F();
-
 
     mymalloc1_shared( PartRad, sizeof(double)*N_Gas*All.NuNum, sizeof(double), MpiWin_PartRad );
 
@@ -273,15 +234,27 @@ void compute_particle_radio() {
         if ( i % NTask_Local != ThisTask_Local )
             continue;
 
+        flag = 0;
         for( j=0; j<nuN; j++ ) {
 
             nu = exp( log(numin) + j * dlognu ) * 1e6;
 
             //printf( "nu: %g\n", nu );
 
-            PartRad[ i*All.NuNum + j ] = particle_radio( nu/Time, i );
+            tt = PartRad[ i*All.NuNum + j ] = particle_radio( nu/Time, i );
+
+            tt = tt / ( 4.0 * PI * SQR( LumDis*g2c.cm ) ) * 1e26; // to mJy
+            
+            if ( tt < 1e-10 ) {
+                flag = 1;    // ignore particle with very weak radio emission.
+                break;
+            }
 
         }
+
+        if ( flag )
+            for( j=0; j<nuN; j++ )
+            PartRad[ i*All.NuNum + j ] = 0;
 
     }
 
@@ -459,33 +432,43 @@ void output_radio_inte() {
     myfree( q );
 }
 
-void test_radio() {
+void test_part_radio() {
+    long i, N, c;
+    double nu, f, B;
+    FILE *fd;
 
-
-    Time = header.time = 1;
-    HubbleParam = 0.7;
-    All.TabF = 0;
-    Omega0 = 0.302;
-    OmegaLambda = 0.698;
-    HubbleParam = 0.68;
-    Redshift = 0;
-    set_units();
-    compute_cosmo_quantities();
     init_compute_F();
-    put_sep;
+    init_tab_F();
 
-    writelog( "test radaion ... \n" );
-    if ( All.TabF )
-        init_tab_F();
+    if ( ThisTask )
+        return;
 
-        //output_radio_inte();
-    d2PdVdv_qmax();
+    fd = myfopen( "w", "test_part_radio.dat" );
+    N = 100;
+    nu = 3*1e8;
 
-    do_sync("");
+    for( i=0, c=0; i<N_Gas; i++ ) {
 
-    if ( All.TabF )
-        free_tab_F();
+        B = get_B(i);
+        if ( B < 1e-10 || SphP[i].CRE_C == 0 )
+            continue;
 
+        f = particle_radio( nu, i );
+        fprintf( fd, "%11.4e %11.4e %11.4e "
+        "%11.4e %6.2f %7.3f %8.0f %11.4e\n",
+        nu, B, SphP[i].Hsml * g2c.cm,
+        SphP[i].CRE_C * SphP[i].Density / guc.m_e / CUBE( g2c.cm ),
+        SphP[i].CRE_Alpha,
+        SphP[i].CRE_qmin,
+        SphP[i].CRE_qmax,
+        f
+        );
+
+        c++;
+        if ( c > N )
+            break;
+    }
+    free_tab_F();
+    fclose( fd );
     endrun(20181004);
-
 }

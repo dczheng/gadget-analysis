@@ -80,17 +80,14 @@ double tab_F( double x ) {
         i = TAB_F_N-1;
 
     dx = logx - log(F_X_MIN) - i * dlogx;
-
-    r = exp(tab_F_V[i]) * ( 1-dx ) + exp(tab_F_V[i+1]) * dx;
-    //r = exp( tab_F_V[i] );
-
+    r = tab_F_V[i] * ( 1-dx ) + tab_F_V[i+1] * dx;
     return r;
 
 }
 
 void test_tab_F() {
 
-    double x, dx, xmax, xmin, F_v, tab_F_v, err, err_max, err_mean;
+    double x, xmax, xmin, F_v, tab_F_v, err, err_max, err_mean;
     int i, N;
     FILE *fd;
 
@@ -103,38 +100,28 @@ void test_tab_F() {
     if ( ThisTask )
         return;
 
-    dx = log( xmax/xmin ) / ( N-1 );
     fd = myfopen( "w", "test_tab_F.dat" );
-
-    /*
-    i = 0;
-    while( i<N ) {
-        x = xmin + i * dx;
-        printf( "%g %g\n", x, radio_F_integrand( x, NULL ) );
-        i++;
-    }
-    */
 
     i = 0;
     err_max = err_mean = 0;
 
+    fprintf( fd, "%10s %11s %11s  %5s\n", "x", "F(x)", "tab_F(x)", "err");
     while( i<N ) {
-        x = log(xmin) + i * dx;
-        x = exp(x);
+        x = xmin * exp( ((double)rand()) / RAND_MAX * log(xmax/xmin) );
         F( x, &F_v, &err );
         tab_F_v = tab_F( x );
         err = fabs( tab_F_v - F_v ) / F_v * 100;
-        fprintf( fd, "x: %g, F: %g, tab_F: %g, err: %.2f%%\n", x, F_v, tab_F_v, err);
+        fprintf( fd, "%10.3e %11.3e %11.3e %5.2f%%\n", x, F_v, tab_F_v, err);
         if ( err > err_max )
             err_max = err;
         err_mean += err;
         i++;
-        }
+    }
 
-        err_mean /= N;
-
-    fprintf( fd, "err_max: %.2f%%, err_mean: %.2f%%\n", err_max, err_mean );
     fclose( fd );
+
+    err_mean /= N;
+    printf( "err_max: %.2f%%, err_mean: %.2f%%\n", err_max, err_mean );
 
 }
 
@@ -193,10 +180,8 @@ void output_tab_F() {
     fd = myfopen( "w", "tab_F.dat" );
 
     for( i=0; i<=TAB_F_N; i++ ) {
-
         x = log( F_X_MIN ) + dlogx * i;
-        fprintf( fd, "%g %g\n", exp(x), exp(tab_F_V[i]) );
-
+        fprintf( fd, "%g %g\n", exp(x), tab_F_V[i] );
     }
 
     fclose( fd );
@@ -204,7 +189,8 @@ void output_tab_F() {
 }
 
 void init_tab_F() {
-    double dlogx, x, err, F_v, *buf, err_max, err_max_global;
+    double dlogx, x, err, F_v, *buf, err_max, err_max_global, 
+    err_mean, err_mean_global;
     int i;
 
     writelog( "initialize tab_F ...\n" );
@@ -212,6 +198,7 @@ void init_tab_F() {
     dlogx = log(F_X_MAX/F_X_MIN) / ( TAB_F_N - 1 );
     mymalloc2( tab_F_V, sizeof( double ) * ( TAB_F_N+1 ) );
     err_max = -1;
+    err_mean = 0;
 
     for ( i=0; i<=TAB_F_N; i++ ) {
         if ( i % NTask != ThisTask )
@@ -223,33 +210,32 @@ void init_tab_F() {
         if ( err>err_max )
             err_max = err;
 
-        tab_F_V[i] = log( F_v );
+        err_mean += err;
+        tab_F_V[i] = F_v;
     }
 
     MPI_Reduce( &err_max, &err_max_global, 1, MPI_DOUBLE,
             MPI_MAX, 0, MPI_COMM_WORLD );
-
-    writelog( "err max: %g\n", err_max_global );
+    MPI_Reduce( &err_mean, &err_mean_global, 1, MPI_DOUBLE,
+            MPI_SUM, 0, MPI_COMM_WORLD );
+    writelog( "[error of the integral of f(x)] max: %g, mean: %g\n",
+        err_max_global, err_mean_global/TAB_F_N );
 
     mymalloc2( buf, sizeof( double ) * ( TAB_F_N+1 ) );
     MPI_Allreduce( tab_F_V, buf, TAB_F_N+1, MPI_DOUBLE,
             MPI_SUM, MPI_COMM_WORLD );
     memcpy( tab_F_V, buf, (TAB_F_N+1) * sizeof( double ) );
-
     myfree( buf );
 
-    output_F_x();
-    put_sep0;
-
     output_tab_F();
-    put_sep0;
-
     test_tab_F();
-    put_sep0;
 
     do_sync( "" );
 
     writelog( "initialize tab_F ... done.\n" );
+    put_sep0;
+
+    //endrun( 20190826 );
 
 }
 
@@ -296,14 +282,15 @@ double radio( double (*f)( double, void* ), double *params,
             ((double*)params)[3]
             );
 
+    /*
+        x = nu / nu_c 
+        nu_c = 3/16 * ( 1+p^2 ) *e*B / ( m_e*c )
+        p = sqrt( nu / x / ( 3/16*e*B / ( m_e*c ) ) - 1 )
+    */
+
     t = sqrt( nu / GSL_BESSEL_UPPER_LIMIT / ( 0.1875 * B * cuc.e_mec )-1 );
-
-    //printf( "pmin: %g, pmax: %g, B: %g\n", pmin, pmax, B );
-
     if ( pmin < t )
         pmin = t;
-
-    //printf( "pmin: %g\n", pmin );
 
     if ( pmin > pmax * 0.9 ) // avoid bad integration.
         return 0;
@@ -327,4 +314,3 @@ double radio( double (*f)( double, void* ), double *params,
     return r;
 
 }
-

@@ -119,19 +119,17 @@ inline double get_group_size( struct group_properties *g ) {
 
 void group_flux( int nu_index, long index, double *flux, double *flux_nosr ) {
 
-    double com_dis, lum_dis, L;
+    double L;
     struct group_properties *g;
     double size;
 
     g = &Gprops[index];
-    com_dis = comoving_distance( Time );
-    lum_dis = luminosity_distance( Time ) * g2c.cm;
 
     L = group_luminosity( nu_index, index );
 
     size = get_group_size( g );
-    *flux_nosr = L / ( 4.0 * PI * SQR( lum_dis ) );
-    *flux = *flux_nosr / ( SQR( size * 2  / com_dis ) );
+    *flux_nosr = L / ( 4.0 * PI * SQR( LumDis * g2c.cm ) );
+    *flux = *flux_nosr / ( SQR( size * 2  / ComDis ) );
 
 }
 
@@ -163,7 +161,6 @@ void group_electron_spectrum() {
     dlogq = log( qmax/qmin ) / ( qn-1 );
 
     create_dir(  "%sElectronSpectrum", GroupDir );
-
     fd = myfopen( "w", "%sElectronSpectrum/EleSpec_%03i.dat", GroupDir, SnapIndex );
 
     fprintf( fd, "0  0  " );
@@ -184,26 +181,51 @@ void group_electron_spectrum() {
         rho = 0;
         qmax_max = 0;
         qmin_min = 1e10;
-        memset( f, 0, sizeof(double) * qn );
+
+        for ( i=0; i<qn; i++ )
+            f[i] = 0;
+
+        fd2 = myfopen( "w", "%sElectronSpectrum/PartInfo_%03i_%04i.dat", GroupDir, SnapIndex, index );
+
+        fprintf( fd2, "%.2f %10.3e %10.3e 0 0 0\n",
+                Redshift, SofteningTable[0] * g2c.cm,
+                get_group_size( &Gprops[index] ) * g2c.cm );
 
         while( p >= 0 ) {
             if ( P[p].Type == 0 ) {
                 for( i=0; i<qn; i++ ) {
                     q = log( qmin ) + i * dlogq;
                     q = exp(q);
-                    f[i] += particle_f( &SphP[p], q ) * SphP[p].Density;
+                    //f[i] += particle_f( &SphP[p], q ) * SphP[p].Density;
+                    f[i] += particle_f( &SphP[p], q );
                     rho += SphP[p].Density;
                 }
                 vmax2( qmax_max, SphP[p].CRE_qmax );
                 vmin20( qmin_min, SphP[p].CRE_qmin );
+                fprintf( fd2, "%10.3e %6.2f %7.3f %8.0f %10.3e %10.3e\n",
+                    SphP[p].CRE_C * SphP[p].Density / guc.m_e / CUBE( g2c.cm ),
+                    SphP[p].CRE_Alpha,
+                    SphP[p].CRE_qmin,
+                    SphP[p].CRE_qmax,
+                    SphP[p].Density,
+                    get_B( p )
+                    );
             }
             p = FoFNext[p];
         }
+        fclose( fd2 );
+
+        //printf( "%li\n", Gprops[index].npart[0] );
+        for ( i=0; i<qn; i++ ) {
+            //f[i] /= rho;
+            f[i] /= Gprops[index].npart[0];
+        }
 
         printf( "[%i] qmax_max: %g, qmin_min: %g\n", index, qmax_max, qmin_min );
+
         fprintf( fd, "%i  %g  ", index, Gprops[index].mass );
         for ( i=0; i<qn; i++ ) {
-            fprintf( fd, "%g  ", f[i]/rho );
+            fprintf( fd, "%g  ", f[i] );
         }
         fprintf( fd, "\n" );
     }
@@ -540,64 +562,6 @@ void check_group_flag() {
 
 }
 
-void output_group_info(  long index ) {
-
-    long p;
-    struct group_properties *g;
-    FILE *fd;
-
-    fd = myfopen( "w", "group_%04li.dat", index );
-    g = &Gprops[index];
-
-    p = g->Head;
-
-    while( p >= 0 ) {
-
-        //printf( "%li\n", p );
-        if ( P[p].Type == 0 ) {
-            fprintf( fd, "%g %g %g  %g %g %g %g %g %g %g\n",
-                //P[p].Pos[0],
-                //P[p].Pos[1],
-                //P[p].Pos[2],
-                SphP[p].CR_C0 * pow( SphP[p].Density, (2.75-1)*0.3333 )
-                * SphP[p].Density / guc.m_p
-                / CUBE( g2c.cm ),
-
-                SphP[p].CR_n0
-                * SphP[p].Density / guc.m_p
-                / CUBE( g2c.cm ),
-
-                SphP[p].CR_E0
-                * SphP[p].Density
-                * g2c.erg / CUBE( g2c.cm ),
-
-                get_B( p ),
-
-                SphP[p].CRE_C * SphP[p].Density / guc.m_e
-                / CUBE( g2c.cm ),
-
-                SphP[p].CRE_Alpha,
-                SphP[p].CRE_qmin,
-                SphP[p].CRE_qmax,
-
-                SphP[p].CRE_n * SphP[p].Density / guc.m_e
-                / CUBE( g2c.cm ),
-
-                SphP[p].CRE_e * SphP[p].Density
-                * g2c.erg / CUBE( g2c.cm )
-                );
-        }
-
-        p = FoFNext[p];
-
-    }
-
-    fclose( fd );
-
-    //endrun( 20190123 );
-
-}
-
 void group_temp_profile() {
 
     long p;
@@ -909,9 +873,6 @@ void group_analysis() {
 
     char buf[100], buf1[100];
     double *data[GROUP_FILED_NBLOCKS];
-
-    if ( ThisTask == 0 )
-        output_group_info( 0 );
 
     x = proj_i;
     y = proj_j;

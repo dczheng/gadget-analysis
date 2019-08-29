@@ -1,107 +1,16 @@
 #!/usr/bin/env python3
 
 from my_work_env import *
-import phys_and_const as tc
 from scipy.optimize import curve_fit
-
-def my_plot1():
-
-    rad_spec_file1 = './cre_256_no_turb_Spec_0.09_nosr.dat'
-    rad_spec_file2 = './cre_256_Spec_0.09_nosr.dat'
-
-    ele_spec_file1 = './cre_256_no_turb_Elec_Spec_0.09.dat'
-    ele_spec_file2 = './cre_256_Elec_Spec_0.09.dat'
-
-    dat_r1 = np.loadtxt( rad_spec_file1 )
-    dat_r2 = np.loadtxt( rad_spec_file2 )
-
-    dat_e1 = np.loadtxt( ele_spec_file1 )
-    dat_e2 = np.loadtxt( ele_spec_file2 )
-
-    fig_r, axs_r= plt.subplots( 1, 2 )
-    fig_e, axs_e= plt.subplots( 1, 2 )
-
-    m, n = dat_r1.shape
-
-    v = dat_r1[ 0, 2: ]
-    p = dat_e1[ 0, 2: ]
-
-    for i in range( 1, m ):
-        M = dat_r1[ i, 1 ] * 1e10
-        index = dat_r1[ i, 0 ]
-        P1 = dat_r1[ i, 2: ] / tc.mJy
-        P2 = dat_r2[ i, 2: ] / tc.mJy
-
-        F1 = dat_e1[i, 2:]
-        F2 = dat_e2[i, 2:]
-
-        t = "%.2e"%M
-        t = t.split( 'e' )
-        if t[1][0] == '+':
-            t[1] = t[1][1:]
-
-        if i % 2:
-            ss = '--'
-        else:
-            ss = '-'
-
-        #label=r"$[%i]\ %s\times 10^{%s}\,M_\odot$"%(index, t[0], t[1] )
-        if ( i == 1 ):
-            ss = 'k-'
-            label=r"$%s\times 10^{%s}\,M_\odot$"%(t[0], t[1] )
-        else:
-            label = ''
-
-        axs_r[0].loglog( v, P1, ss, label=label )
-        axs_r[1].loglog( v, P2, ss, label=label )
-
-        axs_e[0].loglog( p, F1, ss, label=label )
-        axs_e[1].loglog( p, F2, ss, label=label )
-
-
-    for i in range( 2 ):
-        axs_r[i].legend( framealpha=0.1 )
-        axs_r[i].set_xlabel( r'$\nu \, [\rm MHz]$' )
-        axs_r[i].set_ylabel( r'$S \, [\rm mJy]$' )
-
-
-        #ylim = list(axs_r[i].get_ylim())
-        #ylim[0] = 1e-5
-        #axs_r[i].set_ylim( ylim )
-        axs_r[i].minorticks_off()
-        axs_r[i].locator_params( numticks=10 )
-
-        axs_e[i].legend( framealpha=0.1 )
-        axs_e[i].set_xlabel( r'$p$' )
-        axs_e[i].set_ylabel( r'$F$' )
-
-        axs_e[i].minorticks_off()
-        axs_e[i].locator_params( numticks=10 )
-
-
-    axs_r[0].set_title( r'$S2$' )
-    axs_r[1].set_title( r'$S3$' )
-
-    axs_e[0].set_title( r'$S2$' )
-    axs_e[1].set_title( r'$S3$' )
-
-    if ( len(sys.argv) < 2 ):
-        file_pre = ''
-    else:
-        file_pre = sys.argv[1] + '-'
-
-    fig_r.tight_layout()
-    fig_e.tight_layout()
-
-    fig_r.savefig( output_dir + file_pre + 'rad_spec.pdf' )
-    fig_e.savefig( output_dir + file_pre + 'ele_spec.pdf' )
 
 def fit_f( x, a, b ):
     return x*a + b
 
+sss = [ '-', '--', '-.' ]
 def my_plot0():
 
-    ele_spec_file = data_dir + './EleSpec_0.dat'
+    ele_spec_file =  sys.argv[1]
+    fn_out = sys.argv[2]
 
     dat_e = np.loadtxt( ele_spec_file )
 
@@ -132,10 +41,7 @@ def my_plot0():
         if t[1][0] == '+':
             t[1] = t[1][1:]
 
-        if i % 2:
-            ss = '--'
-        else:
-            ss = '-'
+        ss = sss[ i % len(sss) ]
 
         #label=r"$[%i]\ %s\times 10^{%s}\,M_\odot$"%(index, t[0], t[1] )
         if ( i == 1 ):
@@ -167,13 +73,14 @@ def my_plot0():
 
     fig.tight_layout()
 
-    fig.savefig( figs_dir + 'ele0_spec.pdf', figsize=(5,5) )
+    fig.savefig( fn_out, figsize=(5,5) )
 
 
 def my_plot2():
 
-    rad_spec_file = data_dir + './Spec_0.1_nosr.dat'
-    ele_spec_file = data_dir + './EleSpec_0.1.dat'
+    rad_spec_file = sys.argv[1]
+    ele_spec_file = sys.argv[2]
+    fn_out = sys.argv[3]
 
     dat_r = np.loadtxt( rad_spec_file )
     dat_e = np.loadtxt( ele_spec_file )
@@ -208,7 +115,7 @@ def my_plot2():
         M = dat_r[ i, 1 ]
         index = dat_r[ i, 0 ]
 
-        P = dat_r[ i, 2: ] / tc.mJy
+        P = dat_r[ i, 2: ] / mycc.mJy
         F = dat_e[i, 2:]
 
         t = "%.2e"%M
@@ -216,10 +123,7 @@ def my_plot2():
         if t[1][0] == '+':
             t[1] = t[1][1:]
 
-        if i % 2:
-            ss = '--'
-        else:
-            ss = '-'
+        ss = sss[ i % len(sss) ]
 
         #label=r"$[%i]\ %s\times 10^{%s}\,M_\odot$"%(index, t[0], t[1] )
         if ( i == 1 ):
@@ -228,23 +132,24 @@ def my_plot2():
         y = np.log10( F[ii3:ii5] )
         x = np.log10( p[ii3:ii5] )
         r = curve_fit( fit_f, x, y )
-        print( 'ele: ', r[0], r[1] )
+        #print( 'ele: ', r[0], r[1] )
         alpha_e = r[0][0]
         ele_alphas.append( -alpha_e )
 
         y = np.log10( P[i300:i1400] )
         x = np.log10( v[i300:i1400] )
         r = curve_fit( fit_f, x, y )
-        print( 'rad: ', r[0], r[1] )
+        #print( 'rad: ', i, r[0], r[1] )
         alpha_r = r[0][0]
         rad_alphas.append( -alpha_r )
 
-        label_e = r'$%.2f$'%(-alpha_e)
-        label_r = r'$%.2f$'%(-alpha_r)
+        print( "[alpha] ele: %.2f, rad: %.2f"%(-alpha_e, -alpha_r) )
 
-        if ( i > 6 ):
+        if ( i > 10 ):
             continue
 
+        label_e = r'$%.2f$'%(-alpha_e)
+        label_r = r'$%.2f$'%(-alpha_r)
         axs[0].loglog( p, F, ss, label=label_e )
         axs[1].loglog( v, P, ss, label=label_r )
 
@@ -276,23 +181,23 @@ def my_plot2():
 
     fig.tight_layout()
 
-    fig.savefig( figs_dir + file_pre + 'ele_rad_spec.pdf', figsize=(5,5) )
+    fig.savefig( fn_out, figsize=(5,5) )
 
     #return
-    fig, axs = plt.subplots( 1, 2 )
+    #fig, axs = plt.subplots( 1, 2 )
 
-    axs[0].hist( ele_alphas )
-    axs[1].hist( rad_alphas )
+    #axs[0].hist( ele_alphas )
+    #axs[1].hist( rad_alphas )
 
-    axs[0].set_xlabel( r'$\alpha$' )
-    axs[0].set_ylabel( r'$Number$' )
+    #axs[0].set_xlabel( r'$\alpha$' )
+    #axs[0].set_ylabel( r'$Number$' )
 
-    axs[1].set_xlabel( r'$\alpha_{\rm rad}$' )
-    axs[1].set_ylabel( r'$Number$' )
+    #axs[1].set_xlabel( r'$\alpha_{\rm rad}$' )
+    #axs[1].set_ylabel( r'$Number$' )
 
-    fig.tight_layout()
-    fig.savefig( figs_dir + file_pre + 'ele_rad_spec_index.pdf', figsize=(8,8) )
+    #fig.tight_layout()
+    #fig.savefig( figs_dir + file_pre + 'ele_rad_spec_index.pdf', figsize=(8,8) )
 
 
 my_plot2()
-my_plot0()
+#my_plot0()

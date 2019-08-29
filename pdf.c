@@ -215,7 +215,7 @@ void pdf2d_or_field2d( double *x, double *y, double *w, long num, char *dn,
     }
 
     create_dir( "%s%s", OutputDir, dn );
-    sprintf( buf, "%s/%s_%03i.dat", buf, dn, SnapIndex );
+    sprintf( buf, "%s%s/%s_%03i.dat", OutputDir, dn, dn, SnapIndex );
 
     img_xmin = xmin;
     img_xmax = xmax;

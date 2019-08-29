@@ -9,9 +9,6 @@ void init_analysis() {
     Sproj = All.ProjectDirection + 'x';
     PicSize2 = SQR( All.PicSize );
 
-    if ( All.RadSpec ) {
-        compute_particle_radio();
-    }
     do_sync( "" );
 
     slice_init();
@@ -51,6 +48,10 @@ void analysis(){
     part_info();
 
 //    endrun(20190625);
+
+    if ( All.RadSpec ) {
+        compute_particle_radio();
+    }
 
     if ( ThisTask_Local == 0 ) {
         if ( All.TemperatureSlice ||

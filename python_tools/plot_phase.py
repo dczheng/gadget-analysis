@@ -6,29 +6,31 @@ import matplotlib.ticker as tik
 #matplotlib.style.use( 'default' )
 
 ds = [ np.loadtxt( sys.argv[i+1] ) for i in range(4) ]
-# 0: d1, 1:d2_cre, 2:d2, 3:d2_cre
+# 0: d1, 1:d1_cre, 2:d2, 3:d2_cre
 hs = []
 
 for i in range(4):
     hs.append( ds[i][0,:] )
     ds[i] = ds[i][1:,:]
 
-zs = [hs[0][10], hs[2][10]]
-if zs[0] != hs[1][10] or zs[1] != hs[3][10]:
-    print( "error" )
+zs = [hs[0][0], hs[2][0]]
+if zs[0] != hs[1][0] or zs[1] != hs[3][0]:
+    print( "error1" )
     exit()
 
-xmin, xmax, ymin, ymax = hs[0][1:5] 
+print( zs )
+
+xmin, xmax, xlog, ymin, ymax, ylog = hs[0][1:7] 
 m, n = ds[i].shape
 for h in hs:
     mm, nn = ds[i].shape
     if xmin != hs[i][1] or \
        xmax != hs[i][2] or \
-       ymin != hs[i][3] or \
-       ymax != hs[i][4] or\
+       ymin != hs[i][4] or \
+       ymax != hs[i][5] or\
        m != mm or\
        n != nn:
-       print( "error" )
+       print( "error2" )
        exit()
 
 Nmin = 1e5
@@ -38,6 +40,7 @@ Errmin = 1e-2
 err_lognorm = 1
 zfmt = r'$z:%.0f$'
 
+#ds = [ ds[1], ds[0], ds[3], ds[2] ]
 for i in range(2):
     index = np.where( ds[i*2] < Nmin )
     t1 = ds[i*2].copy()

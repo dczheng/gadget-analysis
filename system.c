@@ -9,7 +9,7 @@ void create_dir0( char *s ) {
 
     if ( ThisTask_Master == 0 ){
         if ( access( s, 0 ) == -1 ){
-            writelog( "create directory `%s` by Master 0\n", s );
+            writelog( "`%s` is created by Master 0\n", s );
 
             if ( mkdir( s, 0755) == -1 )
                 endrun0( "failed create directory %s.\n", s );
