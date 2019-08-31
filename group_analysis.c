@@ -862,7 +862,7 @@ void group_gas_ratio() {
     fclose( fd );
 }
 
-void group_analysis() {
+void group_plot() {
 
     long *npart, p;
     struct group_properties g;
@@ -1141,8 +1141,22 @@ void group_analysis() {
 
     }
 
-
     put_sep0;
+
+    reset_img();
+
+}
+
+void group_analysis() {
+
+    int proj_tmp[3], i;
+    char Sproj_tmp;
+
+    for( i=0; i<3; i++ )
+        proj_tmp[i] = Proj[i];
+    Sproj_tmp = Sproj;
+
+    group_plot();
 
     if ( All.GroupEleSpec )
         group_electron_spectrum();

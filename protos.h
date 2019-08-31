@@ -6,6 +6,26 @@ void free_conv_kernel();
 void conv( double ds );
 
 
+//%------>>>>>>file : group_analysis.c
+//%
+int group_present( long index );
+double group_luminosity( int nu_index, long index );
+inline double get_group_size( struct group_properties *g );
+void group_flux( int nu_index, long index, double *flux, double *flux_nosr );
+double particle_f( SphParticleData *part, double p );
+void group_electron_spectrum();
+void group_spectrum();
+void group_spectrum_index();
+int group_filed_present( enum group_fields blk );
+void get_group_filed_name( enum group_fields blk, char *buf );
+void check_group_flag();
+void group_temp_profile();
+void group_temp_stack();
+void group_gas_ratio();
+void group_plot();
+void group_analysis();
+
+
 //%------>>>>>>file : tree.c
 //%
 void tree_allocate();
@@ -31,30 +51,25 @@ void pre_proc();
 void check_data( int err );
 
 
+//%------>>>>>>file : part_radio.c
+//%
+double particle_df( double p, void *params );
+double particle_radio2( double nu,  SphParticleData *part );
+double particle_radio( double nu, long i );
+void save_particle_radio();
+int read_particle_radio();
+void compute_particle_radio();
+void free_particle_radio();
+void d2PdVdv_qmax();
+void output_radio_inte();
+void test_part_radio();
+
+
 //%------>>>>>>file : analysis.c
 //%
 void init_analysis();
 void free_analysis();
 void analysis();
-
-
-//%------>>>>>>file : group_analysis.c
-//%
-int group_present( long index );
-double group_luminosity( int nu_index, long index );
-inline double get_group_size( struct group_properties *g );
-void group_flux( int nu_index, long index, double *flux, double *flux_nosr );
-double particle_f( SphParticleData *part, double p );
-void group_electron_spectrum();
-void group_spectrum();
-void group_spectrum_index();
-int group_filed_present( enum group_fields blk );
-void get_group_filed_name( enum group_fields blk, char *buf );
-void check_group_flag();
-void group_temp_profile();
-void group_temp_stack();
-void group_gas_ratio();
-void group_analysis();
 
 
 //%------>>>>>>file : part_info.c
@@ -199,20 +214,6 @@ void empty_sig_buf();
 void init_sig();
 
 
-//%------>>>>>>file : part_radio.c
-//%
-double particle_df( double p, void *params );
-double particle_radio2( double nu,  SphParticleData *part );
-double particle_radio( double nu, long i );
-void save_particle_radio();
-int read_particle_radio();
-void compute_particle_radio();
-void free_particle_radio();
-void d2PdVdv_qmax();
-void output_radio_inte();
-void test_part_radio();
-
-
 //%------>>>>>>file : main.c
 //%
 void init_sep_str();
@@ -273,6 +274,10 @@ void read_snapshot();
 //%------>>>>>>file : temp.c
 //%
 void compute_temperature();
+
+
+//%------>>>>>>file : allvars.c
+//%
 
 
 //%------>>>>>>file : slice.c

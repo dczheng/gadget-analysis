@@ -10,10 +10,12 @@ def gen_add_params():
 
     lines = ''.join(open( 'allvars.h' ).readlines())
     
-    i, j = re.search( 'GlobalParams.*GlobalParams;', lines, re.DOTALL ).span()
-    s = lines[i+1:j-1]
-    i, j = re.search( '\{.*\}', s, re.DOTALL ).span()
-    s = s[i+1:j-1]
+    x = re.search( 'GlobalParams(.*)GlobalParams;', lines, re.DOTALL )
+    s = x.group(1)
+
+    x = re.search( '\{(.*)\}', s, re.DOTALL )
+    s = x.group(1)
+
     s = ''.join( ''.join(s).split() )
     s = s.split( ';' )[:-1]
     
@@ -55,8 +57,8 @@ def gen_allvars():
 
     lines = ''.join(open( 'allvars.h' ).readlines())
     
-    i, j = re.search( 'extern_start.*extern_end', lines, re.DOTALL ).span()
-    s = lines[i:j]
+    x = re.search( '//extern_start(.*)//extern_end', lines, re.DOTALL )
+    s = x.group(1)
     s = s.split( 'extern' )
     f = open( 'allvars.c', 'w' )
     f.write( '#include "allvars.h"\n\n' )
@@ -181,6 +183,7 @@ def make_protos():
     ff.close()
 
 
-make_protos()
+gen_allvars_aux()
+#make_protos()
 gen_add_params()
 gen_allvars()

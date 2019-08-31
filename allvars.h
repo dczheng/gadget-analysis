@@ -401,7 +401,7 @@ extern long
             *ConvKernel,
             *id_to_index, NumPart, N_Gas, OffsetPart6[6], NumPart6[6] ;
 extern int 
-            proj_i, proj_j, proj_k, SnapIndex,
+            Proj[3], SnapIndex,
             PicSize, PicSize2,
             Ngroups,
             ThisTask, NTask, MasterTask, ThisTask_Local, NTask_Local,
@@ -411,7 +411,7 @@ extern int
 
 extern char 
             Sproj,
-         GroupDir[ MYFILENAME_MAX ],
+            GroupDir[ MYFILENAME_MAX ],
             OutputDir[ MYFILENAME_MAX ],
             sep_str[ SEP_LEN ], sep_str0[ SEP_LEN0 ],
             *ToolsPath ;
@@ -439,6 +439,10 @@ extern double
             *PartRad, *KernelMat2D[6], *KernelMat3D[6] ;
 extern gsl_integration_workspace *inte_ws;
 //extern_end
+
+#define proj_i Proj[0]
+#define proj_j Proj[1]
+#define proj_k Proj[2]
 
 #include "protos.h"
 #include "auxfuns.h"

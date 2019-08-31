@@ -15,6 +15,10 @@ h = d[ 0, : ]
 d = d[ 1:, : ]
 m, n = d.shape
 
+#r = 0 
+#d[ d<d.max()*r ] = 0
+#print( "remove the value below max*%e"%r )
+
 z = h[0]
 xmin = h[1]
 xmax = h[2]
