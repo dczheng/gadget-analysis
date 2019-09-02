@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import re
+import sys
     
 debug = 0
 def myprint( s ):
@@ -10,12 +11,10 @@ def gen_add_params():
 
     lines = ''.join(open( 'allvars.h' ).readlines())
     
-    x = re.search( 'GlobalParams(.*)GlobalParams;', lines, re.DOTALL )
-    s = x.group(1)
-
-    x = re.search( '\{(.*)\}', s, re.DOTALL )
-    s = x.group(1)
-
+    i, j = re.search( 'GlobalParams.*GlobalParams;', lines, re.DOTALL ).span()
+    s = lines[i+1:j-1]
+    i, j = re.search( '\{.*\}', s, re.DOTALL ).span()
+    s = s[i+1:j-1]
     s = ''.join( ''.join(s).split() )
     s = s.split( ';' )[:-1]
     
@@ -57,8 +56,8 @@ def gen_allvars():
 
     lines = ''.join(open( 'allvars.h' ).readlines())
     
-    x = re.search( '//extern_start(.*)//extern_end', lines, re.DOTALL )
-    s = x.group(1)
+    i, j = re.search( 'extern_start.*extern_end', lines, re.DOTALL ).span()
+    s = lines[i:j]
     s = s.split( 'extern' )
     f = open( 'allvars.c', 'w' )
     f.write( '#include "allvars.h"\n\n' )
@@ -182,8 +181,21 @@ def make_protos():
         ff.write( '\n\n' )
     ff.close()
 
+def main():
+    if len(sys.argv) == 1:
+        gen_allvars()
+        make_protos()
+        gen_add_params()
+        return
+    flag = int( sys.argv[1] )
 
-gen_allvars_aux()
-#make_protos()
-gen_add_params()
-gen_allvars()
+    if flag == 1:
+        gen_allvars()
+
+    if flag == 2:
+        gen_add_params()
+
+    if flag == 3:
+        make_protos()
+
+main()

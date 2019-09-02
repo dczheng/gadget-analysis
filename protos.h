@@ -128,6 +128,10 @@ double second();
 void task_sync_test( char *s );
 
 
+//%------>>>>>>file : allvars.c
+//%
+
+
 //%------>>>>>>file : correlation.c
 //%
 void set_global_vars();
@@ -274,10 +278,6 @@ void read_snapshot();
 //%------>>>>>>file : temp.c
 //%
 void compute_temperature();
-
-
-//%------>>>>>>file : allvars.c
-//%
 
 
 //%------>>>>>>file : slice.c

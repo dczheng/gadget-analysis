@@ -75,7 +75,7 @@ void total_radio_spectrum() {
         flux[i] *= tmp;
 
     create_dir( "%sTotalSpec", OutputDir );
-    fd = myfopen( "w", "%s/TotalSpc/Spec_Tot_%03i.dat", OutputDir, SnapIndex );
+    fd = myfopen( "w", "%s/TotalSpec/Spec_Tot_%03i.dat", OutputDir, SnapIndex );
     for( i=0; i<Nnu; i++ )
         fprintf( fd, "%g %g\n", exp(log(numin) + i * dnu), flux[i] );
     fclose( fd );

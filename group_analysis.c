@@ -864,9 +864,9 @@ void group_gas_ratio() {
 
 void group_plot() {
 
-    long *npart, p;
+    long p;
     struct group_properties g;
-    double L, dL, *mass, B, PP, nu, n, e, r200,
+    double L, dL, *mass, B, PP, n, e, r200,
             lum_dis, com_dis;// com_dis, lum_dis, h, ang;
     int *num, g_index, i, j, x, y,
          xo, yo, pic_index, ii, jj;
@@ -929,20 +929,24 @@ void group_plot() {
 
         }
 
-        writelog( "analysis group: %i ...\n", g_index );
+        writelog( "group plot[%c]: %i ...\n", Sproj, g_index );
 
+//#define PRINT_GROUP_INFO
         g = Gprops[g_index];
+
+#ifdef PRINT_GROUP_INFO
         writelog( "center of mass: %g %g %g\n",
                 g.cm[0], g.cm[1], g.cm[2] );
+#endif
 
         p = g.Head;
         mass = g.mass_table;
-        npart = g.npart;
         r200 = g.vr200;
 
+#ifdef PRINT_GROUP_INFO
         writelog( "npart: " );
         for ( i=0; i<6; i++ )
-            writelog( "%li ", npart[i] );
+            writelog( "%li ", g.npart[i] );
         writelog( "\n" );
 
         writelog( "mass: " );
@@ -950,6 +954,7 @@ void group_plot() {
             mass[i] *= 1e10;
             writelog( "%g ", mass[i] );
         }
+#endif
 
         if ( !All.GroupFixedSize ) {
             L = 0;
@@ -963,8 +968,10 @@ void group_plot() {
 
         //L = get_group_size( &g ) * 1.1;
         dL = 2 * L / PicSize;
+#ifdef PRINT_GROUP_INFO
         writelog( "\n" );
         writelog( "L: %g, dL:%g\n", 2*L, dL );
+#endif
 
         p = g.Head;
         for ( i=0; i<g.Len; i++, p=FoFNext[p] ) {
@@ -1042,7 +1049,6 @@ void group_plot() {
             }
 
             if ( group_filed_present( GROUP_RAD ) ) {
-                nu = All.Freq * 1e6;
                 //PP = particle_radio( nu, p );
                 PP = PartRad[ p * All.NuNum];
                 data[GROUP_RAD][pic_index] += PP * SphP[p].Density;
@@ -1156,7 +1162,17 @@ void group_analysis() {
         proj_tmp[i] = Proj[i];
     Sproj_tmp = Sproj;
 
-    group_plot();
+    for( i=0; i<3; i++ ) {
+        proj_k = i;
+        proj_i = ( i + 1  ) % 3;
+        proj_j = ( i + 2  ) % 3;
+        Sproj = i + 'x';
+        group_plot();
+    }
+
+    for( i=0; i<3; i++ )
+        Proj[i] = proj_tmp[i];
+    Sproj = Sproj_tmp;
 
     if ( All.GroupEleSpec )
         group_electron_spectrum();
@@ -1178,7 +1194,6 @@ void group_analysis() {
         group_gas_ratio();
 
     reset_img();
-
     put_sep0;
 
 }
