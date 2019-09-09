@@ -13,7 +13,7 @@
         sprintf( buf, fmt, ##__VA_ARGS__ );\
         fd = fopen( buf, opt );\
         if ( NULL == fd ) {\
-            printf( "can not open `%s`.", buf );\
+            printf( "can not open `%s`.\n", buf );\
             endrun(20190826);\
         }\
     }while(0);\
@@ -204,20 +204,22 @@ writelog( "[Timer Start in `%s`]\n", __FUNCTION__ ); \
 #define mytimer_end() \
     writelog( "[Total Time in `%s`]: [%g sec]\n", __FUNCTION__, second() - timer1 ); \
 
-#define PDF2D_BIT_MODE     1 
-#define PDF2D_BIT_XLOG     2 
-#define PDF2D_BIT_YLOG     4 
-#define PDF2D_BIT_FIXEDX   8 
-#define PDF2D_BIT_FIXEDY   16 
-#define PDF2D_BIT_NORM     32 
+#define PDF2D_BIT_MODE          1 
+#define PDF2D_BIT_XLOG          2 
+#define PDF2D_BIT_YLOG          4 
+#define PDF2D_BIT_FIXEDX        8 
+#define PDF2D_BIT_FIXEDY        16 
+#define PDF2D_BIT_NORM          32 
+#define PDF2D_BIT_UNIT_AREA     64 
 
 #define pdf2d( x, y, w, num, dn, flag, mm ) {\
-    flag = (flag>>1) << 1;\
+    if ( flag & PDF2D_BIT_MODE ) \
+        flag -= PDF2D_BIT_MODE;\
     pdf2d_or_field2d( x, y, w, num, dn, flag, mm, 0 );\
 }
 
 #define field2d( x, y, z, num, dn, flag, mm, Nmin ) {\
-    flag = (flag>>1) << 1;\
-    flag |= PDF2D_BIT_MODE;\
+    if ( !(flag & PDF2D_BIT_MODE) ) \
+        flag += PDF2D_BIT_MODE;\
     pdf2d_or_field2d( x, y, z, num, dn, flag, mm, Nmin );\
 }

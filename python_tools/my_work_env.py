@@ -166,5 +166,5 @@ def make_log_ticks( xmin, xmax, n, a=1, axis=None ):
         axis.set_major_formatter( fmt )
     return ( loc, fmt )
 
-def set_tick_params( ax, ls, axis='both' ):
-    ax.tick_params( axis=axis, direction='in', pad=5, labelsize=ls )
+def set_tick_params( ax, ls, axis='both', pad=5 ):
+    ax.tick_params( axis=axis, direction='in', pad=pad, labelsize=ls )

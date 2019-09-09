@@ -455,7 +455,6 @@ int group_filed_present( enum group_fields blk ) {
                 return 1;
             return 0;
         case GROUP_RAD:
-        case GROUP_RADP:
             if ( All.GroupRad )
                 return 1;
             return 0;
@@ -501,9 +500,6 @@ void get_group_filed_name( enum group_fields blk, char *buf ) {
             break;
         case GROUP_RAD:
             strcpy( buf, "Radio" );
-            break;
-        case GROUP_RADP:
-            strcpy( buf, "RadioP" );
             break;
     }
 }
@@ -866,10 +862,9 @@ void group_plot() {
 
     long p;
     struct group_properties g;
-    double L, dL, *mass, B, PP, n, e, r200,
-            lum_dis, com_dis;// com_dis, lum_dis, h, ang;
+    double L, dL, *mass, B, PP, n, e, r200, dlognu, nu_x; 
     int *num, g_index, i, j, x, y,
-         xo, yo, pic_index, ii, jj;
+         xo, yo, pic_index, ii, jj, nu_i;
 
     char buf[100], buf1[100];
     double *data[GROUP_FILED_NBLOCKS];
@@ -878,6 +873,8 @@ void group_plot() {
     y = proj_j;
     xo = PicSize / 2;
     yo = PicSize / 2;
+
+    dlognu = log( All.NuMax/ All.NuMin ) / ( All.NuNum );
 
     mymalloc2( num, PicSize2 * sizeof( int ) );
 
@@ -1035,9 +1032,12 @@ void group_plot() {
             }
 
             if ( group_filed_present( GROUP_CREE ) ) {
+                /*
                 e = SphP[p].CRE_e * SphP[p].Density;
                 e /= g2c.erg / CUBE( g2c.cm );
                 data[GROUP_CREE][pic_index] += e * SphP[p].Density;
+                */
+                data[GROUP_CREE][pic_index] += SphP[p].CRE_e / SphP[p].u * SphP[p].Density;
             }
 
             if ( group_filed_present( GROUP_CREQMIN ) ) {
@@ -1050,7 +1050,17 @@ void group_plot() {
 
             if ( group_filed_present( GROUP_RAD ) ) {
                 //PP = particle_radio( nu, p );
-                PP = PartRad[ p * All.NuNum];
+                nu_x = log(All.GroupRadFreq / All.NuMin) / dlognu;
+                nu_i = nu_x;
+                nu_x -= nu_i;
+                if ( nu_i >= All.NuNum-1 )
+                    PP = PartRad[p * All.NuNum + All.NuNum-1];
+                else if ( nu_i <= 0 )
+                    PP = PartRad[p * All.NuNum];
+                else  {
+                    PP = PartRad[p * All.NuNum+nu_i] * ( 1-nu_x ) +
+                         PartRad[p * All.NuNum+nu_i+1] * nu_x;
+                }
                 data[GROUP_RAD][pic_index] += PP * SphP[p].Density;
             }
 
@@ -1066,9 +1076,6 @@ void group_plot() {
                     continue;
                 if ( j==GROUP_DENS )
                     continue;
-                if ( j==GROUP_RADP )
-                    continue;
-
                 data[j][i] /= data[GROUP_DENS][i];
 
             }
@@ -1100,7 +1107,9 @@ void group_plot() {
 
             if ( !group_filed_present( i ) )
                 continue;
-            if( i== GROUP_RADP) continue;
+
+            if ( i == GROUP_RAD )
+                continue;
 
             image.img = data[i];
             //conv( dL );
@@ -1110,26 +1119,19 @@ void group_plot() {
 
         }
 
-        if ( group_filed_present( GROUP_RADP ) )
+        if ( group_filed_present( GROUP_RAD ) )
             if ( Redshift > 1e-10 ) {
-                lum_dis = luminosity_distance( Time ) * ( g2c.cm );
-                com_dis = comoving_distance( Time );
-     //           printf( "z:%g lum_dis: %g\n", Redshift, lum_dis);
-     //
-                //ang_dis = angular_distance( Time );
-                //h = SofteningTable[0];
-                //ang = h / com_dis / PI * 180;
-                //
                 for ( i=0; i<SQR(PicSize); i++ ) {
-                    data[GROUP_RADP][i]  = data[GROUP_RAD][i] / ( 4 * PI * SQR( lum_dis ) ) * 1e23 * CUBE( KPC ) * 1e3;
+                    data[GROUP_RAD][i]  = data[GROUP_RAD][i] / ( 4 * PI * SQR( LumDis*g2c.cm ) )
+                                          / SQR( dL / ComDis ) ;
                 }
 
-                img_xmin =  -L / com_dis / PI * 180 * 60;
-                img_xmax =  L / com_dis / PI * 180 * 60;
-                img_ymin =  -L / com_dis / PI * 180 * 60;
-                img_ymax =  L / com_dis / PI * 180 * 60;
-                image.img = data[GROUP_RADP];
-                get_group_filed_name( GROUP_RADP, buf1 );
+                img_xmin =  -L / ComDis / PI * 180 * 60;
+                img_xmax =   L / ComDis / PI * 180 * 60;
+                img_ymin =  -L / ComDis / PI * 180 * 60;
+                img_ymax =   L / ComDis / PI * 180 * 60;
+                image.img = data[GROUP_RAD];
+                get_group_filed_name( GROUP_RAD, buf1 );
                 make_group_output_filename( buf, buf1, g_index );
                 write_img( buf, buf1 );
 

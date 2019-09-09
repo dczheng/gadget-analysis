@@ -18,6 +18,7 @@ void phase() {
     flag = 0;
     flag |= PDF2D_BIT_XLOG;
     flag |= PDF2D_BIT_YLOG;
+    flag |= PDF2D_BIT_UNIT_AREA;
 
     if ( All.PhaseDensMin > 0 || 
             All.PhaseDensMax > 0 ) {

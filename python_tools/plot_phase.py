@@ -34,10 +34,10 @@ for h in hs:
        exit()
 
 Nmin = 1e5
-contour_levles = [ 1e4, 1e5, 1e6, 5e6 ]
+contour_levles = [ 1e4, 1e5, 1e6, 2e6 ]
 print( "contour levels: ", contour_levles )
 Errmin = 1e-2
-err_lognorm = 1
+err_lognorm = 0
 zfmt = r'$z:%.0f$'
 
 #ds = [ ds[1], ds[0], ds[3], ds[2] ]
@@ -107,8 +107,13 @@ cmap1 = cm.jet
 #cmap2 = cm.viridis
 #cmap2 = cm.tab20
 #cmap2 = cm.tab10
-#cmap2 = cm.seismic
-cmap2 = cm.nipy_spectral
+cmap2 = cm.PiYG
+cmap2 = plt.get_cmap( 'ds9a' )
+cmap2 = plt.get_cmap( 'ds9b' )
+cmap2 = plt.get_cmap( 'ds9cool' )
+cmap2 = plt.get_cmap( 'ds9he' )
+cmap2 = cm.PRGn
+cmap2 = cm.seismic
 cmaps = [ cmap1, cmap2, cmap1, cmap2 ]
 
 norm1 = mplc.LogNorm()
@@ -162,7 +167,7 @@ font.set_size( 'xx-large' )
 font.set_weight('medium')
 
 fx = [ x3*0.4, (n-x3)*0.1+x3, n*0.2, n*0.85 ]
-fy = [ y5*0.1, y5*0.3, (y7-y5)*0.6+y5, (m-y7)*0.3+y7 ]
+fy = [ y5*0.1, y5*0.3, (y7-y5)*0.6+y5, (m-y7)*0.5+y7 ]
 ft = [ 'Diffuse', 'Condensed', 'Warm-hot', 'Hot' ]
 
 for i in range(4):
@@ -188,6 +193,8 @@ for i in range(4):
 
     img = axs[i].imshow( ds[i], norm=norms[i], cmap=cmaps[i] )
     plt.colorbar( img, cax=axs_cbar[i] )
+    if i % 2 == 0:
+        axs_cbar[i].set_ylabel( r'$\rm {N}/[{dlog(\rho)dlog(T)}]$', fontsize=25 )
 
     if i > 1:
         axs[i].xaxis.set_major_locator( xloc )

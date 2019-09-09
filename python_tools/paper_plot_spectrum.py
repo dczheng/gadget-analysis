@@ -6,7 +6,7 @@ from scipy.optimize import curve_fit
 def fit_f( x, a, b ):
     return x*a + b
 
-sss = [ '-', '--', '-.' ]
+sss = [ '-', '--', '-.'  ]
 def my_plot0():
 
     ele_spec_file =  sys.argv[1]
@@ -25,7 +25,8 @@ def my_plot0():
     t = np.abs(p-1e3)
     ii3 = np.where( t == t.min() )[0][0]
     t = np.abs(p-1e5)
-    ii5 = np.where( t == t.min() )[0][0]
+    #ii5 = np.where( t == t.min() )[0][0]
+    ii5 = -1
 
     print( "ii3: %i [%g], ii5: %i [%g]"%(ii3, p[ii3], ii5, p[ii5] ) )
 
@@ -55,7 +56,7 @@ def my_plot0():
 
         label_e = r'$%.2f$'%(-alpha_e)
 
-        if ( i > 10 ):
+        if ( i > 20 ):
             continue
 
         ax.loglog( p, F, ss, label=label_e )
@@ -103,7 +104,8 @@ def my_plot2():
     t = np.abs(p-1e3)
     ii3 = np.where( t == t.min() )[0][0]
     t = np.abs(p-1e5)
-    ii5 = np.where( t == t.min() )[0][0]
+    ii5 = -1
+    #ii5 = np.where( t == t.min() )[0][0]
 
     print( "ii3: %i [%g], ii5: %i [%g]"%(ii3, p[ii3], ii5, p[ii5] ) )
 
@@ -148,8 +150,8 @@ def my_plot2():
         if ( i > 10 ):
             continue
 
-        label_e = r'$%.2f$'%(-alpha_e)
-        label_r = r'$%.2f$'%(-alpha_r)
+        label_e = r'$G_{%i}:\,%.2f$'%(i, -alpha_e)
+        label_r = r'$G_{%i}:\,%.2f$'%(i, -alpha_r)
         axs[0].loglog( p, F, ss, label=label_e )
         axs[1].loglog( v, P, ss, label=label_r )
 

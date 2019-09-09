@@ -87,5 +87,12 @@ void check_flag() {
     A_NEED_B( All.GroupGasRatio, All.Group );
     A_NEED_B( All.HsmlTPdf, All.ReadHsml );
     A_NEED_B( All.UTPdf, All.Readu );
+    A_NEED_B( All.GroupCre, All.Readu );
+
+    A_NEED_B( All.CREeSlice, All.Readu );
+    A_NEED_B( All.CREeSlice, All.ReadCre );
+    A_NEED_B( All.MachSlice, All.ReadMach );
+    A_NEED_B( All.BSlice, All.ReadB );
+
 
 }

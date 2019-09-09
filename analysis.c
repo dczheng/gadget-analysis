@@ -87,6 +87,10 @@ void analysis(){
             cren_slice();
         }
 
+        if ( All.CREeSlice ) {
+            cree_slice();
+        }
+
         if ( All.BPdf ) {
             B_Pdf();
         }

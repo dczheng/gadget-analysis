@@ -48,7 +48,7 @@ double particle_radio2( double nu,  SphParticleData *part ) {
             params[3] == 0 )
         return 0;
 
-    B = pow( part->B[0], 2 ) + pow( part->B[1], 2 ) + pow( part->B[2], 2 );
+    B = SQR(part->B[0]) + SQR(part->B[1]) + SQR(part->B[2]);
     B = sqrt( B );
 
     /*

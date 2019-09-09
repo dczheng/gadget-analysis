@@ -6,6 +6,28 @@ void free_conv_kernel();
 void conv( double ds );
 
 
+//%------>>>>>>file : pdf.c
+//%
+void B_Pdf();
+void dens_pdf();
+void T_pdf();
+void pdf2d_or_field2d( double *x, double *y, double *w, long num, char *dn,int flag, double *mm, int Nmin );
+void cren_T_pdf();
+void hsml_T_pdf();
+void u_T_pdf();
+void hsml_dens_pdf();
+
+
+//%------>>>>>>file : tree.c
+//%
+void tree_allocate();
+void tree_free();
+void tree_build_single();
+void tree_walk_recursive( long n, long sib, long father );
+void tree_walk_test();
+void tree_build();
+
+
 //%------>>>>>>file : group_analysis.c
 //%
 int group_present( long index );
@@ -24,16 +46,6 @@ void group_temp_stack();
 void group_gas_ratio();
 void group_plot();
 void group_analysis();
-
-
-//%------>>>>>>file : tree.c
-//%
-void tree_allocate();
-void tree_free();
-void tree_build_single();
-void tree_walk_recursive( long n, long sib, long father );
-void tree_walk_test();
-void tree_build();
 
 
 //%------>>>>>>file : pre_proc.c
@@ -63,13 +75,6 @@ void free_particle_radio();
 void d2PdVdv_qmax();
 void output_radio_inte();
 void test_part_radio();
-
-
-//%------>>>>>>file : analysis.c
-//%
-void init_analysis();
-void free_analysis();
-void analysis();
 
 
 //%------>>>>>>file : part_info.c
@@ -128,10 +133,6 @@ double second();
 void task_sync_test( char *s );
 
 
-//%------>>>>>>file : allvars.c
-//%
-
-
 //%------>>>>>>file : correlation.c
 //%
 void set_global_vars();
@@ -180,16 +181,19 @@ void fof_read();
 void fof();
 
 
-//%------>>>>>>file : pdf.c
+//%------>>>>>>file : analysis.c
 //%
-void B_Pdf();
-void dens_pdf();
-void T_pdf();
-void pdf2d_or_field2d( double *x, double *y, double *w, long num, char *dn,int flag, double *mm, int Nmin );
-void cren_T_pdf();
-void hsml_T_pdf();
-void u_T_pdf();
-void hsml_dens_pdf();
+void init_analysis();
+void free_analysis();
+void analysis();
+
+
+//%------>>>>>>file : cre.c
+//%
+double beta_inte( double x, void *params );
+double beta( double a, double b, double x );
+void compute_cre_pressure();
+void cre_pressure_pdf();
 
 
 //%------>>>>>>file : powerspec.c
@@ -230,27 +234,18 @@ void merge_log_file();
 int main( int argc, char *argv[] );
 
 
-//%------>>>>>>file : cre.c
-//%
-double beta_inte( double x, void *params );
-double beta( double a, double b, double x );
-void compute_cre_pressure();
-void cre_pressure_pdf();
-
-
 //%------>>>>>>file : phase.c
 //%
 void phase();
 
 
+//%------>>>>>>file : allvars.c
+//%
+
+
 //%------>>>>>>file : set_units.c
 //%
 void set_units();
-
-
-//%------>>>>>>file : check_flag.c
-//%
-void check_flag();
 
 
 //%------>>>>>>file : field.c
@@ -280,16 +275,22 @@ void read_snapshot();
 void compute_temperature();
 
 
+//%------>>>>>>file : check_flag.c
+//%
+void check_flag();
+
+
 //%------>>>>>>file : slice.c
 //%
 void slice_init();
-void make_slice_img( int pt, double *data, long NPart );
-void field_slice( int pt, double *data, char *name, long N );
+void make_slice_img( int pt, double *data, long NPart, double *weight );
+void field_slice( int pt, double *data, char *name, long N, double *weight );
 void mag_slice();
 void mach_slice();
 void density_slice();
 void temperature_slice();
 void cren_slice();
+void cree_slice();
 void radio_slice();
 
 

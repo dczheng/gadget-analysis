@@ -173,6 +173,9 @@ void pdf2d_or_field2d( double *x, double *y, double *w, long num, char *dn,
     dy = ( ymax - ymin ) / ( N-1 );
     area = dx * dy;
 
+    writelog( "[%s], dx: %g ,dy: %g, area: %g\n", __FUNCTION__,
+        dx, dy, area );
+
     for( p=0; p<N_Gas; p++ ) {
         i = ( y[p] - ymin ) / dy;
         j = ( x[p] - xmin ) / dx;
@@ -203,8 +206,9 @@ void pdf2d_or_field2d( double *x, double *y, double *w, long num, char *dn,
                 image.img[p] = 0;
     }
     else {
-        for( p=0; p<N2; p++ )
-            image.img[p] /=  area;
+        if ( flag & PDF2D_BIT_UNIT_AREA )
+            for( p=0; p<N2; p++ )
+                image.img[p] /=  area;
 
         if ( flag & PDF2D_BIT_NORM ) {
             for( s=0,p=0; p<N2; p++ )

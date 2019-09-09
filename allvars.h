@@ -146,8 +146,7 @@ enum group_fields {
     GROUP_CREALPHA,
     GROUP_CREQMIN,
     GROUP_CREQMAX,
-    GROUP_RAD,
-    GROUP_RADP
+    GROUP_RAD
 };
 
 struct radio_inte_struct{
@@ -221,6 +220,7 @@ typedef struct GlobalParams{
         GroupTempProfile,
         MachSlice,
         BSlice, UnitAreaSlice, CREnSlice, RadSlice,
+        CREeSlice,
         GroupRad, GroupSpec, TotSpec,
         Phase, DensitySlice, TemperatureSlice,
         KernelInterpolation,
@@ -269,7 +269,8 @@ typedef struct GlobalParams{
             TreeAllocFactor, LinkLength,
             UnitLength_in_cm,
             Sigma8,
-            ConvSigma, NuMin, NuMax, GroupMassMin, Freq,
+            ConvSigma, NuMin, NuMax, GroupMassMin, GroupRadFreq,
+            RadSliceFreq,
             QMin, QMax, MFMmin, MFMmax, MFMSplit,
             PhaseTempMin, 
             PhaseTempMax,
