@@ -119,7 +119,7 @@ def my_plot2():
 
         P = dat_r[ i, 2: ] / mycc.mJy
         F = dat_e[i, 2:]
-
+#
         t = "%.2e"%M
         t = t.split( 'e' )
         if t[1][0] == '+':
@@ -154,6 +154,7 @@ def my_plot2():
         label_r = r'$G_{%i}:\,%.2f$'%(i, -alpha_r)
         axs[0].loglog( p, F, ss, label=label_e )
         axs[1].loglog( v, P, ss, label=label_r )
+        #print( axs[1].get_xlim() )
 
 
     for i in range( 2 ):

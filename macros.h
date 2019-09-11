@@ -223,3 +223,5 @@ writelog( "[Timer Start in `%s`]\n", __FUNCTION__ ); \
         flag += PDF2D_BIT_MODE;\
     pdf2d_or_field2d( x, y, z, num, dn, flag, mm, Nmin );\
 }
+
+#define get_index( i, j, k, N ) ( ((i)*(N)+(j))*(N)+(k) )

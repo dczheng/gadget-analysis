@@ -613,7 +613,6 @@ void check_data( int err ) {
             endrun(20181107);
         }
 
-
     writelog( "Check data ... done.\n" );
     put_sep0;
 

@@ -90,6 +90,77 @@ void free_group_particle_spectrum() {
 }
 */
 
+/*
+void group_luminosity( int nu_index, long index, double *lumgrid, double *num ) {
+
+    long p;
+    int x[3], i, c, ii;
+    struct group_properties *g;
+    double L, dL, dL3;
+
+    memset( lumgrid, 0, sizeof(double) * CUBE(All.GroupLumGrid) );
+    memset( num, 0, sizeof(double) * CUBE(All.GroupLumGrid) );
+    g = &Gprops[index];
+    p = g->Head;
+    c = All.GroupLumGrid / 2;
+
+    L = 0;
+    for(i=0; i<3; i++)
+       L = vmax( L, g->size[i] );
+
+    L *= 1.01;
+    dL = 2 * L / All.GroupLumGrid;
+    dL3 = CUBE(dL * Time * g2c.cm);
+
+    while( p >= 0 ) {
+
+        if ( P[p].Type != 0 ) {
+            p = FoFNext[p];
+            continue;
+        }
+
+        for( i=0; i<3; i++ ) {
+            x[i] = PERIODIC_HALF( P[p].Pos[i] - g->cm[i] ) / dL + c;
+            if ( x[i]<0 || x[i] > All.GroupLumGrid-1 ) {
+                printf( "%s:warning!!!\n", __FUNCTION__ );
+                p = FoFNext[p];
+                continue;
+            }
+        }
+
+        ii = get_index(x[0],x[1],x[2], All.GroupLumGrid);
+        lumgrid[ii] += PartRad[ p * All.NuNum + nu_index] * SphP[p].Density
+                        * dL3;
+        num[ii] += SphP[p].Density; 
+        p = FoFNext[p];
+    }
+
+    for(i=0; i<CUBE(All.GroupLumGrid); i++)
+        if ( num[i] )
+            lumgrid[i] /= num[i];
+
+//#define GROUP_LUMINOSITY_TEST
+#ifdef GROUP_LUMINOSITY_TEST
+    FILE *fd;
+    int ti, tj, tk;
+    double sss;
+    fd = fopen( "glum-test.dat", "w" );
+    for( ti=0; ti<All.GroupLumGrid; ti++ ) {
+        for( tj=0; tj<All.GroupLumGrid; tj++ ) {
+            sss = 0;
+            for( tk=0; tk<All.GroupLumGrid; tk++ )
+                sss += lumgrid[ get_index(ti, tj, tk, All.GroupLumGrid) ];
+            fprintf( fd, "%g ", sss );
+        }
+        fprintf( fd, "\n" );
+    }
+    fclose( fd );
+    endruns( "group_luminosity-test" );
+#endif
+
+}
+
+*/
 double group_luminosity( int nu_index, long index ) {
 
     long p;
@@ -97,7 +168,6 @@ double group_luminosity( int nu_index, long index ) {
     struct group_properties *g;
 
     g = &Gprops[index];
-
     p = g->Head;
     F = 0;
 
@@ -113,10 +183,6 @@ double group_luminosity( int nu_index, long index ) {
 
 }
 
-inline double get_group_size( struct group_properties *g ) {
-    return vmax( g->size[proj_i], g->size[proj_j] );
-}
-
 void group_flux( int nu_index, long index, double *flux, double *flux_nosr ) {
 
     double L;
@@ -126,12 +192,116 @@ void group_flux( int nu_index, long index, double *flux, double *flux_nosr ) {
     g = &Gprops[index];
 
     L = group_luminosity( nu_index, index );
-
     size = get_group_size( g );
     *flux_nosr = L / ( 4.0 * PI * SQR( LumDis * g2c.cm ) );
     *flux = *flux_nosr / ( SQR( size * 2  / ComDis ) );
 
 }
+
+
+
+inline double get_group_size( struct group_properties *g ) {
+    return vmax( g->size[proj_i], g->size[proj_j] );
+}
+
+void group_spectrum() {
+
+    int vN, i, index;
+    double v, *flux, *flux_nosr, vmin, vmax, dv;
+    /*
+    double *lumgrid, *num, L;
+    int j;
+    */
+    FILE *fd1, *fd2;
+
+    writelog( "group spectrum ...\n" );
+
+    vN = All.NuNum;
+    vmin = All.NuMin;
+    vmax = All.NuMax;
+
+    dv = log( vmax/vmin ) / ( vN-1 );
+
+    create_dir( "%sSpectrum", GroupDir );
+
+    fd1 = myfopen("w", "%sSpectrum/Spec_%03i.dat",
+            GroupDir, SnapIndex );
+
+    fd2 = myfopen( "w", "%sSpectrum/Spec_%03i_nosr.dat",
+            GroupDir, SnapIndex );
+
+    mymalloc1( flux, sizeof(double) * vN );
+    mymalloc1( flux_nosr, sizeof(double) * vN );
+
+    fprintf( fd1, "0  0  " );
+    fprintf( fd2, "0  0  " );
+
+    for ( i=0; i<vN; i++ ) {
+        v = exp(log(vmin) + i * dv);
+        fprintf( fd1, "%g  ", v );
+        fprintf( fd2, "%g  ", v );
+    }
+    fprintf( fd1, "\n" );
+    fprintf( fd2, "\n" );
+
+/*
+    mymalloc1( lumgrid, sizeof(double) * CUBE(All.GroupLumGrid) );
+    mymalloc1( num, sizeof(double) * CUBE(All.GroupLumGrid) );
+    */
+
+    for ( index=0; index<Ngroups; index++ ) {
+
+        if ( !group_present( index ) )
+            break;
+
+
+/*
+        L = get_group_size( &Gprops[index] );
+        memset( flux_nosr, 0, sizeof(double) *vN );
+*/
+
+        for ( i=0; i<vN; i++ ) {
+
+/*
+            group_luminosity( i, index, lumgrid, num );
+
+            for(j=0; j<CUBE(All.GroupLumGrid); j++) {
+                flux_nosr[i] += lumgrid[j];
+            }
+
+            flux_nosr[i] /= ( 4.0 * PI * SQR( LumDis * g2c.cm ) );
+            flux[i] = flux_nosr[i] / ( SQR( L * 2  / ComDis ) );
+*/
+            group_flux( i, index, flux+i, flux_nosr+i );
+        }
+
+        fprintf( fd1, "%i  %g  ", index, Gprops[index].mass );
+        fprintf( fd2, "%i  %g  ", index, Gprops[index].mass );
+
+        for ( i=0; i<vN; i++ ) {
+            fprintf( fd1, "%g  ", flux[i] );
+            fprintf( fd2, "%g  ", flux_nosr[i] );
+        }
+
+        fprintf( fd1, "\n" );
+        fprintf( fd2, "\n" );
+
+    }
+
+    fclose( fd1 );
+    fclose( fd2 );
+
+    myfree( flux );
+    myfree( flux_nosr );
+    /*
+    myfree( lumgrid );
+    myfree( num );
+    */
+
+    writelog( "group spectrum ... done.\n" );
+
+}
+
 
 double particle_f( SphParticleData *part, double p ) {
 
@@ -236,73 +406,6 @@ void group_electron_spectrum() {
 
 }
 
-void group_spectrum() {
-
-    int vN, i, index;
-    double v, *flux, vmin, vmax, dv, *flux_nosr;
-    FILE *fd1, *fd2;
-
-    writelog( "group spectrum ...\n" );
-
-    vN = All.NuNum;
-    vmin = All.NuMin;
-    vmax = All.NuMax;
-
-    dv = log( vmax/vmin ) / ( vN-1 );
-
-    create_dir( "%sSpectrum", GroupDir );
-
-    fd1 = myfopen("w", "%sSpectrum/Spec_%03i.dat",
-            GroupDir, SnapIndex );
-
-    fd2 = myfopen( "w", "%sSpectrum/Spec_%03i_nosr.dat",
-            GroupDir, SnapIndex );
-
-    mymalloc1( flux, sizeof(double) * vN );
-    mymalloc1( flux_nosr, sizeof(double) * vN );
-
-    fprintf( fd1, "0  0  " );
-    fprintf( fd2, "0  0  " );
-
-    for ( i=0; i<vN; i++ ) {
-        v = exp(log(vmin) + i * dv);
-        fprintf( fd1, "%g  ", v );
-        fprintf( fd2, "%g  ", v );
-    }
-    fprintf( fd1, "\n" );
-    fprintf( fd2, "\n" );
-
-    for ( index=0; index<Ngroups; index++ ) {
-
-        if ( !group_present( index ) )
-            break;
-
-        for ( i=0; i<vN; i++ )
-            group_flux( i, index, flux+i, flux_nosr+i );
-
-        fprintf( fd1, "%i  %g  ", index, Gprops[index].mass );
-        fprintf( fd2, "%i  %g  ", index, Gprops[index].mass );
-
-        for ( i=0; i<vN; i++ ) {
-            fprintf( fd1, "%g  ", flux[i] );
-            fprintf( fd2, "%g  ", flux_nosr[i] );
-        }
-
-        fprintf( fd1, "\n" );
-        fprintf( fd2, "\n" );
-
-    }
-
-    fclose( fd1 );
-    fclose( fd2 );
-
-    myfree( flux );
-    myfree( flux_nosr );
-
-    writelog( "group spectrum ... done.\n" );
-
-}
-
 void group_spectrum_index() {
 
     double *spec, *v, vmin, vmax, dv, cov00, cov01, cov11, c0,
@@ -350,7 +453,6 @@ void group_spectrum_index() {
 
         L = get_group_size( &g ) * 1.1;
         dL = 2 * L / PicS;
-
 
         p = g.Head;
         for ( i=0; i<g.Len; i++, p=FoFNext[p] ) {
@@ -609,7 +711,7 @@ void group_temp_profile() {
                     continue;
                 data[i*3] = PERIODIC_HALF( P[p].Pos[x] - g.cm[x] ) + Rmax;
                 data[i*3+1] = PERIODIC_HALF( P[p].Pos[y] - g.cm[y] ) + Rmax;
-                data[i*3+2] = SphP[p].Density / RhoBaryon;
+                data[i*3+2] = SphP[p].Density / Time3 / RhoBaryon;
                 //data[i*3+2] = SphP[p].Temp;
             }
             data_to_grid2d( data, image.img, ngbnum, All.PicSize,  2*Rmax );
@@ -629,7 +731,7 @@ void group_temp_profile() {
             if ( ii < 0 || ii > RN-1 )
                 continue;
             //T[ii] += SphP[p].Temp;
-            T[ii] += SphP[p].Density / RhoBaryon;
+            T[ii] += SphP[p].Density / Time3 / RhoBaryon;
             num[ii] ++;
         }
         for( i=0; i<RN; i++ )
@@ -836,10 +938,10 @@ void group_gas_ratio() {
             if ( SphP[p].Temp < 1e7 && SphP[p].Temp >= 1e5 )
                 r_warmhot += P[p].Mass;
 
-            if ( SphP[p].Temp < 1e5 && SphP[p].Density / RhoBaryon < 1e3 )
+            if ( SphP[p].Temp < 1e5 && SphP[p].Density / Time3 / RhoBaryon < 1e3 )
                 r_diffuse += P[p].Mass;
 
-            if ( SphP[p].Temp < 1e5 && SphP[p].Density / RhoBaryon >= 1e3 )
+            if ( SphP[p].Temp < 1e5 && SphP[p].Density / Time3 / RhoBaryon >= 1e3 )
                 r_condensed += P[p].Mass;
 
             p = FoFNext[p];
@@ -862,7 +964,7 @@ void group_plot() {
 
     long p;
     struct group_properties g;
-    double L, dL, *mass, B, PP, n, e, r200, dlognu, nu_x; 
+    double L, dL, *mass, B, PP, n, r200, dlognu, nu_x; 
     int *num, g_index, i, j, x, y,
          xo, yo, pic_index, ii, jj, nu_i;
 
@@ -1087,7 +1189,7 @@ void group_plot() {
             if ( num[i] == 0 )
                 continue;
             data[GROUP_DENS][i] /= num[i];
-            data[GROUP_DENS][i] /= CUBE( Time );
+            data[GROUP_DENS][i] /= Time3;
             data[GROUP_DENS][i] /= RhoBaryon;
             //data[GROUP_DENS][i]  *= (( g2c.g ) / CUBE( g2c.cm ) / CUBE( Time ));
 
@@ -1123,7 +1225,8 @@ void group_plot() {
             if ( Redshift > 1e-10 ) {
                 for ( i=0; i<SQR(PicSize); i++ ) {
                     data[GROUP_RAD][i]  = data[GROUP_RAD][i] / ( 4 * PI * SQR( LumDis*g2c.cm ) )
-                                          / SQR( dL / ComDis ) ;
+                                       //   / SQR( dL / ComDis  ) ;
+                                       / SQR( dL / ComDis  / PI * 180 * 60 ) ;
                 }
 
                 img_xmin =  -L / ComDis / PI * 180 * 60;

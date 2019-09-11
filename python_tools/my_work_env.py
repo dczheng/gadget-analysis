@@ -168,3 +168,4 @@ def make_log_ticks( xmin, xmax, n, a=1, axis=None ):
 
 def set_tick_params( ax, ls, axis='both', pad=5 ):
     ax.tick_params( axis=axis, direction='in', pad=pad, labelsize=ls )
+    ax.minorticks_off()

@@ -19,7 +19,7 @@ void gas_ratio() {
 
     for( p=0; p<N_Gas; p++ ) {
         m = P[p].Mass;
-        dens = SphP[p].Density / RhoBaryon;
+        dens = SphP[p].Density / Time3 / RhoBaryon;
         T = SphP[p].Temp;
 
         m_tot += m;

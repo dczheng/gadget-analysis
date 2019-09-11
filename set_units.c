@@ -29,7 +29,7 @@ void set_units() {
 
     g2c.cm       = All.UnitLength_in_cm / HubbleParam;
     g2c.g        = All.UnitMass_in_g    / HubbleParam;
-    g2c.s        = UnitTime_in_s    / HubbleParam;
+    g2c.s        = UnitTime_in_s        / HubbleParam;
     g2c.erg      = g2c.g * SQR(g2c.cm)  / SQR(g2c.s);
 
     cuc.m_e = ELECTRON_MASS;

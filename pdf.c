@@ -9,7 +9,7 @@ void B_Pdf() {
 
 void dens_pdf() {
 
-    double *num, *num_warm_hot, dlogDens, Densmin, Densmax;
+    double *num, *num_warm_hot, dlogDens, Densmin, Densmax, *num_diffuse_condense, *num_hot;
     int N, i;
     long p;
     FILE *fd;
@@ -31,34 +31,49 @@ void dens_pdf() {
     dlogDens = log10( Densmax / Densmin ) / N;
     mymalloc2( num, sizeof(double) * N );
     mymalloc2( num_warm_hot, sizeof(double) * N );
+    mymalloc2( num_hot, sizeof(double) * N );
+    mymalloc2( num_diffuse_condense, sizeof(double) * N );
 
     for( p=0; p<N_Gas; p++ ) {
-        i = log10( SphP[p].Density / (Densmin * RhoBaryon) ) / dlogDens;
-        if ( i < N && i > 0 )
-            num[i] ++;
-
-        if ( SphP[p].Temp < 1e5 || SphP[p].Temp > 1e7 )
+        i = log10( SphP[p].Density / Time3 / (Densmin * RhoBaryon) ) / dlogDens;
+        if ( i >= N || i<0 )
             continue;
-        i = log10( SphP[p].Density / (Densmin * RhoBaryon) ) / dlogDens;
-        if ( i < N && i > 0 )
+
+        num[i] ++;
+
+        if ( SphP[p].Temp <= 1e5 )
+            num_diffuse_condense[i] ++;
+
+        if ( SphP[p].Temp > 1e5 && SphP[p].Temp < 1e7 )
             num_warm_hot[i] ++;
+
+        if ( SphP[p].Temp >= 1e7 )
+            num_hot[i] ++;
     }
 
-    for( i=0; i<N; i++ )
+    for( i=0; i<N; i++ ) {
         num[i] /= dlogDens;
+        num_diffuse_condense[i] /= dlogDens;
+        num_hot[i] /= dlogDens;
+    }
 
     create_dir( "%s/DensPdf", OutputDir );
     fd = myfopen( "w", "%s/DensPdf/DensPdf_%03i.dat", OutputDir, SnapIndex );
 
-    fprintf( fd, "%g 0 0\n", RhoBaryon );
-    fprintf( fd, "%g %g 0\n", Densmax, Densmin );
+    fprintf( fd, "%g 0 0 0 0\n",  Redshift );
     for( i=0; i<N; i++ )
-        fprintf( fd, "%g %g %g\n", Densmin*pow( 10, i*dlogDens ), num[i], 
-        num_warm_hot[i] );
+        fprintf( fd, "%g %g %g %g %g\n", Densmin*pow( 10, i*dlogDens ),
+        num[i], 
+        num_diffuse_condense[i],
+        num_warm_hot[i],
+        num_hot[i]
+        );
 
     fclose( fd );
     myfree( num );
     myfree( num_warm_hot );
+    myfree( num_diffuse_condense );
+    myfree( num_hot );
 
 }
 
@@ -355,7 +370,7 @@ void hsml_dens_pdf() {
         printf( "%g %g %g\n", SphP[p].Hsml, SphP[p].Density,
             SphP[p].Hsml*SphP[p].Density );
         */
-        htp_y[p] = SphP[p].Density / RhoBaryon;
+        htp_y[p] = SphP[p].Density / Time3 / RhoBaryon;
     }
 
     flag = 0;

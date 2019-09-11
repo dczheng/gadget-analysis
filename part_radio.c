@@ -25,6 +25,7 @@ double particle_radio2( double nu,  SphParticleData *part ) {
         */
     params[0] = params[0] * part->Density / guc.m_e;
     params[0] /= CUBE( g2c.cm );
+    params[0] /= Time3;
     /*
     printf( "n: %g, a: %g, qmin: %g, %g\n",
             part->CRE_n, part->CRE_Alpha, part->CRE_qmin,
@@ -40,8 +41,6 @@ double particle_radio2( double nu,  SphParticleData *part ) {
             params[1], params[2], params[3] );
             */
 
-
-
     if (  params[ 0] *
             params[1] *
             params[2] *
@@ -50,21 +49,7 @@ double particle_radio2( double nu,  SphParticleData *part ) {
 
     B = SQR(part->B[0]) + SQR(part->B[1]) + SQR(part->B[2]);
     B = sqrt( B );
-
-    /*
-    if ( B > 1e-8 )
-        return 0;
-        */
-    //B = 1e-7;
-
-    //B = 1e-10;
-    //params[3] = 1e7;
-    //printf( "B: %g\n", B );
-
     r = radio( &particle_df, params, B, nu, params[2], params[3], 1e-2 );
-
-    r = r * ( 4.0/3.0 * PI * CUBE(  part->Hsml* g2c.cm ) );
-
     return r;
 
 }
@@ -175,7 +160,7 @@ int read_particle_radio() {
 
 void compute_particle_radio() {
 
-    double numin, numax, dlognu, nu, tt;
+    double numin, numax, dlognu, nu, tt, V;
     int nuN, j, num, flag;
     long i, t;
     char fn[ FILENAME_MAX ];
@@ -235,14 +220,16 @@ void compute_particle_radio() {
             continue;
 
         flag = 0;
+        V = P[i].Mass / SphP[i].Density * CUBE( g2c.cm * Time );
         for( j=0; j<nuN; j++ ) {
 
             nu = exp( log(numin) + j * dlognu ) * 1e6;
 
             //printf( "nu: %g\n", nu );
 
-            tt = PartRad[ i*All.NuNum + j ] = particle_radio( nu/Time, i );
+            tt = PartRad[ i*All.NuNum + j ] = particle_radio( nu/Time, i ) * V;
 
+            //tt  = tt * ( 4.0/3.0 * PI * CUBE(SofteningTable[0]*g2c.cm*Time) );
             tt = tt / ( 4.0 * PI * SQR( LumDis*g2c.cm ) ) * 1e26; // to mJy
             
             if ( tt < 1e-10 ) {

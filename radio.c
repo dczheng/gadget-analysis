@@ -253,6 +253,12 @@ double radio_inte( double p, void *params ) {
     nu_c = 0.1875 * ( 1+p*p ) * ri->B * cuc.e_mec ;  // 0.1875: 3/16
     x = ri->nu / nu_c;
 
+/*
+    if ( x < 100 && All.TabF )
+        r = tab_F( x );
+    else
+        F( x, &r, &err );
+*/
     if ( All.TabF )
         r = tab_F( x );
     else

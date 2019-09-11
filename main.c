@@ -332,13 +332,11 @@ int main( int argc, char *argv[] ){
     /******************read***********************/
 
     set_units();
-
     compute_cosmo_quantities();
 
     //test_ps();
 
     /******************analysis***********************/
-
     analysis();
     /******************analysis***********************/
     do_sync( "analysis" );

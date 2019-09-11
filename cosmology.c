@@ -335,8 +335,8 @@ void compute_cosmo_quantities() {
     Time2 = SQR( Time );
     Time3 = CUBE( Time );
     Hubble_a = hubble_function( Time );
-    RhoCrit = 3 * SQR( Hubble_a ) / ( 8*PI*G );
-    RhoBaryon = All.OmegaBaryon * RhoCrit;
+    RhoCrit = 3 * SQR( Hubble_a ) / ( 8*PI*G ); 
+    RhoBaryon = All.OmegaBaryon / Omega0 * OmegaM(Time) * RhoCrit;
     RhoM = Omega0 * RhoCrit;
     //test_cos();
 

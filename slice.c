@@ -245,6 +245,7 @@ void mag_slice() {
     }
     field_slice( 0, data, "MagneticField", 0, weight );
     myfree( data );
+    myfree( weight );
 }
 
 void mach_slice() {
@@ -260,10 +261,11 @@ void mach_slice() {
     }
     field_slice( 0, data, "MachNumber", 0, weight );
     myfree( data );
+    myfree( weight );
 }
 
 void density_slice() {
-    int num, ii, i;
+    int num, i;
     long index;
     double *data, *data3;
 
@@ -273,10 +275,10 @@ void density_slice() {
 
     index = 0;
     for ( i=SliceStart[0]; i<SliceEnd[0]; i++ ) {
-        data[i] = SphP[i].Density / CUBE(Time) / RhoBaryon;
+        data[i] = SphP[i].Density / Time3 / RhoBaryon;
         //data3[3*index] = P[i].Pos[proj_i] - Start[proj_i];
         //data3[3*index+1] = P[i].Pos[proj_j] - Start[proj_j];
-        //data3[3*index+2] = SphP[i].Density / CUBE(Time) / RhoBaryon;
+        //data3[3*index+2] = SphP[i].Density / Time3 / RhoBaryon;
         index ++;
     }
 
@@ -288,7 +290,7 @@ void density_slice() {
         if ( SphP[i].Temp >= 1e7 ) {
             data3[3*index] = P[i].Pos[proj_i] - Start[proj_i];
             data3[3*index+1] = P[i].Pos[proj_j] - Start[proj_j];
-            data3[3*index+2] = SphP[i].Density / CUBE(Time) / RhoBaryon;
+            data3[3*index+2] = SphP[i].Density / Time3 / RhoBaryon;
             index ++;
         }
     }
@@ -299,7 +301,7 @@ void density_slice() {
         if ( SphP[i].Temp < 1e7 && SphP[i].Temp >= 1e5 ) {
             data3[3*index] = P[i].Pos[proj_i] - Start[proj_i];
             data3[3*index+1] = P[i].Pos[proj_j] - Start[proj_j];
-            data3[3*index+2] = SphP[i].Density / CUBE(Time) / RhoBaryon;
+            data3[3*index+2] = SphP[i].Density / Time3 / RhoBaryon;
             index ++;
         }
     }
@@ -307,10 +309,10 @@ void density_slice() {
 
     index = 0;
     for ( i=SliceStart[0]; i<SliceEnd[0]; i++ ) {
-        if ( ( SphP[i].Density / CUBE(Time) / RhoBaryon ) < 1e3 && SphP[i].Temp < 1e5 ) {
+        if ( ( SphP[i].Density / Time3 / RhoBaryon ) < 1e3 && SphP[i].Temp < 1e5 ) {
             data3[3*index] = P[i].Pos[proj_i] - Start[proj_i];
             data3[3*index+1] = P[i].Pos[proj_j] - Start[proj_j];
-            data3[3*index+2] = SphP[i].Density / CUBE(Time) / RhoBaryon;
+            data3[3*index+2] = SphP[i].Density / Time3 / RhoBaryon;
             index ++;
         }
     }
@@ -318,10 +320,10 @@ void density_slice() {
 
     index = 0;
     for ( i=SliceStart[0]; i<SliceEnd[0]; i++ ) {
-        if ( ( SphP[i].Density / CUBE(Time) / RhoBaryon ) >= 1e3 && SphP[i].Temp < 1e5 ) {
+        if ( ( SphP[i].Density / Time3 / RhoBaryon ) >= 1e3 && SphP[i].Temp < 1e5 ) {
             data3[3*index] = P[i].Pos[proj_i] - Start[proj_i];
             data3[3*index+1] = P[i].Pos[proj_j] - Start[proj_j];
-            data3[3*index+2] = SphP[i].Density / CUBE(Time) / RhoBaryon ;
+            data3[3*index+2] = SphP[i].Density / Time3 / RhoBaryon ;
             index ++;
         }
     }
@@ -344,6 +346,7 @@ void temperature_slice() {
     }
     field_slice( 0, data, "Temperature", 0, weight );
     myfree( data );
+    myfree( weight );
 }
 
 void cren_slice() {
@@ -359,6 +362,7 @@ void cren_slice() {
     }
     field_slice( 0, data, "cre_n", 0, weight );
     myfree( data );
+    myfree( weight );
 }
 
 void cree_slice() {
@@ -374,6 +378,7 @@ void cree_slice() {
     }
     field_slice( 0, data, "cre_e", 0, weight );
     myfree( data );
+    myfree( weight );
 }
 
 void radio_slice() {
@@ -416,5 +421,6 @@ void radio_slice() {
     field_slice( 0, data, buf, 0, weight );
 
     myfree( data );
+    myfree( weight );
 
 }

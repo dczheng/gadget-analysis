@@ -1,31 +1,31 @@
 #!/usr/bin/env python3
-import numpy as np
-import matplotlib.pyplot as plt
-UnitLength_in_cm = 3.08568321
-UnitTime_in_s = 3.08568e16
-UnitMass_in_g = 1.989e43
-solar_mass = 1.989e33
-sec_per_year = 3.155e7
-for fn in [ 'sfr', 'sfr_supernova', 'sfr_shock', 'sfr_supernova_shock' ]:
-    sfr = np.loadtxt( './'+fn+'.txt' )
-    a = sfr[:,0]
-    z = 1/a - 1
-    r = sfr[:,2]
-    zz = []
-    rr = []
-    for i in range(len( z )):
-        if 1.6 < z[i]<6:
-            zz.append( z[i] )
-            rr.append( r[i] )
-    zz = np.array( zz )
-    rr = np.array( rr )
-    rr = rr / (10/0.7)**3
-    rr = rr * ( UnitMass_in_g / solar_mass ) / ( UnitTime_in_s / sec_per_year )
-    plt.plot( zz, rr, label=fn )
-    plt.yscale( 'log' )
 
+from my_work_env import *
+
+fn_sfr = sys.argv[1]
+fn_sfr_cre = sys.argv[2]
+fn_out = sys.argv[3]
+
+fns = [ fn_sfr, fn_sfr_cre ]
+ds = []
+for f in fns:
+    print( 'load %s ...'%f )
+    ds.append( np.loadtxt(f) )
+
+labels = [ 'SIM', 'SIM-CRE' ]
+for i in range(2):
+    d = ds[i]
+    a = d[:,0]
+    z = 1/a-1
+    r = d[:,2]
+    index = r>0
+    z = z[index]
+    r = r[index]
+    plt.plot( z, r, label=labels[i] )
+
+plt.yscale( 'log' )
 plt.xlabel( r'$z$' )
+
 plt.ylabel( r'$SFR({M_{\odot}}^{-1}{Mpc}^{-3})$' )
-plt.legend()
-plt.savefig("sfr.png")
+plt.savefig( fn_out )
 
