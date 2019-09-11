@@ -446,7 +446,6 @@ extern gsl_integration_workspace *inte_ws;
 #define proj_k Proj[2]
 
 #include "protos.h"
-#include "auxfuns.h"
 
 #ifdef ZDEBUG
 void signal_hander( int s );
