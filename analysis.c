@@ -70,8 +70,15 @@ void analysis(){
 
     }
 
+    do_sync("");
+
     if ( All.RadSpec ) {
         compute_particle_radio();
+        put_sep0;
+    }
+
+    if ( All.TotSpec ) {
+        total_radio_spectrum();
         put_sep0;
     }
 
@@ -83,11 +90,6 @@ void analysis(){
 
     if ( All.CrePressurePdf ) {
        cre_pressure_pdf();
-    }
-
-    if ( All.TotSpec ) {
-        total_radio_spectrum();
-        do_sync( "total radio spectrum" );
     }
 
     if ( All.CorrTdiffDens ) {

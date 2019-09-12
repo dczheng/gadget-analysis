@@ -8,9 +8,7 @@ void total_radio_spectrum() {
            *alist, *fluxlist, *dislist;
     FILE *fd;
 
-    do_sync( "before total radio spectrum" );
     writelog( "total radio spectrum ...\n" );
-
     Nnu = All.NuNum;
     numin = All.NuMin;
     numax = All.NuMax;
