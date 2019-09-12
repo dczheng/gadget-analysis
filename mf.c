@@ -121,6 +121,5 @@ void mass_function() {
     fclose( fd );
 
     writelog( "compute mass function ... done.\n" );
-    put_sep;
 
 }

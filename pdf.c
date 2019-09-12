@@ -1,10 +1,66 @@
 #include"allvars.h"
 
 void B_Pdf() {
-    /*
-    shoule be rewrite
-    */
-    return;
+    long i;
+    int j, N;
+    double Bmin, Bmax, *n, dlogB, B, s, *nn;
+    FILE *fd;
+
+//#define B_PDF_DEBUG
+
+#ifdef B_PDF_DEBUG
+    int nnn=0;
+#endif
+    writelog( "B pdf ...\n" );
+    get_B_min_max( Bmin, Bmax );
+    N = All.BPdfBins;
+
+    if ( All.BPdfBMin > 0 )
+        Bmin = All.BPdfBMin;
+
+    if ( All.BPdfBMax > 0 )
+        Bmax = All.BPdfBMax;
+
+    dlogB = log10(Bmax/Bmin) / N;
+
+    mymalloc2( n, sizeof(double) * N );
+    mymalloc2( nn, sizeof(double) * N );
+
+    for( i=0; i<N_Gas; i++ ) {
+        B = get_B( i );
+        if ( B == 0 )
+            continue;
+
+        j = log10( B/Bmin ) / dlogB;
+        if ( j<0 || j>N-1 )
+            continue;
+        n[j] ++;
+#ifdef B_PDF_DEBUG
+        nnn ++; 
+#endif
+    }
+#ifdef B_PDF_DEBUG
+    printf( "task: %i, nnn: %i\n", ThisTask, nnn );
+#endif
+
+    for( i=0, s=0; i<N; i++ ) {
+        s += n[i];
+    }
+
+    for( i=0; i<N; i++ )
+        nn[i] = n[i] / s / dlogB;
+
+    create_dir( "%s/BPdf", OutputDir );
+    fd = myfopen( "w", "%s/BPdf/BPdf_%03i.dat", OutputDir, SnapIndex );
+
+    fprintf( fd, "%g 0 0\n",  Redshift );
+    for( i=0; i<N; i++ )
+        fprintf( fd, "%g %g %g\n", Bmin * pow(10, i*dlogB) * 1e6, nn[i], n[i] );
+
+    fclose( fd );
+    myfree( n );
+    myfree( nn );
+
 }
 
 void dens_pdf() {

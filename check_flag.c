@@ -11,6 +11,7 @@
 
 void check_flag() {
 
+    writelog( "check parameters ...\n" );
     A_NEED_B( All.FoF, All.Tree );
     A_NEED_B( All.MF, All.FoF);
 
@@ -18,9 +19,7 @@ void check_flag() {
 
     A_NEED_B( All.BPdf, All.ReadB );
     A_NEED_B( All.GroupSpec, All.RadSpec );
-
-    if ( All.Group )
-        check_group_flag();
+    A_NEED_B( All.GroupU, All.Readu );
 
     A_NEED_B( All.RadSpec, All.ReadB );
     A_NEED_B( All.RadSpec, All.ReadCre );
@@ -56,6 +55,9 @@ void check_flag() {
     A_NEED_B( All.TPdf, All.TPdfN );
     A_NEED_B( All.DensPdf, All.DensPdfN );
     A_NEED_B( All.RadSpec, All.ReadHsml );
+    A_NEED_B( All.BSmooth, All.ReadHsml );
+    A_NEED_B( All.BSmooth, All.ReadB );
+    A_NEED_B( All.BSmooth, All.Tree );
 
     if ( All.TPdf && All.TPdfN < 1 ) {
         printf( "`TPdfN > 1` is required by TPdf\n" );

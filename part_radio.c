@@ -49,6 +49,8 @@ double particle_radio2( double nu,  SphParticleData *part ) {
 
     B = SQR(part->B[0]) + SQR(part->B[1]) + SQR(part->B[2]);
     B = sqrt( B );
+    //if ( B > 1e-4 )
+    //    B = 1e-4;
     r = radio( &particle_df, params, B, nu, params[2], params[3], 1e-2 );
     return r;
 
@@ -221,6 +223,7 @@ void compute_particle_radio() {
 
         flag = 0;
         V = P[i].Mass / SphP[i].Density * CUBE( g2c.cm * Time );
+       // V = SphP[i].Hsml * CUBE( g2c.cm * Time );
         for( j=0; j<nuN; j++ ) {
 
             nu = exp( log(numin) + j * dlognu ) * 1e6;

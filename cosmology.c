@@ -362,7 +362,6 @@ void compute_cosmo_quantities() {
     writelog1( "RhoM", RhoM );
 
     writelog( "compute cosmology quantities ... done.\n" );
-    put_sep;
 }
 
 void test_cos() {

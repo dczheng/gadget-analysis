@@ -18,7 +18,6 @@ void tree_free() {
     writelog( "free memory for tree\n" );
     myfree( Nodes_Base );
     myfree( NextNode );
-    put_sep;
 }
 
 void tree_build_single() {
@@ -210,7 +209,6 @@ void tree_build() {
     npart = 30;
     All.TreeAllocFactor = 2;
     */
-    put_sep;
 
     mytimer_start();
     for ( i=0, npart=0; i<NumPart; i++ )
@@ -249,5 +247,4 @@ void tree_build() {
     //tree_walk_test();
     mytimer_end();
     writelog( "tree walk ... done.\n" );
-    put_sep;
 }

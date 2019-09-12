@@ -15,8 +15,8 @@ void part_info() {
         vmin20( rho_min, SphP[i].Density );
     }
 
-    writelog( "[Baryon density] min: %g [%g gcm-3], max: %g [%g gcm-3]\n"
-              "[Proton number density], min: %g cm-3, max: %g cm-3\n"
+    writelog( "[Baryon density]\nmin: %g [%g gcm-3]\nmax: %g [%g gcm-3]\n"
+              "[Proton number density]\nmin: %g cm-3\nmax: %g cm-3\n"
               "RhoBar: %g gcm-3, RhoProBar: %g cm-3\n",
             rho_min,
             rho_min * g2c.g / CUBE( g2c.cm ),
@@ -27,7 +27,5 @@ void part_info() {
             RhoBaryon * g2c.g / CUBE( g2c.cm ),
             RhoBaryon * g2c.g / CUBE( g2c.cm ) / cuc.m_p
             );
-
-    put_sep;
 }
 

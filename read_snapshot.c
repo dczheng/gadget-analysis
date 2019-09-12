@@ -703,7 +703,6 @@ void free_particle_memory() {
     myfree_shared( MpiWin_SphP );
     //MPI_Win_free( &MpiWin_P );
     //MPI_Win_free( &MpiWin_SphP );
-    put_sep;
 }
 
 void read_snapshot_test() {
@@ -728,7 +727,6 @@ void read_snapshot() {
     char file_name[MYFILENAME_MAX], buf[200], buf1[200];
     size_t BufferBytes;
 
-    put_sep0;
     writelog( "read data ...\n" );
 
 #ifdef OUTPUT_IN_DOUBLEPRECISION
@@ -785,7 +783,6 @@ void read_snapshot() {
     if ( ThisTask_Local == 0 ) {
         writelog( "Parallel ( %i ) read data ...\n", All.ParallelIO );
         do_sync_master( "" );
-        put_sep0;
         for( io_i = 0; io_i < IOGroups; io_i++ ) {
             if ( ThisTask_Master % IOGroups == io_i ) {
                 //printf( "Master: %i read data ...\n", ThisTask_Master );
@@ -864,5 +861,4 @@ void read_snapshot() {
     mytimer_end();
     writelog( "read data ... done. \n" );
     //endrun( 20181210 );
-    put_sep;
 }

@@ -26,7 +26,6 @@ void compute_temperature() {
 
     }
     writelog( "compute gas temprature... done.\n" );
-    put_sep;
 
 }
 

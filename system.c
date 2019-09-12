@@ -23,13 +23,15 @@ void create_dir0( char *s ) {
 
 void do_sync0( char *s, MPI_Comm comm ) {
 
-    int i, n, nn;
     char buf[100];
 
     if ( NTask == 1 )
         return;
 
     sprintf( buf, "* synchronization `%s` *", s );
+    writelog( "%s\n", buf );
+    /*
+    int i, n, nn;
     n = strlen( buf );
     nn = strlen( s );
     //printf( "%i\n", nn );
@@ -44,6 +46,7 @@ void do_sync0( char *s, MPI_Comm comm ) {
             writelog( "*" );
         writelog( "\n" );
     }
+    */
 
     MPI_Barrier( comm );
     //endrun( 20181112 );

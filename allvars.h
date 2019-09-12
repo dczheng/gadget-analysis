@@ -22,8 +22,8 @@
 #define MYFILENAME_MAX   FILENAME_MAX
 #define MYPATHNAME_MAX   FILENAME_MAX
 
-#define SEP_LEN 80
-#define SEP_LEN0 30
+#define SEP_LEN  80
+#define SEP_LEN0 60 
 #define GENERATIONS 8
 
 #define SFR
@@ -138,6 +138,7 @@ enum group_fields {
     GROUP_DENS,
     GROUP_TEMP,
     GROUP_SFR,
+    GROUP_U,
     GROUP_MAG,
     GROUP_MACH,
     GROUP_CREN,
@@ -192,6 +193,7 @@ typedef struct SphParticleData {
     double CRE_P;
     //double *Rad;
     double B[3];
+    double SmoothB[3];
     double divB;
     double dBdt;
     double elec;
@@ -214,8 +216,8 @@ typedef struct GlobalParams{
         ReadCre, ReadCr, ReadB, ReadMach, ReadSfr, ReadTemp, ReadVel,
         ReadElec, Readu, ReadHsml,
         MpcFlag,
-        Group, MF, MFBins, BPdf,
-        GroupTemp, GroupSfr, GroupB, GroupMach, GroupCre,
+        Group, MF, MFBins, BPdf,  BPdfBins,
+        GroupTemp, GroupSfr, GroupB, GroupMach, GroupCre, GroupU,
         GroupTempProfileRN,
         GroupTempProfile,
         MachSlice,
@@ -225,6 +227,7 @@ typedef struct GlobalParams{
         Phase, DensitySlice, TemperatureSlice,
         KernelInterpolation,
         ConvN, GroupEleSpec, RadSpec,
+        GroupEleSpecDensityWeighted,
         PowSpec, PowSpecNGrid, PowSpecPartType, PowSpecBins,
         CrePressurePdf, TabF, Tree, ParallelIO,
         CorrTdiffDens,
@@ -244,7 +247,9 @@ typedef struct GlobalParams{
         UTPdf,
         HsmlDensPdf,
         Gadget2,
+        GroupDensityWeighted,
         NumFilesPerSnapshot,
+        BSmooth,
 
         QNum, NuNum, FoFMinLen,
         TreePartType,
@@ -291,6 +296,7 @@ typedef struct GlobalParams{
             FieldCrenTDensDensMax,
             FieldCrenTDensTMin,
             FieldCrenTDensTMax,
+            BPdfBMin, BPdfBMax,
             PosShiftX, PosShiftY, PosShiftZ, GroupSize;
 
 } GlobalParams;

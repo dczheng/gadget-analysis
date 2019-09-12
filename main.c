@@ -296,8 +296,10 @@ int main( int argc, char *argv[] ){
 
     /******************read***********************/
 
+    put_sep;
+
     read_parameters( argv[1] );
-    check_flag();
+    put_sep;
 
     if ( All.ParallelIO <= 0 ) {
         All.ParallelIO = NTask_Master;
@@ -312,6 +314,7 @@ int main( int argc, char *argv[] ){
 
     read_snapshot();
     do_sync( "read data" );
+    put_sep;
 
     /*
     int i;
@@ -328,22 +331,25 @@ int main( int argc, char *argv[] ){
 
     pre_proc();
     do_sync( "pre process data" );
+    put_sep;
 
     /******************read***********************/
 
     set_units();
+    put_sep;
+
     compute_cosmo_quantities();
+    put_sep;
 
     //test_ps();
 
     /******************analysis***********************/
     analysis();
-    /******************analysis***********************/
     do_sync( "analysis" );
+    put_sep;
+    /******************analysis***********************/
 
     free_particle_memory();
-    do_sync( "" );
-
     free_comms();
 
     time2 = time( NULL );

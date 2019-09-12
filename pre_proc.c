@@ -56,7 +56,6 @@ void find_id() {
 
     writelog( "find id ... done.\n" );
     mytimer_end();
-    put_sep0;
 }
 
 
@@ -104,7 +103,6 @@ void construct_id_to_index() {
     mytimer_end();
     myfree( id_to_index );
 
-    put_sep0;
 }
 
 int compare_pos( const void *a, const void *b ) {
@@ -206,7 +204,6 @@ void sort_particle_by_pos() {
     }
 
     /*
-    put_sep0;
 
     for( i=0; i<100; i++ )  {
         printf( "[%li] %e %e %e\n",
@@ -224,7 +221,6 @@ void sort_particle_by_pos() {
                 P[N_Gas - 100 + i].Pos[2] );
     }
 
-    put_sep0;
     */
 
     myfree( flag );
@@ -263,8 +259,6 @@ void sort_particle_by_pos() {
 
     mytimer_end();
     writelog( "sort particle ...done.\n" );
-
-    put_sep0;
 
 }
 
@@ -408,7 +402,6 @@ void merge_particle( int pt ) {
     }
 
     writelog( "merge particle `%i` ... done.\n", pt );
-    put_sep0;
 
 }
 
@@ -483,7 +476,6 @@ void attach_particle_to_gas( int pt ) {
 
     if ( attach_num != 0 ) {
         writelog( "Attatch %li `%i` particle to gas.\n", attach_num, pt+4 );
-        put_sep0;
     }
 
 }
@@ -580,8 +572,6 @@ void pre_proc() {
 
     writelog( "pre proc ... done.\n" )
 
-    put_sep;
-
 }
 
 void check_data( int err ) {
@@ -590,7 +580,6 @@ void check_data( int err ) {
 
     writelog( "Check data ...\n" );
 
-    put_sep0;
     offset = get_particle_offset( 4 );
     num = get_particle_num( 4 );
     printf( "type: 4, offset: %li, num: %li\n", offset, num );
@@ -614,6 +603,5 @@ void check_data( int err ) {
         }
 
     writelog( "Check data ... done.\n" );
-    put_sep0;
 
 }

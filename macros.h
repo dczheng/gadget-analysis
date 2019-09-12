@@ -129,7 +129,7 @@
 }
 
 #define mymalloc1( a, n )     mymalloc( a, n, 0, 0 )
-#define mymalloc2( a, n )     mymalloc( a, n, 1, 0 )
+#define mymalloc2( a, n )     mymalloc( a, n, 1, 0 )  // initial to 0
 #define mymalloc3( a, n, b )  mymalloc( a, n, 1, b )
 
 #define mymalloc1_shared( a, n, disp_unit, mpi_win )  mymalloc_shared( a, n, 0, 0, disp_unit, mpi_win )
@@ -239,6 +239,18 @@ writelog( "[Timer Start in `%s`]\n", __FUNCTION__ ); \
         }\
 }
 
+#define get_B_min_max( bmin, bmax ) {\
+    long p;\
+    double b;\
+    bmin = DBL_MAX;\
+    bmax = -bmin;\
+    for( p=0; p<N_Gas; p++ ) {\
+        b = get_B( p );\
+        vmax2( bmax, b );\
+        vmin20( bmin, b );\
+        }\
+}
+
 #define get_gas_temp_min_max( Tmin, Tmax ) {\
     long p;\
     Tmin = DBL_MAX;\
@@ -248,3 +260,7 @@ writelog( "[Timer Start in `%s`]\n", __FUNCTION__ ); \
         vmin2( Tmin, SphP[p].Temp );\
         }\
 }
+
+#define make_group_output_filename( buf, nstr, group_index ) \
+    sprintf( buf, "%s%s/%s_%03i_%04i_%c.dat",\
+            GroupDir, nstr, nstr, SnapIndex, group_index, Sproj );

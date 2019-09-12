@@ -15,3 +15,6 @@ CMakeCache.txt
 allvars.c
 add_params.h
 protos.h
+bak/
+run_analysis.py
+gadget-analysis.h

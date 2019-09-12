@@ -342,6 +342,5 @@ void powerspec() {
     myfree( rhogrid );
 
     writelog( "compute power spectrum ... done.\n" );
-    put_sep;
 
 }

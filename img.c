@@ -9,7 +9,6 @@ void init_img() {
     image.img_tmp = image.img;
     image.num_tmp = image.num;
     writelog( "init image ... done.\n" );
-    put_sep0;
 }
 
 void free_img() {

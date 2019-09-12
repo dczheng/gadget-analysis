@@ -13,7 +13,6 @@ void read_parameters( char *fn ) {
     char tag[MAXTAGS][50], *bname, buf[200], buf1[200], buf2[200], buf3[200];
     int id[MAXTAGS], nt, i, j, errflag=0;
 
-    put_sep;
     writelog( "read parameter...\n" );
 
     if ( ThisTask == 0 ) {
@@ -93,6 +92,6 @@ void read_parameters( char *fn ) {
 
 
     MPI_Bcast( &All, sizeof( GlobalParams ), MPI_BYTE, 0, MPI_COMM_WORLD );
-    put_sep;
+    check_flag();
 }
 

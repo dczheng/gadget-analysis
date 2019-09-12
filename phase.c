@@ -46,6 +46,5 @@ void phase() {
     
     myfree( phase_x );
     myfree( phase_y );
-    put_sep;
 
 }

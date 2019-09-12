@@ -22,85 +22,9 @@ double radio_inte( double p, void *params );
 double radio( double (*f)( double, void* ), double *params,double B, double nu, double pmin, double pmax, double err );
 
 
-//%------>>>>>>file : check_flag.c
+//%------>>>>>>file : set_units.c
 //%
-void check_flag();
-
-
-//%------>>>>>>file : tree.c
-//%
-void tree_allocate();
-void tree_free();
-void tree_build_single();
-void tree_walk_recursive( long n, long sib, long father );
-void tree_walk_test();
-void tree_build();
-
-
-//%------>>>>>>file : slice.c
-//%
-void slice_init();
-void make_slice_img( int pt, double *data, long NPart, double *weight );
-void field_slice( int pt, double *data, char *name, long N, double *weight );
-void mag_slice();
-void mach_slice();
-void density_slice();
-void temperature_slice();
-void cren_slice();
-void cree_slice();
-void radio_slice();
-
-
-//%------>>>>>>file : pdf.c
-//%
-void B_Pdf();
-void dens_pdf();
-void T_pdf();
-void pdf2d_or_field2d( double *x, double *y, double *w, long num, char *dn,int flag, double *mm, int Nmin );
-void cren_T_pdf();
-void hsml_T_pdf();
-void u_T_pdf();
-void hsml_dens_pdf();
-
-
-//%------>>>>>>file : part_info.c
-//%
-void part_info();
-
-
-//%------>>>>>>file : mymath.c
-//%
-double trapzd( double (*func)( double, void* ),void *params, double a, double b, int n );
-double qtrap( double (*func)( double, void* ),void *params, double a, double b, double err );
-
-
-//%------>>>>>>file : ngb.c
-//%
-int ngb_fof( double *searchcenter, double h );
-int ngb( double *searchcenter, double h );
-
-
-//%------>>>>>>file : kernel.c
-//%
-double kernel( double q );
-void init_kernel_matrix();
-void free_kernel_matrix();
-
-
-//%------>>>>>>file : total_radio_spectrum.c
-//%
-void total_radio_spectrum();
-
-
-//%------>>>>>>file : system.c
-//%
-void create_dir0( char *s );
-void do_sync0( char *s, MPI_Comm comm );
-void do_sync( char *s );
-void do_sync_local( char *s );
-void do_sync_master( char *s );
-double second();
-void task_sync_test( char *s );
+void set_units();
 
 
 //%------>>>>>>file : pre_proc.c
@@ -118,16 +42,81 @@ void pre_proc();
 void check_data( int err );
 
 
-//%------>>>>>>file : main.c
+//%------>>>>>>file : part_radio.c
 //%
-void init_sep_str();
-void global_init();
-void global_free();
-void mpi_comms_test();
-void create_mpi_comms();
-void free_comms();
-void merge_log_file();
-int main( int argc, char *argv[] );
+double particle_df( double p, void *params );
+double particle_radio2( double nu,  SphParticleData *part );
+double particle_radio( double nu, long i );
+void save_particle_radio();
+int read_particle_radio();
+void compute_particle_radio();
+void free_particle_radio();
+void d2PdVdv_qmax();
+void output_radio_inte();
+void test_part_radio();
+
+
+//%------>>>>>>file : mf.c
+//%
+void mass_function();
+
+
+//%------>>>>>>file : cre.c
+//%
+double beta_inte( double x, void *params );
+double beta( double a, double b, double x );
+void compute_cre_pressure();
+void cre_pressure_pdf();
+
+
+//%------>>>>>>file : tree.c
+//%
+void tree_allocate();
+void tree_free();
+void tree_build_single();
+void tree_walk_recursive( long n, long sib, long father );
+void tree_walk_test();
+void tree_build();
+
+
+//%------>>>>>>file : group_analysis.c
+//%
+int group_present( long index );
+inline double get_group_size( struct group_properties *g );
+void group_analysis();
+
+
+//%------>>>>>>file : mymath.c
+//%
+double trapzd( double (*func)( double, void* ),void *params, double a, double b, int n );
+double qtrap( double (*func)( double, void* ),void *params, double a, double b, double err );
+
+
+//%------>>>>>>file : ngb.c
+//%
+int ngb_fof( double *searchcenter, double h );
+int ngb( double *searchcenter, double h );
+
+
+//%------>>>>>>file : part_info.c
+//%
+void part_info();
+
+
+//%------>>>>>>file : total_radio_spectrum.c
+//%
+void total_radio_spectrum();
+
+
+//%------>>>>>>file : smooth.c
+//%
+int smooth_flag();
+void smooth();
+
+
+//%------>>>>>>file : check_flag.c
+//%
+void check_flag();
 
 
 //%------>>>>>>file : img.c
@@ -136,31 +125,6 @@ void init_img();
 void free_img();
 void reset_img();
 void write_img( char *fn, char *nstr );
-
-
-//%------>>>>>>file : read_params.c
-//%
-void read_parameters( char *fn );
-
-
-//%------>>>>>>file : group_analysis.c
-//%
-int group_present( long index );
-double group_luminosity( int nu_index, long index );
-void group_flux( int nu_index, long index, double *flux, double *flux_nosr );
-inline double get_group_size( struct group_properties *g );
-void group_spectrum();
-double particle_f( SphParticleData *part, double p );
-void group_electron_spectrum();
-void group_spectrum_index();
-int group_filed_present( enum group_fields blk );
-void get_group_filed_name( enum group_fields blk, char *buf );
-void check_group_flag();
-void group_temp_profile();
-void group_temp_stack();
-void group_gas_ratio();
-void group_plot();
-void group_analysis();
 
 
 //%------>>>>>>file : fof.c
@@ -177,19 +141,26 @@ void fof_read();
 void fof();
 
 
+//%------>>>>>>file : group_radio.c
+//%
+double group_luminosity( int nu_index, long index );
+void group_flux( int nu_index, long index, double *flux, double *flux_nosr );
+void group_spectrum();
+double particle_f( SphParticleData *part, double p );
+void group_electron_spectrum();
+void group_spectrum_index();
+
+
+//%------>>>>>>file : phase.c
+//%
+void phase();
+
+
 //%------>>>>>>file : analysis.c
 //%
 void init_analysis();
 void free_analysis();
 void analysis();
-
-
-//%------>>>>>>file : cre.c
-//%
-double beta_inte( double x, void *params );
-double beta( double a, double b, double x );
-void compute_cre_pressure();
-void cre_pressure_pdf();
 
 
 //%------>>>>>>file : powerspec.c
@@ -200,29 +171,16 @@ void compute_sigma8();
 void powerspec();
 
 
-//%------>>>>>>file : mf.c
-//%
-void mass_function();
-
-
-//%------>>>>>>file : part_radio.c
-//%
-double particle_df( double p, void *params );
-double particle_radio2( double nu,  SphParticleData *part );
-double particle_radio( double nu, long i );
-void save_particle_radio();
-int read_particle_radio();
-void compute_particle_radio();
-void free_particle_radio();
-void d2PdVdv_qmax();
-void output_radio_inte();
-void test_part_radio();
-
-
 //%------>>>>>>file : grid.c
 //%
 void field_to_grid( double *data, double *grid, int pt, int Nmin, int flag );
 void data_to_grid2d( double *data, double *grid, long Ndata, int NGrid, double L );
+
+
+//%------>>>>>>file : group_temp.c
+//%
+void group_temp_profile();
+void group_temp_stack();
 
 
 //%------>>>>>>file : debug.c
@@ -232,23 +190,36 @@ void empty_sig_buf();
 void init_sig();
 
 
-//%------>>>>>>file : phase.c
+//%------>>>>>>file : system.c
 //%
-void phase();
+void create_dir0( char *s );
+void do_sync0( char *s, MPI_Comm comm );
+void do_sync( char *s );
+void do_sync_local( char *s );
+void do_sync_master( char *s );
+double second();
+void task_sync_test( char *s );
 
 
 //%------>>>>>>file : allvars.c
 //%
 
 
-//%------>>>>>>file : set_units.c
-//%
-void set_units();
-
-
 //%------>>>>>>file : field.c
 //%
 void field_cren_T_dens();
+
+
+//%------>>>>>>file : main.c
+//%
+void init_sep_str();
+void global_init();
+void global_free();
+void mpi_comms_test();
+void create_mpi_comms();
+void free_comms();
+void merge_log_file();
+int main( int argc, char *argv[] );
 
 
 //%------>>>>>>file : read_snapshot.c
@@ -273,9 +244,37 @@ void read_snapshot();
 void compute_temperature();
 
 
+//%------>>>>>>file : group_plot.c
+//%
+int group_filed_present( enum group_fields blk );
+void get_group_filed_name( enum group_fields blk, char *buf );
+void group_plot();
+
+
+//%------>>>>>>file : pdf.c
+//%
+void B_Pdf();
+void dens_pdf();
+void T_pdf();
+void pdf2d_or_field2d( double *x, double *y, double *w, long num, char *dn,int flag, double *mm, int Nmin );
+void cren_T_pdf();
+void hsml_T_pdf();
+void u_T_pdf();
+void hsml_dens_pdf();
+
+
 //%------>>>>>>file : gas_ratio.c
 //%
 void gas_ratio();
+
+
+//%------>>>>>>file : kernel.c
+//%
+double kernel( double q );
+void init_kernel_matrix();
+void free_kernel_matrix();
+inline void kernel_hinv(double h, double *hinv, double *hinv3, double *hinv4);
+inline void kernel_main(double u, double hinv3, double hinv4,double *wk, double *dwk, int mode);
 
 
 //%------>>>>>>file : correlation.c
@@ -292,6 +291,20 @@ void corr_dm();
 void corr_gas();
 void corr_Tdiff_dens();
 void pdf_Tdiff_dens();
+
+
+//%------>>>>>>file : slice.c
+//%
+void slice_init();
+void make_slice_img( int pt, double *data, long NPart, double *weight );
+void field_slice( int pt, double *data, char *name, long N, double *weight );
+void mag_slice();
+void mach_slice();
+void density_slice();
+void temperature_slice();
+void cren_slice();
+void cree_slice();
+void radio_slice();
 
 
 //%------>>>>>>file : cosmology.c
@@ -320,5 +333,15 @@ double PS_dndM( double a, double M );
 void test_ps();
 void compute_cosmo_quantities();
 void test_cos();
+
+
+//%------>>>>>>file : read_params.c
+//%
+void read_parameters( char *fn );
+
+
+//%------>>>>>>file : group_gas_ratio.c
+//%
+void group_gas_ratio();
 
 

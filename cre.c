@@ -66,7 +66,6 @@ void compute_cre_pressure() {
 
     long i, t;
     t = N_Gas / 10;
-    put_sep0;
     mytimer_start();
     writelog( "compute cre pressure ...\n" );
 
@@ -80,7 +79,6 @@ void compute_cre_pressure() {
         }
     }
     mytimer_end();
-    put_sep0;
 
 }
 
@@ -213,7 +211,6 @@ void cre_pressure_pdf() {
     myfree( cre_cr );
     myfree( cr_bar );
     mytimer_end();
-    put_sep0;
 
 }
 

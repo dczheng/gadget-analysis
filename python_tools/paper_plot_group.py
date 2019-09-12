@@ -7,14 +7,14 @@ snap_idx    = int( sys.argv[2] )
 Projs       = sys.argv[3:]
 #tProjs       = [ 'z', 'x', 'x', 'x', 'x', 'x' ]
 NGroup  = len( Projs )
-ds_name = [  "Density", "MagneticField", "Mach", "Cre_e",\
-             "Radio"
+ds_name = [  "Density", "MagneticField", "Mach", \
+                "InternalEnergy", "Temperature"
             ]
 fig_name = [  r"$\rm {\rho}/{\bar{\rho}}$", \
               r"$\rm B \,[\mu G]$",\
               r"$\rm Mach$",  \
               r"$\rm \epsilon / \epsilon_{\rm bar}$", \
-              r"$\rm I_{1.4G}\, [mJy\,sr^{-1}]$"\
+              r"$\rm I_{1.4G}\, [mJy\,arcmin^{-2}]$"\
               ]
 norms   = [  mplc.LogNorm(),\
              mplc.LogNorm(),\
@@ -23,21 +23,23 @@ norms   = [  mplc.LogNorm(),\
              mplc.LogNorm()
              ]
 cmaps   = [ \
-        #cm.jet,\
+        cm.hot,\
         #cm.viridis,\
+        #cm.gist_ncar,\
+        #cm.gnuplot2,\
+        plt.get_cmap( 'ds9b' ),\
+        plt.get_cmap( 'ds9a' ),\
+        cm.plasma,\
+        cm.magma,\
+        #cm.magma,\
+        #cm.jet,\
         #cm.ocean,\
         #cm.magma,\
         #cm.summer,\
         #cm.winter,\
-        cm.hot,\
-        #plt.get_cmap( 'ds9b' ),\
         #cm.inferno,\
         #cm.gnuplot,\
-        cm.nipy_spectral,\
-        #cm.gist_ncar,\
-        plt.get_cmap( 'ds9a' ),\
-        cm.plasma,\
-        cm.magma,\
+        #cm.nipy_spectral,\
         cm.gist_heat,\
         ]
 m = len(ds_name)
@@ -66,6 +68,9 @@ for i in range(m):
     if "Mach" in ds_name[i]:
         for j in range(n):
             ds[i][j][0,0] = 1
+    if "MagneticField" in ds_name[i]:
+        for j in range(n):
+            ds[i][j][ds[i][j]<1e-6] = 0
 
 for i in range(m):
     vmin = 1e100

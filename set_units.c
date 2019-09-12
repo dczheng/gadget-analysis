@@ -89,7 +89,5 @@ void set_units() {
     writelog2( guc.c2 );
     writelog2( guc.mec2 );
     */
-
-    put_sep;
 }
 

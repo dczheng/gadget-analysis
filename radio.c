@@ -233,7 +233,6 @@ void init_tab_F() {
     do_sync( "" );
 
     writelog( "initialize tab_F ... done.\n" );
-    put_sep0;
 
     //endrun( 20190826 );
 

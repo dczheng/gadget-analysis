@@ -247,7 +247,6 @@ void corr_dm() {
     myfree( DM );
     myfree( DMCorr );
     myfree( DMCorr1d );
-    put_sep;
 
 }
 
@@ -288,7 +287,6 @@ void corr_gas() {
     myfree( Gas );
     myfree( GasCorr );
     myfree( GasCorr1d );
-    put_sep;
 
 }
 
@@ -530,7 +528,5 @@ void pdf_Tdiff_dens() {
     myfree( T );
 
     do_sync( "" );
-
-    put_sep;
 
 }

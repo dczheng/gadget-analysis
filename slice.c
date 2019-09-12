@@ -91,7 +91,6 @@ void slice_init() {
     writelog( "\n" );
 
     writelog( "determine slice info ... done.\n" );
-    put_sep0;
 
 }
 
