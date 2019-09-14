@@ -171,13 +171,6 @@ typedef struct ParticleData {
 typedef struct SphParticleData {
     double Density;
     double u;
-
-    /*
-    double Hsml;
-    double NumNgb;
-    double HydroAccel[3];
-    */
-
     double MachNumber;
     double CR_C0;
     double CR_Q0;
@@ -191,7 +184,6 @@ typedef struct SphParticleData {
     double CRE_n;
     double CRE_e;
     double CRE_P;
-    //double *Rad;
     double B[3];
     double SmoothB[3];
     double divB;
@@ -199,11 +191,6 @@ typedef struct SphParticleData {
     double elec;
     double Temp;
     double Hsml;
-    /*
-    int Star_BH_Num[2];
-    int Star_BH_MaxNum[2];
-    MyIDType *Star_BH_Index[2];
-    */
     double sfr;
 } SphParticleData;
 
