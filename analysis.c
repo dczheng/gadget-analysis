@@ -2,7 +2,7 @@
 
 void init_analysis() {
 
-    writelog( "initialize analysis...\n" );
+    put_header( "initialize analysis" );
     proj_k = All.ProjectDirection;
     proj_i = ( All.ProjectDirection + 1 ) % 3;
     proj_j = ( All.ProjectDirection + 2 ) % 3;
@@ -17,13 +17,10 @@ void init_analysis() {
 
     init_img();
     create_dir( OutputDir );
-
-    writelog( "initialize analysis... done.\n" );
-
 }
 
 void free_analysis() {
-    writelog( "free analysis ...\n" );
+    put_header( "free analysis" );
     if ( All.KernelInterpolation )
         free_kernel_matrix();
     free_img();
@@ -31,15 +28,13 @@ void free_analysis() {
     if ( All.RadSpec ) {
         free_particle_radio();
     }
-
-    writelog( "free analysis ... done.\n" );
 }
 
 void analysis(){
 
 
     mytimer_start();
-    writelog( "start analyais ...\n" );
+    put_header( "start analyais" );
     put_sep0;
     init_analysis();
     put_sep0;
@@ -70,7 +65,7 @@ void analysis(){
 
     }
 
-    do_sync("");
+    do_sync( "global compute1" );
 
     if ( All.RadSpec ) {
         compute_particle_radio();
@@ -82,7 +77,7 @@ void analysis(){
         put_sep0;
     }
 
-    do_sync( "global compute" );
+    do_sync( "global compute2" );
     put_sep0;
 
     part_info();
@@ -123,6 +118,10 @@ void analysis(){
 
         if ( All.BPdf ) {
             B_Pdf();
+        }
+
+        if ( All.DivBErrPdf ) {
+            DivB_Err_Pdf();
         }
 
         if ( All.RadSlice ) {
@@ -187,6 +186,10 @@ void analysis(){
             group_analysis();
         }
 
+        if ( All.BDensPdf ) {
+            B_dens_pdf();
+        }
+
     }
     do_sync( "" );
     put_sep0;
@@ -201,7 +204,6 @@ void analysis(){
         }
     }
 
-    writelog( "analyais ... done.\n" );
     free_analysis();
     mytimer_end();
 }

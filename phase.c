@@ -6,6 +6,8 @@ void phase() {
     long p;
     int flag;
 
+    put_header( "gas phase" );
+
     mymalloc1( phase_x, sizeof(double) * N_Gas );
     mymalloc2( phase_y, sizeof(double) * N_Gas );
 
@@ -13,7 +15,6 @@ void phase() {
         phase_x[p] = SphP[p].Density / CUBE(Time) / RhoBaryon;
         phase_y[p] = SphP[p].Temp;
     }
-    writelog( "plot gas phase...\n" );
 
     flag = 0;
     flag |= PDF2D_BIT_XLOG;

@@ -83,6 +83,9 @@ int blockpresent( enum iofields blk, int pt ) {
         case IO_MAG:
             blockpresent_check( blockpresent0(blk,pt) && All.ReadB );
 
+        case IO_DIVB:
+            blockpresent_check( blockpresent0(blk,pt) && All.ReadDivB );
+
         case IO_SFR:
             blockpresent_check( blockpresent0(blk,pt) && All.ReadSfr );
 
@@ -101,7 +104,6 @@ int blockpresent( enum iofields blk, int pt ) {
         case IO_CR_P0:
             blockpresent_check( blockpresent0(blk,pt) && All.ReadCr );
 
-        case IO_DIVB:
         case IO_DBDT:
         case IO_POT:
         case IO_ACCEL:
@@ -727,7 +729,7 @@ void read_snapshot() {
     char file_name[MYFILENAME_MAX], buf[200], buf1[200];
     size_t BufferBytes;
 
-    writelog( "read data ...\n" );
+    put_header( "read data" );
 
 #ifdef OUTPUT_IN_DOUBLEPRECISION
     writelog( "****** Note: output precision is double ! ******\n" );
@@ -741,7 +743,6 @@ void read_snapshot() {
         for( io_i = 0; io_i < IOGroups; io_i++ ) {
             if ( ThisTask_Master % IOGroups == io_i ) {
                 //printf( "Master: %i read header ...\n", ThisTask_Master );
-                SnapIndex = ThisTask / NumThreadsPerSnapshot + All.StartSnapIndex;
                 //printf( "%i\n", All.StartSnapIndex );
                 //endrun(0);
                 sprintf( file_name, "%s_%03d.%3i.hdf5", All.FilePrefix, SnapIndex, 0 );

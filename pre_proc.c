@@ -22,11 +22,11 @@ void find_id() {
     int bits;
     long i, num, offset;
     mytimer_start();
-    writelog( "find id ...\n" );
+    put_header( "find id" );
 
     for ( bits=0; GENERATIONS > (1<<bits); bits++ );
     writelog( "bits: %i\n", bits );
-    writelog( "find gas id ...\n" );
+    writelog( "find gas id\n" );
     for ( i=0; i<N_Gas; i++ ){
         P[i].ID <<= bits;
         P[i].ID >>= bits;
@@ -36,7 +36,7 @@ void find_id() {
     offset = get_particle_offset( 4 );
     if ( num != 0 ) {
         writelog( "Star Particle Offset: %li\n", offset );
-        writelog( "find star id ...\n" );
+        writelog( "find star id\n" );
         for ( i=0; i<num; i++ ) {
             P[offset+i].ID <<= bits;
             P[offset+i].ID >>= bits;
@@ -47,14 +47,13 @@ void find_id() {
     offset = get_particle_offset( 5 );
     if ( num != 0 ) {
         writelog( "Black Hole Particle Offset: %li\n", offset );
-        writelog( "find Black Hole id ...\n" );
+        writelog( "find Black Hole id\n" );
         for ( i=0; i<num; i++ ) {
             P[offset+i].ID <<= bits;
             P[offset+i].ID >>= bits;
         }
     }
 
-    writelog( "find id ... done.\n" );
     mytimer_end();
 }
 
@@ -63,7 +62,7 @@ void construct_id_to_index() {
     long idmax, idmin, i, idn, N;
 
     mytimer_start();
-    writelog( "construct id to index ...\n" );
+    put_header( "construct id to index" );
     idmax = -1;
     idmin = LONG_MAX;
 
@@ -99,7 +98,6 @@ void construct_id_to_index() {
     }
     */
 
-    writelog( "construct id to index ... done.\n" );
     mytimer_end();
     myfree( id_to_index );
 
@@ -157,10 +155,10 @@ void sort_particle_by_pos() {
     struct sphp_sort *ss;
 
 
-    writelog( "sort particle ...\n" );
+    put_header( "sort particle" );
     mytimer_start();
 
-    writelog( "sort sph particle ...\n" );
+    writelog( "sort sph particle\n" );
 
     mymalloc1( ss, sizeof( struct sphp_sort ) * N_Gas );
     mymalloc2( flag, N_Gas );
@@ -225,8 +223,6 @@ void sort_particle_by_pos() {
 
     myfree( flag );
     myfree( ss );
-
-    writelog( "sort sph particle ... done.\n" );
     mytimer();
 
     for( i=1; i<6; i++ ) {
@@ -235,9 +231,8 @@ void sort_particle_by_pos() {
         num = get_particle_num( i );
 
         if ( num>0 ) {
-            writelog( "sort `%li` particle ... \n", i );
+            writelog( "sort `%li` particle\n", i );
             qsort( P+offset, num, sizeof( ParticleData ), &compare_pos );
-            writelog( "sort `%li` particle ... done.\n", i );
             mytimer();
         }
 
@@ -258,7 +253,6 @@ void sort_particle_by_pos() {
     */
 
     mytimer_end();
-    writelog( "sort particle ...done.\n" );
 
 }
 
@@ -350,13 +344,15 @@ void test_sort() {
 void merge_particle( int pt ) {
 
     long offset, num0, num1, i, i1, i2, j, n;
+    char buf[100];
 
     if ( pt == 0 ) {
         writelog( "Error: particle `0` can not be merge !!!\n" );
         endrun( 20181109 );
     }
 
-    writelog( "merge particle `%i` ...\n", pt );
+    sprintf( buf, "merge particle `%i` ...\n", pt );
+    put_header( buf );
 
     offset = get_particle_offset( pt );
     num0 = get_particle_num( pt );
@@ -400,8 +396,6 @@ void merge_particle( int pt ) {
 
         NumPart -= n;
     }
-
-    writelog( "merge particle `%i` ... done.\n", pt );
 
 }
 
@@ -510,7 +504,7 @@ void pre_proc() {
     if ( ThisTask_Local != 0 )
         return;
 
-    writelog( "pre proc ...\n" )
+    put_header( "pre proc" )
 
     for ( i=0; i<6; i++ ) {
          NumPart6[i] = get_particle_num( i );
@@ -570,7 +564,6 @@ void pre_proc() {
         writelog( "\n" )
         */
 
-    writelog( "pre proc ... done.\n" )
 
 }
 
@@ -578,7 +571,7 @@ void check_data( int err ) {
 
     long i, offset, num;
 
-    writelog( "Check data ...\n" );
+    put_header( "Check data" );
 
     offset = get_particle_offset( 4 );
     num = get_particle_num( 4 );
@@ -601,7 +594,4 @@ void check_data( int err ) {
             //printf( "P[%li].Mass = 0 !!!, Type: %i\n", i, P[i].Type );
             endrun(20181107);
         }
-
-    writelog( "Check data ... done.\n" );
-
 }

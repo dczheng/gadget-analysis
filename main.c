@@ -2,18 +2,32 @@
 
 char buf[100], *bname;
 
-void init_sep_str() {
-    memset( sep_str, '-', SEP_LEN-2 );
-    sep_str[ SEP_LEN-2 ] = '\n';
-    sep_str[ SEP_LEN-1 ] = '\0';
+void init_sep_str( int flag ) {
+    if ( flag == 0 ) {
+        memset( sep_str, '-', SEP_LEN-2 );
+        sep_str[ SEP_LEN-2 ] = '\n';
+        sep_str[ SEP_LEN-1 ] = '\0';
 
-    memset( sep_str0, '-', SEP_LEN0-2 );
-    sep_str0[ SEP_LEN0-2 ] = '\n';
-    sep_str0[ SEP_LEN0-1 ] = '\0';
+        memset( sep_str0, '-', SEP_LEN0-2 );
+        sep_str0[ SEP_LEN0-2 ] = '\n';
+        sep_str0[ SEP_LEN0-1 ] = '\0';
+    }
+    else {
+        sprintf( sep_str+SEP_LEN/2-4, "%03i~%03i",
+                All.StartSnapIndex, SnapIndex );
+        sprintf( sep_str0+SEP_LEN0/2-4, "%03i~%03i",
+                All.StartSnapIndex, SnapIndex );
+        memset( sep_str+SEP_LEN/2+3, '-', SEP_LEN-2-SEP_LEN/2-3 );
+        memset( sep_str0+SEP_LEN0/2+3, '-', SEP_LEN0-2-SEP_LEN/2-3 );
+        sep_str[ SEP_LEN-2 ] = '\n';
+        sep_str[ SEP_LEN-1 ] = '\0';
+        sep_str0[ SEP_LEN0-2 ] = '\n';
+        sep_str0[ SEP_LEN0-1 ] = '\0';
+    }
 }
 
 void global_init() {
-    init_sep_str();
+    init_sep_str(0);
     ms.max_mem = ms.mem = ms.nn = 0;
     srand( time(NULL) );
     inte_ws = gsl_integration_workspace_alloc( GSL_INTE_WS_LEN );
@@ -102,7 +116,7 @@ void create_mpi_comms() {
     MPI_Comm  TmpComm;
 
 
-    writelog( "create mpi comms ...\n" );
+    put_header( "create mpi comms" );
 
     NTask_Local = NumThreadsPerSnapshot;
     NTask_Master = NTask / NTask_Local;
@@ -151,7 +165,7 @@ void create_mpi_comms() {
 
 void free_comms() {
 
-    writelog( "free mpi comms ...\n" );
+    put_header( "free mpi comms" );
     MPI_Comm_free( &MpiComm_Local );
     if ( ThisTask_Local == 0 )
         MPI_Comm_free( &MpiComm_Master );
@@ -299,6 +313,8 @@ int main( int argc, char *argv[] ){
     put_sep;
 
     read_parameters( argv[1] );
+    SnapIndex = ThisTask / NumThreadsPerSnapshot + All.StartSnapIndex;
+    init_sep_str(1);
     put_sep;
 
     if ( All.ParallelIO <= 0 ) {

@@ -147,9 +147,13 @@ def fmt_tick_labels( ax, xy ):
                 tt.append( r'$%s$'%real2tex( float(xx[1]) ) )
         ax.set_yticklabels( tt )
 
-def make_log_ticks( xmin, xmax, n, a=1, axis=None ):
+def make_log_ticks( xmin, xmax, n, a=0, axis=None ):
     xmin = np.log10( xmin )
     xmax = np.log10( xmax )
+    if a == 0:
+        a = 1
+        while (xmax-xmin)/a > 10:
+            a += 1
     loc = np.arange( int(xmin)-1, int(xmax)+2, a )
     fmt = [ r'$10^{%.0f}$'%i for i in loc ] 
     loc = ( loc - xmin ) / ( xmax-xmin ) * ( n-1 )

@@ -216,7 +216,7 @@ typedef struct GlobalParams{
         ReadCre, ReadCr, ReadB, ReadMach, ReadSfr, ReadTemp, ReadVel,
         ReadElec, Readu, ReadHsml,
         MpcFlag,
-        Group, MF, MFBins, BPdf,  BPdfBins,
+        Group, MF, MFBins, BPdf,  BPdfBins, BDensPdf, DivBErrPdf, DivBErrPdfBins, ReadDivB,
         GroupTemp, GroupSfr, GroupB, GroupMach, GroupCre, GroupU,
         GroupTempProfileRN,
         GroupTempProfile,
@@ -297,6 +297,9 @@ typedef struct GlobalParams{
             FieldCrenTDensTMin,
             FieldCrenTDensTMax,
             BPdfBMin, BPdfBMax,
+            DivBErrPdfMin, DivBErrPdfMax,
+            BDensPdfBMin, BDensPdfBMax,
+            BDensPdfDensMin, BDensPdfDensMax,
             PosShiftX, PosShiftY, PosShiftZ, GroupSize;
 
 } GlobalParams;

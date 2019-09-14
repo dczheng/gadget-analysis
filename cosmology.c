@@ -261,7 +261,7 @@ void init_ps() {
 
     R = 8000.0;
 
-    writelog( "init ps ...\n" );
+    put_header( "init ps" );
     ps_ss.P = &PowerSpec_Efstathiou;
     ps_ss.filter = &top_hat_filter;
     ps_ss.FilterKLimit = &top_hat_filter_k_limit;
@@ -329,7 +329,7 @@ void test_ps() {
 
 #define writelog1( a, b ) writelog( "%-35s: %g\n", a, b )
 void compute_cosmo_quantities() {
-    writelog( "compute cosmology quantities ...\n" );
+    put_header( "compute cosmology quantities" );
 
     Time = header.time;
     Time2 = SQR( Time );
@@ -360,8 +360,6 @@ void compute_cosmo_quantities() {
     writelog1( "RhoCrit", RhoCrit );
     writelog1( "RhoCrit[cgs]", RhoCrit * g2c.g / CUBE( g2c.cm ) );
     writelog1( "RhoM", RhoM );
-
-    writelog( "compute cosmology quantities ... done.\n" );
 }
 
 void test_cos() {

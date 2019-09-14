@@ -5,7 +5,7 @@
 
 void set_units() {
 
-    writelog( "Set Units...\n" );
+    put_header( "Set Units" );
     UnitTime_in_s = All.UnitLength_in_cm / All.UnitVelocity_in_cm_per_s;
     UnitDensity_in_cgs = All.UnitMass_in_g / pow( All.UnitLength_in_cm, 3 );
     UnitEnergy_in_cgs = All.UnitMass_in_g * pow( All.UnitLength_in_cm,2 ) / pow( UnitTime_in_s, 2 );
