@@ -545,7 +545,7 @@ void read_header( char *fn ) {
     H5Aread(hdf5_attribute, H5T_NATIVE_INT, &header.num_files);
     H5Aclose(hdf5_attribute);
 
-    if ( All.Gadget2 == 0 ) {
+#ifndef GADGET2
         hdf5_attribute = H5Aopen_name(hdf5_group, "Flag_IC_Info");
         H5Aread(hdf5_attribute, H5T_NATIVE_INT, &header.flag_ic_info);
         H5Aclose(hdf5_attribute);
@@ -553,8 +553,7 @@ void read_header( char *fn ) {
         hdf5_attribute = H5Aopen_name(hdf5_group, "Flag_DoublePrecision");
         H5Aread(hdf5_attribute, H5T_NATIVE_INT, &header.flag_doubleprecision);
         H5Aclose(hdf5_attribute);
-
-    }
+#endif
 
     hdf5_attribute = H5Aopen_name(hdf5_group, "Flag_Sfr");
     H5Aread(hdf5_attribute, H5T_NATIVE_INT, &header.flag_sfr);

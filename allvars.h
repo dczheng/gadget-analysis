@@ -245,7 +245,6 @@ typedef struct GlobalParams{
         DensPdfN,
         TPdfN,
         GroupTempStackRN,
-        Gadget2,
         NumFilesPerSnapshot,
 
         QNum, NuNum, FoFMinLen,
