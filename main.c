@@ -1,6 +1,6 @@
 #include "allvars.h"
 
-char buf[100], *bname;
+char buf[100], *bname, bname2[100];
 
 void init_sep_str( int flag ) {
     if ( flag == 0 ) {
@@ -183,11 +183,11 @@ void merge_log_file() {
 
     printf( "merge log file ...\n" );
     for ( i=0; i<2; i++ ) {
-        fd = myfopen( "w", "./gadget-analysis.log/%s%s.log", bname, t[i] );
+        fd = myfopen( "w", "./gadget-analysis.log/%s%s.log", bname2, t[i] );
 
         for( j=0; j<NTask; j++ ) {
 
-            fd1 = myfopen( "r", "./gadget-analysis.log/%s%s-%03i.log", bname, t[i], j );
+            fd1 = myfopen( "r", "./gadget-analysis.log/%s%s-%03i.log", bname2, t[i], j );
             fprintf( fd, "%s", sep_str );
             fprintf( fd, "Task: %i\n", j );
             fprintf( fd, "%s", sep_str );
@@ -199,7 +199,7 @@ void merge_log_file() {
 
             fclose( fd1 );
 
-            sprintf( buf, "./gadget-analysis.log/%s%s-%03i.log", bname, t[i], j );
+            sprintf( buf, "./gadget-analysis.log/%s%s-%03i.log", bname2, t[i], j );
             status = remove( buf );
 
             if ( status ) {
@@ -225,7 +225,7 @@ int main( int argc, char *argv[] ){
     time_t time1, time2;
     long dtime;
     struct tm *tb;
-    int provided;
+    int provided, i;
 
     //MPI_Init( &argc, &argv );
     MPI_Init_thread( &argc, &argv, MPI_THREAD_FUNNELED, &provided );
@@ -259,7 +259,6 @@ int main( int argc, char *argv[] ){
 
     global_init();
 
-    bname = basename( argv[1] );
     //printf( "argv[1]: %s, bname: %s\n", argv[1], bname );
 
     /************************init log**************************************/
@@ -280,11 +279,15 @@ int main( int argc, char *argv[] ){
     merge_log_file();
     */
 
-    LogFileFd = myfopen( "w", "./gadget-analysis.log/%s-%03d.log", bname, ThisTask );
+    bname = basename( argv[1] );
+    i = strlen(bname);
+    sprintf( bname2, "%s", bname );
+    bname2[i-4] = '\0';
+    LogFileFd = myfopen( "w", "./gadget-analysis.log/%s-%03d.log", bname2, ThisTask );
 
-    UsedMemFileFd = myfopen( "w", "./gadget-analysis.log/%s-usedmem-%03d.log", bname, ThisTask );
+    UsedMemFileFd = myfopen( "w", "./gadget-analysis.log/%s-usedmem-%03d.log", bname2, ThisTask );
 
-    sprintf( OutputDir, "./output_%s/", bname );
+    sprintf( OutputDir, "./output_%s/", bname2 );
 
     create_mpi_comms();
     put_sep;

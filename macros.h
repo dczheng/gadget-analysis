@@ -7,13 +7,13 @@
 }
 
 #define myfopen( opt, fmt, ... ) ({\
-    char buf[100];\
+    char myfopenbuf[100];\
     FILE *fd;\
     do {\
-        sprintf( buf, fmt, ##__VA_ARGS__ );\
-        fd = fopen( buf, opt );\
+        sprintf( myfopenbuf, fmt, ##__VA_ARGS__ );\
+        fd = fopen( myfopenbuf, opt );\
         if ( NULL == fd ) {\
-            printf( "can not open `%s`.\n", buf );\
+            printf( "can not open `%s`.\n", myfopenbuf );\
             endrun(20190826);\
         }\
     }while(0);\
@@ -21,9 +21,9 @@
 })
 
 #define create_dir( fmt, ... ) {\
-    char buf[100];\
-    sprintf( buf, fmt, ##__VA_ARGS__ );\
-    create_dir0( buf );\
+    char cbuf[100];\
+    sprintf( cbuf, fmt, ##__VA_ARGS__ );\
+    create_dir0( cbuf );\
 }
 
 #define vmax( a, b ) ( ( (a) > (b) ) ? (a) : (b) )

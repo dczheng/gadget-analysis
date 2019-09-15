@@ -2,12 +2,13 @@
 
 #ifdef COMPUTETEMP
 void compute_temperature() {
-    double yhelium, u, ne, mu, XH;
-    long i;
 
 #ifdef READTEMP
         return;
-#endif
+#else
+
+    double yhelium, u, ne, mu, XH;
+    long i;
 
     writelog( "compute gas temprature...\n" );
     XH = HYDROGEN_MASSFRAC;
@@ -27,6 +28,7 @@ void compute_temperature() {
 
     }
     writelog( "compute gas temprature... done.\n" );
+#endif
 
 }
 

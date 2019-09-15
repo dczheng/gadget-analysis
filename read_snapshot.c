@@ -66,46 +66,55 @@ int blockpresent( enum iofields blk, int pt ) {
 #ifdef  READVEL
             blockpresent_check( blockpresent0(blk,pt));
 #endif
+            return 0;
 
         case IO_TEMP:
 #ifdef READTEMP
             blockpresent_check( blockpresent0(blk,pt) );
 #endif
+            return 0;
 
         case IO_HSML:
 #ifdef READHSML
             blockpresent_check( blockpresent0(blk,pt) );
 #endif
+            return 0;
 
         case IO_U:
 #ifdef READU
             blockpresent_check( blockpresent0(blk,pt) );
 #endif
+            return 0;
 
         case IO_NE:
 #ifdef READELEC
             blockpresent_check( blockpresent0(blk,pt) );
 #endif
+            return 0;
 
         case IO_MN:
 #ifdef READMACH
             blockpresent_check( blockpresent0(blk,pt) );
 #endif
+            return 0;
 
         case IO_MAG:
 #ifdef READB
             blockpresent_check( blockpresent0(blk,pt) );
 #endif
+            return 0;
 
         case IO_DIVB:
 #ifdef READDIVB
             blockpresent_check( blockpresent0(blk,pt) );
 #endif
+            return 0;
 
         case IO_SFR:
 #ifdef READSFR
             blockpresent_check( blockpresent0(blk,pt) );
 #endif
+            return 0;
 
         case IO_CRE_C:
         case IO_CRE_ALPHA:
@@ -116,6 +125,7 @@ int blockpresent( enum iofields blk, int pt ) {
 #ifdef READCRE
             blockpresent_check( blockpresent0(blk,pt) );
 #endif
+            return 0;
 
         case IO_CR_Q0:
         case IO_CR_C0:
@@ -125,6 +135,7 @@ int blockpresent( enum iofields blk, int pt ) {
 #ifdef READCR
             blockpresent_check( blockpresent0(blk,pt) );
 #endif
+            return 0;
 
         case IO_DBDT:
         case IO_POT:

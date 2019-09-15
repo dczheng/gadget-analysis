@@ -137,12 +137,29 @@ void part_info();
 void total_radio_spectrum();
 
 
+//%------>>>>>>file : main.c
+//%
+void init_sep_str( int flag );
+void global_init();
+void global_free();
+void mpi_comms_test();
+void create_mpi_comms();
+void free_comms();
+void merge_log_file();
+int main( int argc, char *argv[] );
+
+
 //%------>>>>>>file : cre.c
 //%
 double beta_inte( double x, void *params );
 double beta( double a, double b, double x );
 void compute_cre_pressure();
 void cre_pressure_pdf();
+
+
+//%------>>>>>>file : temp.c
+//%
+void compute_temperature();
 
 
 //%------>>>>>>file : img.c
@@ -191,9 +208,8 @@ void group_analysis();
 void phase();
 
 
-//%------>>>>>>file : temp.c
+//%------>>>>>>file : allvars.c
 //%
-void compute_temperature();
 
 
 //%------>>>>>>file : grid.c
@@ -261,10 +277,6 @@ void group_electron_spectrum();
 void field_cren_T_dens();
 
 
-//%------>>>>>>file : allvars.c
-//%
-
-
 //%------>>>>>>file : cosmology.c
 //%
 double E_a ( double a );
@@ -319,18 +331,6 @@ void temperature_slice();
 void cren_slice();
 void cree_slice();
 void radio_slice();
-
-
-//%------>>>>>>file : main.c
-//%
-void init_sep_str( int flag );
-void global_init();
-void global_free();
-void mpi_comms_test();
-void create_mpi_comms();
-void free_comms();
-void merge_log_file();
-int main( int argc, char *argv[] );
 
 
 //%------>>>>>>file : read_params.c

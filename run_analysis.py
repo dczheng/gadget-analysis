@@ -201,11 +201,11 @@ def deps2( fd, A, Bs ):
     fd.write( "#endif\n\n" )
 
 
-def gen_config( param_file, run_dir ):
+def gen_config( param_file, run_dir, new_param_file ):
 
     lines = open( param_file ).readlines()
     fn_h = run_dir + '/gadget-analysis-config.h'
-    fn_in = run_dir + '/gadget-analysis.in'
+    fn_in = new_param_file
     fd_h = open( fn_h, "w" )
     fd_in = open( fn_in, "w" )
     
@@ -225,7 +225,7 @@ def gen_config( param_file, run_dir ):
     deps1( fd_h, ( "GROUPTEMP", "GROUPU", "GROUPSFR", "GROUPB", "GROUPMACH",\
                 "GROUPCRE", "GROUPRAD", "GROUPSPEC", "GROUPELECSPEC",\
                 "GROUPTEMPPROFILE", "GROUPTEMPSTACK"), "GROUP" )
-    deps1( fd_h, ("GROUPSFR",), "READSFR" )
+    deps1( fd_h, ("GROUPSFR","BPDF"), "READSFR" )
     deps1( fd_h, ("GROUPU","UTPFD", "GROUPCRE"), "READU" )
     deps1( fd_h, ("GROUPB","BPDF"), "READB" )
     deps1( fd_h, ("DIVBERRPDF",), "READDIVB" )
@@ -233,7 +233,7 @@ def gen_config( param_file, run_dir ):
     deps1( fd_h, ("GROUPCRE","GROUPELECSPEC", "CREPPDF", "CRENSLICE", "CREESLICE",\
                  "CRENTPDF" ), "READCRE" )
     deps1( fd_h, ("GROUPTEMP","TEMPSLICE", "PDFTDIFFDENS", "PHASE","CRENTPDF",\
-                    "TPDF", "GASRATIO", "HSMLTPDf", "UTPDF" ), "COMPUTETEMP" )
+                    "TPDF", "GASRATIO", "HSMLTPDf", "UTPDF", "BPDF" ), "COMPUTETEMP" )
     deps1( fd_h, ("GROUPRAD","RADSLICE", "TOTSPEC"), "RADSPEC" )
     deps1( fd_h, ("HSMLTPDF","HSMLDENSPDF", "RADSLICE"), "READHSML" )
     deps1( fd_h, ("MF",), "FOF" )
@@ -259,13 +259,14 @@ def main():
         print( "give parameter file" )
         exit()
     param_file = sys.argv[1]
+    new_param_file = param_file + '.new'
     
     run_dir = os.path.dirname( os.path.realpath( sys.argv[0] ) )
     cur_dir = os.getcwd()
     #print( run_dir )
     #print( cur_dir )
     
-    gen_config( param_file, run_dir )
+    gen_config( param_file, run_dir, new_param_file )
 
     os.chdir( run_dir )
     gen_allvars()
@@ -275,7 +276,7 @@ def main():
     os.chdir( cur_dir )
 
     if len(sys.argv) == 2:
-        cmd = '%s/bin/gadget-analysis %s/gadget-analysis.in'%(run_dir, run_dir)
+        cmd = '%s/bin/gadget-analysis %s'%(run_dir, new_param_file )
 
     if len(sys.argv) > 2:
         a = int( sys.argv[2] )
@@ -283,11 +284,11 @@ def main():
             b = 1
         else:
             b = int(sys.argv[3])
-        cmd = 'mpirun -np %i %s/bin/gadget-analysis %s/gadget-analysis.in %i'\
-            %(a, run_dir, run_dir, b)
+        cmd = 'mpirun -np %i %s/bin/gadget-analysis %s %i'\
+            %(a, run_dir, new_param_file, b)
 
     print( "\nRUN: `%s`\n"%cmd )
 
-    #os.system( cmd )
+    os.system( cmd )
 
 main()
