@@ -1,4 +1,5 @@
 #include "allvars.h"
+#ifdef GROUP
 
 /*
 void group_particle_spectrum() {
@@ -142,6 +143,7 @@ void group_luminosity( int nu_index, long index, double *lumgrid, double *num ) 
 }
 
 */
+
 double group_luminosity( int nu_index, long index ) {
 
     long p;
@@ -179,6 +181,7 @@ void group_flux( int nu_index, long index, double *flux, double *flux_nosr ) {
 
 }
 
+#ifdef GROUPSPEC
 void group_spectrum() {
 
     int vN, i, index;
@@ -276,8 +279,9 @@ void group_spectrum() {
     writelog( "group spectrum ... done.\n" );
 
 }
+#endif
 
-
+#ifdef GROUPELECSPEC
 double particle_f( SphParticleData *part, double p ) {
 
     double r;
@@ -348,14 +352,13 @@ void group_electron_spectrum() {
                 for( i=0; i<qn; i++ ) {
                     q = log( qmin ) + i * dlogq;
                     q = exp(q);
-                    if ( All.GroupEleSpecDensityWeighted ) {
+#ifdef GROUPELECDENSITYWEIGHTED
                         f[i] += particle_f( &SphP[p], q ) * SphP[p].Density;
                         rho += SphP[p].Density;
-                    }
-                    else {
+#else
                         f[i] += particle_f( &SphP[p], q );
                         rho ++;
-                    }
+#endif
                 }
                 vmax2( qmax_max, SphP[p].CRE_qmax );
                 vmin20( qmin_min, SphP[p].CRE_qmin );
@@ -395,7 +398,9 @@ void group_electron_spectrum() {
     fclose( fd );
 
 }
+#endif
 
+/*
 void group_spectrum_index() {
 
     double *spec, *v, vmin, vmax, dv, cov00, cov01, cov11, c0,
@@ -514,3 +519,5 @@ void group_spectrum_index() {
     writelog( "group spectrum index... done.\n" );
 
 }
+*/
+#endif

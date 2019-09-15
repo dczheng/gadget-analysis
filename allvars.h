@@ -16,6 +16,7 @@
 #include "sys/stat.h"
 #include "macros.h"
 #include "libgen.h"
+#include "gadget-analysis-config.h"
 
 #define ZDEBUG
 
@@ -161,22 +162,35 @@ struct radio_inte_struct{
 typedef struct ParticleData {
     double Pos[3];
     double Mass;
+#ifdef READVEL
     double Vel[3];
+#endif
+#ifdef READPOT
     double Pot;
+#endif
+#ifdef READACC
     double Acc[3];
+#endif
     MyIDType ID;
     int Type;
 } ParticleData;
 
 typedef struct SphParticleData {
     double Density;
+#ifdef READU
     double u;
+#endif
+#ifdef READMACH
     double MachNumber;
+#endif
+#ifdef READCR
     double CR_C0;
     double CR_Q0;
     double CR_n0;
     double CR_E0;
     double CR_P0;
+#endif
+#ifdef READCRE
     double CRE_C;
     double CRE_Alpha;
     double CRE_qmin;
@@ -184,14 +198,34 @@ typedef struct SphParticleData {
     double CRE_n;
     double CRE_e;
     double CRE_P;
+#endif
+#ifdef READB
     double B[3];
+#endif
+#ifdef SMOOTH
+#ifdef BSMOOTH
     double SmoothB[3];
+#endif
+#endif
+#ifdef READDIVB
     double divB;
+#endif
+#ifdef READDTB
     double dBdt;
+#endif
+#ifdef READELEC
     double elec;
+#endif
+#if defined(READTEMP) || defined (COMPUTETEMP)
     double Temp;
+#endif
+#ifdef READHSML
     double Hsml;
+#endif
+#ifdef READSFR
     double sfr;
+#endif
+
 } SphParticleData;
 
 typedef struct GlobalParams{
@@ -199,44 +233,20 @@ typedef struct GlobalParams{
             FoFDir[ MYFILENAME_MAX ],
          RadDir[ MYFILENAME_MAX ];
 
-    int FoF,
-        ReadCre, ReadCr, ReadB, ReadMach, ReadSfr, ReadTemp, ReadVel,
-        ReadElec, Readu, ReadHsml,
+    int 
         MpcFlag,
-        Group, MF, MFBins, BPdf,  BPdfBins, BDensPdf, DivBErrPdf, DivBErrPdfBins, ReadDivB,
-        GroupTemp, GroupSfr, GroupB, GroupMach, GroupCre, GroupU,
+        MFBins, BPdfBins, DivBErrPdfBins,
         GroupTempProfileRN,
-        GroupTempProfile,
-        MachSlice,
-        BSlice, UnitAreaSlice, CREnSlice, RadSlice,
-        CREeSlice,
-        GroupRad, GroupSpec, TotSpec,
-        Phase, DensitySlice, TemperatureSlice,
         KernelInterpolation,
-        ConvN, GroupEleSpec, RadSpec,
-        GroupEleSpecDensityWeighted,
-        PowSpec, PowSpecNGrid, PowSpecPartType, PowSpecBins,
-        CrePressurePdf, TabF, Tree, ParallelIO,
-        CorrTdiffDens,
-        PdfTdiffDens,
+        ConvN,
+        PowSpecNGrid, PowSpecPartType, PowSpecBins,
+        TabF, ParallelIO,
         NGrid,
-        CorrGas, CorrDM,
-        DensPdf, DensPdfN,
-        TPdf, TPdfN,
-        CrenTPdf,
-        GroupTempStack,
+        DensPdfN,
+        TPdfN,
         GroupTempStackRN,
-        GroupFixedSize,
-        GroupGasRatio,
-        GasRatio,
-        FieldCrenTDens,
-        HsmlTPdf,
-        UTPdf,
-        HsmlDensPdf,
         Gadget2,
-        GroupDensityWeighted,
         NumFilesPerSnapshot,
-        BSmooth,
 
         QNum, NuNum, FoFMinLen,
         TreePartType,

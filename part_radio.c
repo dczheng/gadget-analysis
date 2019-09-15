@@ -1,5 +1,6 @@
 #include "allvars.h"
 
+#ifdef RADSPEC
 double particle_df( double p, void *params ) {
 
     double *pa;
@@ -462,3 +463,4 @@ void test_part_radio() {
     fclose( fd );
     endrun(20181004);
 }
+#endif

@@ -197,6 +197,7 @@ void put_dens_on_grid( double *grid, int Nmin ) {
 
 }
 
+#ifdef PDFTDIFFDENS
 void put_temp_on_grid( double *grid, int Nmin ) {
 
     long p;
@@ -210,7 +211,9 @@ void put_temp_on_grid( double *grid, int Nmin ) {
     myfree( data );
 
 }
+#endif
 
+#ifdef CORRDM
 void corr_dm() {
 
     double *DM, *DMCorr, *DMCorr1d, DMBar;
@@ -249,7 +252,9 @@ void corr_dm() {
     myfree( DMCorr1d );
 
 }
+#endif
 
+#ifdef CORRGAS
 void corr_gas() {
 
     double *Gas, Gasbar, *GasCorr, *GasCorr1d;
@@ -289,11 +294,15 @@ void corr_gas() {
     myfree( GasCorr1d );
 
 }
+#endif
 
+#ifdef CORRTDIFFDENS
 void corr_Tdiff_dens() {
 
 }
+#endif
 
+#ifdef PDFTDIFFDENS
 void pdf_Tdiff_dens() {
 
     double *Tdiff, *Dens, *Dens0, *tmp,
@@ -530,3 +539,4 @@ void pdf_Tdiff_dens() {
     do_sync( "" );
 
 }
+#endif

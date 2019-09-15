@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import re
 import sys
+import os
     
 debug = 0
 def myprint( s ):
@@ -181,21 +182,112 @@ def make_protos():
         ff.write( '\n\n' )
     ff.close()
 
+def deps1( fd, As, B ):
+    fd.write( "#if defined(%s) "%As[0] )
+    for a in As[1:]:
+        fd.write( "|| defined(%s) "%a )
+    fd.write( "\n#ifndef %s\n"%B )
+    fd.write( "#define %s\n"%B )
+    fd.write( "#endif\n" )
+    fd.write( "#endif\n\n" )
+
+
+def deps2( fd, A, Bs ):
+    fd.write( "#ifdef %s\n"%A )
+    for b in Bs:
+        fd.write( "#ifndef %s\n"%b )
+        fd.write( "#define %s\n"%b )
+        fd.write( "#endif\n" )
+    fd.write( "#endif\n\n" )
+
+
+def gen_config( param_file, run_dir ):
+
+    lines = open( param_file ).readlines()
+    fn_h = run_dir + '/gadget-analysis-config.h'
+    fn_in = run_dir + '/gadget-analysis.in'
+    fd_h = open( fn_h, "w" )
+    fd_in = open( fn_in, "w" )
+    
+    for l in lines:
+        if l[0] == '%' or len(l.strip()) == 0:
+            continue
+        t = [tt.strip() for tt in l.split()]
+        if t[1] == 'on':
+            fd_h.write( "#define %s\n"%(t[0].upper()) )
+            continue
+        if t[1] == 'off':
+            continue
+        fd_in.write( l )
+    fd_in.close()
+
+    fd_h.write( "\n\n"  )
+    deps1( fd_h, ( "GROUPTEMP", "GROUPU", "GROUPSFR", "GROUPB", "GROUPMACH",\
+                "GROUPCRE", "GROUPRAD", "GROUPSPEC", "GROUPELECSPEC",\
+                "GROUPTEMPPROFILE", "GROUPTEMPSTACK"), "GROUP" )
+    deps1( fd_h, ("GROUPSFR",), "READSFR" )
+    deps1( fd_h, ("GROUPU","UTPFD", "GROUPCRE"), "READU" )
+    deps1( fd_h, ("GROUPB","BPDF"), "READB" )
+    deps1( fd_h, ("DIVBERRPDF",), "READDIVB" )
+    deps1( fd_h, ("GROUPMACH",), "READMACH" )
+    deps1( fd_h, ("GROUPCRE","GROUPELECSPEC", "CREPPDF", "CRENSLICE", "CREESLICE",\
+                 "CRENTPDF" ), "READCRE" )
+    deps1( fd_h, ("GROUPTEMP","TEMPSLICE", "PDFTDIFFDENS", "PHASE","CRENTPDF",\
+                    "TPDF", "GASRATIO", "HSMLTPDf", "UTPDF" ), "COMPUTETEMP" )
+    deps1( fd_h, ("GROUPRAD","RADSLICE", "TOTSPEC"), "RADSPEC" )
+    deps1( fd_h, ("HSMLTPDF","HSMLDENSPDF", "RADSLICE"), "READHSML" )
+    deps1( fd_h, ("MF",), "FOF" )
+
+    deps2( fd_h, "RADSPEC", ("READB", "READCRE", "READHSML") )
+    deps2( fd_h, "GROUP", ("FOF", "TREE") )
+
+    deps2( fd_h, "FOF", ("TREE",) )
+
+    deps1( fd_h, ("FOF",), "READVEL" )
+
+    fd_h.write( "#ifdef COMPUTETEMP\n" )
+    fd_h.write( "#ifndef READTEMP\n" )
+    fd_h.write( "#define READU\n" )
+    fd_h.write( "#endif\n" )
+    fd_h.write( "#endif\n" )
+    
+    fd_h.close()
+
 def main():
-    if len(sys.argv) == 1:
-        gen_allvars()
-        make_protos()
-        gen_add_params()
-        return
-    flag = int( sys.argv[1] )
 
-    if flag == 1:
-        gen_allvars()
+    if len(sys.argv) < 2:
+        print( "give parameter file" )
+        exit()
+    param_file = sys.argv[1]
+    
+    run_dir = os.path.dirname( os.path.realpath( sys.argv[0] ) )
+    cur_dir = os.getcwd()
+    #print( run_dir )
+    #print( cur_dir )
+    
+    gen_config( param_file, run_dir )
 
-    if flag == 2:
-        gen_add_params()
+    os.chdir( run_dir )
+    gen_allvars()
+    gen_add_params()
+    make_protos()
+    os.system( 'make -j20' )
+    os.chdir( cur_dir )
 
-    if flag == 3:
-        make_protos()
+    if len(sys.argv) == 2:
+        cmd = '%s/bin/gadget-analysis %s/gadget-analysis.in'%(run_dir, run_dir)
+
+    if len(sys.argv) > 2:
+        a = int( sys.argv[2] )
+        if len(sys.argv) == 3:
+            b = 1
+        else:
+            b = int(sys.argv[3])
+        cmd = 'mpirun -np %i %s/bin/gadget-analysis %s/gadget-analysis.in %i'\
+            %(a, run_dir, run_dir, b)
+
+    print( "\nRUN: `%s`\n"%cmd )
+
+    #os.system( cmd )
 
 main()

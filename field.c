@@ -1,5 +1,6 @@
 #include"allvars.h"
 
+#ifdef FIELDCRENTDENS
 void field_cren_T_dens() {
 
     double *ntd_x, *ntd_y, *ntd_z, mm[4];
@@ -49,3 +50,4 @@ void field_cren_T_dens() {
     myfree( ntd_z );
 }
 
+#endif

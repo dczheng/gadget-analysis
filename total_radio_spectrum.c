@@ -1,5 +1,6 @@
 #include "allvars.h"
 
+#ifdef TOTSPEC
 void total_radio_spectrum() {
 
     long index;
@@ -141,3 +142,4 @@ void total_radio_spectrum() {
     writelog( "total radio spectrum ... done.\n" );
 
 }
+#endif

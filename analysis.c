@@ -25,9 +25,9 @@ void free_analysis() {
         free_kernel_matrix();
     free_img();
 
-    if ( All.RadSpec ) {
+#ifdef RADSPEC
         free_particle_radio();
-    }
+#endif
 }
 
 void analysis(){
@@ -40,42 +40,39 @@ void analysis(){
     put_sep0;
 
     if ( ThisTask_Local == 0 ) {
-        if ( All.Tree ) {
+
+#ifdef TREE
             tree_build();
             put_sep0;
-        }
+#endif
 
+#ifdef SMOOTH
         smooth();
+        put_sep0;
+#endif
 
-        if ( All.FoF ) {
+#ifdef FOF
             fof();
             put_sep0;
-        }
+#endif
 
-        if ( All.TemperatureSlice ||
-              All.Phase ||
-              All.Group ||
-              All.DensitySlice ||
-              All.FieldCrenTDens ||
-              All.HsmlTPdf ||
-              All.UTPdf ||
-              All.GasRatio ) {
+#ifdef COMPUTETEMP
             compute_temperature();
-        }
+#endif
 
     }
 
     do_sync( "global compute1" );
 
-    if ( All.RadSpec ) {
+#ifdef RADSPEC
         compute_particle_radio();
         put_sep0;
-    }
+#endif
 
-    if ( All.TotSpec ) {
+#ifdef TOTSPEC
         total_radio_spectrum();
         put_sep0;
-    }
+#endif
 
     do_sync( "global compute2" );
     put_sep0;
@@ -83,112 +80,112 @@ void analysis(){
     part_info();
     put_sep0;
 
-    if ( All.CrePressurePdf ) {
+#ifdef CREPPDF
        cre_pressure_pdf();
-    }
+#endif
 
-    if ( All.CorrTdiffDens ) {
+#ifdef CORRTDIFFDENS
         corr_Tdiff_dens();
-    }
+#endif
 
-    if ( All.PdfTdiffDens ) {
+#ifdef PDFTDIFFDENS
         pdf_Tdiff_dens();
-    }
+#endif
 
     if ( ThisTask_Local == 0 ) {
-        if ( All.Phase ) {
+#ifdef PHASE
             phase();
-        }
+#endif
 
-        if ( All.MachSlice ) {
+#ifdef MACHSLICE
             mach_slice();
-        }
+#endif
 
-        if ( All.BSlice ) {
+#ifdef BSLICE
             mag_slice();
-        }
+#endif
 
-        if ( All.CREnSlice ) {
+#ifdef CRENSLICE
             cren_slice();
-        }
+#endif
 
-        if ( All.CREeSlice ) {
+#ifdef CREESLICE
             cree_slice();
-        }
+#endif
 
-        if ( All.BPdf ) {
+#ifdef BPDF
             B_Pdf();
-        }
+#endif
 
-        if ( All.DivBErrPdf ) {
+#ifdef DIVBERRPDF
             DivB_Err_Pdf();
-        }
+#endif
 
-        if ( All.RadSlice ) {
+#ifdef RADSLICE
             radio_slice();
-        }
+#endif
 
-        if ( All.PowSpec ) {
+#ifdef POWSPEC
             powerspec();
-        }
+#endif
 
-        if ( All.DensitySlice ) {
+#ifdef DENSITYSLICE
             density_slice();
-        }
+#endif
 
-        if ( All.TemperatureSlice ) {
+#ifdef TEMPSLICE
             temperature_slice();
-        }
+#endif
 
-        if ( All.MF ) {
+#ifdef MF
             mass_function();
-        }
+#endif
 
-        if ( All.CorrGas ) {
+#ifdef CORRGAS
             corr_gas();
-        }
+#endif
     
-        if ( All.CorrDM ) {
+#ifdef CORRDM
             corr_dm();
-        }
+#endif
     
-        if ( All.DensPdf ) {
+#ifdef DENSPDF
             dens_pdf();
-        }
+#endif
         
-        if ( All.CrenTPdf ) {
+#ifdef CRENTPDF
             cren_T_pdf();
-        }
+#endif
     
-        if ( All.TPdf ) {
+#ifdef TPDF
             T_pdf();
-        }
+#endif
 
-        if ( All.GasRatio ) {
+#ifdef GASRATIO
             gas_ratio();
-        }
+#endif
 
-        if ( All.HsmlTPdf ) {
+#ifdef HSMLTPDF
             hsml_T_pdf();
-        }
+#endif
 
-        if ( All.HsmlDensPdf ) {
+#ifdef HSMLDENSPDF
             hsml_dens_pdf();
-        }
+#endif
 
-        if ( All.UTPdf ) {
+#ifdef UTPDF
             u_T_pdf();
-        }
+#endif
 
-        if ( All.Group ) {
+#ifdef GROUP
             sprintf( GroupDir, "%sgroup/", OutputDir );
             create_dir( GroupDir );
             group_analysis();
-        }
+#endif
 
-        if ( All.BDensPdf ) {
+#ifdef BDENSPDF
             B_dens_pdf();
-        }
+#endif
 
     }
     do_sync( "" );
@@ -196,12 +193,12 @@ void analysis(){
 
     if ( ThisTask_Local == 0 ) {
 
-        if ( All.FoF ) {
+#ifdef FOF
             fof_free();
-        }
-        if ( All.Tree ) {
+#endif
+#ifdef TREE
             tree_free();
-        }
+#endif
     }
 
     free_analysis();

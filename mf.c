@@ -1,5 +1,6 @@
 #include "allvars.h"
 
+#ifdef MF
 void mass_function() {
 
     int g, *num, i, *cum_num, N1, N2, N;
@@ -123,3 +124,4 @@ void mass_function() {
     writelog( "compute mass function ... done.\n" );
 
 }
+#endif

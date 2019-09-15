@@ -201,9 +201,10 @@ void make_slice_img( int pt, double *data, long NPart, double *weight ) {
         if ( num[i] != 0 )
             img[i] /= num[i];
 
-    if ( All.UnitAreaSlice )
+#ifdef UNITAREASLICE
         for ( i=0; i<SQR(All.PicSize); i++ )
             img[i] /= SQR(dx);
+#endif
 
     img_xmin = Start[ proj_i ];
     img_xmax = End[ proj_i ];
@@ -231,6 +232,7 @@ void field_slice( int pt, double *data, char *name, long N, double *weight ) {
 
 }
 
+#ifdef BSLICE
 void mag_slice() {
     int num, i;
     double *data, *weight;
@@ -246,7 +248,9 @@ void mag_slice() {
     myfree( data );
     myfree( weight );
 }
+#endif
 
+#ifdef MACHSLICE
 void mach_slice() {
     int num, i;
     double *data, *weight;
@@ -262,7 +266,9 @@ void mach_slice() {
     myfree( data );
     myfree( weight );
 }
+#endif
 
+#ifdef DENSITYSLICE
 void density_slice() {
     int num, i;
     long index;
@@ -331,7 +337,9 @@ void density_slice() {
     myfree( data3 );
     myfree( data );
 }
+#endif
 
+#ifdef TEMPSLICE
 void temperature_slice() {
     int num, i;
     double *data, *weight;
@@ -347,7 +355,9 @@ void temperature_slice() {
     myfree( data );
     myfree( weight );
 }
+#endif
 
+#ifdef CRENSLICE
 void cren_slice() {
     int num, i;
     double *data, *weight;
@@ -363,7 +373,9 @@ void cren_slice() {
     myfree( data );
     myfree( weight );
 }
+#endif
 
+#ifdef CREESLICE
 void cree_slice() {
     int num, i;
     double *data, *weight;
@@ -379,7 +391,9 @@ void cree_slice() {
     myfree( data );
     myfree( weight );
 }
+#endif
 
+#ifdef RADSLICE
 void radio_slice() {
 
     double dnu, *data, x, area, frac, *weight;
@@ -423,3 +437,4 @@ void radio_slice() {
     myfree( weight );
 
 }
+#endif

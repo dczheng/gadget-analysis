@@ -1,5 +1,6 @@
 #include "allvars.h"
 
+#ifdef TREE
 long last, parent, father, npart;
 
 void tree_allocate() {
@@ -248,3 +249,4 @@ void tree_build() {
     mytimer_end();
     writelog( "tree walk ... done.\n" );
 }
+#endif

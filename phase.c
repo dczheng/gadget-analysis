@@ -1,5 +1,6 @@
 #include"allvars.h"
 
+#ifdef PHASE
 void phase() {
 
     double *phase_x, *phase_y, mm[4];
@@ -49,3 +50,4 @@ void phase() {
     myfree( phase_y );
 
 }
+#endif

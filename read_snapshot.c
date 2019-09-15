@@ -63,31 +63,49 @@ int blockpresent( enum iofields blk, int pt ) {
             blockpresent_check( blockpresent0( blk, pt ) );
 
         case IO_VEL:
-            blockpresent_check( blockpresent0(blk,pt) && All.ReadVel );
+#ifdef  READVEL
+            blockpresent_check( blockpresent0(blk,pt));
+#endif
 
         case IO_TEMP:
-            blockpresent_check( blockpresent0(blk,pt) && All.ReadTemp );
+#ifdef READTEMP
+            blockpresent_check( blockpresent0(blk,pt) );
+#endif
 
         case IO_HSML:
-            blockpresent_check( blockpresent0(blk,pt) && All.ReadHsml );
+#ifdef READHSML
+            blockpresent_check( blockpresent0(blk,pt) );
+#endif
 
         case IO_U:
-            blockpresent_check( blockpresent0(blk,pt) && All.Readu );
+#ifdef READU
+            blockpresent_check( blockpresent0(blk,pt) );
+#endif
 
         case IO_NE:
-            blockpresent_check( blockpresent0(blk,pt) && All.ReadElec );
+#ifdef READELEC
+            blockpresent_check( blockpresent0(blk,pt) );
+#endif
 
         case IO_MN:
-            blockpresent_check( blockpresent0(blk,pt) && All.ReadMach );
+#ifdef READMACH
+            blockpresent_check( blockpresent0(blk,pt) );
+#endif
 
         case IO_MAG:
-            blockpresent_check( blockpresent0(blk,pt) && All.ReadB );
+#ifdef READB
+            blockpresent_check( blockpresent0(blk,pt) );
+#endif
 
         case IO_DIVB:
-            blockpresent_check( blockpresent0(blk,pt) && All.ReadDivB );
+#ifdef READDIVB
+            blockpresent_check( blockpresent0(blk,pt) );
+#endif
 
         case IO_SFR:
-            blockpresent_check( blockpresent0(blk,pt) && All.ReadSfr );
+#ifdef READSFR
+            blockpresent_check( blockpresent0(blk,pt) );
+#endif
 
         case IO_CRE_C:
         case IO_CRE_ALPHA:
@@ -95,14 +113,18 @@ int blockpresent( enum iofields blk, int pt ) {
         case IO_CRE_QMAX:
         case IO_CRE_N:
         case IO_CRE_E:
-            blockpresent_check( blockpresent0(blk,pt) && All.ReadCre );
+#ifdef READCRE
+            blockpresent_check( blockpresent0(blk,pt) );
+#endif
 
         case IO_CR_Q0:
         case IO_CR_C0:
         case IO_CR_E0:
         case IO_CR_n0:
         case IO_CR_P0:
-            blockpresent_check( blockpresent0(blk,pt) && All.ReadCr );
+#ifdef READCR
+            blockpresent_check( blockpresent0(blk,pt) );
+#endif
 
         case IO_DBDT:
         case IO_POT:
@@ -313,9 +335,11 @@ void empty_buffer( enum iofields blk, int offset, int pt ) {
             }
             break;
         case IO_VEL:
+#ifdef READVEL
             for ( i=0; i<n; i++ )
                 for ( j=0; j<3; j++ )
                     P[offset+i].Vel[j] = *fp++;
+#endif
             break;
         case IO_ID:
             for ( i=0; i<n; i++ )
@@ -334,100 +358,145 @@ void empty_buffer( enum iofields blk, int offset, int pt ) {
 
             break;
         case IO_POT:
+#ifdef READPOT
             for ( i=0; i<n; i++ )
                 P[offset+i].Pot = *fp++;
+#endif
             break;
         case IO_ACCEL:
+#ifdef READACC
             for ( i=0; i<n; i++ )
                 for ( j=0; j<3; j++ )
                     P[offset+i].Acc[j] = *fp++;
+#endif
             break;
         case IO_RHO:
             for ( i=0; i<n; i++ )
                 SphP[offset+i].Density = *fp++;
             break;
         case IO_SFR:
+#ifdef READSFR
             for ( i=0; i<n; i++ )
                 SphP[offset+i].sfr = *fp++;
+#endif
             break;
         case IO_MAG:
+#ifdef READB
             for ( i=0; i<n; i++ )
                 for ( j=0; j<3; j++ )
                     SphP[offset+i].B[j] = *fp++;
+#endif
             break;
         case IO_DIVB:
+#ifdef READDIVB
             for ( i=0; i<n; i++ )
                 SphP[offset+i].divB = *fp++;
+#endif
             break;
         case IO_DBDT:
+#ifdef READDTB
             for ( i=0; i<n; i++ )
                 SphP[offset+i].dBdt = *fp++;
+#endif
             break;
         case IO_U:
+#ifdef READU
             for ( i=0; i<n; i++ )
                 SphP[offset+i].u = *fp++;
+#endif
             break;
         case IO_TEMP:
+#ifdef READTEMP
             for ( i=0; i<n; i++ )
                 SphP[offset+i].Temp = *fp++;
+#endif
             break;
         case IO_HSML:
+#ifdef READHSML
             for ( i=0; i<n; i++ )
                 SphP[offset+i].Hsml = *fp++;
+#endif
             break;
         case IO_NE:
+#ifdef READELEC
             for ( i=0; i<n; i++ )
                 SphP[offset+i].elec = *fp++;
+#endif
             break;
         case IO_MN:
+#ifdef READMACH
             for ( i=0; i<n; i++ )
                 SphP[offset+i].MachNumber = *fp++;
+#endif
             break;
         case IO_CR_C0:
+#ifdef READCR
             for ( i=0; i<n; i++ )
                 SphP[offset+i].CR_C0 = *fp++;
+#endif
             break;
         case IO_CR_Q0:
+#ifdef READCR
             for ( i=0; i<n; i++ )
                 SphP[offset+i].CR_Q0 = *fp++;
+#endif
             break;
         case IO_CR_E0:
+#ifdef READCR
             for ( i=0; i<n; i++ )
                 SphP[offset+i].CR_E0 = *fp++;
+#endif
             break;
         case IO_CR_n0:
+#ifdef READCR
             for ( i=0; i<n; i++ )
                 SphP[offset+i].CR_n0 = *fp++;
+#endif
             break;
         case IO_CR_P0:
+#ifdef READCR
             for ( i=0; i<n; i++ )
                 SphP[offset+i].CR_P0 = *fp++;
+#endif
             break;
         case IO_CRE_C:
+#ifdef READCRE
             for ( i=0; i<n; i++ )
                 SphP[offset+i].CRE_C = *fp++;
+#endif
             break;
         case IO_CRE_ALPHA:
+#ifdef READCRE
             for ( i=0; i<n; i++ )
                 SphP[offset+i].CRE_Alpha = *fp++;
+#endif
             break;
         case IO_CRE_QMIN:
+#ifdef READCRE
             for ( i=0; i<n; i++ )
                 SphP[offset+i].CRE_qmin = *fp++;
+#endif
             break;
         case IO_CRE_QMAX:
+#ifdef READCRE
             for ( i=0; i<n; i++ )
                 SphP[offset+i].CRE_qmax = *fp++;
+#endif
             break;
         case IO_CRE_N:
+#ifdef READCRE
             for ( i=0; i<n; i++ )
                 SphP[offset+i].CRE_n = *fp++;
+#endif
             break;
         case IO_CRE_E:
+#ifdef READCRE
             for ( i=0; i<n; i++ )
                 SphP[offset+i].CRE_e = *fp++;
+#endif
             break;
         default:
+            endruns( "can't be!!!" );
             break;
 
     }

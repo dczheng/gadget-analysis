@@ -1,5 +1,6 @@
 #include "allvars.h"
 
+#ifdef FOF
 double LinkL, rhodm;
 
 void fof_allocate( long N ) {
@@ -612,3 +613,4 @@ void fof() {
     writelog( "FoF ... done\n" );
 
 }
+#endif

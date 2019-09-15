@@ -1,5 +1,7 @@
 #include "allvars.h"
 
+#ifdef GROUP
+#ifdef GROUPGASRATIO
 void group_gas_ratio() {
 
     long p;
@@ -57,5 +59,7 @@ void group_gas_ratio() {
 
     fclose( fd );
 }
+#endif
+#endif
 
 

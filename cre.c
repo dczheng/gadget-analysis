@@ -62,6 +62,7 @@ double beta( double a, double b, double x ) {
 
 }
 
+#ifdef CREPPDF
 void compute_cre_pressure() {
 
     long i, t;
@@ -213,4 +214,4 @@ void cre_pressure_pdf() {
     mytimer_end();
 
 }
-
+#endif

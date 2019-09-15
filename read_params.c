@@ -92,6 +92,6 @@ void read_parameters( char *fn ) {
 
 
     MPI_Bcast( &All, sizeof( GlobalParams ), MPI_BYTE, 0, MPI_COMM_WORLD );
-    check_flag();
+//    check_flag();
 }
 

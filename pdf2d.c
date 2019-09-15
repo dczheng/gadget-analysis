@@ -135,6 +135,7 @@ void pdf2d_or_field2d( double *x, double *y, double *w, long num, char *dn,
 
 }
 
+#ifdef BDENSPDF
 void B_dens_pdf() {
 
     double *bdp_x, *bdp_y, mm[4];
@@ -181,7 +182,9 @@ void B_dens_pdf() {
     myfree( bdp_x );
     myfree( bdp_y );
 }
+#endif
 
+#ifdef CRENTPDF
 void cren_T_pdf() {
 
     double *ntp_x, *ntp_y, mm[4], n;
@@ -232,7 +235,9 @@ void cren_T_pdf() {
     myfree( ntp_x );
     myfree( ntp_y );
 }
+#endif
 
+#ifdef HSMLTPDF
 void hsml_T_pdf() {
 
     double *htp_x, *htp_y;
@@ -259,7 +264,9 @@ void hsml_T_pdf() {
     myfree( htp_x );
     myfree( htp_y );
 }
+#endif
 
+#ifdef UTPDF
 void u_T_pdf() {
 
     double *utp_x, *utp_y;
@@ -282,7 +289,9 @@ void u_T_pdf() {
     myfree( utp_x );
     myfree( utp_y );
 }
+#endif
 
+#ifdef HSMLDENSPDF
 void hsml_dens_pdf() {
 
     double *htp_x, *htp_y;
@@ -309,7 +318,9 @@ void hsml_dens_pdf() {
     myfree( htp_x );
     myfree( htp_y );
 }
+#endif
 
+#ifdef DIVBERRPDF
 void DivB_Err_Pdf() {
     long i, nn, idxmin, idxmax;
     int j, N;
@@ -385,3 +396,4 @@ void DivB_Err_Pdf() {
     myfree( n );
 
 }
+#endif

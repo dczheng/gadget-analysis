@@ -1,29 +1,36 @@
 #include "allvars.h"
 
+#ifdef GROUP
+
 int group_filed_present( enum group_fields blk ) {
 
     switch( blk ) {
         case GROUP_DENS:
                 return 1;
         case GROUP_TEMP:
-            if ( All.GroupTemp )
+#ifdef GROUPTEMP
                 return 1;
+#endif
             return 0;
         case GROUP_U:
-            if ( All.GroupU )
+#ifdef GROUPU
                 return 1;
+#endif
             return 0;
         case GROUP_SFR:
-            if ( All.GroupSfr )
+#ifdef GROUPSFR
                 return 1;
+#endif
             return 0;
         case GROUP_MAG:
-            if ( All.GroupB )
+#ifdef GROUPB
                 return 1;
+#endif
             return 0;
         case GROUP_MACH:
-            if ( All.GroupMach )
+#ifdef GROUPMACH
                 return 1;
+#endif
             return 0;
         case GROUP_CREN:
         case GROUP_CREC:
@@ -31,14 +38,82 @@ int group_filed_present( enum group_fields blk ) {
         case GROUP_CREALPHA:
         case GROUP_CREQMIN:
         case GROUP_CREQMAX:
-            if ( All.GroupCre )
+#ifdef GROUPCRE
                 return 1;
+#endif
             return 0;
         case GROUP_RAD:
-            if ( All.GroupRad )
+#ifdef GROUPRAD
                 return 1;
+#endif
             return 0;
         default:
+            return 0;
+    }
+}
+
+double get_group_filed_data( enum group_fields blk, long p ) {
+
+#ifdef GROUPRAD
+    double nu_x, PP, dlognu;
+    int nu_i;
+    dlognu = log( All.NuMax/ All.NuMin ) / ( All.NuNum );
+#endif
+
+    switch( blk ) {
+        case GROUP_DENS:
+            return SphP[p].Density;
+#ifdef GROUPTEMP
+        case GROUP_TEMP:
+            return SphP[p].Temp;
+#endif
+#ifdef GROUPU
+        case GROUP_U:
+            return SphP[p].u;
+#endif
+#ifdef GROUPSFR
+        case GROUP_SFR:
+            return SphP[p].sfr;
+#endif
+#ifdef GROUPB
+        case GROUP_MAG:
+            return get_B(p) * 1e6;
+#endif
+#ifdef GROUPMACH
+        case GROUP_MACH:
+            return SphP[p].MachNumber;
+#endif
+#ifdef GROUPCRE
+        case GROUP_CREN:
+            return SphP[p].CRE_n *  SphP[p].Density / guc.m_e / CUBE( g2c.cm );
+        case GROUP_CREC:
+            return SphP[p].CRE_C;
+        case GROUP_CREE:
+            return SphP[p].CRE_e / SphP[p].u;
+        case GROUP_CREALPHA:
+            return SphP[p].CRE_Alpha;
+        case GROUP_CREQMIN:
+            return SphP[p].CRE_qmin;
+        case GROUP_CREQMAX:
+            return SphP[p].CRE_qmax;
+#endif
+#ifdef GROUPRAD
+        case GROUP_RAD:
+             nu_x = log(All.GroupRadFreq / All.NuMin) / dlognu;
+             nu_i = nu_x;
+             nu_x -= nu_i;
+             if ( nu_i >= All.NuNum-1 )
+                 PP = PartRad[p * All.NuNum + All.NuNum-1];
+             else if ( nu_i <= 0 )
+                 PP = PartRad[p * All.NuNum];
+             else  {
+                 PP = PartRad[p * All.NuNum+nu_i] * ( 1-nu_x ) +
+                      PartRad[p * All.NuNum+nu_i+1] * nu_x;
+             }
+             return PP;
+#endif
+       default:
+            endruns( "can't be !!!" );
             return 0;
     }
 }
@@ -91,9 +166,9 @@ void group_plot() {
 
     long p;
     struct group_properties g;
-    double L, dL, *mass, PP, n, r200, dlognu, nu_x, w; 
+    double L, dL, *mass, r200, w; 
     int *num, g_index, i, j, x, y,
-         xo, yo, pic_index, ii, jj, nu_i;
+         xo, yo, pic_index, ii, jj;
 
     char buf[100], buf1[100];
     double *data[GROUP_FILED_NBLOCKS];
@@ -110,8 +185,6 @@ void group_plot() {
     xo = PicSize / 2;
     yo = PicSize / 2;
 
-    dlognu = log( All.NuMax/ All.NuMin ) / ( All.NuNum );
-
     mymalloc2( num, PicSize2 * sizeof( int ) );
 
     for( i=0; i<GROUP_FILED_NBLOCKS; i++ ) {
@@ -125,28 +198,28 @@ void group_plot() {
 
     }
 
-    if ( All.GroupFixedSize ){
-        if ( All.GroupSize > 0 ) {
-            L = All.GroupSize;
-        }
-        else{
+#ifdef GROUPFIXEDSIZE
+    if ( All.GroupSize > 0 ) {
+        L = All.GroupSize;
+    }
+    else{
     
-            L = 0;
-            for ( g_index=0; g_index<Ngroups; g_index++ ) {
+        L = 0;
+        for ( g_index=0; g_index<Ngroups; g_index++ ) {
     
-                if ( !group_present( g_index ) )
-                    break;
-                g = Gprops[g_index];
+            if ( !group_present( g_index ) )
+                break;
+            g = Gprops[g_index];
     
-                for ( i=0,p=g.Head; i<g.Len; i++, p=FoFNext[p] ) {
-                    if ( P[p].Type != 0 )
-                        continue;
-                vmax2( L, PERIODIC_HALF( P[p].Pos[x] - g.cm[x] ) * 1.01 );
-                vmax2( L, PERIODIC_HALF( P[p].Pos[y] - g.cm[y] ) * 1.01 );
-                }
+            for ( i=0,p=g.Head; i<g.Len; i++, p=FoFNext[p] ) {
+                if ( P[p].Type != 0 )
+                    continue;
+            vmax2( L, PERIODIC_HALF( P[p].Pos[x] - g.cm[x] ) * 1.01 );
+            vmax2( L, PERIODIC_HALF( P[p].Pos[y] - g.cm[y] ) * 1.01 );
             }
         }
     }
+#endif
 
     for ( g_index=0; g_index<Ngroups; g_index++ ) {
 
@@ -189,15 +262,15 @@ void group_plot() {
         }
 #endif
 
-        if ( !All.GroupFixedSize ) {
-            L = 0;
-            for ( i=0,p=g.Head; i<g.Len; i++, p=FoFNext[p] ) {
-                if ( P[p].Type != 0 )
-                    continue;
-            vmax2( L, PERIODIC_HALF( P[p].Pos[x] - g.cm[x] ) * 1.1 );
-            vmax2( L, PERIODIC_HALF( P[p].Pos[y] - g.cm[y] ) * 1.1 );
-            }
-        }
+#ifndef GROUPFIXEDSIZE
+       L = 0;
+       for ( i=0,p=g.Head; i<g.Len; i++, p=FoFNext[p] ) {
+           if ( P[p].Type != 0 )
+               continue;
+       vmax2( L, PERIODIC_HALF( P[p].Pos[x] - g.cm[x] ) * 1.1 );
+       vmax2( L, PERIODIC_HALF( P[p].Pos[y] - g.cm[y] ) * 1.1 );
+       }
+#endif
 
         //L = get_group_size( &g ) * 1.1;
         dL = 2 * L / PicSize;
@@ -212,20 +285,8 @@ void group_plot() {
                 p = FoFNext[p];
                 continue;
             }
-
-            //printf( "[%li] Pos: ( %g, %g, %g )\n",
-            //        p, P[p].Pos[0], P[p].Pos[1], P[p].Pos[2] );
-            //continue;
-
             ii = PERIODIC_HALF( P[p].Pos[x] - g.cm[x] ) / dL + xo;
             jj = PERIODIC_HALF( P[p].Pos[y] - g.cm[y] ) / dL + yo;
-
-/*
-            if ( get_B(p) * 1e6 > 100 ) {
-                p = FoFNext[p];
-                continue;
-            }
-*/
 #ifdef GROUP_PLOT_DEBUG
             //for( ti=-1; ti<2; ti++ )
             //    for( tj=-1; tj<2; tj++ ) {
@@ -235,88 +296,24 @@ void group_plot() {
             p = FoFNext[p];
             continue;
 #endif
-
-            //if ( ii < 0 || ii >= PicSize ||
-            //        jj < 0 || jj >= PicSize )
-            //        printf( "%i, %i\n", ii, jj );
-            //
-            //continue;
-
             check_picture_index( ii );
             check_picture_index( jj );
             pic_index= ii*PicSize + jj;
 
             num[pic_index] ++;
 
-            if ( All.GroupDensityWeighted )
+#ifdef GROUPDENSITYWEIGHTED
                 w = SphP[p].Density;
-            else
+#else
                 w = 1;
-
-
-            if ( group_filed_present( GROUP_DENS ) )
-                data[GROUP_DENS][pic_index] += SphP[p].Density;
-
-            if ( group_filed_present( GROUP_TEMP ) )
-                data[GROUP_TEMP][pic_index] += SphP[p].Temp * w;
-
-            if ( group_filed_present( GROUP_SFR ) )
-                data[GROUP_SFR][pic_index] += SphP[p].sfr * w;
-
-            if ( group_filed_present( GROUP_U ) )
-                data[GROUP_U][pic_index] += SphP[p].u * w;
-
-            if ( group_filed_present( GROUP_MAG ) )
-                data[GROUP_MAG][pic_index] += get_B(p) * 1e6 * w;
-
-            if ( group_filed_present( GROUP_MACH ) )
-                data[GROUP_MACH][pic_index] += SphP[p].MachNumber * w;
-
-            if ( group_filed_present( GROUP_CREN ) ) {
-                n = SphP[p].CRE_n *  SphP[p].Density / guc.m_e;
-                n /= CUBE( g2c.cm );
-                data[GROUP_CREN][pic_index] += n * w;
+#endif
+            for( i=0; i<GROUP_FILED_NBLOCKS; i++ ) {
+                if ( !group_filed_present(i) )
+                    continue;
+                data[i][pic_index] += get_group_filed_data(i, p) * w;
             }
-
-            if ( group_filed_present( GROUP_CREALPHA ) )
-                data[GROUP_CREALPHA][pic_index] += SphP[p].CRE_Alpha * w;
-
-            if ( group_filed_present( GROUP_CREC ) )
-                data[GROUP_CREC][pic_index] +=  SphP[p].CRE_C * w;
-
-            if ( group_filed_present( GROUP_CREE ) ) {
-                /*
-                e = SphP[p].CRE_e * SphP[p].Density;
-                e /= g2c.erg / CUBE( g2c.cm );
-                data[GROUP_CREE][pic_index] += e * SphP[p].Density;
-                */
-                data[GROUP_CREE][pic_index] += SphP[p].CRE_e / SphP[p].u * w;
-            }
-
-            if ( group_filed_present( GROUP_CREQMIN ) )
-                data[GROUP_CREQMIN][pic_index] += SphP[p].CRE_qmin * w;
-
-            if ( group_filed_present( GROUP_CREQMAX ) )
-                data[GROUP_CREQMAX][pic_index] += SphP[p].CRE_qmax * w;
-
-            if ( group_filed_present( GROUP_RAD ) ) {
-                //PP = particle_radio( nu, p );
-                nu_x = log(All.GroupRadFreq / All.NuMin) / dlognu;
-                nu_i = nu_x;
-                nu_x -= nu_i;
-                if ( nu_i >= All.NuNum-1 )
-                    PP = PartRad[p * All.NuNum + All.NuNum-1];
-                else if ( nu_i <= 0 )
-                    PP = PartRad[p * All.NuNum];
-                else  {
-                    PP = PartRad[p * All.NuNum+nu_i] * ( 1-nu_x ) +
-                         PartRad[p * All.NuNum+nu_i+1] * nu_x;
-                }
-                data[GROUP_RAD][pic_index] += PP * w;
-            }
-
             p = FoFNext[p];
-        } // while
+        } 
 #ifdef GROUP_PLOT_DEBUG
         break;
 #endif
@@ -332,10 +329,11 @@ void group_plot() {
                 if ( j==GROUP_DENS )
                     continue;
 
-                if ( All.GroupDensityWeighted )
+#ifdef GROUPDENSITYWEIGHTED
                     data[j][i] /= data[GROUP_DENS][i];
-                else
+#else
                     data[j][i] /= num[i];
+#endif
 
             }
 
@@ -421,3 +419,4 @@ void group_plot() {
 
 }
 
+#endif

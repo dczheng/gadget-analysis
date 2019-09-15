@@ -1,11 +1,6 @@
 #include "allvars.h"
 
-int smooth_flag() {
-
-    if ( All.BSmooth )
-        return 1;
-    return 0;
-}
+#ifdef SMOOTH
 
 void smooth() {
 
@@ -16,10 +11,6 @@ void smooth() {
            wk, dwk, m_j, densitynorm, hinv_j, hinv3_j, hinv4_j;
 
     (void)h2_i;
-    
-
-    if ( !smooth_flag() )
-        return;
 
     mytimer_start();
     writelog( "smooth ...\n" );
@@ -32,9 +23,9 @@ void smooth() {
         densitynorm = 0;
         for( k=0; k<3; k++ ) {
             cm[k] = P[i].Pos[k];
-            if ( All.BSmooth ) {
-                SphP[i].SmoothB[k] = 0;
-            }
+#ifdef BSMOOTH
+            SphP[i].SmoothB[k] = 0;
+#endif
         }
 
         ngbnum = ngb( cm, h_i );
@@ -68,25 +59,29 @@ void smooth() {
                 wk /= SphP[j].Density;
 
                 for( k=0; k<3; k++ ) {
-                    if ( All.BSmooth )
-                        SphP[i].SmoothB[k] += m_j * wk * SphP[j].B[k];
+#ifdef BSMOOTH
+                     SphP[i].SmoothB[k] += m_j * wk * SphP[j].B[k];
+#endif
                 }
 
                 densitynorm += m_j * wk; 
             }
 
         }
-        if ( All.BSmooth && densitynorm > 0 ) {
+#ifdef BSMOOTH
+        if ( densitynorm > 0 ) {
             for( k=0; k<3; k++ )
                 SphP[i].SmoothB[k] /= densitynorm;
                 
         }
+#endif
     }
 
     for ( i=0; i<N_Gas; i++ ) {
-        if ( All.BSmooth )
-            for( k=0; k<3; k++ )
-                SphP[i].B[k] = SphP[i].SmoothB[k];
+#ifdef BSMOOTH
+        for( k=0; k<3; k++ )
+            SphP[i].B[k] = SphP[i].SmoothB[k];
+#endif
     }
 
     myfree( Ngblist );
@@ -96,5 +91,6 @@ void smooth() {
 #ifdef SMOOTH_DEBUG
     endruns( "smooth-test" );
 #endif
-    put_sep0;
+
 }
+#endif

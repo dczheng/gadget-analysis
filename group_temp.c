@@ -1,5 +1,8 @@
 #include "allvars.h"
 
+#ifdef GROUP
+
+#ifdef GROUPTEMPPROFILE
 void group_temp_profile() {
 
     long p;
@@ -90,7 +93,9 @@ void group_temp_profile() {
     myfree( Ngblist );
 
 }
+#endif
 
+#ifdef GROUPTEMPSTACK
 void group_temp_stack() {
 
     double Rmin, Rmax, dlogR, r;
@@ -241,4 +246,6 @@ void group_temp_stack() {
     myfree( Ngblist );
 
 }
+#endif
 
+#endif

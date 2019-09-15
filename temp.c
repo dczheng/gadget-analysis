@@ -1,14 +1,14 @@
 #include "allvars.h"
 
+#ifdef COMPUTETEMP
 void compute_temperature() {
     double yhelium, u, ne, mu, XH;
     long i;
 
-    if ( All.ReadTemp ) {
+#ifdef READTEMP
         return;
-    }
-    if ( All.Readu == 0  )
-        endruns( "require All.Readu" );
+#endif
+
     writelog( "compute gas temprature...\n" );
     XH = HYDROGEN_MASSFRAC;
     yhelium = ( 1 - XH ) / ( 4 * XH );
@@ -16,10 +16,11 @@ void compute_temperature() {
 
         u = SphP[i].u * UnitEnergy_in_cgs / All.UnitMass_in_g;
         //u = u * 0.5;
-        if ( All.ReadElec == 0  )
+#ifndef READELEC
             ne = 1 + 2 * yhelium;
-        else
+#else
             ne = SphP[i].elec;
+#endif
 
         mu = ( 1 + 4 * yhelium ) / ( 1 + yhelium + ne );
         SphP[i].Temp = GAMMA_MINUS1 / BOLTZMANN * u * PROTONMASS * mu;
@@ -29,3 +30,4 @@ void compute_temperature() {
 
 }
 
+#endif

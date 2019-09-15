@@ -2,6 +2,7 @@
 #include "drfftw.h"
 
 
+#ifdef POWSPEC
 double *PS, binfac, Kmin, Kmax, BoxSize, *Kbin;
 int bins, KN;
 
@@ -344,3 +345,4 @@ void powerspec() {
     writelog( "compute power spectrum ... done.\n" );
 
 }
+#endif

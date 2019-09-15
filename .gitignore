@@ -16,5 +16,6 @@ allvars.c
 add_params.h
 protos.h
 bak/
-run_analysis.py
-gadget-analysis.h
+gadget-analysis-config.h
+*.in
+*log

@@ -1,4 +1,5 @@
 #include "allvars.h"
+#ifdef GROUP
 
 int group_present( long index ) {
 
@@ -36,27 +37,32 @@ void group_analysis() {
         Proj[i] = proj_tmp[i];
     Sproj = Sproj_tmp;
 
-    if ( All.GroupEleSpec )
+#ifdef GROUPELECSPEC
         group_electron_spectrum();
+        put_sep0;
+#endif
 
-    put_sep0;
 
-    if ( All.GroupSpec ) {
+#ifdef GROUPSPEC
         group_spectrum();
         //group_spectrum_index();
-    }
+#endif
 
-    if ( All.GroupTempProfile )
+#ifdef GROUPTEMPPROFILE
         group_temp_profile();
+#endif
 
-    if ( All.GroupTempStack )
+#ifdef GROUPTEMPSTACK
         group_temp_stack();
+#endif
 
-    if ( All.GroupGasRatio )
+#ifdef GROUPGASRATIO
         group_gas_ratio();
+#endif
 
     reset_img();
     put_sep0;
 
 }
 
+#endif
