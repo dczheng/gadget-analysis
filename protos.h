@@ -212,6 +212,11 @@ void phase();
 //%
 
 
+//%------>>>>>>file : read_params.c
+//%
+void read_parameters( char *fn );
+
+
 //%------>>>>>>file : grid.c
 //%
 void field_to_grid( double *data, double *grid, int pt, int Nmin, int flag );
@@ -331,11 +336,6 @@ void temperature_slice();
 void cren_slice();
 void cree_slice();
 void radio_slice();
-
-
-//%------>>>>>>file : read_params.c
-//%
-void read_parameters( char *fn );
 
 
 //%------>>>>>>file : analysis.c

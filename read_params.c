@@ -15,7 +15,7 @@ void read_parameters( char *fn ) {
 
     writelog( "read parameter...\n" );
 
-    if ( ThisTask == 0 ) {
+    if ( ThisTask == NTask-1 ) {
 
         bname = basename( fn );
         fd2 = myfopen( "w", "./gadget-analysis.log/%s-usedvalues", bname );
@@ -91,7 +91,7 @@ void read_parameters( char *fn ) {
     }
 
 
-    MPI_Bcast( &All, sizeof( GlobalParams ), MPI_BYTE, 0, MPI_COMM_WORLD );
+    MPI_Bcast( &All, sizeof( GlobalParams ), MPI_BYTE, NTask-1, MPI_COMM_WORLD );
 //    check_flag();
 }
 
