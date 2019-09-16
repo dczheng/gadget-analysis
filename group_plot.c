@@ -237,7 +237,7 @@ void group_plot() {
 
         writelog( "group plot[%c]: %i ...\n", Sproj, g_index );
 
-//#define PRINT_GROUP_INFO
+#define PRINT_GROUP_INFO
         g = Gprops[g_index];
 
 #ifdef PRINT_GROUP_INFO
@@ -291,10 +291,11 @@ void group_plot() {
             //for( ti=-1; ti<2; ti++ )
             //    for( tj=-1; tj<2; tj++ ) {
              //       if ( ii==xo+ti && jj==yo+tj )
-                        fprintf( fd_d, "%g\n", get_B(p)*1e6 );
+                        fprintf( fd_d, "%g %g\n", get_B(p)*1e6,
+                        SphP[p].MachNumber );
             //}
-            p = FoFNext[p];
-            continue;
+            //p = FoFNext[p];
+            //continue;
 #endif
             check_picture_index( ii );
             check_picture_index( jj );
@@ -303,15 +304,25 @@ void group_plot() {
             num[pic_index] ++;
 
 #ifdef GROUPDENSITYWEIGHTED
-                w = SphP[p].Density;
+            w = SphP[p].Density;
 #else
-                w = 1;
+            w = 1;
 #endif
             for( i=0; i<GROUP_FILED_NBLOCKS; i++ ) {
                 if ( !group_filed_present(i) )
                     continue;
-                data[i][pic_index] += get_group_filed_data(i, p) * w;
+                if ( i == GROUP_DENS )
+                    data[i][pic_index] += get_group_filed_data(i, p);
+                else
+                    data[i][pic_index] += get_group_filed_data(i, p) * w;
+#ifdef GROUP_PLOT_DEBUG
+            get_group_filed_name( i, buf1 );
+            printf( "%s: %g ", buf1, get_group_filed_data( i, p ) );
+#endif
             }
+#ifdef GROUP_PLOT_DEBUG
+            printf( "\n" );
+#endif
             p = FoFNext[p];
         } 
 #ifdef GROUP_PLOT_DEBUG

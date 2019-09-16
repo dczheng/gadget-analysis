@@ -309,11 +309,12 @@ int main( int argc, char *argv[] ){
     writelog( "GADGET_TOOLS: %s\n", ToolsPath );
     writelog( "NumThreadsPerSnapshot: %i\n", NumThreadsPerSnapshot );
     writelog( "Parameters file: %s\n", argv[1] );
+    put_sep;
 
+    compile_time_info();
+    put_sep;
 
     /******************read***********************/
-
-    put_sep;
 
     read_parameters( argv[1] );
     SnapIndex = ThisTask / NumThreadsPerSnapshot + All.StartSnapIndex;

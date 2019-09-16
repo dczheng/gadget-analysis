@@ -7,8 +7,8 @@ snap_idx    = int( sys.argv[2] )
 Projs       = sys.argv[3:]
 #tProjs       = [ 'z', 'x', 'x', 'x', 'x', 'x' ]
 NGroup  = len( Projs )
-ds_name = [  "Density", "MagneticField", "Mach", \
-                "InternalEnergy", "Temperature"
+ds_name = [  "Density", "MagneticField", "Mach", "Cre_e",\
+             "Radio"
             ]
 fig_name = [  r"$\rm {\rho}/{\bar{\rho}}$", \
               r"$\rm B \,[\mu G]$",\
@@ -70,7 +70,8 @@ for i in range(m):
             ds[i][j][0,0] = 1
     if "MagneticField" in ds_name[i]:
         for j in range(n):
-            ds[i][j][ds[i][j]<1e-6] = 0
+            pass
+            #ds[i][j][ds[i][j]<1e-6] = 0
 
 for i in range(m):
     vmin = 1e100

@@ -60,6 +60,18 @@ void B_Pdf();
 void mass_function();
 
 
+//%------>>>>>>file : main.c
+//%
+void init_sep_str( int flag );
+void global_init();
+void global_free();
+void mpi_comms_test();
+void create_mpi_comms();
+void free_comms();
+void merge_log_file();
+int main( int argc, char *argv[] );
+
+
 //%------>>>>>>file : part_radio.c
 //%
 double particle_df( double p, void *params );
@@ -127,26 +139,9 @@ int ngb_fof( double *searchcenter, double h );
 int ngb( double *searchcenter, double h );
 
 
-//%------>>>>>>file : part_info.c
-//%
-void part_info();
-
-
 //%------>>>>>>file : total_radio_spectrum.c
 //%
 void total_radio_spectrum();
-
-
-//%------>>>>>>file : main.c
-//%
-void init_sep_str( int flag );
-void global_init();
-void global_free();
-void mpi_comms_test();
-void create_mpi_comms();
-void free_comms();
-void merge_log_file();
-int main( int argc, char *argv[] );
 
 
 //%------>>>>>>file : cre.c
@@ -203,13 +198,14 @@ inline double get_group_size( struct group_properties *g );
 void group_analysis();
 
 
+//%------>>>>>>file : part_info.c
+//%
+void part_info();
+
+
 //%------>>>>>>file : phase.c
 //%
 void phase();
-
-
-//%------>>>>>>file : allvars.c
-//%
 
 
 //%------>>>>>>file : read_params.c
@@ -249,6 +245,11 @@ double second();
 void task_sync_test( char *s );
 
 
+//%------>>>>>>file : compile-time-info.c
+//%
+void compile_time_info ();
+
+
 //%------>>>>>>file : fof.c
 //%
 void fof_allocate( long N );
@@ -280,6 +281,10 @@ void group_electron_spectrum();
 //%------>>>>>>file : field.c
 //%
 void field_cren_T_dens();
+
+
+//%------>>>>>>file : allvars.c
+//%
 
 
 //%------>>>>>>file : cosmology.c

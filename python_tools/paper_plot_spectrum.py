@@ -131,8 +131,14 @@ def my_plot2():
         if ( i == 1 ):
             ss = 'k-'
 
-        y = np.log10( F[ii3:ii5] )
-        x = np.log10( p[ii3:ii5] )
+        #print( F[ii3:ii5] )
+        #print( p[ii3:ii5] )
+        y =  F[ii3:ii5]
+        x =  p[ii3:ii5]
+        x = x[ y>0 ]
+        y = y[ y>0 ]
+        y = np.log10( y )
+        x = np.log10( x )
         r = curve_fit( fit_f, x, y )
         #print( 'ele: ', r[0], r[1] )
         alpha_e = r[0][0]

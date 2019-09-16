@@ -182,32 +182,50 @@ def make_protos():
         ff.write( '\n\n' )
     ff.close()
 
-def deps1( fd, As, B ):
-    fd.write( "#if defined(%s) "%As[0] )
+def deps1( fdh, fdc, As, B ):
+    fdh.write( "#if defined(%s) "%As[0] )
+    fdc.write( "#if defined(%s) "%As[0] )
     for a in As[1:]:
-        fd.write( "|| defined(%s) "%a )
-    fd.write( "\n#ifndef %s\n"%B )
-    fd.write( "#define %s\n"%B )
-    fd.write( "#endif\n" )
-    fd.write( "#endif\n\n" )
+        fdh.write( "|| defined(%s) "%a )
+        fdc.write( "|| defined(%s) "%a )
+    fdh.write( "\n#ifndef %s\n"%B )
+    fdh.write( "#define %s\n"%B )
+    fdh.write( "#endif\n" )
+    fdh.write( "#endif\n\n" )
+
+    fdc.write( "\n#ifndef %s\n"%B )
+    fdc.write( "\twritelog(\"%s\\n\");\n"%B )
+    fdc.write( "#endif\n" )
+    fdc.write( "#endif\n" )
 
 
-def deps2( fd, A, Bs ):
-    fd.write( "#ifdef %s\n"%A )
+def deps2( fdh, fdc, A, Bs ):
+    fdh.write( "#ifdef %s\n"%A )
+    fdc.write( "#ifdef %s\n"%A )
     for b in Bs:
-        fd.write( "#ifndef %s\n"%b )
-        fd.write( "#define %s\n"%b )
-        fd.write( "#endif\n" )
-    fd.write( "#endif\n\n" )
+        fdh.write( "#ifndef %s\n"%b )
+        fdh.write( "#define %s\n"%b )
+        fdh.write( "#endif\n" )
+        fdc.write( "#ifndef %s\n"%b )
+        fdc.write( "writelog(\"%s\\n\");\n"%b )
+        fdc.write( "#endif\n" )
+    fdh.write( "#endif\n\n" )
+    fdc.write( "#endif\n\n" )
 
 
 def gen_config( param_file, run_dir, new_param_file ):
 
     lines = open( param_file ).readlines()
     fn_h = run_dir + '/gadget-analysis-config.h'
+    fn_c = run_dir + '/compile-time-info.c'
     fn_in = new_param_file
     fd_h = open( fn_h, "w" )
+    fd_c = open( fn_c, "w" )
     fd_in = open( fn_in, "w" )
+
+    fd_c.write( "#include \"allvars.h\"\n" )
+    fd_c.write( "void compile_time_info (){\n" )
+    fd_c.write( "\tput_header( \"compile_time_info:\" );\n" )
     
     for l in lines:
         if l[0] == '%' or len(l.strip()) == 0:
@@ -215,6 +233,7 @@ def gen_config( param_file, run_dir, new_param_file ):
         t = [tt.strip() for tt in l.split()]
         if t[1] == 'on':
             fd_h.write( "#define %s\n"%(t[0].upper()) )
+            fd_c.write( "\twritelog( \"%s\\n\" );\n"%(t[0].upper()) )
             continue
         if t[1] == 'off':
             continue
@@ -222,36 +241,38 @@ def gen_config( param_file, run_dir, new_param_file ):
     fd_in.close()
 
     fd_h.write( "\n\n"  )
-    deps1( fd_h, ( "GROUPTEMP", "GROUPU", "GROUPSFR", "GROUPB", "GROUPMACH",\
+    deps1( fd_h,fd_c, ( "GROUPTEMP", "GROUPU", "GROUPSFR", "GROUPB", "GROUPMACH",\
                 "GROUPCRE", "GROUPRAD", "GROUPSPEC", "GROUPELECSPEC",\
                 "GROUPTEMPPROFILE", "GROUPTEMPSTACK"), "GROUP" )
-    deps1( fd_h, ("GROUPSFR","BPDF"), "READSFR" )
-    deps1( fd_h, ("GROUPU","UTPFD", "GROUPCRE"), "READU" )
-    deps1( fd_h, ("GROUPB","BPDF"), "READB" )
-    deps1( fd_h, ("DIVBERRPDF",), "READDIVB" )
-    deps1( fd_h, ("GROUPMACH",), "READMACH" )
-    deps1( fd_h, ("GROUPCRE","GROUPELECSPEC", "CREPPDF", "CRENSLICE", "CREESLICE",\
+    deps1( fd_h, fd_c, ("GROUPSFR","BPDF"), "READSFR" )
+    deps1( fd_h, fd_c, ("GROUPU","UTPFD", "GROUPCRE"), "READU" )
+    deps1( fd_h, fd_c, ("GROUPB","BPDF"), "READB" )
+    deps1( fd_h, fd_c, ("DIVBERRPDF",), "READDIVB" )
+    deps1( fd_h, fd_c, ("GROUPMACH",), "READMACH" )
+    deps1( fd_h, fd_c, ("GROUPCRE","GROUPELECSPEC", "CREPPDF", "CRENSLICE", "CREESLICE",\
                  "CRENTPDF" ), "READCRE" )
-    deps1( fd_h, ("GROUPTEMP","TEMPSLICE", "PDFTDIFFDENS", "PHASE","CRENTPDF",\
+    deps1( fd_h, fd_c, ("GROUPTEMP","TEMPSLICE", "PDFTDIFFDENS", "PHASE","CRENTPDF",\
                     "TPDF", "GASRATIO", "HSMLTPDf", "UTPDF", "BPDF" ), "COMPUTETEMP" )
-    deps1( fd_h, ("GROUPRAD","RADSLICE", "TOTSPEC"), "RADSPEC" )
-    deps1( fd_h, ("HSMLTPDF","HSMLDENSPDF", "RADSLICE"), "READHSML" )
-    deps1( fd_h, ("MF",), "FOF" )
+    deps1( fd_h, fd_c, ("GROUPRAD","RADSLICE", "TOTSPEC"), "RADSPEC" )
+    deps1( fd_h, fd_c, ("HSMLTPDF","HSMLDENSPDF", "RADSLICE"), "READHSML" )
+    deps1( fd_h, fd_c, ("MF",), "FOF" )
 
-    deps2( fd_h, "RADSPEC", ("READB", "READCRE", "READHSML") )
-    deps2( fd_h, "GROUP", ("FOF", "TREE") )
+    deps2( fd_h, fd_c, "RADSPEC", ("READB", "READCRE", "READHSML") )
+    deps2( fd_h, fd_c, "GROUP", ("FOF", "TREE") )
 
-    deps2( fd_h, "FOF", ("TREE",) )
+    deps2( fd_h, fd_c, "FOF", ("TREE",) )
 
-    deps1( fd_h, ("FOF",), "READVEL" )
+    deps1( fd_h, fd_c, ("FOF",), "READVEL" )
 
     fd_h.write( "#ifdef COMPUTETEMP\n" )
     fd_h.write( "#ifndef READTEMP\n" )
     fd_h.write( "#define READU\n" )
     fd_h.write( "#endif\n" )
     fd_h.write( "#endif\n" )
+    fd_c.write( "}\n" )
     
     fd_h.close()
+    fd_c.close()
 
 def main():
 

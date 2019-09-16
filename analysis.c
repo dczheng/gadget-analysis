@@ -38,6 +38,8 @@ void analysis(){
     put_sep0;
     init_analysis();
     put_sep0;
+    part_info();
+    put_sep0;
 
     if ( ThisTask_Local == 0 ) {
 
@@ -75,9 +77,6 @@ void analysis(){
 #endif
 
     do_sync( "global compute2" );
-    put_sep0;
-
-    part_info();
     put_sep0;
 
 #ifdef CREPPDF

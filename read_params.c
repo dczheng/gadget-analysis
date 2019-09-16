@@ -13,7 +13,7 @@ void read_parameters( char *fn ) {
     char tag[MAXTAGS][50], *bname, buf[200], buf1[200], buf2[200], buf3[200];
     int id[MAXTAGS], nt, i, j, errflag=0;
 
-    writelog( "read parameter...\n" );
+    put_header( "read parameter" );
 
     if ( ThisTask == NTask-1 ) {
 

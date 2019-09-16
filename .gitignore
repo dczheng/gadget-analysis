@@ -17,5 +17,6 @@ add_params.h
 protos.h
 bak/
 gadget-analysis-config.h
+compile-time-info.c
 *.in
 *log
