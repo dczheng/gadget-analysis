@@ -196,7 +196,7 @@ def deps1( fdh, fdc, As, B ):
     fdc.write( "\n#ifndef %s\n"%B )
     fdc.write( "\twritelog(\"%s\\n\");\n"%B )
     fdc.write( "#endif\n" )
-    fdc.write( "#endif\n" )
+    fdc.write( "#endif\n\n" )
 
 
 def deps2( fdh, fdc, A, Bs ):
@@ -207,7 +207,7 @@ def deps2( fdh, fdc, A, Bs ):
         fdh.write( "#define %s\n"%b )
         fdh.write( "#endif\n" )
         fdc.write( "#ifndef %s\n"%b )
-        fdc.write( "writelog(\"%s\\n\");\n"%b )
+        fdc.write( "\twritelog(\"%s\\n\");\n"%b )
         fdc.write( "#endif\n" )
     fdh.write( "#endif\n\n" )
     fdc.write( "#endif\n\n" )
