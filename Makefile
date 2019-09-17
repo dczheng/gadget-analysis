@@ -30,7 +30,7 @@ $(EXEC): $(OBJS)
 
 clean:
 	-rm  $(EXEC) *.o 
-	-rm  allvars.c add_params.h gadget-analysis-config.h gadget-analysis.in
+	-rm  allvars.c add_params.h gadget-analysis-config.h gadget-analysis.in protos.h
 
 test_make:
 	@echo $(TEMP)
