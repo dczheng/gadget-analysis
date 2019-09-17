@@ -193,9 +193,7 @@ def deps1( fdh, fdc, As, B ):
     fdh.write( "#endif\n" )
     fdh.write( "#endif\n\n" )
 
-    fdc.write( "\n#ifndef %s\n"%B )
-    fdc.write( "\twritelog(\"%s\\n\");\n"%B )
-    fdc.write( "#endif\n" )
+    fdc.write( "\n\twritelog(\"%s\\n\");\n"%B )
     fdc.write( "#endif\n\n" )
 
 
@@ -206,9 +204,7 @@ def deps2( fdh, fdc, A, Bs ):
         fdh.write( "#ifndef %s\n"%b )
         fdh.write( "#define %s\n"%b )
         fdh.write( "#endif\n" )
-        fdc.write( "#ifndef %s\n"%b )
         fdc.write( "\twritelog(\"%s\\n\");\n"%b )
-        fdc.write( "#endif\n" )
     fdh.write( "#endif\n\n" )
     fdc.write( "#endif\n\n" )
 
@@ -246,7 +242,7 @@ def gen_config( param_file, run_dir, new_param_file ):
                 "GROUPTEMPPROFILE", "GROUPTEMPSTACK"), "GROUP" )
     deps1( fd_h, fd_c, ("GROUPSFR","BPDF", "PHASE"), "READSFR" )
     deps1( fd_h, fd_c, ("GROUPU","UTPFD", "GROUPCRE"), "READU" )
-    deps1( fd_h, fd_c, ("GROUPB","BPDF"), "READB" )
+    deps1( fd_h, fd_c, ("GROUPB", "BPDF", "BDENSPDF"), "READB" )
     deps1( fd_h, fd_c, ("DIVBERRPDF",), "READDIVB" )
     deps1( fd_h, fd_c, ("GROUPMACH",), "READMACH" )
     deps1( fd_h, fd_c, ("GROUPCRE","GROUPELECSPEC", "CREPPDF", "CRENSLICE", "CREESLICE",\
