@@ -244,7 +244,7 @@ def gen_config( param_file, run_dir, new_param_file ):
     deps1( fd_h,fd_c, ( "GROUPTEMP", "GROUPU", "GROUPSFR", "GROUPB", "GROUPMACH",\
                 "GROUPCRE", "GROUPRAD", "GROUPSPEC", "GROUPELECSPEC",\
                 "GROUPTEMPPROFILE", "GROUPTEMPSTACK"), "GROUP" )
-    deps1( fd_h, fd_c, ("GROUPSFR","BPDF"), "READSFR" )
+    deps1( fd_h, fd_c, ("GROUPSFR","BPDF", "PHASE"), "READSFR" )
     deps1( fd_h, fd_c, ("GROUPU","UTPFD", "GROUPCRE"), "READU" )
     deps1( fd_h, fd_c, ("GROUPB","BPDF"), "READB" )
     deps1( fd_h, fd_c, ("DIVBERRPDF",), "READDIVB" )
@@ -254,8 +254,9 @@ def gen_config( param_file, run_dir, new_param_file ):
     deps1( fd_h, fd_c, ("GROUPTEMP","TEMPSLICE", "PDFTDIFFDENS", "PHASE","CRENTPDF",\
                     "TPDF", "GASRATIO", "HSMLTPDf", "UTPDF", "BPDF" ), "COMPUTETEMP" )
     deps1( fd_h, fd_c, ("GROUPRAD","RADSLICE", "TOTSPEC"), "RADSPEC" )
-    deps1( fd_h, fd_c, ("HSMLTPDF","HSMLDENSPDF", "RADSLICE"), "READHSML" )
+    deps1( fd_h, fd_c, ("HSMLTPDF","HSMLDENSPDF", "RADSLICE", "SMOOTH"), "READHSML" )
     deps1( fd_h, fd_c, ("MF",), "FOF" )
+    deps1( fd_h, fd_c, ("BSMOOTH",), "SMOOTH" )
 
     deps2( fd_h, fd_c, "RADSPEC", ("READB", "READCRE", "READHSML") )
     deps2( fd_h, fd_c, "GROUP", ("FOF", "TREE") )

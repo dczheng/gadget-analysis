@@ -224,7 +224,7 @@ void compute_particle_radio() {
 
         flag = 0;
         V = P[i].Mass / SphP[i].Density * CUBE( g2c.cm * Time );
-       // V = SphP[i].Hsml * CUBE( g2c.cm * Time );
+        //V = SphP[i].Hsml * CUBE( g2c.cm * Time );
         for( j=0; j<nuN; j++ ) {
 
             nu = exp( log(numin) + j * dlognu ) * 1e6;

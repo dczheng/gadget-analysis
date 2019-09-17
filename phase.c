@@ -4,7 +4,7 @@
 void phase() {
 
     double *phase_x, *phase_y, mm[4];
-    long p;
+    long p, index;
     int flag;
 
     put_header( "gas phase" );
@@ -12,9 +12,14 @@ void phase() {
     mymalloc1( phase_x, sizeof(double) * N_Gas );
     mymalloc2( phase_y, sizeof(double) * N_Gas );
 
-    for( p=0; p<N_Gas; p++ ) {
-        phase_x[p] = SphP[p].Density / CUBE(Time) / RhoBaryon;
-        phase_y[p] = SphP[p].Temp;
+    for( p=0, index=0; p<N_Gas; p++ ) {
+#ifdef PHASENOSFR
+        if ( SphP[p].sfr>0 )
+            continue;
+#endif
+        phase_x[index] = SphP[p].Density / CUBE(Time) / RhoBaryon;
+        phase_y[index] = SphP[p].Temp;
+        index ++;
     }
 
     flag = 0;
@@ -44,7 +49,7 @@ void phase() {
 
     }
 
-    pdf2d( phase_x, phase_y, NULL, N_Gas, "Phase", flag, mm );
+    pdf2d( phase_x, phase_y, NULL, index, "Phase", flag, mm );
     
     myfree( phase_x );
     myfree( phase_y );

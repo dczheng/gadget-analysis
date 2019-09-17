@@ -70,8 +70,7 @@ for i in range(m):
             ds[i][j][0,0] = 1
     if "MagneticField" in ds_name[i]:
         for j in range(n):
-            pass
-            #ds[i][j][ds[i][j]<1e-6] = 0
+            ds[i][j][ds[i][j]<1e-5] = 0
 
 for i in range(m):
     vmin = 1e100

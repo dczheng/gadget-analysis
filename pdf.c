@@ -121,7 +121,7 @@ void T_pdf() {
 #ifdef BPDF
 void B_Pdf() {
     long i;
-    int j, N, task;
+    int j, N;
     double Bmin, Bmax, *n, dlogB, B, s, *nn;
     FILE *fd;
 
@@ -180,14 +180,16 @@ void B_Pdf() {
     myfree( n );
     myfree( nn );
 
+#ifdef B_PDF_PRINT_LARGE_B 
+    int task;
     for( task=0; task<NTask; task++ ) {
         if ( task == ThisTask ) {
             for( j=10,N=0; j<1000; j*=10 ) {
                 for( i=0; i<N_Gas; i++ ) {
                     B = get_B( i ) * 1e6;
                     if ( B>j && B<j*10 ) {
-                        printf( "[%05i], B: %e, density: %e, temp: %e, sfr: %g\n",
-                        N, B, 
+                        printf( "[%03i, %05i], B: %e, density: %e, temp: %e, sfr: %g\n",
+                        task, N, B, 
                         SphP[i].Density / Time3 / RhoBaryon,
                         SphP[i].Temp,
                         SphP[i].sfr
@@ -199,6 +201,7 @@ void B_Pdf() {
         }
         MPI_Barrier( MpiComm_Master );
     }
+#endif
 
 /*
     for( i=0, N=0; i<N_Gas; i++ ) {

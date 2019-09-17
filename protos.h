@@ -48,13 +48,6 @@ void hsml_dens_pdf();
 void DivB_Err_Pdf();
 
 
-//%------>>>>>>file : pdf.c
-//%
-void dens_pdf();
-void T_pdf();
-void B_Pdf();
-
-
 //%------>>>>>>file : mf.c
 //%
 void mass_function();
@@ -70,20 +63,6 @@ void create_mpi_comms();
 void free_comms();
 void merge_log_file();
 int main( int argc, char *argv[] );
-
-
-//%------>>>>>>file : part_radio.c
-//%
-double particle_df( double p, void *params );
-double particle_radio2( double nu,  SphParticleData *part );
-double particle_radio( double nu, long i );
-void save_particle_radio();
-int read_particle_radio();
-void compute_particle_radio();
-void free_particle_radio();
-void d2PdVdv_qmax();
-void output_radio_inte();
-void test_part_radio();
 
 
 //%------>>>>>>file : read_snapshot.c
@@ -144,6 +123,13 @@ int ngb( double *searchcenter, double h );
 void total_radio_spectrum();
 
 
+//%------>>>>>>file : pdf.c
+//%
+void dens_pdf();
+void T_pdf();
+void B_Pdf();
+
+
 //%------>>>>>>file : cre.c
 //%
 double beta_inte( double x, void *params );
@@ -163,6 +149,11 @@ void init_img();
 void free_img();
 void reset_img();
 void write_img( char *fn, char *nstr );
+
+
+//%------>>>>>>file : phase.c
+//%
+void phase();
 
 
 //%------>>>>>>file : set_units.c
@@ -201,11 +192,6 @@ void group_analysis();
 //%------>>>>>>file : part_info.c
 //%
 void part_info();
-
-
-//%------>>>>>>file : phase.c
-//%
-void phase();
 
 
 //%------>>>>>>file : read_params.c
@@ -248,6 +234,20 @@ void task_sync_test( char *s );
 //%------>>>>>>file : compile-time-info.c
 //%
 void compile_time_info ();
+
+
+//%------>>>>>>file : part_radio.c
+//%
+double particle_df( double p, void *params );
+double particle_radio2( double nu,  SphParticleData *part );
+double particle_radio( double nu, long i );
+void save_particle_radio();
+int read_particle_radio();
+void compute_particle_radio();
+void free_particle_radio();
+void d2PdVdv_qmax();
+void output_radio_inte();
+void test_part_radio();
 
 
 //%------>>>>>>file : fof.c
