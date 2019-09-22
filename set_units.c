@@ -1,8 +1,6 @@
 #include "allvars.h"
 
 #define writelog1( a ) writelog( "%-35s: %g\n", #a, a )
-#define writelog2( a ) writelog( "%-6s: %g\n", #a, a )
-
 void set_units() {
 
     put_header( "Set Units" );
@@ -22,6 +20,7 @@ void set_units() {
     writelog1( UnitPressure_in_cgs );
     writelog1( Hubble );
     writelog1( G );
+    writelog1( HubbleParam );
 
     if ( All.MpcFlag != 1 ) {
         All.MpcFlag = 1000;
@@ -30,6 +29,8 @@ void set_units() {
     g2c.cm       = All.UnitLength_in_cm / HubbleParam;
     g2c.g        = All.UnitMass_in_g    / HubbleParam;
     g2c.s        = UnitTime_in_s        / HubbleParam;
+
+    g2c.density  = g2c.g / CUBE( g2c.cm );
     g2c.erg      = g2c.g * SQR(g2c.cm)  / SQR(g2c.s);
 
     cuc.m_e = ELECTRON_MASS;
@@ -42,17 +43,16 @@ void set_units() {
     cuc.c2 = cuc.c * cuc.c;
     cuc.mec2 = cuc.m_e * cuc.c2;
 
-    /*
     writelog( "cgs: \n" );
-    writelog2( cuc.m_e );
-    writelog2( cuc.m_p );
-    writelog2( cuc.e );
-    writelog2( cuc.c );
-    writelog2( cuc.e_mec );
-    writelog2( cuc.G );
-    writelog2( cuc.c2 );
-    writelog2( cuc.mec2 );
-    */
+    writelog1( cuc.m_e );
+    writelog1( cuc.m_p );
+    writelog1( cuc.e );
+    writelog1( cuc.c );
+    writelog1( cuc.sigma_t );
+    writelog1( cuc.e_mec );
+    writelog1( cuc.G );
+    writelog1( cuc.c2 );
+    writelog1( cuc.mec2 );
 
     guc.m_e = cuc.m_e / g2c.g;
     guc.m_p = cuc.m_p / g2c.g;
@@ -78,16 +78,15 @@ void set_units() {
     End[2] = All.EndZ;
     PicSize = All.PicSize;
 
-    /*
     writelog( "gadget: \n" );
-    writelog2( guc.m_e );
-    writelog2( guc.m_p );
-    writelog2( guc.e );
-    writelog2( guc.c );
-    writelog2( guc.e_mec );
-    writelog2( guc.G );
-    writelog2( guc.c2 );
-    writelog2( guc.mec2 );
-    */
+    writelog1( guc.m_e );
+    writelog1( guc.m_p );
+    writelog1( guc.e );
+    writelog1( guc.c );
+    writelog1( cuc.sigma_t );
+    writelog1( guc.e_mec );
+    writelog1( guc.G );
+    writelog1( guc.c2 );
+    writelog1( guc.mec2 );
 }
 

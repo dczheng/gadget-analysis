@@ -43,7 +43,10 @@ fig = plt.figure( figsize=( fs/(1-t_cbar-2*t_pad), fs/( 1-2*t_pad ) ) )
 ax = fig.add_axes( [ t_pad, t_pad, 1-t_cbar-2*t_pad, 1-2*t_pad ] )
 ax_cbar = fig.add_axes( [ 1-t_cbar-t_pad, t_pad, t_cbar, 1-2*t_pad ] )
 
-img = ax.imshow( d, norm=mynorm, cmap=cm.jet )
+cmap = cm.ocean
+cmap = cm.Oranges
+cmap = cm.jet
+img = ax.imshow( d, norm=mynorm, cmap=cmap )
 plt.colorbar( img, cax=ax_cbar )
 
 ax.grid()

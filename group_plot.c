@@ -103,12 +103,12 @@ double get_group_filed_data( enum group_fields blk, long p ) {
              nu_i = nu_x;
              nu_x -= nu_i;
              if ( nu_i >= All.NuNum-1 )
-                 PP = PartRad[p * All.NuNum + All.NuNum-1];
+                 PP = get_particle_radio(p, All.NuNum-1);
              else if ( nu_i <= 0 )
-                 PP = PartRad[p * All.NuNum];
+                 PP = get_particle_radio(p, 0);
              else  {
-                 PP = PartRad[p * All.NuNum+nu_i] * ( 1-nu_x ) +
-                      PartRad[p * All.NuNum+nu_i+1] * nu_x;
+                 PP = get_particle_radio(p, nu_i) * ( 1-nu_x ) +
+                      get_particle_radio(p, nu_i+1) * nu_x;
              }
              return PP;
 #endif
@@ -170,9 +170,10 @@ void group_plot() {
     int *num, g_index, i, j, x, y,
          xo, yo, pic_index, ii, jj;
 
+return;
     char buf[100], buf1[100];
     double *data[GROUP_FILED_NBLOCKS];
-//#define GROUP_PLOT_DEBUG
+    put_header( "group plot" );
 
 #ifdef GROUP_PLOT_DEBUG
     FILE *fd_d;
@@ -427,6 +428,7 @@ void group_plot() {
 #endif
 
     reset_img();
+    put_end();
 
 }
 

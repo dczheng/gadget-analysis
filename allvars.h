@@ -57,7 +57,7 @@
 
 #define GSL_INTE_WS_LEN 10000
 #define GSL_INTE_ERR_ABS ((double)(0.0))
-#define GSL_INTE_ERR_REL ((double)(1e-4))
+#define GSL_INTE_ERR_REL ((double)(1e-10))
 #define GSL_INTE_KEY GSL_INTEG_GAUSS61
 
 #define SQR(X) ( (X)*(X) )
@@ -240,7 +240,7 @@ typedef struct GlobalParams{
         KernelInterpolation,
         ConvN,
         PowSpecNGrid, PowSpecPartType, PowSpecBins,
-        TabF, ParallelIO,
+        ParallelIO,
         NGrid,
         DensPdfN,
         TPdfN,
@@ -296,6 +296,8 @@ typedef struct GlobalParams{
             DivBErrPdfMin, DivBErrPdfMax,
             BDensPdfBMin, BDensPdfBMax,
             BDensPdfDensMin, BDensPdfDensMax,
+            DivBerrDensPdfDivBMin, DivBerrDensPdfDivBMax,
+            DivBerrDensPdfDensMin, DivBerrDensPdfDensMax,
             PosShiftX, PosShiftY, PosShiftZ, GroupSize;
 
 } GlobalParams;
@@ -314,7 +316,7 @@ typedef struct group_properties{
 } group_properties;
 
 typedef struct gadget_2_cgs_unit{
-    double cm, g, s, erg;
+    double cm, g, s, erg, density;
 } gadget_2_cgs_unit;
 
 typedef struct physical_constants_in_gadget_unit{
@@ -438,7 +440,7 @@ extern double
             ComDis, AngDis, LumDis,
             Redshift, HubbleParam,
             RhoCrit, RhoM, G,
-            Hubble, Omega0, OmegaLambda,
+            Hubble, Omega0, OmegaLambda, OmegaBaryon,
             UnitPressure_in_cgs,
             UnitTime_in_s,
             SofteningTable[6], Start[6], End[6],
@@ -451,39 +453,5 @@ extern gsl_integration_workspace *inte_ws;
 #define proj_k Proj[2]
 
 #include "protos.h"
-
-#ifdef ZDEBUG
-void signal_hander( int s );
-void init_sig();
-void empty_sig_buf();
-#define ZDEBUG_NUM 10
-
-struct sig_struct{
-    char stop[500];
-    char buf[ZDEBUG_NUM][500];
-    int i, j;
-    double d[ZDEBUG_NUM];
-} sig;
-
-#define RAISE_SIGSTOP() { \
-    sprintf( sig.stop, "%s %s %i" , __FILE__, __FUNCTION__, __LINE__ ); raise( SIGSEGV );\
-}
-
-#define ZSPRINTF( k, fmt, ... ) { \
-    if ( k >= ZDEBUG_NUM ) { \
-        sprintf( sig.buf[0], "%d is too large.", k ); \
-        RAISE_SIGSTOP(); \
-    } \
-    sprintf( sig.buf[k], fmt, ##__VA_ARGS__ ); \
-}
-
-#define ZCLEAR() { empty_sig_buf();  }
-
-#else
-
-#define ZSPRINTF( k, fmt, ... )
-#define ZCLEAR()
-
-#endif
-
+#include "signal_hander.h"
 

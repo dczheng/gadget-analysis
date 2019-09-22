@@ -216,10 +216,6 @@ void merge_log_file() {
 
 }
 
-/*
-
-*/
-
 int main( int argc, char *argv[] ){
 
     time_t time1, time2;
@@ -297,7 +293,7 @@ int main( int argc, char *argv[] ){
 #ifdef ZDEBUG
     writelog( "Assign `SIGSEGV` to signal_hander function.\n" );
     signal( SIGSEGV, signal_hander );
-    init_sig();
+    init_zsig();
 #endif
 
     ToolsPath = getenv( "GADGET_TOOLS" );
@@ -329,8 +325,10 @@ int main( int argc, char *argv[] ){
     if ( NTask_Master % All.ParallelIO )
         IOGroups ++;
 
-    //test_sigma();
-    //test_cos();
+    test_math();
+    test_sigma();
+    test_cos();
+    test_part_radio();
 
     read_snapshot();
     do_sync( "read data" );

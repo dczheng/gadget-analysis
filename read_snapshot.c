@@ -780,8 +780,13 @@ void free_particle_memory() {
 
     writelog( "free particle memory ...\n" );
 
+#ifdef SHAREMEM
+    myfree( MpiWin_P );
+    myfree( MpiWin_SphP );
+#else
     myfree_shared( MpiWin_P );
     myfree_shared( MpiWin_SphP );
+#endif
     //MPI_Win_free( &MpiWin_P );
     //MPI_Win_free( &MpiWin_SphP );
 }
@@ -845,8 +850,10 @@ void read_snapshot() {
     BoxSize = header.BoxSize;
     HalfBoxSize = BoxSize / 2;
     Redshift = header.redshift;
+    Time = header.time;
     Omega0 = header.Omega0;
     OmegaLambda = header.OmegaLambda;
+    OmegaBaryon = All.OmegaBaryon;
     HubbleParam = header.HubbleParam;
     writelog( "NumPart = %ld, N_Gas = %ld\n", NumPart, N_Gas );
 
@@ -857,8 +864,13 @@ void read_snapshot() {
     //do_sync( "" );
     //endrun( 20181208 );
 
+#ifdef SHAREMEM
+    mymalloc1( P, NumPart * sizeof( ParticleData ) );
+    mymalloc1( SphP, N_Gas * sizeof( SphParticleData ));
+#else
     mymalloc1_shared( P, NumPart * sizeof( ParticleData ), sizeof( ParticleData ), MpiWin_P );
     mymalloc1_shared( SphP, N_Gas * sizeof( SphParticleData ), sizeof( ParticleData ), MpiWin_SphP );
+#endif
 
     if ( ThisTask_Local == 0 ) {
         writelog( "Parallel ( %i ) read data ...\n", All.ParallelIO );

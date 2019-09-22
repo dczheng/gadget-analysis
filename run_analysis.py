@@ -242,15 +242,15 @@ def gen_config( param_file, run_dir, new_param_file ):
                 "GROUPTEMPPROFILE", "GROUPTEMPSTACK"), "GROUP" )
     deps1( fd_h, fd_c, ("GROUPSFR","BPDF", "PHASE"), "READSFR" )
     deps1( fd_h, fd_c, ("GROUPU","UTPFD", "GROUPCRE"), "READU" )
-    deps1( fd_h, fd_c, ("GROUPB", "BPDF", "BDENSPDF"), "READB" )
-    deps1( fd_h, fd_c, ("DIVBERRPDF",), "READDIVB" )
+    deps1( fd_h, fd_c, ("GROUPB", "BPDF", "BDENSPDF", "DIVBERRPDF"), "READB" )
+    deps1( fd_h, fd_c, ("DIVBERRPDF", "DIVBERRPDf", "DIVBERRDENSPDF"), "READDIVB" )
     deps1( fd_h, fd_c, ("GROUPMACH",), "READMACH" )
     deps1( fd_h, fd_c, ("GROUPCRE","GROUPELECSPEC", "CREPPDF", "CRENSLICE", "CREESLICE",\
                  "CRENTPDF" ), "READCRE" )
     deps1( fd_h, fd_c, ("GROUPTEMP","TEMPSLICE", "PDFTDIFFDENS", "PHASE","CRENTPDF",\
                     "TPDF", "GASRATIO", "HSMLTPDf", "UTPDF", "BPDF" ), "COMPUTETEMP" )
-    deps1( fd_h, fd_c, ("GROUPRAD","RADSLICE", "TOTSPEC"), "RADSPEC" )
-    deps1( fd_h, fd_c, ("HSMLTPDF","HSMLDENSPDF", "RADSLICE", "SMOOTH"), "READHSML" )
+    deps1( fd_h, fd_c, ("GROUPRAD","RADSLICE", "TOTSPEC", "GROUPSPEC"), "RADSPEC" )
+    deps1( fd_h, fd_c, ("HSMLTPDF","HSMLDENSPDF", "RADSLICE", "SMOOTH", "DIVBERRPDF", "DIVBERRDENSPDF"), "READHSML" )
     deps1( fd_h, fd_c, ("MF",), "FOF" )
     deps1( fd_h, fd_c, ("BSMOOTH",), "SMOOTH" )
 
@@ -290,6 +290,7 @@ def main():
     gen_allvars()
     gen_add_params()
     make_protos()
+    os.system( 'make delete' )
     os.system( 'make -j20' )
     os.chdir( cur_dir )
 

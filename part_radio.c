@@ -1,6 +1,109 @@
 #include "allvars.h"
 
+#ifndef ALTRAD
 #ifdef RADSPEC
+
+void d2PdVdv_qmax() {
+
+    SphParticleData part;
+    double nu_min, nu_max, nu, dlognu, *J, *J0, logqmax_min, logqmax_max, dlogqmax;
+    int i, N, qmaxn, k;
+    FILE *fd;
+
+    part.CRE_C = CUBE(g2c.cm) * ( guc.m_e ) / RhoBaryon;
+    part.CRE_Alpha = 2.01;
+    part.CRE_qmin = 1;
+    part.CRE_qmax = 1e8;
+    part.Density = RhoBaryon;
+
+    part.B[0] = 1e-6;
+    //part.B[0] = sqrt( SQR(B) - SQR(BCMB0) * pow( Time, -2 ) );
+    part.B[1] = part.B[2] = 0;
+
+    N = 100;
+    nu_min = 1e6;
+    nu_max = 1e9;
+    dlognu = log10( nu_max/nu_min ) / ( N-1 );
+
+    qmaxn = 10;
+    logqmax_min = 4;
+    logqmax_max = 5;
+    dlogqmax = (logqmax_max - logqmax_min) / ( qmaxn-1 );
+
+    mymalloc2( J, N * sizeof(double) );
+
+    if ( ThisTask == 0 ) {
+        mymalloc2( J0, N * sizeof(double) );
+        fd = myfopen( "w", "./d2PdVdv_qmax.dat");
+        fprintf( fd, "0 " );
+
+        for( i=0; i<N; i++ ) {
+            nu = log10(nu_min) + i * dlognu;
+            nu = pow( 10, nu );
+            fprintf( fd, "%g ", nu );
+        }
+
+        fprintf( fd, "\n" );
+    }
+
+    for( k=0; k<qmaxn; k++ ) {
+        part.CRE_qmax = pow( 10, logqmax_min + k*dlogqmax );
+
+        //part.CRE_qmax = qmax_max;
+
+        if ( ThisTask == 0 ) {
+            fprintf( fd, "%g ",
+                part.CRE_qmax );
+            printf( "qmax: %g \n",
+                part.CRE_qmax );
+        }
+
+        /*
+        printf(  "%g %g %g %g %g\n",
+                part.CRE_C /( CUBE(g2c.cm) * ( cuc.m_e/(g2c.g) )),
+                part.CRE_Alpha,
+                part.CRE_qmin,
+                part.CRE_qmax,
+                part.B[0] );
+                */
+
+        for( i=0; i<N; i++ ) {
+            if ( i % NTask != ThisTask )
+                continue;
+
+           // printf( "Task %i, i: %i\n", ThisTask_Local, i );
+
+            nu = log10(nu_min) + i * dlognu;
+            nu = pow( 10, nu );
+            J[i] = particle_radio2( nu, &part ) / ( 4.0/3.0 * PI * CUBE( SofteningTable[0] * g2c.cm ) );
+            //printf( "nu: %g, P: %g\n", nu, P );
+            //break;
+        }
+
+        MPI_Reduce( J, J0, N, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD );
+
+        if ( ThisTask == 0 ) {
+            for( i=0; i<N; i++ )
+                fprintf( fd, "%g ", J0[i] );
+            fprintf( fd, "\n" );
+            fflush( fd );
+        }
+
+       // break;
+
+    }
+
+    if ( ThisTask == 0 ) {
+        myfree( J0 );
+        fclose( fd );
+    }
+    myfree( J );
+    do_sync( "" );
+
+    writelog( "d2PdVdv_qmax done.\n" );
+
+}
+
 double particle_df( double p, void *params ) {
 
     double *pa;
@@ -198,14 +301,20 @@ void compute_particle_radio() {
     MPI_Bcast(  &num, 1, MPI_INT, 0, MpiComm_Local );
     MPI_Bcast(  &flag, 1, MPI_INT, 0, MpiComm_Local );
 
-
-    if ( All.TabF  && num )
-        init_tab_F();
-
-    //printf( "Task: %i, flag: %i\n", ThisTask, flag );
-
-    if ( flag == 0 )
+    if ( num == 0 )
         return;
+
+#ifdef TABF
+        init_tab_F();
+#endif
+
+    if ( flag == 0 ) {
+#ifdef TABF
+        free_tab_F();
+#endif
+        return;
+    }
+
 
     nuN = All.NuNum;
     numin = All.NuMin;
@@ -234,12 +343,14 @@ void compute_particle_radio() {
             tt = PartRad[ i*All.NuNum + j ] = particle_radio( nu/Time, i ) * V;
 
             //tt  = tt * ( 4.0/3.0 * PI * CUBE(SofteningTable[0]*g2c.cm*Time) );
+            /*
             tt = tt / ( 4.0 * PI * SQR( LumDis*g2c.cm ) ) * 1e26; // to mJy
             
             if ( tt < 1e-10 ) {
                 flag = 1;    // ignore particle with very weak radio emission.
                 break;
             }
+            */
 
         }
 
@@ -250,8 +361,9 @@ void compute_particle_radio() {
     }
 
 
-    if ( All.TabF )
+#ifdef TABF
         free_tab_F();
+#endif
 
     if ( ThisTask_Local == 0 )
         save_particle_radio();
@@ -261,107 +373,6 @@ void compute_particle_radio() {
 void free_particle_radio() {
 
     myfree_shared( MpiWin_PartRad );
-
-}
-
-void d2PdVdv_qmax() {
-
-    SphParticleData part;
-    double nu_min, nu_max, nu, dlognu, *J, *J0, logqmax_min, logqmax_max, dlogqmax;
-    int i, N, qmaxn, k;
-    FILE *fd;
-
-    part.CRE_C = CUBE(g2c.cm) * ( guc.m_e ) / RhoBaryon;
-    part.CRE_Alpha = 2.01;
-    part.CRE_qmin = 1;
-    part.CRE_qmax = 1e8;
-    part.Density = RhoBaryon;
-
-    part.B[0] = 1e-6;
-    //part.B[0] = sqrt( SQR(B) - SQR(BCMB0) * pow( Time, -2 ) );
-    part.B[1] = part.B[2] = 0;
-
-    N = 100;
-    nu_min = 1e6;
-    nu_max = 1e9;
-    dlognu = log10( nu_max/nu_min ) / ( N-1 );
-
-    qmaxn = 10;
-    logqmax_min = 4;
-    logqmax_max = 5;
-    dlogqmax = (logqmax_max - logqmax_min) / ( qmaxn-1 );
-
-    mymalloc2( J, N * sizeof(double) );
-
-    if ( ThisTask == 0 ) {
-        mymalloc2( J0, N * sizeof(double) );
-        fd = myfopen( "w", "./d2PdVdv_qmax.dat");
-        fprintf( fd, "0 " );
-
-        for( i=0; i<N; i++ ) {
-            nu = log10(nu_min) + i * dlognu;
-            nu = pow( 10, nu );
-            fprintf( fd, "%g ", nu );
-        }
-
-        fprintf( fd, "\n" );
-    }
-
-    for( k=0; k<qmaxn; k++ ) {
-        part.CRE_qmax = pow( 10, logqmax_min + k*dlogqmax );
-
-        //part.CRE_qmax = qmax_max;
-
-        if ( ThisTask == 0 ) {
-            fprintf( fd, "%g ",
-                part.CRE_qmax );
-            printf( "qmax: %g \n",
-                part.CRE_qmax );
-        }
-
-        /*
-        printf(  "%g %g %g %g %g\n",
-                part.CRE_C /( CUBE(g2c.cm) * ( cuc.m_e/(g2c.g) )),
-                part.CRE_Alpha,
-                part.CRE_qmin,
-                part.CRE_qmax,
-                part.B[0] );
-                */
-
-        for( i=0; i<N; i++ ) {
-            if ( i % NTask != ThisTask )
-                continue;
-
-           // printf( "Task %i, i: %i\n", ThisTask_Local, i );
-
-            nu = log10(nu_min) + i * dlognu;
-            nu = pow( 10, nu );
-            J[i] = particle_radio2( nu, &part ) / ( 4.0/3.0 * PI * CUBE( SofteningTable[0] * g2c.cm ) );
-            //printf( "nu: %g, P: %g\n", nu, P );
-            //break;
-        }
-
-        MPI_Reduce( J, J0, N, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD );
-
-        if ( ThisTask == 0 ) {
-            for( i=0; i<N; i++ )
-                fprintf( fd, "%g ", J0[i] );
-            fprintf( fd, "\n" );
-            fflush( fd );
-        }
-
-       // break;
-
-    }
-
-    if ( ThisTask == 0 ) {
-        myfree( J0 );
-        fclose( fd );
-    }
-    myfree( J );
-    do_sync( "" );
-
-    writelog( "d2PdVdv_qmax done.\n" );
 
 }
 
@@ -422,45 +433,113 @@ void output_radio_inte() {
     myfree( r_local );
     myfree( q );
 }
+#endif
+#endif
 
 void test_part_radio() {
-    long i, N, c;
-    double nu, f, B;
+
+
+//#define TEST_PART_RAIO
+#ifdef TEST_PART_RAIO
+    HubbleParam = 0.68;
+    Redshift = 0.01;
+    Time = (1/(Redshift+1));
+    Omega0 = 0.302;
+    OmegaLambda = 0.698;
+    OmegaBaryon = 0.0471;
+    set_units();
+    compute_cosmo_quantities();
+
+#ifndef ALTRAD
+
+    SphParticleData part;
+    double numin, numax, nu, p, dlognu, dlogp, dfp, dfnu;
+    int N, i;
     FILE *fd;
 
-    init_compute_F();
-    init_tab_F();
-
-    if ( ThisTask )
-        return;
-
-    fd = myfopen( "w", "test_part_radio.dat" );
+    part.Density = 1;
+    //part.CRE_C = 7.316051e-13;
+    part.CRE_C = 1;
+    //part.CRE_qmin = 2.483418e+02;
+    part.CRE_qmin = 0.1;
+    //part.CRE_qmax = 1.520993e+06;
+    part.CRE_qmax = 1e+06;
+    part.CRE_Alpha = 2.1;
+    part.B[0] = part.B[1] = 0;
+    //part.B[2] = 5.504009e-07;
+    part.B[2] = 1e-7;
     N = 100;
-    nu = 3*1e8;
+    numin = 1e7;
+    numax = 1.5e9;
 
-    for( i=0, c=0; i<N_Gas; i++ ) {
+    init_compute_F();
 
-        B = get_B(i);
-        if ( B < 1e-10 || SphP[i].CRE_C == 0 )
-            continue;
-
-        f = particle_radio( nu, i );
-        fprintf( fd, "%11.4e %11.4e %11.4e "
-        "%11.4e %6.2f %7.3f %8.0f %11.4e\n",
-        nu, B, SphP[i].Hsml * g2c.cm,
-        SphP[i].CRE_C * SphP[i].Density / guc.m_e / CUBE( g2c.cm ),
-        SphP[i].CRE_Alpha,
-        SphP[i].CRE_qmin,
-        SphP[i].CRE_qmax,
-        f
-        );
-
-        c++;
-        if ( c > N )
-            break;
-    }
-    free_tab_F();
-    fclose( fd );
-    endrun(20181004);
-}
+#ifdef TABF
+    init_tab_F();
 #endif
+
+    if ( ThisTask == 0 ) {
+        dlogp = log( part.CRE_qmax * 10 / (part.CRE_qmin / 10) ) / N;
+        dlognu = log( numax / numin ) / N;
+    
+        fd = fopen( "./test_part_radio.dat", "w" );
+        for ( i=0; i<N; i++ ) {
+            p = part.CRE_qmin / 10  * exp( i * dlogp );
+            nu = numin * exp( i * dlognu );
+            dfp = CRE_F( part.CRE_C, part.CRE_Alpha, part.CRE_qmin,
+                 part.CRE_qmax, p );
+            dfnu = particle_radio2( nu,  &part );
+            fprintf( fd, "%e %e %e %e\n", p, dfp, nu, dfnu );
+        }
+
+        fclose( fd );
+    }
+
+#ifdef TABF
+free_tab_F();
+#endif
+#else
+
+    double vL, B;
+    B = 1e-6;
+    vL = B / ( 2 * PI ) * cuc.e_mec;
+
+if ( ThisTask == 0 )
+    printf( "vL: %g\n", vL );
+
+#endif
+    
+    do_sync( "" );
+    endruns("test_part_radio");
+#else
+    return;
+#endif
+
+}
+
+double get_particle_radio( long p, int i ) {
+
+#ifndef ALTRAD
+    return PartRad[ p*All.NuNum + i ];
+#else
+    double vL, B, a, pmin, pmax, C, t, r, V, nu;
+    B = get_B( p );
+    vL = B / ( 2*PI ) * cuc.e_mec;
+    C = SphP[p].CRE_C * SphP[p].Density / (guc.m_e * CUBE(g2c.cm) * Time3);
+    a = (SphP[p].CRE_Alpha-1)/2.0;
+    pmin = SphP[p].CRE_qmin;
+    pmax = SphP[p].CRE_qmax;
+    V = P[p].Mass / SphP[p].Density * CUBE( g2c.cm * Time );
+    nu = All.NuMin * exp( i * ( log(All.NuMax/All.NuMin) / All.NuNum ) ) * 1e6;
+
+    t = sqrt(nu/vL);
+    if ( t<pmin || t>pmax )
+        return 0;
+
+    r = 2.0/3.0 * cuc.sigma_t * C * cuc.c * SQR(B) / ( 8*PI * vL ) * pow( nu/vL, -a ); 
+    //printf( "%g %g %g %g %g %g\n", nu, vL, t, pmin, pmax, r  );
+    r *= V;
+    return r;
+
+#endif
+}

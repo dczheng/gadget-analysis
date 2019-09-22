@@ -16,10 +16,48 @@ inline double get_group_size( struct group_properties *g ) {
     return vmax( g->size[proj_i], g->size[proj_j] );
 }
 
+void output_group( int gidx ) {
+    long p, i;
+    FILE *fd;
+    fd = myfopen( "w", "g_%04i.dat", gidx );
+    p = Gprops[gidx].Head;
+    while( p>=0 ) {
+        if ( P[p].Type != 0 ) {
+            p = FoFNext[p];
+            continue;
+        }
+
+        if ( SphP[p].CRE_C == 0 ) {
+            p = FoFNext[p];
+            continue;
+        }
+
+        fprintf( fd, "%e %5.2f %e %e %e ",
+        SphP[p].CRE_C,
+        SphP[p].CRE_Alpha,
+        SphP[p].CRE_qmin,
+        SphP[p].CRE_qmax,
+        get_B( p ) * 1e6
+        );
+        for( i=0; i<All.NuNum; i++ ) {
+            fprintf( fd, "%e ", get_particle_radio( p, i ) );
+        }
+        fprintf( fd, "\n" );
+        p = FoFNext[p];
+    }
+    fclose( fd );
+    //hendruns( "output_group" );
+
+}
+
 void group_analysis() {
 
     int proj_tmp[3], i;
     char Sproj_tmp;
+
+    put_header( "group analysis" );
+
+    output_group( 0 );
 
     for( i=0; i<3; i++ )
         proj_tmp[i] = Proj[i];
@@ -62,6 +100,7 @@ void group_analysis() {
 
     reset_img();
     put_sep0;
+    put_end();
 
 }
 

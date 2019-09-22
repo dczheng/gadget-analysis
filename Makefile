@@ -31,6 +31,8 @@ $(EXEC): $(OBJS)
 clean:
 	-rm  $(EXEC) *.o 
 	-rm  allvars.c add_params.h gadget-analysis-config.h gadget-analysis.in protos.h
+delete:
+	-rm  $(EXEC)
 
 test_make:
 	@echo $(TEMP)

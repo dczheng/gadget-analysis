@@ -1,7 +1,5 @@
 #include "allvars.h"
 
-#define F( c, a, q1, q2, p )                 ( ( p<q1 || p>q2 ) ? 0 : c * pow( p, -a ) )
-
 #define BETA(a, q)                           beta( (a-2)*0.5, (3-a)*0.5, 1/(1+q*q) )
 
 #define NUMBER_DENSITY( c, a, q )            ( (c) * pow( (q), 1.0-(a) ) / ( (a)-1.0 ) )

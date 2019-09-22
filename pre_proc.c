@@ -519,10 +519,12 @@ void pre_proc() {
         endruns( "Shift distance is invalid." );
     }
 
-    for ( i=0; i<NumPart; i++ ) {
-        P[i].Pos[0] = PERIODIC( P[i].Pos[0] + All.PosShiftX );
-        P[i].Pos[1] = PERIODIC( P[i].Pos[1] + All.PosShiftY );
-        P[i].Pos[2] = PERIODIC( P[i].Pos[2] + All.PosShiftZ );
+    if ( All.PosShiftX != 0 || All.PosShiftY != 0 || All.PosShiftZ != 0 ) {
+        for ( i=0; i<NumPart; i++ ) {
+            P[i].Pos[0] = PERIODIC( P[i].Pos[0] + All.PosShiftX );
+            P[i].Pos[1] = PERIODIC( P[i].Pos[1] + All.PosShiftY );
+            P[i].Pos[2] = PERIODIC( P[i].Pos[2] + All.PosShiftZ );
+        }
     }
 
 /*

@@ -17,6 +17,7 @@ void init_analysis() {
 
     init_img();
     create_dir( OutputDir );
+    put_end();
 }
 
 void free_analysis() {
@@ -25,8 +26,23 @@ void free_analysis() {
         free_kernel_matrix();
     free_img();
 
+    if ( ThisTask_Local == 0 ) {
+
+#ifdef FOF
+            fof_free();
+#endif
+
+#ifdef TREE
+            tree_free();
+#endif
+
+    }
+
+
+#ifndef ALTRAD
 #ifdef RADSPEC
         free_particle_radio();
+#endif
 #endif
 }
 
@@ -66,9 +82,11 @@ void analysis(){
 
     do_sync( "global compute1" );
 
+#ifndef ALTRAD
 #ifdef RADSPEC
         compute_particle_radio();
         put_sep0;
+#endif
 #endif
 
 #ifdef TOTSPEC
@@ -186,20 +204,15 @@ void analysis(){
             B_dens_pdf();
 #endif
 
+#ifdef DIVBERRDENSPDF
+            divBerr_dens_pdf();
+#endif
+
     }
     do_sync( "" );
     put_sep0;
 
-    if ( ThisTask_Local == 0 ) {
-
-#ifdef FOF
-            fof_free();
-#endif
-#ifdef TREE
-            tree_free();
-#endif
-    }
-
     free_analysis();
     mytimer_end();
+    put_end();
 }

@@ -2,8 +2,7 @@
 
 from my_work_env import *
 
-
-d = np.loadtxt( output_dir + 'F_x.dat' )
+d = np.loadtxt(  sys.argv[1] )
 
 #plt.loglog( d[:,0], d[:,1] )
 x = d[:,0]
@@ -24,7 +23,7 @@ plt.ylim( ylim )
 plt.ylabel( r'$F(x)$', fontsize=20 )
 
 
-x0 = x[ F == F.max() ]
+x0 = x[ F == F.max() ][0]
 print( x0 )
 
 plt.axvline( x = x0, linestyle='-.', color = 'r', label="x=%.2f"%x0 )
@@ -39,4 +38,4 @@ plt.legend(prop={'size':20}, framealpha=0.1)
 #plt.grid()
 plt.tight_layout()
 
-plt.savefig( output_dir + 'F_x.pdf', figsize=(4,4) )
+plt.savefig( 'F_x.pdf', figsize=(4,4) )

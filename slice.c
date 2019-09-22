@@ -423,8 +423,8 @@ void radio_slice() {
     frac = 1.0 / (4.0 * PI * SQR( LumDis * g2c.cm )) / ( area / SQR(ComDis) );
     for ( i=SliceStart[0]; i<SliceEnd[0]; i++ ) {
         data[i] = exp (
-                log( PartRad[i*All.NuNum+index] ) * ( 1-x )
-              + log( PartRad[i*All.NuNum+index1] ) * x
+                log( get_particle_radio(i, index) ) * ( 1-x )
+              + log( get_particle_radio(i, index1) ) * x
                ) * frac;
         weight[i] = SphP[i].Density;
     }

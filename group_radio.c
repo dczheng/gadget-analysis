@@ -111,7 +111,7 @@ void group_luminosity( int nu_index, long index, double *lumgrid, double *num ) 
         }
 
         ii = get_index(x[0],x[1],x[2], All.GroupLumGrid);
-        lumgrid[ii] += PartRad[ p * All.NuNum + nu_index] * SphP[p].Density
+        lumgrid[ii] += get_particle_radio(p,  nu_index) * SphP[p].Density
                         * dL3;
         num[ii] += SphP[p].Density; 
         p = FoFNext[p];
@@ -149,6 +149,9 @@ double group_luminosity( int nu_index, long index ) {
     long p;
     double F;
     struct group_properties *g;
+#ifdef GROUPLUMINOSITYDENSITYWEIGHT
+    double d = 0;
+#endif
 
     g = &Gprops[index];
     p = g->Head;
@@ -156,11 +159,20 @@ double group_luminosity( int nu_index, long index ) {
 
     while( p >= 0 ) {
 
-        if ( P[p].Type == 0 )
-            F += PartRad[ p * All.NuNum + nu_index];
+        if ( P[p].Type == 0 ) {
+#ifdef GROUPLUMINOSITYDENSITYWEIGHT
+            F += get_particle_radio( p , nu_index) * SphP[p].Density;
+            d += SphP[p].Density;
+#else
+            F += get_particle_radio( p, nu_index);
+#endif
+        }
         p = FoFNext[p];
 
     }
+#ifdef GROUPLUMINOSITYDENSITYWEIGHT
+    F /= d;
+#endif
 
     return F;
 
@@ -176,6 +188,7 @@ void group_flux( int nu_index, long index, double *flux, double *flux_nosr ) {
 
     L = group_luminosity( nu_index, index );
     size = get_group_size( g );
+    //*flux_nosr =  *flux = L;
     *flux_nosr = L / ( 4.0 * PI * SQR( LumDis * g2c.cm ) );
     *flux = *flux_nosr / ( SQR( size * 2  / ComDis ) );
 
@@ -462,7 +475,7 @@ void group_spectrum_index() {
             check_picture_index( jj );
 
             for ( k=0; k<vN; k++ )
-                spec[ii*PicS*vN + jj * vN + k] += PartRad[ p * All.NuNum + k ];
+                spec[ii*PicS*vN + jj * vN + k] += get_particle_radio( p, k );
         }
 
         for ( i=0; i<vN * PicS2; i++ )

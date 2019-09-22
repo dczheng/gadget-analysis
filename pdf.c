@@ -220,3 +220,83 @@ void B_Pdf() {
 
 }
 #endif
+
+#ifdef DIVBERRPDF
+void DivB_Err_Pdf() {
+    long i, idxmin, idxmax;
+    int j, N;
+    double errmin, errmax, *n, dlogerr, err, B, errmean, vsum, v;
+    FILE *fd;
+
+    put_header( "DivB Error pdf" );
+    errmin = 1e100;
+    errmax = -errmin;
+    for( i=0; i<N_Gas; i++ )  {
+        B = get_B(i);
+        if ( B<=0 )
+            continue;
+        err = SphP[i].divB * SphP[i].Hsml / B;
+        err = fabs(err);
+        if ( err>errmax ) {
+            errmax = err;
+            idxmax = i;
+        }
+        if ( err<errmin ) {
+            errmin = err;
+            idxmin = i;
+        }
+    }
+
+    N = All.DivBErrPdfBins;
+
+    if ( All.DivBErrPdfMin > 0 )
+        errmin = All.DivBErrPdfMin;
+
+    if ( All.DivBErrPdfMax > 0 )
+        errmax = All.DivBErrPdfMax;
+    //writelog( "N: %i, DivBErrMin: %g, divBErrMax: %g\n", N, errmin, errmax );
+
+    dlogerr = log10(errmax/errmin) / N;
+
+    mymalloc2( n, sizeof(double) * N );
+
+    errmean = vsum = 0;
+    for( i=0; i<N_Gas; i++ ) {
+        B = get_B( i );
+        if ( B <= 0 )
+            continue;
+
+        err = SphP[i].divB * SphP[i].Hsml / B;
+        err = fabs(err);
+        v = P[i].Mass / SphP[i].Density;
+        errmean += err * v;
+        vsum += v;
+        j = log10( err/errmin ) / dlogerr;
+        if ( j<0 || j>N-1 )
+            continue;
+        n[j] ++;
+    }
+
+    errmean /= vsum;
+    writelog( "errmin: %g [%g %g %g %g]\nerrmax: %g [%g %g %g %g]\nerrmean: %g\n",
+        errmin, SphP[idxmin].divB, SphP[idxmin].Hsml, get_B( idxmin ),
+        SphP[idxmin].Density / Time3 / RhoBaryon,
+        errmax, SphP[idxmax].divB, SphP[idxmin].Hsml, get_B( idxmax ),
+        SphP[idxmax].Density / Time3 / RhoBaryon,
+        errmean );
+
+    for( i=0; i<N; i++ )
+        n[i] = n[i] / dlogerr;
+
+    create_dir( "%s/DivBErrPdf", OutputDir );
+    fd = myfopen( "w", "%s/DivBErrPdf/DivBErrPdf_%03i.dat", OutputDir, SnapIndex );
+
+    fprintf( fd, "%g \n",  errmean );
+    for( i=0; i<N; i++ )
+        fprintf( fd, "%g %g\n", errmin * pow(10, i*dlogerr), n[i] );
+
+    fclose( fd );
+    myfree( n );
+
+}
+#endif

@@ -142,7 +142,7 @@ void B_dens_pdf() {
     long p; 
     int flag;
 
-    writelog( "B-Density-Pdf ...\n" );
+    put_header( "B-Density-Pdf" );
     mymalloc1( bdp_x, sizeof(double) * N_Gas );
     mymalloc1( bdp_y, sizeof(double) * N_Gas );
 
@@ -181,6 +181,7 @@ void B_dens_pdf() {
 
     myfree( bdp_x );
     myfree( bdp_y );
+    put_end();
 }
 #endif
 
@@ -320,80 +321,56 @@ void hsml_dens_pdf() {
 }
 #endif
 
-#ifdef DIVBERRPDF
-void DivB_Err_Pdf() {
-    long i, nn, idxmin, idxmax;
-    int j, N;
-    double errmin, errmax, *n, dlogerr, err, B, errmean;
-    FILE *fd;
+#ifdef DIVBERRDENSPDF
+void divBerr_dens_pdf() {
 
-    put_header( "DivB Error pdf" );
-    errmin = 1e100;
-    errmax = -errmin;
-    for( i=0; i<N_Gas; i++ )  {
-        B = get_B(i);
-        if ( B<=0 )
+    double *divbdp_x, *divbdp_y, mm[4], B;
+    long p, N; 
+    int flag;
+
+    put_header( "divBerr-Density-Pdf" );
+    mymalloc1( divbdp_x, sizeof(double) * N_Gas );
+    mymalloc1( divbdp_y, sizeof(double) * N_Gas );
+
+    for( p=0, N=0; p<N_Gas; p++ ) {
+        B = get_B(p);
+        if ( B<=0 || SphP[p].divB == 0 )
             continue;
-        err = SphP[i].divB * SphP[i].Hsml / get_B( i );
-        err = fabs(err);
-        if ( err>errmax ) {
-            errmax = err;
-            idxmax = i;
-        }
-        if ( err<errmin ) {
-            errmin = err;
-            idxmin = i;
-        }
+        divbdp_x[N] = SphP[p].Density / Time3 / RhoBaryon;
+        divbdp_y[N] = fabs(SphP[p].divB) * SphP[p].Hsml / B;
+        N++;
     }
 
-    N = All.DivBErrPdfBins;
+    flag = 0;
+    flag |= PDF2D_BIT_XLOG;
+    flag |= PDF2D_BIT_YLOG;
 
-    if ( All.DivBErrPdfMin > 0 )
-        errmin = All.DivBErrPdfMin;
+    if ( All.DivBerrDensPdfDensMin > 0 || 
+            All.DivBerrDensPdfDensMax > 0 ) {
+        if ( All.DivBerrDensPdfDensMin * All.DivBerrDensPdfDensMax == 0 )
+            endrun( 20180810 );
 
-    if ( All.DivBErrPdfMax > 0 )
-        errmax = All.DivBErrPdfMax;
-    //writelog( "N: %i, DivBErrMin: %g, divBErrMax: %g\n", N, errmin, errmax );
+        flag |= PDF2D_BIT_FIXEDY;
+        mm[0] = All.DivBerrDensPdfDensMin;
+        mm[1] = All.DivBerrDensPdfDensMax;
 
-    dlogerr = log10(errmax/errmin) / N;
-
-    mymalloc2( n, sizeof(double) * N );
-
-    for( i=0, nn=0, errmean=0; i<N_Gas; i++ ) {
-        B = get_B( i );
-        if ( B <= 0 )
-            continue;
-
-        err = SphP[i].divB * SphP[i].Hsml / B;
-        err = fabs(err);
-        errmean += err;
-        nn++;
-        j = log10( err/errmin ) / dlogerr;
-        if ( j<0 || j>N-1 )
-            continue;
-        n[j] ++;
     }
 
-    errmean /= nn;
-    writelog( "errmin: %g [%g %g %g %g]\nerrmax: %g [%g %g %g %g]\nerrmean: %g\n",
-        errmin, SphP[idxmin].divB, SphP[idxmin].Hsml, get_B( idxmin ),
-        SphP[idxmin].Density / Time3 / RhoBaryon,
-        errmax, SphP[idxmax].divB, SphP[idxmin].Hsml, get_B( idxmax ),
-        SphP[idxmax].Density / Time3 / RhoBaryon,
-        errmean );
+    if ( All.DivBerrDensPdfDivBMin > 0 || 
+            All.DivBerrDensPdfDivBMax > 0 ) {
+        if ( All.DivBerrDensPdfDivBMin * All.DivBerrDensPdfDivBMax == 0 )
+            endrun( 20180810 );
 
-    for( i=0; i<N; i++ )
-        n[i] = n[i] / dlogerr;
+        flag |= PDF2D_BIT_FIXEDX;
+        mm[2] = All.DivBerrDensPdfDivBMin;
+        mm[3] = All.DivBerrDensPdfDivBMax;
 
-    create_dir( "%s/DivBErrPdf", OutputDir );
-    fd = myfopen( "w", "%s/DivBErrPdf/DivBErrPdf_%03i.dat", OutputDir, SnapIndex );
+    }
 
-    fprintf( fd, "%g \n",  errmean );
-    for( i=0; i<N; i++ )
-        fprintf( fd, "%g %g\n", errmin * pow(10, i*dlogerr), n[i] );
+    pdf2d( divbdp_x, divbdp_y, NULL, N, "DivBerrDensPdf", flag, mm );
 
-    fclose( fd );
-    myfree( n );
-
+    myfree( divbdp_x );
+    myfree( divbdp_y );
+    put_end();
 }
 #endif

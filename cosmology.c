@@ -180,6 +180,7 @@ double sigma( sigma_struct ss ) {
 
 void test_sigma() {
 
+#ifdef TEST_SIGMA
     sigma_struct ss;
     double R;
 
@@ -194,6 +195,9 @@ void test_sigma() {
     printf( "Sigma8: %g\n", sigma( ss ) );
 
     endrun( 20181025 );
+#else
+    return;
+#endif
 
 }
 
@@ -327,11 +331,11 @@ void test_ps() {
 
 }
 
-#define writelog1( a, b ) writelog( "%-35s: %g\n", a, b )
+#define writelog1( a ) writelog( "%-35s: %g\n", #a, a )
+#define writelog2( a, b ) writelog( "%-35s: %g\n", a, b )
 void compute_cosmo_quantities() {
     put_header( "compute cosmology quantities" );
 
-    Time = header.time;
     Time2 = SQR( Time );
     Time3 = CUBE( Time );
     Hubble_a = hubble_function( Time );
@@ -348,22 +352,29 @@ void compute_cosmo_quantities() {
     else
         ComDis = AngDis = LumDis = 0;
 
-    writelog1( "Time", Time );
-    writelog1( "Time2", Time2 );
-    writelog1( "Time3", Time3 );
-    writelog1( "Comoving Distance", ComDis );
-    writelog1( "Angular Distance", AngDis );
-    writelog1( "Luminosity Distance", LumDis );
-    writelog1( "Hubble_a", Hubble_a );
-    writelog1( "RhoBaryon", RhoBaryon );
-    writelog1( "RhoBaryon[cgs]", RhoBaryon * g2c.g / CUBE( g2c.cm ) );
-    writelog1( "RhoCrit", RhoCrit );
-    writelog1( "RhoCrit[cgs]", RhoCrit * g2c.g / CUBE( g2c.cm ) );
-    writelog1( "RhoM", RhoM );
+    writelog1( Redshift );
+    writelog1( Omega0 );
+    writelog1( OmegaLambda );
+    writelog1( OmegaBaryon );
+    writelog1( Time );
+    writelog1( Time2 );
+    writelog1( Time3 );
+    writelog1( ComDis );
+    writelog1( AngDis );
+    writelog1( LumDis );
+    writelog1( Hubble_a );
+    writelog1( RhoBaryon );
+    writelog1( RhoCrit );
+    writelog1( RhoM );
+
+    writelog2( "RhoBaryon[cgs]", RhoBaryon * g2c.g / CUBE( g2c.cm ) );
+    writelog2( "RhoCrit[cgs]", RhoCrit * g2c.g / CUBE( g2c.cm ) );
+    put_end();
 }
 
 void test_cos() {
 
+#ifdef TEST_COS
     double z, La, Ll, Lc, a;
     HubbleParam = 0.68;
     OmegaLambda = 0.698;
@@ -384,6 +395,9 @@ void test_cos() {
 
     do_sync( "" );
     endrun( 20190115 );
+#else
+    return;
+#endif
 
 }
 

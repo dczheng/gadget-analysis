@@ -266,7 +266,7 @@ void fof_save() {
     ndims = 1;
     dims[0] = NumPart;
     hdf5_dataspace = H5Screate_simple( ndims, dims, NULL );
-    hdf5_type = H5Tcopy( H5T_NATIVE_UINT64 );
+    hdf5_type = H5Tcopy( H5T_NATIVE_INT64 );
     hdf5_dataset = H5Dcreate( hdf5_file, "Next", hdf5_type, hdf5_dataspace, H5P_DEFAULT );
     H5Dwrite( hdf5_dataset, hdf5_type, hdf5_dataspace, H5S_ALL, H5P_DEFAULT, FoFNext );
     H5Dclose( hdf5_dataset );
@@ -449,13 +449,15 @@ void fof_read() {
     buf2 = (double *)buf;
 
 
-    hdf5_type = H5Tcopy( H5T_NATIVE_UINT64 );
     /*****************int********************/
+    hdf5_type = H5Tcopy( H5T_NATIVE_INT64 );
     writelog( "read Next ...\n" );
     hdf5_dataset = H5Dopen( hdf5_file, "Next" );
     H5Dread( hdf5_dataset, hdf5_type, H5S_ALL, H5S_ALL, H5P_DEFAULT, FoFNext );
     H5Dclose( hdf5_dataset );
+    H5Tclose( hdf5_type );
 
+    hdf5_type = H5Tcopy( H5T_NATIVE_UINT64 );
     writelog( "read Head ...\n" );
     hdf5_dataset = H5Dopen( hdf5_file, "Head" );
     H5Dread( hdf5_dataset, hdf5_type, H5S_ALL, H5S_ALL, H5P_DEFAULT, buf );

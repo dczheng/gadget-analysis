@@ -1,5 +1,7 @@
 #include "allvars.h"
 
+#ifndef ALTRAD
+#ifdef RADSPEC
 #define TAB_F_N 100000
 #define GSL_BESSEL_UPPER_LIMIT   ((double)700)
 #define GSL_BESSEL_BREAKPOINT    ((double)100)
@@ -57,6 +59,11 @@ void init_compute_F() {
     gsl_integration_qagiu( &Func, GSL_BESSEL_BREAKPOINT,
             GSL_INTE_ERR_ABS, GSL_INTE_ERR_REL, GSL_INTE_WS_LEN,
             inte_ws, &F_V_above_breakpoint, &F_V_above_breakpoint_err );
+    writelog( "F0(%g): %g [%g]\n",
+            GSL_BESSEL_BREAKPOINT,
+            F_V_above_breakpoint,
+            F_V_above_breakpoint_err
+            );
 
 }
 
@@ -195,6 +202,9 @@ void init_tab_F() {
 
     writelog( "initialize tab_F ...\n" );
 
+#ifdef INIT_TAB_F_DEBUG
+double err_x;
+#endif
     dlogx = log(F_X_MAX/F_X_MIN) / ( TAB_F_N - 1 );
     mymalloc2( tab_F_V, sizeof( double ) * ( TAB_F_N+1 ) );
     err_max = -1;
@@ -207,12 +217,20 @@ void init_tab_F() {
         x = exp( x );
         F( x, &F_v, &err );
 
-        if ( err>err_max )
+        if ( err>err_max ) {
             err_max = err;
+#ifdef INIT_TAB_F_DEBUG
+            err_x = x;
+#endif
+        }
 
         err_mean += err;
         tab_F_V[i] = F_v;
     }
+
+#ifdef INIT_TAB_F_DEBUG
+    printf( "[%03i], x: %g, err_x: %g\n", ThisTask, err_x, err_max );
+#endif
 
     MPI_Reduce( &err_max, &err_max_global, 1, MPI_DOUBLE,
             MPI_MAX, 0, MPI_COMM_WORLD );
@@ -246,6 +264,7 @@ double radio_inte( double p, void *params ) {
 
     double r, x, nu_c, err;
     struct radio_inte_struct *ri;
+    (void) err;
 
     ri = params;
 
@@ -258,10 +277,11 @@ double radio_inte( double p, void *params ) {
     else
         F( x, &r, &err );
 */
-    if ( All.TabF )
+#ifdef TABF
         r = tab_F( x );
-    else
+#else
         F( x, &r, &err );
+#endif
 
     r *= (*(ri->f))( p, ri->params );
 
@@ -300,8 +320,8 @@ double radio( double (*f)( double, void* ), double *params,
     if ( pmin > pmax * 0.9 ) // avoid bad integration.
         return 0;
 
-    //printf( "p: ( %g, %g )\n", pmin, pmax );
-    r = qtrap( &radio_inte, &ri, pmin, pmax, err );
+    //printf( "p: ( %g[%g], %g ), B: %g, err: %g\n", t, pmin, pmax, B, err );
+    r = qtrap( &radio_inte, &ri, 1, pmin, pmax, err );
     //
     /*
     gsl_function F;
@@ -319,3 +339,5 @@ double radio( double (*f)( double, void* ), double *params,
     return r;
 
 }
+#endif
+#endif

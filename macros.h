@@ -265,4 +265,12 @@ writelog( "[Timer Start in `%s`]\n", __FUNCTION__ ); \
     sprintf( buf, "%s%s/%s_%03i_%04i_%c.dat",\
             GroupDir, nstr, nstr, SnapIndex, group_index, Sproj );
 
-#define put_header( s )  writelog( ">>> %s\n", s );
+#define put_header( s ) {\
+    writelog( ">>> %s\n", s );\
+    WATCH_POINT( "debug point" );\
+}
+#define put_end() {\
+    WATCH_POINT( "debug point" );\
+}
+
+#define CRE_F( c, a, q1, q2, q ) ( ((q) < (q1) || (q) > (q2) ) ? 0 : (c) * pow((q), -(a)) )
