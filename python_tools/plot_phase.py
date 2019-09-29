@@ -8,6 +8,7 @@ import matplotlib.ticker as tik
 ds = [ np.loadtxt( sys.argv[i+1] ) for i in range(4) ]
 # 0: d1, 1:d1_cre, 2:d2, 3:d2_cre
 hs = []
+f_out = sys.argv[5]
 
 for i in range(4):
     hs.append( ds[i][0,:] )
@@ -33,8 +34,8 @@ for h in hs:
        print( "error2" )
        exit()
 
-Nmin = 1e5
-contour_levles = [ 1e4, 1e5, 1e6, 2e6 ]
+Nmin = 1e5 
+contour_levles = [ 1e4, 1e5, 2e5, 1e6 ]
 print( "contour levels: ", contour_levles )
 Errmin = 1e-2
 err_lognorm = 0
@@ -80,7 +81,6 @@ d1_err = ds[1]
 d2 = ds[2]
 d2_err = ds[3] 
 
-f_out = sys.argv[5]
 
 fs = 8
 rc = 0.1

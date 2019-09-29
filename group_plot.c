@@ -170,7 +170,6 @@ void group_plot() {
     int *num, g_index, i, j, x, y,
          xo, yo, pic_index, ii, jj;
 
-return;
     char buf[100], buf1[100];
     double *data[GROUP_FILED_NBLOCKS];
     put_header( "group plot" );

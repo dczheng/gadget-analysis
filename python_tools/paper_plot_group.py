@@ -65,7 +65,7 @@ for i in range(m):
     if "Radio" in ds_name[i]:
         for j in range(n):
             ds[i][j] = ds[i][j] / mycc.mJy
-            ds[i][j][ds[i][j]<ds[i][j].max()*1e-7] = 0
+            ds[i][j][ds[i][j]<ds[i][j].max()*1e-8] = 0
     if "Mach" in ds_name[i]:
         for j in range(n):
             ds[i][j][0,0] = 1

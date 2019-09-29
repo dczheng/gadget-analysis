@@ -12,7 +12,6 @@ if ( args == 1 ):
     exit()
 
 fn_pre = sys.argv[1]
-fn_out = sys.argv[2]
 
 fn_test = [ "%s.hdf5"%fn_pre, "%s.0.hdf5"%fn_pre ]
 flag = -1
@@ -36,9 +35,15 @@ print( "NumPart: ", num )
 print( "NumFilesPerSnapshot: %i"%fn_num )
 print( "Redshift: %.2f"%Redshift )
 
-gas_u = []
 gas_density = []
 gas_m = []
+
+read_temp = 1
+
+if read_temp:
+    gas_temp = []
+else:
+    gas_u = []
 
 for i in range( fn_num ):
 
@@ -50,34 +55,42 @@ for i in range( fn_num ):
     print( 'read %s ...'%fn  )
     f = h5py.File( fn, 'r' )
 
-    d = f[ '/PartType0/Density' ].value
+    d = f[ '/PartType0/Density' ][()]
     gas_density.append( d )
 
-    d = f[ '/PartType0/InternalEnergy' ].value
-    gas_u.append( d )
+    if read_temp:
+        d = f[ '/PartType0/Temperature' ][()]
+        gas_temp.append( d )
+    else:
+        d = f[ '/PartType0/InternalEnergy' ][()]
+        gas_u.append( d )
 
-    d = f[ '/PartType0/Masses' ].value
+    d = f[ '/PartType0/Masses' ][()]
     gas_m.append( d )
 
     f.close()
 
 print( "stack data ..." )
 gas_density = np.hstack( gas_density )
-gas_u = np.hstack( gas_u )
 gas_m = np.hstack( gas_m )
+if read_temp:
+    gas_temp = np.hstack( gas_temp )
+else:
+    gas_u = np.hstack( gas_u )
+
 print( sep_str )
 
 print( "Density number: ", gas_density.shape[0] )
-print( "InternalEnergy number: ", gas_u.shape[0] )
 
 gas_density =  gas_density / mycc.rho_bar_in_gadget( Redshift )
-gas_u = gas_u * mycc.gadget_energy_in_erg / mycc.gadget_mass_in_g
 
-XH = mycc.Xh 
-yh = ( 1 - XH ) / ( 4*XH )
-ne = 1 + 2 * yh
-mu = ( 1 + 4 * yh ) / ( 1 + yh + ne )
-gas_temp = ( mycc.Gamma-1 ) / mycc.k_b * gas_u * mycc.m_p * mu
+if not read_temp:
+    gas_u = gas_u * mycc.gadget_energy_in_erg / mycc.gadget_mass_in_g
+    XH = mycc.Xh 
+    yh = ( 1 - XH ) / ( 4*XH )
+    ne = 1 + 2 * yh
+    mu = ( 1 + 4 * yh ) / ( 1 + yh + ne )
+    gas_temp = ( mycc.Gamma-1 ) / mycc.k_b * gas_u * mycc.m_p * mu
 
 Tmin = gas_temp.min()
 Tmax = gas_temp.max()
@@ -107,6 +120,8 @@ r_hot  = m_hot  / m_tot
 print( 'cool: %g  warm: %g  hot: %g  dens: %g'\
         %( r_cool, r_warm, r_hot, r_dens ) )
 
+exit()
+fn_out = sys.argv[2]
 print( "plot phase ..." )
 
 N = 128
