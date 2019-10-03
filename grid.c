@@ -1,5 +1,58 @@
 #include "allvars.h"
 
+void field_to_grid_fft( double *data, fftw_real *grid, double L, int NGrid, long N, int in_place ) {
+
+    double fac, v, t, dx[6];
+    int i, x[6], NGrid3;
+    long p, index;
+
+    fac = NGrid / L;
+    if ( in_place )
+        NGrid3 = 2 * ( NGrid / 2 + 1   );
+    else
+        NGrid3 = NGrid;
+
+    memset( grid, 0, sizeof(fftw_real) * NGrid * NGrid * NGrid3 );
+
+    for( p=0; p<N; p++ ) {
+        for( i=0; i<3; i++ ) {
+                  t = data[p*4+i]* fac;
+
+               x[i] =  t;
+             x[i+3] = x[i] + 1;
+
+            dx[i+3] = t - x[i];
+            dx[i]   = 1 - dx[i+3];
+
+        }
+
+        for( i=0; i<6; i++ )
+            x[i] %= NGrid;
+
+/*
+            index = x[0] * NGrid * NGrid3 +
+                    x[1] * NGrid3 +
+                    x[2];
+            grid[index] += data[p*4+3];
+*/
+        for ( i=0; i<8; i++ ) {
+
+            index = x[(i&1)*3] * NGrid * NGrid3
+                  + x[1+((i>>1)&1)*3] * NGrid3 
+                  + x[2+((i>>2)&1)*3];
+
+                v = dx[(i&1)*3]
+                  * dx[1+((i>>1)&1)*3]
+                  * dx[2+((i>>2)&1)*3];
+
+            grid[index] += data[p*4+3] * v;
+
+        }
+
+    }
+
+}
+
 void field_to_grid( double *data, double *grid, int pt, int Nmin, int flag ) {
 
     double fac, v, t, dx[6], *num;

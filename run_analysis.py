@@ -257,7 +257,7 @@ def gen_config( param_file, run_dir, new_param_file ):
     fd_h.write( "\n\n"  )
     deps1( fd_h,fd_c, ( "GROUPTEMP", "GROUPU", "GROUPSFR", "GROUPB", "GROUPMACH",\
                 "GROUPCRE", "GROUPRAD", "GROUPSPEC", "GROUPELECSPEC",\
-                "GROUPTEMPPROFILE", "GROUPTEMPSTACK", "GROUPTOTLUM"), "GROUP" )
+                "GROUPTEMPPROFILE", "GROUPTEMPSTACK", "GROUPTOTLUM", "GROUPVIRIAL"), "GROUP" )
     deps1( fd_h, fd_c, ("GROUPSFR","BPDF", "PHASE"), "READSFR" )
     deps1( fd_h, fd_c, ("GROUPU","UTPFD", "GROUPCRE"), "READU" )
     deps1( fd_h, fd_c, ("GROUPB", "BPDF", "BDENSPDF", "DIVBERRPDF"), "READB" )

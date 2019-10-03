@@ -87,7 +87,7 @@ int ngb_fof( double *searchcenter, double h ) {
     return ngbnum;
 }
 
-int ngb( double *searchcenter, double h ) {
+int ngb( double *searchcenter, double h, int mode ) {
     long n, p;
     int ngbnum;
     double dx, dy, dz, dist;
@@ -113,6 +113,10 @@ int ngb( double *searchcenter, double h ) {
 
             if ( dx*dx + dy*dy + dz*dz >  dist*dist )
                 continue;
+
+            if ( mode )
+                if ( P[p].flag == 0 )
+                    continue;
 
             Ngblist[ngbnum++] = p;
         }

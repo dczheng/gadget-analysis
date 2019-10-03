@@ -32,7 +32,7 @@ void group_temp_profile() {
             break;
 
         g = Gprops[g_index];
-        ngbnum = ngb( g.cm, Rmax*0.9 );
+        ngbnum = ngb( g.cm, Rmax*0.9, 0 );
         /*
         ngbnum = 0;
         for ( p=0; p<N_Gas; p++ ) {
@@ -134,7 +134,7 @@ void group_temp_stack() {
         mi = 0;
         while( mi < MS-1 && g.mass > m[mi+1] ) mi ++;
 
-        ngbnum = ngb( g.cm, All. GroupTempStackRmax * 1.1 );
+        ngbnum = ngb( g.cm, All. GroupTempStackRmax * 1.1, 0 );
         for( i=0; i<ngbnum; i++ ) {
             p = Ngblist[i];
             if ( P[p].Type != 0 )
@@ -181,7 +181,7 @@ void group_temp_stack() {
         mi = 0;
         while( mi < MS-1 && g.mass > m[mi+1] ) mi ++;
 
-        ngbnum = ngb( g.cm, All. GroupTempStackRmax );
+        ngbnum = ngb( g.cm, All. GroupTempStackRmax, 0 );
         for( i=0; i<ngbnum; i++ ) {
             p = Ngblist[i];
             if ( P[p].Type != 0 )

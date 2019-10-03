@@ -9,6 +9,7 @@
 #include "gsl/gsl_integration.h"
 #include "gsl/gsl_sf_gamma.h"
 #include "gsl/gsl_sf_bessel.h"
+#include "gsl/gsl_sf_erf.h"
 #include "gsl/gsl_fit.h"
 #include "mpi.h"
 #include "signal.h"
@@ -17,6 +18,7 @@
 #include "macros.h"
 #include "libgen.h"
 #include "gadget-analysis-config.h"
+#include "drfftw.h"
 
 #define ZDEBUG
 
@@ -54,6 +56,10 @@
 
 
 #define BCMB0                    (3.24e-6) // gauss
+
+#define ASMTH  1.25
+#define RCUT   4.5
+#define NSRPTAB 1000
 
 #define GSL_INTE_WS_LEN 10000
 #define GSL_INTE_ERR_ABS ((double)(0.0))
@@ -160,6 +166,7 @@ struct radio_inte_struct{
 
 
 typedef struct ParticleData {
+
     double Pos[3];
     double Mass;
 #ifdef READVEL
@@ -173,6 +180,7 @@ typedef struct ParticleData {
     double  Pot;
 #endif 
     int Type;
+    short flag;
 } ParticleData;
 
 typedef struct SphParticleData {
@@ -246,6 +254,7 @@ typedef struct GlobalParams{
         TPdfN,
         GroupTempStackRN,
         NumFilesPerSnapshot,
+        GroupPotGrid,
 
         QNum, NuNum, FoFMinLen,
         TreePartType,
@@ -445,7 +454,8 @@ extern double
             UnitPressure_in_cgs,
             UnitTime_in_s,
             SofteningTable[6], Start[6], End[6],
-            *PartRad, *KernelMat2D[6], *KernelMat3D[6] ;
+            *PartRad, *KernelMat2D[6], *KernelMat3D[6],
+            *ShortRangeTablePotential;
 extern gsl_integration_workspace *inte_ws;
 //extern_end
 

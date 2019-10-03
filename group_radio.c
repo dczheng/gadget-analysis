@@ -150,6 +150,7 @@ void group_tot_lum() {
     FILE *fd;
     int index;
     double L;
+    put_header( "group total luminosity" );
     create_dir( "%sLum", GroupDir );
     fd = myfopen( "w", "%sLum/Lum_%03i.dat",
             GroupDir, SnapIndex );
@@ -162,6 +163,7 @@ void group_tot_lum() {
     }
 
     fclose( fd );
+    put_end();
 }
 #endif
 
@@ -191,12 +193,10 @@ double group_luminosity( double nu, long index, double mode ) {
             }
             */
 
-/*
-            if ( get_B( p ) * 1e6 > 10 ) { 
+            if ( get_B( p ) * 1e6 > 100 ) { 
                 p = FoFNext[p];
                 continue;
             }
-*/
 
 #ifdef GROUPLUMINOSITYDENSITYWEIGHT
             if ( mode == 0 ) {
@@ -252,7 +252,7 @@ void group_spectrum() {
     */
     FILE *fd1, *fd2;
 
-    writelog( "group spectrum ...\n" );
+    put_header( "group spectrum" );
 
     vN = All.NuNum;
     vmin = All.NuMin;
@@ -335,8 +335,7 @@ void group_spectrum() {
     myfree( lumgrid );
     myfree( num );
     */
-
-    writelog( "group spectrum ... done.\n" );
+    put_end();
 
 }
 #endif

@@ -145,7 +145,7 @@ void powerspec() {
         for( i=0; i<8; i++ ) {
 
             index = xyz[(i&1)*3] * NGrid * NGrid3
-                  + xyz[1+((i>>1)&1)*3] * NGrid
+                  + xyz[1+((i>>1)&1)*3] * NGrid3
                   + xyz[2+((i>>2)&1)*3];
 
             v = dis[(i&1)*3]

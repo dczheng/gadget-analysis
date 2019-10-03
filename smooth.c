@@ -28,7 +28,7 @@ void smooth() {
 #endif
         }
 
-        ngbnum = ngb( cm, h_i );
+        ngbnum = ngb( cm, h_i, 0 );
         if ( ngbnum == 0 )
             continue;
 

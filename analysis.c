@@ -2,6 +2,9 @@
 
 void init_analysis() {
 
+    int i;
+    double u;
+
     put_header( "initialize analysis" );
     proj_k = All.ProjectDirection;
     proj_i = ( All.ProjectDirection + 1 ) % 3;
@@ -15,6 +18,13 @@ void init_analysis() {
     if ( All.KernelInterpolation )
         init_kernel_matrix();
 
+    mymalloc1( ShortRangeTablePotential, sizeof(double) * NSRPTAB );
+
+    for( i=0; i<NSRPTAB; i++ ) {
+        u = 3.0 / NSRPTAB * ( i+0.5 );
+        ShortRangeTablePotential[i] = erfc(u);
+    }
+
     init_img();
     create_dir( OutputDir );
     put_end();
@@ -25,6 +35,8 @@ void free_analysis() {
     if ( All.KernelInterpolation )
         free_kernel_matrix();
     free_img();
+
+    myfree( ShortRangeTablePotential );
 
     if ( ThisTask_Local == 0 ) {
 
@@ -78,6 +90,10 @@ void analysis(){
             compute_temperature();
 #endif
 
+#ifdef MACHNOISE
+    remove_mach_noise();
+#endif
+
     }
 
     do_sync( "global compute1" );
@@ -87,10 +103,6 @@ void analysis(){
         compute_particle_radio();
         put_sep0;
 #endif
-#endif
-
-#ifdef MACHNOISE
-    remove_mach_noise();
 #endif
 
 #ifdef TOTSPEC
@@ -217,6 +229,7 @@ void analysis(){
 #endif
 
     }
+
     do_sync( "" );
     put_sep0;
 
