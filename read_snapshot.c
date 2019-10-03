@@ -20,6 +20,7 @@ int blockpresent0( enum iofields blk, int pt ) {
         case IO_VEL:
         case IO_POS:
         case IO_ID:
+        case IO_POT:
         case IO_ACCEL:
             blockpresent_check( header.npart[pt] > 0 );
 
@@ -34,7 +35,6 @@ int blockpresent0( enum iofields blk, int pt ) {
         case IO_TEMP:
         case IO_HSML:
         case IO_RHO:
-        case IO_POT:
         case IO_NE:
         case IO_MN:
         case IO_CR_C0:
@@ -116,6 +116,12 @@ int blockpresent( enum iofields blk, int pt ) {
 #endif
             return 0;
 
+        case IO_POT:
+#ifdef READPOT
+            blockpresent_check( blockpresent0(blk, pt) );
+#endif
+            return 0;
+
         case IO_CRE_C:
         case IO_CRE_ALPHA:
         case IO_CRE_QMIN:
@@ -138,7 +144,6 @@ int blockpresent( enum iofields blk, int pt ) {
             return 0;
 
         case IO_DBDT:
-        case IO_POT:
         case IO_ACCEL:
             return 0;
         default:

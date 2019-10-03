@@ -120,6 +120,11 @@ double particle_radio2( double nu,  SphParticleData *part ) {
 
     double r, params[4], B;
 
+/*
+    part->CRE_qmin *= 10;
+    part->CRE_C = ENERGY2( 1, part->CRE_Alpha, part->CRE_qmin, part->CRE_qmax );
+*/
+
     params[0] = part->CRE_C;
     if ( part->CRE_qmin <= 0 )
         return 0;
@@ -155,7 +160,7 @@ double particle_radio2( double nu,  SphParticleData *part ) {
     B = sqrt( B );
     //if ( B > 1e-4 )
     //    B = 1e-4;
-    r = radio( &particle_df, params, B, nu, params[2], params[3], 1e-2 );
+    r = radio( &particle_df, params, B, nu, params[2], params[3], 1e-3 );
     return r;
 
 }
@@ -266,7 +271,7 @@ int read_particle_radio() {
 
 void compute_particle_radio() {
 
-    double numin, numax, dlognu, nu, tt, V;
+    double numin, numax, dlognu, nu, tt;
     int nuN, j, num, flag;
     long i, t;
     char fn[ FILENAME_MAX ];
@@ -332,15 +337,13 @@ void compute_particle_radio() {
             continue;
 
         flag = 0;
-        V = P[i].Mass / SphP[i].Density * CUBE( g2c.cm * Time );
-        //V = SphP[i].Hsml * CUBE( g2c.cm * Time );
         for( j=0; j<nuN; j++ ) {
 
             nu = exp( log(numin) + j * dlognu ) * 1e6;
 
             //printf( "nu: %g\n", nu );
 
-            tt = PartRad[ i*All.NuNum + j ] = particle_radio( nu/Time, i ) * V;
+            tt = PartRad[ i*All.NuNum + j ] = particle_radio( nu/Time, i );
 
             //tt  = tt * ( 4.0/3.0 * PI * CUBE(SofteningTable[0]*g2c.cm*Time) );
             /*
@@ -452,6 +455,7 @@ void test_part_radio() {
 
 #ifndef ALTRAD
 
+#ifdef RADSPEC
     SphParticleData part;
     double numin, numax, nu, p, dlognu, dlogp, dfp, dfnu;
     int N, i;
@@ -464,10 +468,10 @@ void test_part_radio() {
     part.CRE_qmin = 0.1;
     //part.CRE_qmax = 1.520993e+06;
     part.CRE_qmax = 1e+06;
-    part.CRE_Alpha = 2.1;
+    part.CRE_Alpha = 2.5;
     part.B[0] = part.B[1] = 0;
     //part.B[2] = 5.504009e-07;
-    part.B[2] = 1e-7;
+    part.B[2] = 1e-6 * 1e-3;
     N = 100;
     numin = 1e7;
     numax = 1.5e9;
@@ -498,6 +502,7 @@ void test_part_radio() {
 #ifdef TABF
 free_tab_F();
 #endif
+#endif
 #else
 
     double vL, B;
@@ -517,12 +522,25 @@ if ( ThisTask == 0 )
 
 }
 
-double get_particle_radio( long p, int i ) {
+#if defined( ALTRAD ) || defined ( RADSPEC )
+double get_particle_radio_freq( long p, double nu ) {
 
 #ifndef ALTRAD
-    return PartRad[ p*All.NuNum + i ];
+    double nu_x, dlognu;
+    int nu_i;
+    dlognu = log( All.NuMax/ All.NuMin  ) / ( All.NuNum  );
+    nu_x = log( nu / All.NuMin ) / dlognu;
+    nu_i = nu_x;
+    nu_x -= nu_i;
+    if ( nu_i >= All.NuNum-1  )
+        return get_particle_radio_index( p, All.NuNum-1 );
+    if ( nu_i < 0 )
+        return get_particle_radio_index(p, 0);
+
+    return get_particle_radio_index(p, nu_i) * ( 1-nu_x  ) + 
+            get_particle_radio_index(p, nu_i+1) * nu_x;
 #else
-    double vL, B, a, pmin, pmax, C, t, r, V, nu;
+    double vL, B, a, pmin, pmax, C, t, r, V;
     B = get_B( p );
     vL = B / ( 2*PI ) * cuc.e_mec;
     C = SphP[p].CRE_C * SphP[p].Density / (guc.m_e * CUBE(g2c.cm) * Time3);
@@ -530,8 +548,6 @@ double get_particle_radio( long p, int i ) {
     pmin = SphP[p].CRE_qmin;
     pmax = SphP[p].CRE_qmax;
     V = P[p].Mass / SphP[p].Density * CUBE( g2c.cm * Time );
-    nu = All.NuMin * exp( i * ( log(All.NuMax/All.NuMin) / All.NuNum ) ) * 1e6;
-
     t = sqrt(nu/vL);
     if ( t<pmin || t>pmax )
         return 0;
@@ -543,3 +559,26 @@ double get_particle_radio( long p, int i ) {
 
 #endif
 }
+
+double get_particle_radio_index( long p, int i ) {
+
+/*
+    double V1, V2;
+    V1 = P[i].Mass / SphP[i].Density * CUBE( g2c.cm * Time );
+    V2 = 4.0 / 3.0 * PI * CUBE( SofteningTable[0] * g2c.cm * Time );
+    return PartRad[ p*All.NuNum + i ] / V1 * V2;
+*/
+#ifndef ALTRAD
+    double V;
+    V = 4.0/3.0 * PI * CUBE( SphP[p].Hsml * g2c.cm * Time );
+    return PartRad[ p*All.NuNum + i ] * V;
+#else
+
+    double dlognu, nu;
+    dlognu = log( All.NuMax/ All.NuMin  ) / ( All.NuNum  );
+    nu = All.NuMin * exp( i * dlognu );
+    return get_particle_radio_freq( p, nu );
+#endif
+}
+
+#endif

@@ -274,3 +274,20 @@ writelog( "[Timer Start in `%s`]\n", __FUNCTION__ ); \
 }
 
 #define CRE_F( c, a, q1, q2, q ) ( ((q) < (q1) || (q) > (q2) ) ? 0 : (c) * pow((q), -(a)) )
+
+#define BETA(a, q)                           beta( (a-2)*0.5, (3-a)*0.5, 1/(1+q*q) )
+
+#define NUMBER_DENSITY( c, a, q )            ( (c) * pow( (q), 1.0-(a) ) / ( (a)-1.0 ) )
+#define NUMBER_DENSITY2( c, a, q1, q2 )      ( NUMBER_DENSITY( (c), (a), (q1) ) - NUMBER_DENSITY( (c), (a), (q2) ) )
+
+#define ENERGY( c, a, q )                    ( guc.c2 * (c) / ((a)-1.0) * ( 0.5 *  BETA((a), (q)) + (sqrt( 1+(q)*(q)) - 1.0 ) * pow( (q), 1-(a) ) ) )
+#define ENERGY2( c, a, q1, q2 )              ( ENERGY( (c), (a), (q1) ) -  ENERGY( (c), (a), (q2) ) )
+
+#define MEAN_ENERGY( a, q )                  ( ( 0.5 * pow( (q), (a)-1.0 ) * BETA((a), (q)) + sqrt( 1+((q)*(q)) ) - 1.0 ) * guc.mec2 )
+#define MEAN_ENERGY2( a, q1, q2 )            ( ENERGY2( 1, (a), (q1), (q2) ) / NUMBER_DENSITY2( 1, (a), (q1), (q2) ) * guc.m_e )
+
+
+#define PRESSURE( c, a, q )                  ( guc.c2 * (c) / 6 * BETA( (a), (q) ) )
+#define PRESSURE2( c, a, q1, q2 )            ( PRESSURE( (c), (a), (q1) ) - PRESSURE( (c), (a), (q2) ) )
+
+#define cre_pressure( i )                    ( PRESSURE2( SphP[i].CRE_C, SphP[i].CRE_Alpha, SphP[i].CRE_qmin, SphP[i].CRE_qmax ) )

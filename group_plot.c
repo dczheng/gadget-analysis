@@ -54,12 +54,6 @@ int group_filed_present( enum group_fields blk ) {
 
 double get_group_filed_data( enum group_fields blk, long p ) {
 
-#ifdef GROUPRAD
-    double nu_x, PP, dlognu;
-    int nu_i;
-    dlognu = log( All.NuMax/ All.NuMin ) / ( All.NuNum );
-#endif
-
     switch( blk ) {
         case GROUP_DENS:
             return SphP[p].Density;
@@ -99,18 +93,7 @@ double get_group_filed_data( enum group_fields blk, long p ) {
 #endif
 #ifdef GROUPRAD
         case GROUP_RAD:
-             nu_x = log(All.GroupRadFreq / All.NuMin) / dlognu;
-             nu_i = nu_x;
-             nu_x -= nu_i;
-             if ( nu_i >= All.NuNum-1 )
-                 PP = get_particle_radio(p, All.NuNum-1);
-             else if ( nu_i <= 0 )
-                 PP = get_particle_radio(p, 0);
-             else  {
-                 PP = get_particle_radio(p, nu_i) * ( 1-nu_x ) +
-                      get_particle_radio(p, nu_i+1) * nu_x;
-             }
-             return PP;
+             return get_particle_radio_freq( p, All.GroupRadFreq );
 #endif
        default:
             endruns( "can't be !!!" );
@@ -166,7 +149,7 @@ void group_plot() {
 
     long p;
     struct group_properties g;
-    double L, dL, *mass, r200, w; 
+    double L, dL, *mass, r200, w, fac_arc; 
     int *num, g_index, i, j, x, y,
          xo, yo, pic_index, ii, jj;
 
@@ -174,11 +157,14 @@ void group_plot() {
     double *data[GROUP_FILED_NBLOCKS];
     put_header( "group plot" );
 
+//#define GROUP_PLOT_DEBUG
 #ifdef GROUP_PLOT_DEBUG
     FILE *fd_d;
     int ti, tj;
     fd_d = myfopen( "w", "group_plot-test.dat" );
 #endif
+
+    fac_arc = 180 * 60 * 60 / PI;
 
     x = proj_i;
     y = proj_j;
@@ -291,8 +277,8 @@ void group_plot() {
             //for( ti=-1; ti<2; ti++ )
             //    for( tj=-1; tj<2; tj++ ) {
              //       if ( ii==xo+ti && jj==yo+tj )
-                        fprintf( fd_d, "%g %g\n", get_B(p)*1e6,
-                        SphP[p].MachNumber );
+                        fprintf( fd_d, "%g %g %g\n", get_B(p)*1e6,
+                        SphP[p].MachNumber, SphP[p].Hsml );
             //}
             //p = FoFNext[p];
             //continue;
@@ -326,7 +312,7 @@ void group_plot() {
             p = FoFNext[p];
         } 
 #ifdef GROUP_PLOT_DEBUG
-        break;
+        endruns( "group-plot-debug" );
 #endif
 
         for ( i=0; i<PicSize2; i++ ) {
@@ -364,7 +350,7 @@ void group_plot() {
 
         for ( i=0; i<6; i++ )
             img_props(i) = mass[i];
-        img_props( 6 ) = r200;
+        img_props(0) = r200;
         img_xmin =  -L;
         img_xmax =  L;
         img_ymin =  -L;
@@ -395,10 +381,9 @@ void group_plot() {
                                        / SQR( dL / ComDis  / PI * 180 * 60 ) ;
                 }
 
-                img_xmin =  -L / ComDis / PI * 180 * 60;
-                img_xmax =   L / ComDis / PI * 180 * 60;
-                img_ymin =  -L / ComDis / PI * 180 * 60;
-                img_ymax =   L / ComDis / PI * 180 * 60;
+                img_xmin =  img_ymin = -L / ComDis * fac_arc;
+                img_xmax =  img_ymax = -img_xmin;
+                img_props(0) = r200 / ComDis * fac_arc;
                 image.img = data[GROUP_RAD];
                 get_group_filed_name( GROUP_RAD, buf1 );
                 make_group_output_filename( buf, buf1, g_index );

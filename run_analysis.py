@@ -208,6 +208,24 @@ def deps2( fdh, fdc, A, Bs ):
     fdh.write( "#endif\n\n" )
     fdc.write( "#endif\n\n" )
 
+def exc1( fdh, As, B ):
+    fdh.write( "#if defined(%s) "%As[0] )
+    for a in As[1:]:
+        fdh.write( "|| defined(%s) "%a )
+        fdc.write( "|| defined(%s) "%a )
+    fdh.write( "\n#ifdef %s\n"%B )
+    fdh.write( "#undef %s\n"%B )
+    fdh.write( "#endif\n" )
+    fdh.write( "#endif\n\n" )
+
+def exc2( fdh, A, Bs ):
+    fdh.write( "#ifdef %s\n"%A )
+    for b in Bs:
+        fdh.write( "#ifdef %s\n"%b )
+        fdh.write( "#undef %s\n"%b )
+        fdh.write( "#endif\n" )
+    fdh.write( "#endif\n\n" )
+
 
 def gen_config( param_file, run_dir, new_param_file ):
 
@@ -239,27 +257,32 @@ def gen_config( param_file, run_dir, new_param_file ):
     fd_h.write( "\n\n"  )
     deps1( fd_h,fd_c, ( "GROUPTEMP", "GROUPU", "GROUPSFR", "GROUPB", "GROUPMACH",\
                 "GROUPCRE", "GROUPRAD", "GROUPSPEC", "GROUPELECSPEC",\
-                "GROUPTEMPPROFILE", "GROUPTEMPSTACK"), "GROUP" )
+                "GROUPTEMPPROFILE", "GROUPTEMPSTACK", "GROUPTOTLUM"), "GROUP" )
     deps1( fd_h, fd_c, ("GROUPSFR","BPDF", "PHASE"), "READSFR" )
     deps1( fd_h, fd_c, ("GROUPU","UTPFD", "GROUPCRE"), "READU" )
     deps1( fd_h, fd_c, ("GROUPB", "BPDF", "BDENSPDF", "DIVBERRPDF"), "READB" )
     deps1( fd_h, fd_c, ("DIVBERRPDF", "DIVBERRPDf", "DIVBERRDENSPDF"), "READDIVB" )
-    deps1( fd_h, fd_c, ("GROUPMACH",), "READMACH" )
+    deps1( fd_h, fd_c, ("GROUPMACH","MACHNOISE"), "READMACH" )
     deps1( fd_h, fd_c, ("GROUPCRE","GROUPELECSPEC", "CREPPDF", "CRENSLICE", "CREESLICE",\
                  "CRENTPDF" ), "READCRE" )
     deps1( fd_h, fd_c, ("GROUPTEMP","TEMPSLICE", "PDFTDIFFDENS", "PHASE","CRENTPDF",\
                     "TPDF", "GASRATIO", "HSMLTPDf", "UTPDF", "BPDF" ), "COMPUTETEMP" )
-    deps1( fd_h, fd_c, ("GROUPRAD","RADSLICE", "TOTSPEC", "GROUPSPEC"), "RADSPEC" )
+    deps1( fd_h, fd_c, ("GROUPRAD","RADSLICE", "TOTSPEC", "GROUPSPEC", "GROUPRTOTLUM"), "RADSPEC" )
     deps1( fd_h, fd_c, ("HSMLTPDF","HSMLDENSPDF", "RADSLICE", "SMOOTH", "DIVBERRPDF", "DIVBERRDENSPDF"), "READHSML" )
     deps1( fd_h, fd_c, ("MF",), "FOF" )
     deps1( fd_h, fd_c, ("BSMOOTH",), "SMOOTH" )
+    deps1( fd_h, fd_c, ( "GROUPVIRIAL", ), "GROUPVELDISP" )
+    deps1( fd_h, fd_c, ( "GROUPVIRIAL", ), "GROUPPOT" )
+    deps1( fd_h, fd_c, ( "GROUPVIRIAL", ), "GROUPKIN" )
+    deps1( fd_h, fd_c, ("GROUPPOT",), "READPOT" )
 
     deps2( fd_h, fd_c, "RADSPEC", ("READB", "READCRE", "READHSML") )
     deps2( fd_h, fd_c, "GROUP", ("FOF", "TREE") )
-
     deps2( fd_h, fd_c, "FOF", ("TREE",) )
 
-    deps1( fd_h, fd_c, ("FOF",), "READVEL" )
+    deps1( fd_h, fd_c, ("FOF", "GROUPVELDISP", "GROUPKIN"), "READVEL" )
+
+    exc2( fd_h, "ALTRAD", ("RADSPEC",) )
 
     fd_h.write( "#ifdef COMPUTETEMP\n" )
     fd_h.write( "#ifndef READTEMP\n" )

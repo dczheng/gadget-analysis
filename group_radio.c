@@ -111,7 +111,7 @@ void group_luminosity( int nu_index, long index, double *lumgrid, double *num ) 
         }
 
         ii = get_index(x[0],x[1],x[2], All.GroupLumGrid);
-        lumgrid[ii] += get_particle_radio(p,  nu_index) * SphP[p].Density
+        lumgrid[ii] += get_particle_radio_index(p,  nu_index) * SphP[p].Density
                         * dL3;
         num[ii] += SphP[p].Density; 
         p = FoFNext[p];
@@ -144,7 +144,31 @@ void group_luminosity( int nu_index, long index, double *lumgrid, double *num ) 
 
 */
 
-double group_luminosity( int nu_index, long index ) {
+#ifdef GROUPTOTLUM
+void group_tot_lum() {
+
+    FILE *fd;
+    int index;
+    double L;
+    create_dir( "%sLum", GroupDir );
+    fd = myfopen( "w", "%sLum/Lum_%03i.dat",
+            GroupDir, SnapIndex );
+
+    for ( index=0; index<Ngroups; index++ ) {
+        if ( !group_present( index ) )
+            break;
+            L = group_luminosity( All.GroupTotLumFreq , index, 1 );
+            fprintf( fd, "%g\n",  L );
+    }
+
+    fclose( fd );
+}
+#endif
+
+
+#ifdef GROUPSPEC
+
+double group_luminosity( double nu, long index, double mode ) {
 
     long p;
     double F;
@@ -160,11 +184,35 @@ double group_luminosity( int nu_index, long index ) {
     while( p >= 0 ) {
 
         if ( P[p].Type == 0 ) {
+            /*
+            if ( SphP[p].Density / Time3 / RhoBaryon > 1e4 && SphP[p].MachNumber > 2 ) {
+                p = FoFNext[p];
+                continue;
+            }
+            */
+
+/*
+            if ( get_B( p ) * 1e6 > 10 ) { 
+                p = FoFNext[p];
+                continue;
+            }
+*/
+
 #ifdef GROUPLUMINOSITYDENSITYWEIGHT
-            F += get_particle_radio( p , nu_index) * SphP[p].Density;
+            if ( mode == 0 ) {
+                F += get_particle_radio_index( p , (int)nu ) * SphP[p].Density;
+            }
+            esle {
+                F += get_particle_radio_freq( p , nu ) * SphP[p].Density;
+            }
             d += SphP[p].Density;
 #else
-            F += get_particle_radio( p, nu_index);
+            if ( mode == 0 ) {
+                F += get_particle_radio_index( p, (int)nu);
+            }
+            else {
+                F += get_particle_radio_freq( p, nu);
+            }
 #endif
         }
         p = FoFNext[p];
@@ -186,7 +234,7 @@ void group_flux( int nu_index, long index, double *flux, double *flux_nosr ) {
 
     g = &Gprops[index];
 
-    L = group_luminosity( nu_index, index );
+    L = group_luminosity( (double)nu_index, index, 0 );
     size = get_group_size( g );
     //*flux_nosr =  *flux = L;
     *flux_nosr = L / ( 4.0 * PI * SQR( LumDis * g2c.cm ) );
@@ -194,7 +242,6 @@ void group_flux( int nu_index, long index, double *flux, double *flux_nosr ) {
 
 }
 
-#ifdef GROUPSPEC
 void group_spectrum() {
 
     int vN, i, index;
@@ -475,7 +522,7 @@ void group_spectrum_index() {
             check_picture_index( jj );
 
             for ( k=0; k<vN; k++ )
-                spec[ii*PicS*vN + jj * vN + k] += get_particle_radio( p, k );
+                spec[ii*PicS*vN + jj * vN + k] += get_particle_radio_index( p, k );
         }
 
         for ( i=0; i<vN * PicS2; i++ )

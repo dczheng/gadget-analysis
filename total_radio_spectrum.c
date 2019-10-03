@@ -46,13 +46,13 @@ void total_radio_spectrum() {
                 continue;
                 */
 
-            flux_local[i] += get_particle_radio(index, i);
+            flux_local[i] += get_particle_radio_index(index, i);
 
-            if ( get_particle_radio(index,i) * tmp > 10 ||
-                    get_particle_radio(index, i) < 0 ||
+            if ( get_particle_radio_index(index,i) * tmp > 10 ||
+                    get_particle_radio_index(index, i) < 0 ||
                     flux_local[i] < 0 ) {
                 printf( "%i, %g, %g, %g\n",
-                        i, nu[ i ], get_particle_radio(index, i), flux_local[i] );
+                        i, nu[ i ], get_particle_radio_index(index, i), flux_local[i] );
                 endrun( 20181029 );
             }
 

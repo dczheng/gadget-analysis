@@ -165,13 +165,13 @@ typedef struct ParticleData {
 #ifdef READVEL
     double Vel[3];
 #endif
-#ifdef READPOT
-    double Pot;
-#endif
 #ifdef READACC
     double Acc[3];
 #endif
     MyIDType ID;
+#ifdef READPOT
+    double  Pot;
+#endif 
     int Type;
 } ParticleData;
 
@@ -288,6 +288,7 @@ typedef struct GlobalParams{
             CrenTPdfTMax,
             CrenTPdfnMin,
             CrenTPdfnMax,
+            GroupTotLumFreq,
             FieldCrenTDensDensMin,
             FieldCrenTDensDensMax,
             FieldCrenTDensTMin,

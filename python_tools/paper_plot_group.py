@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 
 from my_work_env import *
+from matplotlib.patches import Circle
+from scipy.signal import convolve2d
 
 DataDir     = sys.argv[1]
 snap_idx    = int( sys.argv[2] )
@@ -8,28 +10,34 @@ Projs       = sys.argv[3:]
 #tProjs       = [ 'z', 'x', 'x', 'x', 'x', 'x' ]
 NGroup  = len( Projs )
 ds_name = [  "Density", "MagneticField", "Mach", "Cre_e",\
-             "Radio"
+             "Radio", "Cre_Alpha"
             ]
 fig_name = [  r"$\rm {\rho}/{\bar{\rho}}$", \
               r"$\rm B \,[\mu G]$",\
               r"$\rm Mach$",  \
               r"$\rm \epsilon / \epsilon_{\rm bar}$", \
-              r"$\rm I_{1.4G}\, [mJy\,arcmin^{-2}]$"\
+              r"$\rm I_{1.4G}\, [mJy\,arcsec^{-2}]$",\
+              r'$\alpha$',
               ]
 norms   = [  mplc.LogNorm(),\
              mplc.LogNorm(),\
+             #mplc.LogNorm(),\
+             None,\
              mplc.LogNorm(),\
-             mplc.LogNorm(),\
-             mplc.LogNorm()
+             mplc.LogNorm(),
+             None
              ]
 cmaps   = [ \
         cm.hot,\
         #cm.viridis,\
         #cm.gist_ncar,\
         #cm.gnuplot2,\
-        plt.get_cmap( 'ds9b' ),\
+        #cm.spectral,\
+        #plt.get_cmap( 'ds9b' ),\
+        cm.magma,\
         plt.get_cmap( 'ds9a' ),\
-        cm.plasma,\
+        #cm.plasma,\
+        cm.spectral,\
         cm.magma,\
         #cm.magma,\
         #cm.jet,\
@@ -41,11 +49,18 @@ cmaps   = [ \
         #cm.gnuplot,\
         #cm.nipy_spectral,\
         cm.gist_heat,\
+        cm.gist_heat,\
         ]
 m = len(ds_name)
 n = NGroup
 
 ds = []
+r200 = []
+r200_L = []
+r200_c = [ 'w', 'w', 'w', 'k', 'k', 'k' ]
+res = []
+Ls  = []
+
 for i in range(m):
     t = []
     for j in range(n):
@@ -54,24 +69,67 @@ for i in range(m):
               ds_name[i], ds_name[i], \
               snap_idx, j, Projs[j] )
         print( "load `%s` ..."%fn )
-        t.append( np.loadtxt(fn)[1:,:] )
+        d = np.loadtxt(fn)
+        t.append( d[1:,:] )
+        
+        xmin = d[0,1]
+        xmax = d[0,2]
+        ymin = d[0,4]
+        ymax = d[0,5]
+        
+        N = d[1:, :].shape[0]
+        dL = (xmax - xmin) / N 
+        Ls.append( (xmin, xmax, ymin, ymax) )
+        res.append( dL )
+        #print( dL )
+        r200_L.append( d[0, 8] )
+        r200.append( d[0, 8] / dL )
+
     ds.append(t)
 
+print( Ls )
+print( res )
+print( r200 )
+
+print( Ls[:NGroup] )
+print( res[:NGroup] )
+print( r200[:NGroup] )
+
+name2index = {}
 for i in range(m):
-    if "Cre_e" in ds_name[i]:
-        for j in range(n):
-            d = ds[i][j]
-            #d[ d<d.max()*1e-5 ] = 0
-    if "Radio" in ds_name[i]:
-        for j in range(n):
-            ds[i][j] = ds[i][j] / mycc.mJy
-            ds[i][j][ds[i][j]<ds[i][j].max()*1e-8] = 0
-    if "Mach" in ds_name[i]:
-        for j in range(n):
-            ds[i][j][0,0] = 1
-    if "MagneticField" in ds_name[i]:
-        for j in range(n):
-            ds[i][j][ds[i][j]<1e-5] = 0
+    name2index[ ds_name[i] ] = i
+print( name2index )
+
+i = name2index[ "Cre_e" ]
+for j in range(n):
+    d = ds[i][j]
+    d[ d<d.max()*1e-4 ] = 0
+
+idx_mag = ds[name2index['MagneticField']][j] > 10 
+
+i = name2index[ "Radio" ]
+for j in range(n):
+    ds[i][j] = ds[i][j] / mycc.mJy
+    idx1 = ds[name2index['Density']][j] > 1e4
+    idx2 = ds[name2index['Mach']][j] > 2 
+    idx = idx1 * idx2
+    #ds[i][j][ idx ] = 0 
+    ds[i][j][ idx_mag ] = 0
+    ds[i][j][ds[i][j]<ds[i][j].max()*1e-15] = 0
+
+i = name2index[ "Mach" ]
+for j in range(n):
+    ds[i][j][0,0] = 1
+    ds[i][j][ idx_mag ] = ds[i][j].min()
+    #idx1 = ds[name2index['Density']][j] > 1e5
+    #idx2 = ds[i][j] > 2 
+    #ds[i][j][ idx1*idx2 ] = 1
+
+i = name2index[ "MagneticField" ]
+for j in range(n):
+    ds[i][j][ds[i][j]<1e-5] = 0
+    print( len(ds[i][j][ ds[i][j] > 10 ]) )
+    ds[i][j][ idx_mag ] = 10
 
 for i in range(m):
     vmin = 1e100
@@ -112,6 +170,26 @@ for i in range(m*n):
 
 cbar_axs = [ fig.add_axes( [n*dx, i*dy, t_cbar*dx/4, dy] ) for i in range(m) ]
 
+def f( x, sigma ):
+    return 1/(np.sqrt( 2 * np.pi ) * sigma) * np.exp( -x**2/ ( 2*sigma**2 ) )
+
+def gen_kernel( N, kres, sigma ):
+    ker = np.zeros( [N,N] )
+    xo, yo = N//2, N//2
+    for i in range(N):
+        for j in range(N):
+            r = np.sqrt( (j-xo)**2 + (i-yo)**2 ) * kres
+            #print( f(r, sigma) )
+            ker[i,j] = f( r, sigma )
+            #if r == 0:
+            #    print( i, j, r, f(r,sigma) )
+    return ker 
+
+#print( gen_kernel( 4, 10, 10 ) )
+#print( gen_kernel( 8, 10, 10 ) )
+#exit()
+
+conv_flag = 0
 for i in range(m):
     cmap = cmaps[i]
     norm = norms[i]
@@ -123,7 +201,25 @@ for i in range(m):
               snap_idx, j, Projs[j] )
         print( "plot `%s` ..."%fn )
         ax = axs[m-1-i][j]
-        img = ax.imshow( ds[i][j], norm=norm, cmap=cmap )
+
+        if ds_name[i] == 'Radio':
+            if conv_flag:
+                sigma = res[j] / ( 2 * np.sqrt( np.log(2) ) )
+                kernel = gen_kernel( 4, res[j], sigma )
+                print( kernel )
+                t = convolve2d( ds[i][j], kernel ) 
+                img = ax.imshow( t, norm=norm, cmap=cmap )
+            else:
+                img = ax.imshow( ds[i][j], norm=norm, cmap=cmap )
+        else:
+            img = ax.imshow( ds[i][j], norm=norm, cmap=cmap )
+        mm, nn = ds[i][j].shape
+
+        cir = Circle( xy=(nn/2, mm/2), radius=r200[j], fill=False, color=r200_c[i] );
+        ax.add_patch( cir )
+
+        #cir = Circle( xy=(nn/2, mm/2), radius=r200[j]/10, fill=False );
+        #ax.add_patch( cir )
         if j == 0:
             cbar = plt.colorbar( img, cax=cax )
             #cbar.set_ticks( [] )
@@ -141,8 +237,8 @@ mm, nn = ds[0][0].shape
 #font.set_size( 'xx-large' )
 #font.set_weight( 'medium' )
 for i in range(n):
-    ax = axs[m-1][i]
-    ax.text( 0.05*nn, 0.05*mm, r"$G_{%i}$"%(i+1), fontsize=90 )
+    ax = axs[0][i]
+    ax.text( 0.05*nn, 0.05*mm, r"$\rm G_{%i}, R_{200}=%.2fMpc$"%(i+1, r200_L[i]/1000), fontsize=60 )
 
 #fig.savefig( str(snap_idx) + '_' + ''.join(Projs) + '.png' )
 fig.savefig( str(snap_idx) + '_' + ''.join(Projs) + '.pdf' )

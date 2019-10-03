@@ -153,7 +153,7 @@ def my_plot2():
 
         print( "[alpha] ele: %.2f, rad: %.2f"%(-alpha_e, -alpha_r) )
 
-        if ( i > 10 ):
+        if ( i > 6 ):
             continue
 
         label_e = r'$G_{%i}:\,%.2f$'%(i, -alpha_e)

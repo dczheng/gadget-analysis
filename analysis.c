@@ -89,6 +89,10 @@ void analysis(){
 #endif
 #endif
 
+#ifdef MACHNOISE
+    remove_mach_noise();
+#endif
+
 #ifdef TOTSPEC
         total_radio_spectrum();
         put_sep0;
@@ -188,6 +192,10 @@ void analysis(){
 
 #ifdef HSMLDENSPDF
             hsml_dens_pdf();
+#endif
+
+#ifdef MACHDENSPDF
+            mach_dens_pdf();
 #endif
 
 #ifdef UTPDF

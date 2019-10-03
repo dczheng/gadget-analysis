@@ -295,29 +295,54 @@ void u_T_pdf() {
 #ifdef HSMLDENSPDF
 void hsml_dens_pdf() {
 
-    double *htp_x, *htp_y;
+    double *hdp_x, *hdp_y;
     long p; 
     int flag;
 
-    mymalloc1( htp_x, sizeof(double) * N_Gas );
-    mymalloc1( htp_y, sizeof(double) * N_Gas );
+    mymalloc1( hdp_x, sizeof(double) * N_Gas );
+    mymalloc1( hdp_y, sizeof(double) * N_Gas );
     for( p=0; p<N_Gas; p++ ) {
-        htp_x[p] = SphP[p].Hsml;
+        hdp_x[p] = SphP[p].Hsml;
         /*
         printf( "%g %g %g\n", SphP[p].Hsml, SphP[p].Density,
             SphP[p].Hsml*SphP[p].Density );
         */
-        htp_y[p] = SphP[p].Density / Time3 / RhoBaryon;
+        hdp_y[p] = SphP[p].Density / Time3 / RhoBaryon;
     }
 
     flag = 0;
     flag |= PDF2D_BIT_XLOG;
     flag |= PDF2D_BIT_YLOG;
 
-    pdf2d( htp_x, htp_y, NULL, N_Gas, "HsmlDensPdf", flag, NULL );
+    pdf2d( hdp_x, htp_y, NULL, N_Gas, "HsmlDensPdf", flag, NULL );
 
-    myfree( htp_x );
-    myfree( htp_y );
+    myfree( hdp_x );
+    myfree( hdp_y );
+}
+#endif
+
+#ifdef MACHDENSPDF
+void mach_dens_pdf() {
+
+    double *mdp_x, *mdp_y;
+    long p; 
+    int flag;
+
+    mymalloc1( mdp_x, sizeof(double) * N_Gas );
+    mymalloc1( mdp_y, sizeof(double) * N_Gas );
+    for( p=0; p<N_Gas; p++ ) {
+        mdp_x[p] = SphP[p].Density / Time3 / RhoBaryon;
+        mdp_y[p] = SphP[p].MachNumber;
+    }
+
+    flag = 0;
+    flag |= PDF2D_BIT_XLOG;
+    flag |= PDF2D_BIT_YLOG;
+
+    pdf2d( mdp_x, mdp_y, NULL, N_Gas, "MachDensPdf", flag, NULL );
+
+    myfree( mdp_x );
+    myfree( mdp_y );
 }
 #endif
 
