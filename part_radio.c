@@ -160,7 +160,7 @@ double particle_radio2( double nu,  SphParticleData *part ) {
     B = sqrt( B );
     //if ( B > 1e-4 )
     //    B = 1e-4;
-    r = radio( &particle_df, params, B, nu, params[2], params[3], 1e-3 );
+    r = radio( &particle_df, params, B, nu, params[2], params[3], 1e-2 );
     return r;
 
 }
@@ -335,6 +335,8 @@ void compute_particle_radio() {
 
         if ( i % NTask_Local != ThisTask_Local )
             continue;
+
+        //printf( "%i %li\n", ThisTask, i );
 
         flag = 0;
         for( j=0; j<nuN; j++ ) {
@@ -564,13 +566,13 @@ double get_particle_radio_index( long p, int i ) {
 
 /*
     double V1, V2;
-    V1 = P[i].Mass / SphP[i].Density * CUBE( g2c.cm * Time );
-    V2 = 4.0 / 3.0 * PI * CUBE( SofteningTable[0] * g2c.cm * Time );
     return PartRad[ p*All.NuNum + i ] / V1 * V2;
 */
 #ifndef ALTRAD
     double V;
-    V = 4.0/3.0 * PI * CUBE( SphP[p].Hsml * g2c.cm * Time );
+    //V = 4.0 / 3.0 * PI * CUBE( SofteningTable[0] * g2c.cm * Time );
+    //V = 4.0/3.0 * PI * CUBE( SphP[p].Hsml * g2c.cm * Time );
+    V = P[p].Mass / SphP[p].Density * CUBE( g2c.cm * Time );
     return PartRad[ p*All.NuNum + i ] * V;
 #else
 
