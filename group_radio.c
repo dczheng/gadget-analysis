@@ -144,38 +144,14 @@ void group_luminosity( int nu_index, long index, double *lumgrid, double *num ) 
 
 */
 
-#ifdef GROUPTOTLUM
-void group_tot_lum() {
+#ifdef GROUPLUM
 
-    FILE *fd;
-    int index;
-    double L;
-    put_header( "group total luminosity" );
-    create_dir( "%sLum", GroupDir );
-    fd = myfopen( "w", "%sLum/Lum_%03i.dat",
-            GroupDir, SnapIndex );
-
-    for ( index=0; index<Ngroups; index++ ) {
-        if ( !group_present( index ) )
-            break;
-            L = group_luminosity( All.GroupTotLumFreq , index, 1 );
-            fprintf( fd, "%g\n",  L );
-    }
-
-    fclose( fd );
-    put_end();
-}
-#endif
-
-
-#ifdef GROUPSPEC
-
-double group_luminosity( double nu, long index, double mode ) {
+double group_luminosity( double nu, long index, int mode) {
 
     long p;
     double F;
     struct group_properties *g;
-#ifdef GROUPLUMINOSITYDENSITYWEIGHT
+#ifdef GROUPLUMDENSITYWEIGHTED
     double d = 0;
 #endif
 
@@ -186,23 +162,12 @@ double group_luminosity( double nu, long index, double mode ) {
     while( p >= 0 ) {
 
         if ( P[p].Type == 0 ) {
-            /*
-            if ( SphP[p].Density / Time3 / RhoBaryon > 1e4 && SphP[p].MachNumber > 2 ) {
-                p = FoFNext[p];
-                continue;
-            }
-            */
 
-            if ( get_B( p ) * 1e6 > 100 ) { 
-                p = FoFNext[p];
-                continue;
-            }
-
-#ifdef GROUPLUMINOSITYDENSITYWEIGHT
+#ifdef GROUPLUMDENSITYWEIGHTED
             if ( mode == 0 ) {
                 F += get_particle_radio_index( p , (int)nu ) * SphP[p].Density;
             }
-            esle {
+            else {
                 F += get_particle_radio_freq( p , nu ) * SphP[p].Density;
             }
             d += SphP[p].Density;
@@ -218,7 +183,7 @@ double group_luminosity( double nu, long index, double mode ) {
         p = FoFNext[p];
 
     }
-#ifdef GROUPLUMINOSITYDENSITYWEIGHT
+#ifdef GROUPLUMDENSITYWEIGHTED
     F /= d;
 #endif
 

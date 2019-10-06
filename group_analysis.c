@@ -17,27 +17,8 @@ inline double get_group_size( struct group_properties *g ) {
     return vmax( g->size[proj_i], g->size[proj_j] );
 }
 
-#ifdef GROUPPOT
-double group_pot( long index ) {
-
-    long p;
-    double e;
-    struct group_properties *g;
-
-    g = &Gprops[index];
-    p = g->Head;
-    e = 0;
-    while( p >= 0 ) {
-        e += P[p].Pot * P[p].Mass;
-        p = FoFNext[p];
-    }
-    return e;
-
-}
-#endif
-//#define GROUP_POT2_TEST
-#ifdef GROUP_POT2_TEST
-double group_pot2_direct( long index ) {
+#ifdef GROUP_POT_TEST
+double group_pot_direct( long index ) {
     /*
     for test
     */
@@ -93,13 +74,13 @@ double group_pot2_direct( long index ) {
 #endif
 
 #ifdef GROUPPOT
-double group_pot2( long index ) {
+double group_pot( long index ) {
 
     long p, pp;
     int i, j, k, m, NGrid, NGrid3, ks[3], k2, ip, ngbnum, tabindex;
     double e, L, *data, fac, f[3], smth, ff, asmth2, asmth, rcut, r, asmthfac;
     struct group_properties *g;
-#ifdef GROUP_POT2_TEST
+#ifdef GROUP_POT_TEST
     index = 2;
 #endif
 
@@ -129,7 +110,8 @@ double group_pot2( long index ) {
     mymalloc1( Ngblist, g->Len * sizeof(long) );
 
     asmth = ASMTH * ( L/NGrid );
-    rcut = RCUT * asmth;
+    //rcut = RCUT * asmth;
+    rcut = asmth;
     asmth2 = ( 2*PI ) / L * asmth;
     asmth2 *= asmth2;
     asmthfac = 0.5 / asmth * ( NSRPTAB/3.0 );
@@ -141,11 +123,11 @@ double group_pot2( long index ) {
     mymalloc2( data, sizeof( double ) * g->Len * 4  );
     p = g->Head;
     ip = 0;
-#ifdef GROUP_POT2_TEST
+#ifdef GROUP_POT_TEST
     double mtot=0, mtot2=0;
 #endif
     while( p >= 0 ) {
-#ifdef GROUP_POT2_TEST
+#ifdef GROUP_POT_TEST
         if ( P[p].Type != 0 ) {
             p = FoFNext[p];
             continue;
@@ -154,7 +136,7 @@ double group_pot2( long index ) {
         for( i=0; i<3; i++ )
             data[ip*4+i] = PERIODIC_HALF( P[p].Pos[i] - g->cm[i] ) + L/2;
 
-#ifdef GROUP_POT2_TEST
+#ifdef GROUP_POT_TEST
        mtot += P[p].Mass;
 #endif
         data[ip*4+3] = P[p].Mass;
@@ -164,7 +146,7 @@ double group_pot2( long index ) {
 
     field_to_grid_fft( data, rhogrid, L, NGrid, ip, 1 );
 
-#ifdef GROUP_POT2_TEST
+#ifdef GROUP_POT_TEST
     for( i=0; i<NGrid; i++ )
         for( j=0; j<NGrid; j++ )
             for( k=0; k<NGrid; k++ ) {
@@ -185,7 +167,7 @@ double group_pot2( long index ) {
      N^3: implementation of fftw, that is FFTW computes an unnormalized transform,
     */
 
-#ifdef GROUP_POT2_TEST
+#ifdef GROUP_POT_TEST
     for( i=0; i<100; i++ )
         printf( "%g ", rhogrid[NGrid/2 * NGrid * NGrid3 + NGrid/2 * NGrid3 + i] );
     printf( "\n" );
@@ -225,7 +207,7 @@ double group_pot2( long index ) {
 
     rfftwnd_one_complex_to_real( fft_plan_inv, fft_of_rhogrid, NULL  );
 
-#ifdef GROUP_POT2_TEST
+#ifdef GROUP_POT_TEST
     for( i=0; i<100; i++ )
         printf( "%g ", rhogrid[NGrid/2 * NGrid * NGrid3 + NGrid/2 * NGrid3 + i] );
     printf( "\n" );
@@ -246,7 +228,7 @@ double group_pot2( long index ) {
     fac = NGrid / L;
     while( p >= 0 ) {
 
-#ifdef GROUP_POT2_TEST
+#ifdef GROUP_POT_TEST
         if ( P[p].Type != 0 ) {
             p = FoFNext[p];
             continue;
@@ -267,7 +249,7 @@ double group_pot2( long index ) {
 
     p = g->Head;
     while( p >= 0 ) {
-#ifdef GROUP_POT2_TEST
+#ifdef GROUP_POT_TEST
         if ( P[p].Type != 0 ) {
             p = FoFNext[p];
             continue;
@@ -279,7 +261,7 @@ double group_pot2( long index ) {
 
     p = g->Head;
     while( p >= 0 ) {
-#ifdef GROUP_POT2_TEST
+#ifdef GROUP_POT_TEST
         if ( P[p].Type != 0 ) {
             p = FoFNext[p];
             continue;
@@ -304,10 +286,10 @@ double group_pot2( long index ) {
     }
 
 
-#ifdef GROUP_POT2_TEST
+#ifdef GROUP_POT_TEST
     FILE *fd;
     double e_direct, t;
-    fd = myfopen( "w", "group-pot2-test-pot.dat" );
+    fd = myfopen( "w", "group-pot-test-pot.dat" );
     for( k=0; k<NGrid; k++ ) {
         for( j=0; j<NGrid; j++ ) {
             t = 0;
@@ -321,7 +303,7 @@ double group_pot2( long index ) {
    }
    fclose( fd );
 
-    fd = myfopen( "w", "group-pot2-test-mass.dat" );
+    fd = myfopen( "w", "group-pot-test-mass.dat" );
     for( k=0; k<NGrid; k++ ) {
         for( j=0; j<NGrid; j++ ) {
             t = 0;
@@ -334,11 +316,11 @@ double group_pot2( long index ) {
         fprintf( fd, "\n" );
    }
    fclose( fd );
-   //e_direct = group_pot2_direct( index );
+   //e_direct = group_pot_direct( index );
    printf( "pot fft: %g \n", e );
    printf( "pot direct: %g \n", e_direct );
 
-   endruns( "group-pot2-test" );
+   endruns( "group-pot-test" );
 #endif
 
     rfftwnd_destroy_plan( fft_plan  );
@@ -435,7 +417,7 @@ double group_vel_disp( long index ) {
 void group_virial() {
      FILE *fd;
      int index; 
-     double v_disp, ek, ep, ep2;
+     double v_disp, ek, ep, f;
      put_header( "group virial" );
      create_dir( "%sVirial", GroupDir  );
      if ( ThisTask_Local == 0 )
@@ -446,11 +428,11 @@ void group_virial() {
              break;
              writelog( "group: %i\n", index );
              v_disp = group_vel_disp( index );
-             ep = group_pot( index );
              ek = group_kin( index );
-             ep2 = group_pot2( index );
+             ep = group_pot( index );
+             f = group_luminosity( 1400, index, 1 );
              if ( ThisTask_Local == 0 )
-                fprintf( fd, "%g %g %g %g\n", ep, ek, v_disp, ep2 );
+                fprintf( fd, "%g %g %g %g\n", ep, ek, v_disp, f );
      }
      if ( ThisTask_Local == 0 )
         fclose( fd );
@@ -459,12 +441,14 @@ void group_virial() {
 #endif
 
 
-/*
+#ifdef OUTPUTGROUP
 void output_group( int gidx ) {
-    long p, i;
+    long p;
     FILE *fd;
-    fd = myfopen( "w", "g_%04i.dat", gidx );
+    double fac, t0, t1, t2;
+    fd = myfopen( "w", "%s/g_%04i.dat", GroupDir, gidx );
     p = Gprops[gidx].Head;
+    fac =  1 / ( 4.0 * PI * SQR( LumDis * g2c.cm  )  ) * 1e26;
     while( p>=0 ) {
         if ( P[p].Type != 0 ) {
             p = FoFNext[p];
@@ -476,24 +460,40 @@ void output_group( int gidx ) {
             continue;
         }
 
-        fprintf( fd, "%e %5.2f %e %e %e ",
+        if (get_particle_radio_index( p, 0  ) * fac < 1e-8 ) {
+            p = FoFNext[p];
+            continue;
+        }
+
+        fprintf( fd, "%.2e %5.2f %.2e %.2e %.2e %.2e ",
         SphP[p].CRE_C,
         SphP[p].CRE_Alpha,
         SphP[p].CRE_qmin,
         SphP[p].CRE_qmax,
-        get_B( p ) * 1e6
+        get_B( p ) * 1e6,
+        SphP[p].Density / Time3 / RhoBaryon
         );
+        t0  = get_particle_radio_index( p, 0  ) * fac;
+        t1  = get_particle_radio_index( p, 50  ) * fac;
+        t2  = get_particle_radio_index( p, 99  ) * fac;
+        fprintf( fd, "%.2e %.2e %.2e ", t0, t1, t2 );
+        if ( t2 != 0  )
+            fprintf( fd, "%.2f", log(t0/t2)/log(All.NuMin/All.NuMax) );
+        else
+            fprintf( fd, "0" );
+        /*
         for( i=0; i<All.NuNum; i++ ) {
             fprintf( fd, "%e ", get_particle_radio_index( p, i ) );
         }
+        */
         fprintf( fd, "\n" );
         p = FoFNext[p];
     }
     fclose( fd );
-    //hendruns( "output_group" );
+    //endruns( "output_group" );
 
 }
-*/
+#endif
 
 void group_analysis() {
 
@@ -502,7 +502,9 @@ void group_analysis() {
 
     put_header( "group analysis" );
 
-    //output_group( 0 );
+#ifdef OUTPUTGROUP
+    output_group( All.OutputGroupIndex );
+#endif
 
 #ifdef GROUPTOTLUM
     group_tot_lum();

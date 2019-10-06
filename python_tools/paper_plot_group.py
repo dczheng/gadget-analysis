@@ -10,7 +10,7 @@ Projs       = sys.argv[3:]
 #tProjs       = [ 'z', 'x', 'x', 'x', 'x', 'x' ]
 NGroup  = len( Projs )
 ds_name = [  "Density", "MagneticField", "Mach", "Cre_e",\
-             "Radio", "Cre_Alpha"
+             "Radio"
             ]
 fig_name = [  r"$\rm {\rho}/{\bar{\rho}}$", \
               r"$\rm B \,[\mu G]$",\
@@ -24,6 +24,7 @@ norms   = [  mplc.LogNorm(),\
              #mplc.LogNorm(),\
              None,\
              mplc.LogNorm(),\
+             mplc.LogNorm(),
              mplc.LogNorm(),
              None
              ]
@@ -105,7 +106,6 @@ for j in range(n):
     d = ds[i][j]
     d[ d<d.max()*1e-4 ] = 0
 
-idx_mag = ds[name2index['MagneticField']][j] > 10 
 
 i = name2index[ "Radio" ]
 for j in range(n):
@@ -114,13 +114,21 @@ for j in range(n):
     idx2 = ds[name2index['Mach']][j] > 2 
     idx = idx1 * idx2
     #ds[i][j][ idx ] = 0 
-    ds[i][j][ idx_mag ] = 0
+    #idx_mag = ds[name2index['MagneticField']][j] > 10 
+    #ds[i][j][ idx_mag ] = 0
     ds[i][j][ds[i][j]<ds[i][j].max()*1e-15] = 0
+
+#i = name2index[ "RadioIndex" ]
+#for j in range(n):
+#    ds[i][j] *= -1
+#    #ds[i][j][ds[name2index['Radio']][j]==0] = 0
+#    ds[i][j][ds[i][j] > 3] = 0
+
 
 i = name2index[ "Mach" ]
 for j in range(n):
     ds[i][j][0,0] = 1
-    ds[i][j][ idx_mag ] = ds[i][j].min()
+    #ds[i][j][ idx_mag ] = ds[i][j].min()
     #idx1 = ds[name2index['Density']][j] > 1e5
     #idx2 = ds[i][j] > 2 
     #ds[i][j][ idx1*idx2 ] = 1
@@ -128,7 +136,8 @@ for j in range(n):
 i = name2index[ "MagneticField" ]
 for j in range(n):
     ds[i][j][ds[i][j]<1e-5] = 0
-    print( len(ds[i][j][ ds[i][j] > 10 ]) )
+    idx_mag = ds[name2index['MagneticField']][j] > 10 
+    print( len(ds[i][j][ idx_mag ]) )
     ds[i][j][ idx_mag ] = 10
 
 for i in range(m):

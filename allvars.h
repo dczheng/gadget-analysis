@@ -154,7 +154,8 @@ enum group_fields {
     GROUP_CREALPHA,
     GROUP_CREQMIN,
     GROUP_CREQMAX,
-    GROUP_RAD
+    GROUP_RAD,
+    GROUP_RADINDEX
 };
 
 struct radio_inte_struct{
@@ -259,7 +260,7 @@ typedef struct GlobalParams{
         QNum, NuNum, FoFMinLen,
         TreePartType,
         StartSnapIndex, ProjectDirection, KernelN,
-        PicSize;
+        PicSize, OutputGroupIndex;
 
     double 
             SofteningGas   ,
@@ -297,7 +298,6 @@ typedef struct GlobalParams{
             CrenTPdfTMax,
             CrenTPdfnMin,
             CrenTPdfnMax,
-            GroupTotLumFreq,
             FieldCrenTDensDensMin,
             FieldCrenTDensDensMax,
             FieldCrenTDensTMin,

@@ -271,7 +271,10 @@ int read_particle_radio() {
 
 void compute_particle_radio() {
 
-    double numin, numax, dlognu, nu, tt;
+    double numin, numax, dlognu, nu;
+#ifdef IGNORE_WEEK_RADIO
+    double tt;
+#endif
     int nuN, j, num, flag;
     long i, t;
     char fn[ FILENAME_MAX ];
@@ -345,17 +348,18 @@ void compute_particle_radio() {
 
             //printf( "nu: %g\n", nu );
 
-            tt = PartRad[ i*All.NuNum + j ] = particle_radio( nu/Time, i );
-
-            //tt  = tt * ( 4.0/3.0 * PI * CUBE(SofteningTable[0]*g2c.cm*Time) );
-            /*
+            PartRad[ i*All.NuNum + j ] = particle_radio( nu/Time, i );
+#ifdef IGNORE_WEEK_RADIO
+            tt = PartRad[ i*All.NuNum + j ];
+            tt  = tt * ( 4.0/3.0 * PI * CUBE(SofteningTable[0]*g2c.cm*Time) );
             tt = tt / ( 4.0 * PI * SQR( LumDis*g2c.cm ) ) * 1e26; // to mJy
             
             if ( tt < 1e-10 ) {
                 flag = 1;    // ignore particle with very weak radio emission.
                 break;
             }
-            */
+
+#endif
 
         }
 
@@ -569,9 +573,13 @@ double get_particle_radio_index( long p, int i ) {
     return PartRad[ p*All.NuNum + i ] / V1 * V2;
 */
 #ifndef ALTRAD
+    if ( get_B( p ) * 1e6 > 100 )
+        return 0;
+
     double V;
     //V = 4.0 / 3.0 * PI * CUBE( SofteningTable[0] * g2c.cm * Time );
     //V = 4.0/3.0 * PI * CUBE( SphP[p].Hsml * g2c.cm * Time );
+
     V = P[p].Mass / SphP[p].Density * CUBE( g2c.cm * Time );
     return PartRad[ p*All.NuNum + i ] * V;
 #else

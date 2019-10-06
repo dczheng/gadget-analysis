@@ -46,6 +46,10 @@ int group_filed_present( enum group_fields blk ) {
 #ifdef GROUPRAD
                 return 1;
 #endif
+        case GROUP_RADINDEX:
+#ifdef GROUPRADINDEX
+                return 1;
+#endif
             return 0;
         default:
             return 0;
@@ -54,6 +58,7 @@ int group_filed_present( enum group_fields blk ) {
 
 double get_group_filed_data( enum group_fields blk, long p ) {
 
+    double f0, f1;
     switch( blk ) {
         case GROUP_DENS:
             return SphP[p].Density;
@@ -94,6 +99,14 @@ double get_group_filed_data( enum group_fields blk, long p ) {
 #ifdef GROUPRAD
         case GROUP_RAD:
              return get_particle_radio_freq( p, All.GroupRadFreq );
+#endif
+#ifdef GROUPRAD
+        case GROUP_RADINDEX:
+            f0 = get_particle_radio_index( p, 0 );
+            f1 = get_particle_radio_index( p, All.NuNum-1 );
+            if ( f1 != 0 )
+                return log(f1/f0) / log(All.NuMin/All.NuMax);
+            return 0;
 #endif
        default:
             endruns( "can't be !!!" );
@@ -142,6 +155,12 @@ void get_group_filed_name( enum group_fields blk, char *buf ) {
         case GROUP_RAD:
             strcpy( buf, "Radio" );
             break;
+        case GROUP_RADINDEX:
+            strcpy( buf, "RadioIndex" );
+            break;
+
+        default:
+            endruns( "can't be !!!" );
     }
 }
 
