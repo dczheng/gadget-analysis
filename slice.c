@@ -228,7 +228,7 @@ void field_slice( int pt, double *data, char *name, long N, double *weight ) {
     else
         make_slice_img( pt, data, 0, weight );
 
-    write_img( buf, NULL );
+    write_img( buf );
 
 }
 

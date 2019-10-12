@@ -32,18 +32,12 @@ void reset_img() {
 
 }
 
-void write_img( char *fn, char *nstr ) {
+void write_img( char *fn ) {
 
     FILE *fd;
     fd = myfopen( "w", fn );
     double v;
     int i, j;
-    if ( nstr == NULL ) {
-        writelog( "save img ...\n" );
-    }
-    else {
-        writelog( "save `%s` img ...\n", nstr );
-    }
 
     img_proj = All.ProjectDirection;
     img_z = Redshift;

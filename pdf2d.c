@@ -131,7 +131,7 @@ void pdf2d_or_field2d( double *x, double *y, double *w, long num, char *dn,
     else
         img_ylog = 0;
 
-    write_img( buf, dn );
+    write_img( buf );
 
 }
 

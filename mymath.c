@@ -137,3 +137,19 @@ void test_math() {
 #endif
 }
 
+double get_solid_angle( double a, double b, double d ) {
+    return 4 * asin( a*b / sqrt( (a*a+4*d*d)*(b*b+4*d*d) ) );
+}
+
+double get_solid_angle2( double a, double b, double d ) {
+    double alpha, beta;
+    alpha = a / ( 2 * d );
+    beta = b / ( 2 * d );
+    return 4 * acos(
+                    sqrt(
+                            (1+SQR(alpha)+SQR(beta))
+                            / ((1+SQR(alpha)) * (1+SQR(beta)))
+                        )
+                    );
+}
+

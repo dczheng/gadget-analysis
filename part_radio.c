@@ -158,6 +158,9 @@ double particle_radio2( double nu,  SphParticleData *part ) {
 
     B = SQR(part->B[0]) + SQR(part->B[1]) + SQR(part->B[2]);
     B = sqrt( B );
+    //if ( B > 100 )
+    //    B = 100;
+    //B *= 1.1;
     //if ( B > 1e-4 )
     //    B = 1e-4;
     r = radio( &particle_df, params, B, nu, params[2], params[3], 1e-2 );
@@ -272,6 +275,7 @@ int read_particle_radio() {
 void compute_particle_radio() {
 
     double numin, numax, dlognu, nu;
+#define IGNORE_WEEK_RADIO
 #ifdef IGNORE_WEEK_RADIO
     double tt;
 #endif
@@ -351,7 +355,7 @@ void compute_particle_radio() {
             PartRad[ i*All.NuNum + j ] = particle_radio( nu/Time, i );
 #ifdef IGNORE_WEEK_RADIO
             tt = PartRad[ i*All.NuNum + j ];
-            tt  = tt * ( 4.0/3.0 * PI * CUBE(SofteningTable[0]*g2c.cm*Time) );
+            tt  = tt * ( 4.0/3.0 * PI * CUBE(SphP[i].Hsml*g2c.cm*Time) );
             tt = tt / ( 4.0 * PI * SQR( LumDis*g2c.cm ) ) * 1e26; // to mJy
             
             if ( tt < 1e-10 ) {
@@ -573,15 +577,19 @@ double get_particle_radio_index( long p, int i ) {
     return PartRad[ p*All.NuNum + i ] / V1 * V2;
 */
 #ifndef ALTRAD
-    if ( get_B( p ) * 1e6 > 100 )
-        return 0;
+    double r = 1, B, V;
+    B = get_B( p ) * 1e6;
+    if ( B > 100 ) {
+        //r = SQR(100 / B);
+        //r = 1;
+        r = 0;
+    }
 
-    double V;
     //V = 4.0 / 3.0 * PI * CUBE( SofteningTable[0] * g2c.cm * Time );
-    //V = 4.0/3.0 * PI * CUBE( SphP[p].Hsml * g2c.cm * Time );
+    V = 4.0/3.0 * PI * CUBE( SphP[p].Hsml * g2c.cm * Time );
 
-    V = P[p].Mass / SphP[p].Density * CUBE( g2c.cm * Time );
-    return PartRad[ p*All.NuNum + i ] * V;
+    //V = P[p].Mass / SphP[p].Density * CUBE( g2c.cm * Time );
+    return PartRad[ p*All.NuNum + i ] * V * r;
 #else
 
     double dlognu, nu;

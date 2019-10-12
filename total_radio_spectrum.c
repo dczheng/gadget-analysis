@@ -22,9 +22,7 @@ void total_radio_spectrum() {
         nu[i] = exp(log(numin) + i * dnu);
     }
 
-    //tmp = 1.0 / ( SQR(Time) * ( 4.0 * PI * SQR( ComDis * g2c.cm ) ) * ( SQR( BoxSize / ComDis ) ) );
-    tmp = 1.0 / ( ( 4.0 * PI * SQR( LumDis * g2c.cm ) ) * ( SQR( BoxSize / ComDis ) ) );
-
+    tmp = 1.0 / ( ( 4.0 * PI * SQR( LumDis * g2c.cm ) ) * BoxSolidAngle ) ;
     t = N_Gas / 10;
     for ( index=0; index<N_Gas; index++ ) {
         if  ( index % t == 0 ) {
@@ -63,7 +61,6 @@ void total_radio_spectrum() {
         mymalloc2( flux, sizeof( double ) * Nnu );
 
     MPI_Reduce( flux_local, flux, Nnu, MPI_DOUBLE, MPI_SUM, 0, MpiComm_Local );
-
     myfree( nu );
     myfree( flux_local );
 
@@ -74,12 +71,6 @@ void total_radio_spectrum() {
         flux[i] *= tmp;
 
     create_dir( "%sTotalSpec", OutputDir );
-    fd = myfopen( "w", "%s/TotalSpec/Spec_Tot_%03i.dat", OutputDir, SnapIndex );
-    for( i=0; i<Nnu; i++ )
-        fprintf( fd, "%g %g\n", exp(log(numin) + i * dnu), flux[i] );
-    fclose( fd );
-
-    //endrun( 20181029 );
 
     if ( ThisTask_Master == 0 ) {
         mymalloc2( alist, sizeof( double ) * NTask_Master );
@@ -110,6 +101,26 @@ void total_radio_spectrum() {
         for ( i=0; i<NTask_Master; i++ ) {
             dislist[i] = comoving_distance( alist[i] );
         }
+
+        fd = myfopen( "w", "%s/TotalSpec/Spec_Tot_Comp.dat", OutputDir );
+        fprintf( fd, "0 " );
+        for( i=0; i<NTask_Master; i++ ) 
+            fprintf( fd, "%g ", alist[i] );
+        fprintf( fd, "\n" );
+
+        fprintf( fd, "0 " );
+        for( i=0; i<NTask_Master; i++ ) 
+            fprintf( fd, "%g ", dislist[i] );
+        fprintf( fd, "\n" );
+
+        for ( i=0; i<Nnu; i++ ) {
+            fprintf( fd, "%g ", numin * exp( i * dnu ) );
+            for ( j=0; j<NTask_Master; j++) {
+                fprintf( fd, "%g ", fluxlist[j*Nnu+i] );
+            }
+            fprintf( fd, "\n" );
+        }
+        fclose( fd );
 
         for ( i=0; i<NTask_Master*Nnu; i++ ) {
             fluxlist[i] /= BoxSize; // unit distance

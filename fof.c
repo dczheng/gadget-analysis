@@ -5,8 +5,8 @@ double LinkL, rhodm;
 
 void fof_allocate( long N ) {
 
-    mymalloc1( Gprops, N * sizeof( struct group_properties ) );
-    mymalloc1( FoFNext, NumPart * sizeof( long ) );
+    mymalloc2( Gprops, N * sizeof( struct group_properties ) );
+    mymalloc2( FoFNext, NumPart * sizeof( long ) );
 }
 
 void fof_free() {
@@ -109,8 +109,9 @@ void fof_find_groups() {
 
 void fof_compute_group_properties() {
 
-    long p, i, j, k, p0;
+    long p, i, k, p0;
     struct group_properties *g;
+    double v2;
 
     writelog( "FoF compute groups properties ... \n" );
     mytimer_start();
@@ -130,51 +131,24 @@ void fof_compute_group_properties() {
     for ( i=0; i<Ngroups; i++ ) {
 
         g = &Gprops[i];
-        g->mass = 0;
-        g->vr200 = 0;
-
-        for ( k=0; k<3; k++ ){
-            g->cm[k] = 0;
-            g->vel[k] = 0;
-            g->size[k] = 0;
-        }
-
-        for ( k=0; k<6; k++ ) {
-            g->mass_table[k] = 0;
-            g->npart[k] = 0;
-        }
 
         p0 = p = g->Head;
-        for ( j=0; j<g->Len; j++ ) {
-            //printf( "%i %g\n", P[p].Type, P[p].Mass );
-            g->mass += P[p].Mass;
+        while( p>=0 ){
 
-            for ( k=0; k<3; k++ ){
+            for ( k=0, v2=0; k<3; k++ ){
                 g->cm[k] += P[p].Mass *
                     ( PERIODIC_HALF( P[p].Pos[k]-P[p0].Pos[k] )
                       + P[p0].Pos[k] );
                 g->vel[k] += P[p].Mass * P[p].Vel[k];
+
+                v2 += SQR( P[p].Vel[k] );
             }
 
+            g->ek +=  0.5 * P[p].Mass * v2;
+            g->v_mean += sqrt(v2);
+            g->mass += P[p].Mass;
             g->npart[ P[p].Type ] ++;
             g->mass_table[ P[p].Type ] += P[p].Mass;
-
-            /*
-            if ( P[p].Type == 0 ) {
-
-                if ( ( 1<<4 ) && All.TreePartType )
-                    for( k=0; k<SphP[p].Star_BH_Num[0]; k++ ) {
-                        g->mass_table[4] += P[ SphP[p].Star_BH_Index[0][k] ].Mass;
-                        //printf( "%li\n", k );
-                    }
-
-                if ( ( 1<<5 ) && All.TreePartType )
-                    for( k=0; k<SphP[p].Star_BH_Num[1]; k++ ) {
-                        g->mass_table[5] += P[ SphP[p].Star_BH_Index[1][k] ].Mass;
-                        //printf( "%li\n", k );
-                    }
-            }
-            */
 
             p = FoFNext[p];
 
@@ -183,7 +157,7 @@ void fof_compute_group_properties() {
         if ( g->mass == 0 ) {
             printf( "Gprops[%li] is zeros!!! Len: %li\n", i, g->Len );
             p = g->Head;
-            for ( j=0; j<g->Len; j++ ) {
+            while( p>=0 ){
                 printf( "%g, %i\n", P[p].Mass, P[p].Type );
                 p = FoFNext[p];
             }
@@ -195,18 +169,26 @@ void fof_compute_group_properties() {
             g->vel[k] /= g->mass;
         }
 
+        g->v_mean /= g->Len;
+        g->ek -= 0.5 * g->mass *  (
+                SQR( g->vel[0]  ) +
+                SQR( g->vel[1]  ) +
+                SQR( g->vel[2]  ) );
+
         p = g->Head;
-        for ( j=0; j<g->Len; j++ ) {
-            for ( k=0; k<3; k++ ) {
+        while( p>=0 ){
+            for ( k=0, v2=0; k<3; k++ ) {
                 vmax2( g->size[k], NGB_PERIODIC( P[p].Pos[k] - g->cm[k] ) );
+                v2 += SQR( P[p].Vel[k] );
             }
+            g->v_disp += SQR( sqrt(v2) - g->v_mean );
             p = FoFNext[p];
         }
-
         g->vr200 = pow( g->mass /
             ( RhoCrit * 200 * 4.0 / 3.0 * PI ), 1.0/3.0 );
 
-        //printf( "%g %g\n", g->size, g->mass_table[0] );
+        g->v_disp /= g->Len;
+        g->v_disp = sqrt( g->v_disp );
 
     }
 
@@ -349,6 +331,30 @@ void fof_save() {
     }
 
     hdf5_dataset = H5Dcreate( hdf5_file, "VirialR200", hdf5_type, hdf5_dataspace, H5P_DEFAULT );
+    H5Dwrite( hdf5_dataset, hdf5_type, hdf5_dataspace, H5S_ALL, H5P_DEFAULT, buf );
+    H5Dclose( hdf5_dataset );
+
+    for ( i=0; i<Ngroups; i++ ) {
+        buf2[i] = Gprops[i].ek;
+    }
+
+    hdf5_dataset = H5Dcreate( hdf5_file, "KineticEnergy", hdf5_type, hdf5_dataspace, H5P_DEFAULT );
+    H5Dwrite( hdf5_dataset, hdf5_type, hdf5_dataspace, H5S_ALL, H5P_DEFAULT, buf );
+    H5Dclose( hdf5_dataset );
+    
+    for ( i=0; i<Ngroups; i++ ) {
+        buf2[i] = Gprops[i].v_mean;
+    }
+
+    hdf5_dataset = H5Dcreate( hdf5_file, "VMEAN", hdf5_type, hdf5_dataspace, H5P_DEFAULT );
+    H5Dwrite( hdf5_dataset, hdf5_type, hdf5_dataspace, H5S_ALL, H5P_DEFAULT, buf );
+    H5Dclose( hdf5_dataset );
+
+    for ( i=0; i<Ngroups; i++ ) {
+        buf2[i] = Gprops[i].v_disp;
+    }
+
+    hdf5_dataset = H5Dcreate( hdf5_file, "VDISP", hdf5_type, hdf5_dataspace, H5P_DEFAULT );
     H5Dwrite( hdf5_dataset, hdf5_type, hdf5_dataspace, H5S_ALL, H5P_DEFAULT, buf );
     H5Dclose( hdf5_dataset );
 
@@ -499,6 +505,27 @@ void fof_read() {
     H5Dclose( hdf5_dataset );
     for ( i=0; i<Ngroups; i++)
         Gprops[i].vr200 = buf2[i];
+
+    writelog( "read KineticEnergy ...\n" );
+    hdf5_dataset = H5Dopen( hdf5_file, "KineticEnergy" );
+    H5Dread( hdf5_dataset, hdf5_type, H5S_ALL, H5S_ALL, H5P_DEFAULT, buf );
+    H5Dclose( hdf5_dataset );
+    for ( i=0; i<Ngroups; i++)
+        Gprops[i].ek = buf2[i];
+
+    writelog( "read v_mean ...\n" );
+    hdf5_dataset = H5Dopen( hdf5_file, "VMEAN" );
+    H5Dread( hdf5_dataset, hdf5_type, H5S_ALL, H5S_ALL, H5P_DEFAULT, buf );
+    H5Dclose( hdf5_dataset );
+    for ( i=0; i<Ngroups; i++)
+        Gprops[i].v_mean = buf2[i];
+
+    writelog( "read v_disp ...\n" );
+    hdf5_dataset = H5Dopen( hdf5_file, "VDISP" );
+    H5Dread( hdf5_dataset, hdf5_type, H5S_ALL, H5S_ALL, H5P_DEFAULT, buf );
+    H5Dclose( hdf5_dataset );
+    for ( i=0; i<Ngroups; i++)
+        Gprops[i].v_disp = buf2[i];
 
     writelog( "read Size ...\n" );
     hdf5_dataset = H5Dopen( hdf5_file, "Size" );

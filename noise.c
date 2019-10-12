@@ -7,8 +7,10 @@ void  remove_mach_noise() {
     for ( i=0; i<N_Gas; i++ ) {
         if ( i % NTask != ThisTask )
             continue;
-        if ( SphP[i].MachNumber > 2 && SphP[i].Density / Time3 / RhoBaryon > 1e5 ) {
+        if ( SphP[i].MachNumber > 2 && SphP[i].Density / Time3 / RhoBaryon > 1e6 ) {
             SphP[i].MachNumber = 1;
+            SphP[i].CRE_C = SphP[i].CRE_Alpha = SphP[i].CRE_qmin = SphP[i].CRE_qmax = 
+            SphP[i].CRE_n = SphP[i].CRE_e = 0;
         }
     }
 

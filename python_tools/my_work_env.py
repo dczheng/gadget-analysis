@@ -151,6 +151,7 @@ def fmt_tick_labels( ax, xy ):
 def make_log_ticks( xmin, xmax, n, a=0, axis=None ):
     xmin = np.log10( xmin )
     xmax = np.log10( xmax )
+    #print( xmin, xmax )
     if a == 0:
         a = 1
         while (xmax-xmin)/a > 10:

@@ -348,9 +348,10 @@ void compute_cosmo_quantities() {
         ComDis = comoving_distance( Time );
         AngDis = angular_distance( Time );
         LumDis = luminosity_distance( Time );
+        BoxSolidAngle = get_solid_angle( BoxSize, BoxSize, LumDis );
     }
     else
-        ComDis = AngDis = LumDis = 0;
+        ComDis = AngDis = LumDis = BoxSolidAngle = 0;
 
     writelog1( Redshift );
     writelog1( Omega0 );
@@ -366,30 +367,49 @@ void compute_cosmo_quantities() {
     writelog1( RhoBaryon );
     writelog1( RhoCrit );
     writelog1( RhoM );
+    writelog1( BoxSolidAngle );
 
     writelog2( "RhoBaryon[cgs]", RhoBaryon * g2c.g / CUBE( g2c.cm ) );
     writelog2( "RhoCrit[cgs]", RhoCrit * g2c.g / CUBE( g2c.cm ) );
     put_end();
 }
 
+//#define TEST_COS
 void test_cos() {
 
 #ifdef TEST_COS
-    double z, La, Ll, Lc, a;
+    double z, La, Ll, Lc, a, L, ang1, ang2, ang3;
     HubbleParam = 0.68;
     OmegaLambda = 0.698;
     Omega0 = 0.302;
+    L = 100;  //Mpc
     set_units();
 
     if ( ThisTask == 0 ) {
         for ( z=0.1; z<1; z *= 1.1) {
             a = 1 / ( 1+z );
-            Lc = comoving_distance( a );
-            La = angular_distance( a );
-            Ll = luminosity_distance( a );
+            Lc = comoving_distance( a ) / 1000 / HubbleParam; // to Mpc
+            La = angular_distance( a ) / 1000 / HubbleParam;
+            Ll = luminosity_distance( a ) / 1000 / HubbleParam;
             printf( "%g, %g, %g, %g, %g, %g, %g\n",
                     z, a, Lc, La, Ll,
                     La / Lc, Ll / Lc );
+        }
+        printf( "---------\n" );
+        for ( z=0.01; z<0.1; z *= 1.1) {
+            a = 1 / ( 1+z );
+            Lc = comoving_distance( a ) / 1000 / HubbleParam; // to Mpc
+            ang1 = L*L / ( Lc*Lc );
+            ang2 = get_solid_angle( L, L, Lc );
+            ang3 = get_solid_angle2( L, L, Lc );
+
+            printf( "%g, %g, %g, %g, %g,"
+                    " %g, %.2f%%,"
+                    " %g, %.2f%%\n",
+                    a, z, L, Lc, ang1,
+                    ang2, (ang1-ang2)/ang2*100,
+                    ang3, (ang1-ang3)/ang3*100
+                    );
         }
     }
 

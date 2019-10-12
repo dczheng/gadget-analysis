@@ -10,22 +10,24 @@ Projs       = sys.argv[3:]
 #tProjs       = [ 'z', 'x', 'x', 'x', 'x', 'x' ]
 NGroup  = len( Projs )
 ds_name = [  "Density", "MagneticField", "Mach", "Cre_e",\
-             "Radio"
+             "Radio",
+             "Radio1",
+             "Radio2"
             ]
 fig_name = [  r"$\rm {\rho}/{\bar{\rho}}$", \
               r"$\rm B \,[\mu G]$",\
               r"$\rm Mach$",  \
               r"$\rm \epsilon / \epsilon_{\rm bar}$", \
+              r"$\rm I_{350M}\, [mJy\,arcsec^{-2}]$",\
               r"$\rm I_{1.4G}\, [mJy\,arcsec^{-2}]$",\
-              r'$\alpha$',
+              r'$\rm \alpha_{rad} \; [350MHz-1.4GHz]$',
               ]
-norms   = [  mplc.LogNorm(),\
-             mplc.LogNorm(),\
-             #mplc.LogNorm(),\
+norms   = [  mplc.LogNorm,\
+             mplc.LogNorm,\
              None,\
-             mplc.LogNorm(),\
-             mplc.LogNorm(),
-             mplc.LogNorm(),
+             mplc.LogNorm,\
+             mplc.LogNorm,
+             mplc.LogNorm,
              None
              ]
 cmaps   = [ \
@@ -40,6 +42,7 @@ cmaps   = [ \
         #cm.plasma,\
         cm.spectral,\
         cm.magma,\
+        cm.magma,\
         #cm.magma,\
         #cm.jet,\
         #cm.ocean,\
@@ -49,7 +52,7 @@ cmaps   = [ \
         #cm.inferno,\
         #cm.gnuplot,\
         #cm.nipy_spectral,\
-        cm.gist_heat,\
+        cm.spectral,\
         cm.gist_heat,\
         ]
 m = len(ds_name)
@@ -58,7 +61,7 @@ n = NGroup
 ds = []
 r200 = []
 r200_L = []
-r200_c = [ 'w', 'w', 'w', 'k', 'k', 'k' ]
+r200_c = [ 'w', 'w', 'w', 'k', 'k', 'k', 'k' ]
 res = []
 Ls  = []
 
@@ -106,7 +109,6 @@ for j in range(n):
     d = ds[i][j]
     d[ d<d.max()*1e-4 ] = 0
 
-
 i = name2index[ "Radio" ]
 for j in range(n):
     ds[i][j] = ds[i][j] / mycc.mJy
@@ -116,7 +118,36 @@ for j in range(n):
     #ds[i][j][ idx ] = 0 
     #idx_mag = ds[name2index['MagneticField']][j] > 10 
     #ds[i][j][ idx_mag ] = 0
-    ds[i][j][ds[i][j]<ds[i][j].max()*1e-15] = 0
+    ds[i][j][ds[i][j]<ds[i][j].max()*1e-13] = 0
+
+i = name2index[ "Radio1" ]
+for j in range(n):
+    ds[i][j] = ds[i][j] / mycc.mJy
+    idx1 = ds[name2index['Density']][j] > 1e4
+    idx2 = ds[name2index['Mach']][j] > 2 
+    idx = idx1 * idx2
+    #ds[i][j][ idx ] = 0 
+    #idx_mag = ds[name2index['MagneticField']][j] > 10 
+    #ds[i][j][ idx_mag ] = 0
+    ds[i][j][ds[i][j]<ds[i][j].max()*1e-13] = 0
+
+i = name2index[ "Radio2" ]
+for j in range(n):
+    i1 = name2index[ "Radio" ]
+    i2 = name2index[ "Radio1" ]
+
+    mm, nn = ds[i][j].shape
+    for ii in range(mm):
+        for jj in range(mm):
+            if ds[i1][j][ii,jj] > 0 and \
+                ds[i2][j][ii,jj] > 0:
+                ds[i][j][ii, jj] =\
+                    -np.log( ds[i1][j][ii,jj]/ds[i2][j][ii,jj] )\
+                    / np.log( 350.0/1400.0 )
+            else:
+                ds[i][j][ii, jj] = 0
+    print( len( ds[i][j][ds[i][j]>2] ), len( ds[i][j][ds[i][j]>0] ) )
+    ds[i][j][ ds[i][j]>2.5 ] = 0
 
 #i = name2index[ "RadioIndex" ]
 #for j in range(n):
@@ -128,6 +159,7 @@ for j in range(n):
 i = name2index[ "Mach" ]
 for j in range(n):
     ds[i][j][0,0] = 1
+    #ds[i][j][ds[i][j]>4] = 1
     #ds[i][j][ idx_mag ] = ds[i][j].min()
     #idx1 = ds[name2index['Density']][j] > 1e5
     #idx2 = ds[i][j] > 2 
@@ -140,21 +172,23 @@ for j in range(n):
     print( len(ds[i][j][ idx_mag ]) )
     ds[i][j][ idx_mag ] = 10
 
+vmin = []
+vmax = []
 for i in range(m):
-    vmin = 1e100
-    vmax = -vmin
+    vmin_local = 1e100
+    vmax_local = -vmin_local
 
     for j in range(n):
         v = ds[i][j].max()
-        if v > vmax:
-            vmax = v
+        if v > vmax_local:
+            vmax_local = v
         v = ds[i][j][ ds[i][j]>0 ].min()
-        if v < vmin:
-            vmin = v
-    for j in range(n):
-        ds[i][j][0,0] = vmin
-        ds[i][j][0,1] = vmax
-    print( "%-15s min:%g, max:%g"%( '['+ds_name[i]+']', vmin, vmax ) )
+        if v < vmin_local:
+            vmin_local = v
+    vmin.append( vmin_local )
+    vmax.append( vmax_local )
+print( 'vmin:', vmin )
+print( 'vmax:', vmax )
 
 for i in range(m):
     if not(norms[i]):
@@ -211,17 +245,27 @@ for i in range(m):
         print( "plot `%s` ..."%fn )
         ax = axs[m-1-i][j]
 
-        if ds_name[i] == 'Radio':
+        if ds_name[i] == 'Radio' and conv_flag:
             if conv_flag:
                 sigma = res[j] / ( 2 * np.sqrt( np.log(2) ) )
                 kernel = gen_kernel( 4, res[j], sigma )
                 print( kernel )
                 t = convolve2d( ds[i][j], kernel ) 
-                img = ax.imshow( t, norm=norm, cmap=cmap )
-            else:
-                img = ax.imshow( ds[i][j], norm=norm, cmap=cmap )
+                if norm:
+                    img = ax.imshow( t, norm=norm(vmin=vmin[i], vmax=vmax[i]),\
+                    cmap=cmap)
+                else:
+                    img = ax.imshow( t, norm=norm, cmap=cmap,\
+                    vmin=vmin[i], vmax=vmax[i] )
         else:
-            img = ax.imshow( ds[i][j], norm=norm, cmap=cmap )
+            if norm:
+                img = ax.imshow( ds[i][j],\
+                norm=norm(vmin=vmin[i], vmax=vmax[i]),\
+                cmap=cmap)
+            else:
+                img = ax.imshow( ds[i][j], norm=norm, cmap=cmap,\
+                vmin=vmin[i], vmax=vmax[i] )
+
         mm, nn = ds[i][j].shape
 
         cir = Circle( xy=(nn/2, mm/2), radius=r200[j], fill=False, color=r200_c[i] );

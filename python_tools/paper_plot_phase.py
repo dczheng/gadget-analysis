@@ -34,22 +34,28 @@ for h in hs:
        print( "error2" )
        exit()
 
-Nmin = 1e5 
-contour_levles = [ 1e4, 1e5, 2e5, 1e6 ]
+Nmin = 1e6 
+contour_levles = [ 1e4, 1e5, 1e6, 2e6 ]
 print( "contour levels: ", contour_levles )
 Errmin = 1e-2
 err_lognorm = 0
-zfmt = r'$z:%.0f$'
+zfmt = r'$z:%.2f$'
 
-#ds = [ ds[1], ds[0], ds[3], ds[2] ]
 for i in range(2):
-    index = np.where( ds[i*2] < Nmin )
     t1 = ds[i*2].copy()
     t2 = ds[i*2+1].copy()
+    #print( t1.sum(), t2.sum() )
+
+    index1 = t1 < Nmin
+    index2 = t2 < Nmin
+    index = index1 * index2
+
     t1[index] = 1
     t2[index] = 1
     t = (t2 - t1) / t1
+
     ds[i*2+1] = t
+    ds[i*2][ds[i*2]<5e2] = 0
 
 vmin = [0] * 4
 vmax = [0] * 4
@@ -74,13 +80,11 @@ if not(err_lognorm):
     for i in range(2):
         ds[i*2+1][ds[i*2+1] == 0] = np.nan
 
-
 d1 = ds[0]
 d1_err = ds[1] 
 
 d2 = ds[2]
 d2_err = ds[3] 
-
 
 fs = 8
 rc = 0.1
@@ -116,45 +120,15 @@ cmap2 = cm.PRGn
 cmap2 = cm.seismic
 cmaps = [ cmap1, cmap2, cmap1, cmap2 ]
 
-norm1 = mplc.LogNorm()
+norm1 = mplc.LogNorm
 if err_lognorm:
-    norm2 = mplc.SymLogNorm( linthresh=Errmin )
+    norm2 = mplc.SymLogNorm
 else:
     norm2 = None
 
 norms = [ norm1, norm2, norm1, norm2 ] 
 
 print( "xmin: %g, xmax: %g, ymin: %g, ymax: %g"%( xmin, xmax, ymin, ymax ) )
-xloc = np.arange( int(xmin-1), int(xmax+2), 2 )
-xfmt = [ r"$10^{%.0f}$"%i for i in xloc ]
-xloc = ( xloc - xmin ) / (xmax-xmin) * (n-1) 
-t1 = []
-t2 = []
-for i in range( len(xloc) ):
-    if xloc[i] > 0 and xloc[i] < n:
-        t1.append( xloc[i] )
-        t2.append( xfmt[i] )
-xloc = t1
-xfmt = t2
-print( "xticks: ", xfmt )
-
-yloc = np.arange( int(ymin-1), int(ymax+2), 2 )
-yfmt = [ r"$10^{%.0f}$"%i for i in yloc ]
-yloc = ( yloc - ymin ) / (ymax-ymin) * (n-1) 
-t1 = []
-t2 = []
-for i in range( len(yloc) ):
-    if yloc[i] > 0 and yloc[i] < n:
-        t1.append( yloc[i] )
-        t2.append( yfmt[i] )
-yloc = t1
-yfmt = t2
-print( "yticks: ", yfmt )
-
-xloc = tik.FixedLocator(xloc)
-xfmt = tik.FixedFormatter(xfmt)
-yloc = tik.FixedLocator(yloc)
-yfmt = tik.FixedFormatter(yfmt)
 
 x3 = (3 - xmin) / ( xmax - xmin ) * (n-1)
 y5 = (5 - ymin) / ( ymax - ymin ) * (m-1)
@@ -166,7 +140,7 @@ font = FontProperties()
 font.set_size( 'xx-large' )
 font.set_weight('medium')
 
-fx = [ x3*0.4, (n-x3)*0.1+x3, n*0.2, n*0.85 ]
+fx = [ x3*0.4, (n-x3)*0.1+x3, n*0.1, n*0.1 ]
 fy = [ y5*0.1, y5*0.3, (y7-y5)*0.6+y5, (m-y7)*0.5+y7 ]
 ft = [ 'Diffuse', 'Condensed', 'Warm-hot', 'Hot' ]
 
@@ -188,24 +162,33 @@ for i in range(4):
         index = ds[i-1] < Nmin 
         t[index] = np.nan
 
-    ds[i][0,0] = vmin[i]
-    ds[i][0,1] = vmax[i]
+    #ds[i][0,0] = vmin[i]
+    #ds[i][0,1] = vmax[i]
 
-    img = axs[i].imshow( ds[i], norm=norms[i], cmap=cmaps[i] )
+    if norms[i]:
+        if norms[i] == mplc.LogNorm:
+            img = axs[i].imshow( ds[i],\
+            norm=norms[i](vmin=vmin[i], vmax=vmax[i]), cmap=cmaps[i] )
+        else:
+            img = axs[i].imshow( ds[i],\
+                    norm=norms[i](linthresh=Errmin,\
+                        vmin=vmin[i], vmax=vmax[i]), cmap=cmaps[i] )
+    else:
+            img = axs[i].imshow( ds[i],\
+                vmin=vmin[i], vmax=vmax[i], cmap=cmaps[i] )
+
     plt.colorbar( img, cax=axs_cbar[i] )
     if i % 2 == 0:
-        axs_cbar[i].set_ylabel( r'$\rm {N}/[{dlog(\rho)dlog(T)}]$', fontsize=25 )
+        axs_cbar[i].set_ylabel( r'$\rm {dN}/[{dlog(\rho)dlog(T)}]$', fontsize=25 )
 
     if i > 1:
-        axs[i].xaxis.set_major_locator( xloc )
-        axs[i].xaxis.set_major_formatter( xfmt )
+        make_log_ticks( 10**xmin, 10**xmax, n, axis=axs[i].xaxis )
         axs[i].set_xlabel( r"${\rho}/{\bar{\rho}}$", fontsize=20 )
     else:
         axs[i].set_xticks( [] )
 
     if i % 2 ==  0:
-        axs[i].yaxis.set_major_locator( yloc )
-        axs[i].yaxis.set_major_formatter( yfmt )
+        make_log_ticks( 10**ymin, 10**ymax, m, axis=axs[i].yaxis )
         axs[i].set_ylabel( r"$T[K]$", fontsize=20 )
     else:
         axs[i].set_yticks( [] )
@@ -216,9 +199,9 @@ for i in range(4):
     axs[i].invert_yaxis()
     axs[i].grid()
 
-    axs[i].plot( [x3, x3], [0, y5],  'c--' )
-    axs[i].plot( [0, n-1], [y5, y5], 'c--' )
-    axs[i].plot( [0, n-1], [y7, y7], 'c--' )
+    axs[i].plot( [x3, x3], [0, m-1],  'c--' )
+    axs[i].plot( [0,  x3], [y5, y5], 'c--' )
+    axs[i].plot( [0,  x3], [y7, y7], 'c--' )
 
     if i == 0:
         axs[i].set_title( "Gas Phase", fontsize=20 )
@@ -230,22 +213,8 @@ for i in range(4):
         axs[i].text( fx[kk], fy[kk], ft[kk], \
             fontproperties=font )
 
-    axs[i].text( 0, 1, zfmt%zs[i//2], fontproperties=font  )
+    axs[i].text( (n-1)*0.8, (m-1)*0.8, zfmt%zs[i//2], fontproperties=font  )
 
 
 fig.savefig( f_out )
 
-#my_cmap = cm.Set1
-#my_cmap = cm.cubehelix
-#my_cmap = cm.ocean
-#my_cmap = cm.Paired
-#my_cmap = cm.tab10
-#my_cmap = cm.tab20b
-#my_cmap = cm.tab20c
-#my_cmap = cm.Set2
-#my_cmap = cm.Set3
-#my_cmap = cm.PiYG
-#my_cmap = cm.BrBG
-#my_cmap = cm.RdYlBu
-#my_cmap = cm.RdBu
-#my_cmap = cm.Spectral

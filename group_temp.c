@@ -9,7 +9,7 @@ void group_temp_profile() {
     struct group_properties g;
     int g_index, i, RN, *num, ii, ngbnum, x, y, z, k;
     double  *T, *data, Rmin, Rmax, dlogR, r;
-    char buf[100], buf1[100], *dn="TempProfile";
+    char buf[100], *dn="TempProfile";
     FILE *fd;
 
     RN = All.GroupTempProfileRN;
@@ -59,8 +59,7 @@ void group_temp_profile() {
             }
             data_to_grid2d( data, image.img, ngbnum, All.PicSize,  2*Rmax );
             sprintf( buf, "%s%s/Density_%04i_%c.dat", GroupDir, dn, g_index, 'x'+z );
-            sprintf( buf1, "Density_%04i_%c.dat", g_index, 'x'+k );
-            write_img( buf, buf1 );
+            write_img( buf );
         }
 
         for( i=0; i<ngbnum; i++ ) {

@@ -155,6 +155,8 @@ enum group_fields {
     GROUP_CREQMIN,
     GROUP_CREQMAX,
     GROUP_RAD,
+    GROUP_RAD1,
+    GROUP_RAD2,
     GROUP_RADINDEX
 };
 
@@ -260,7 +262,7 @@ typedef struct GlobalParams{
         QNum, NuNum, FoFMinLen,
         TreePartType,
         StartSnapIndex, ProjectDirection, KernelN,
-        PicSize, OutputGroupIndex;
+        PicSize;
 
     double 
             SofteningGas   ,
@@ -280,7 +282,9 @@ typedef struct GlobalParams{
             TreeAllocFactor, LinkLength,
             UnitLength_in_cm,
             Sigma8,
-            ConvSigma, NuMin, NuMax, GroupMassMin, GroupRadFreq,
+            ConvSigma, NuMin, NuMax, GroupMassMin,
+            GroupRadFreq, GroupRadFreq1, GroupRadFreq2,
+            OutputGroupFreq,
             RadSliceFreq,
             QMin, QMax, MFMmin, MFMmax, MFMSplit,
             PhaseTempMin, 
@@ -321,7 +325,8 @@ typedef struct NODE {
 } NODE;
 
 typedef struct group_properties{
-    double mass, cm[3], vr200, vel[3], mass_table[6], size[3];
+    double mass, cm[3], vr200, vel[3], mass_table[6], size[3],
+                ek, v_mean, v_disp;
     long Head, Tail, Len, npart[6];
 } group_properties;
 
@@ -445,6 +450,7 @@ extern double
             UnitDensity_in_cgs,
             UnitEnergy_in_cgs,
             BoxSize, HalfBoxSize,
+            BoxSolidAngle,
             Time, Time2, Time3,
             Hubble_a, RhoBaryon,
             ComDis, AngDis, LumDis,

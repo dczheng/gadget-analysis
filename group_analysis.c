@@ -334,163 +334,61 @@ double group_pot( long index ) {
 }
 #endif
 
-#ifdef GROUPKIN
-double group_kin( long index ) {
-
-    long p, i;
-    double e, m;
-    struct group_properties *g;
-
-    g = &Gprops[index];
-
-    p = g->Head;
-    e = 0;
-    while( p >= 0 ) {
-        e += 0.5 * P[p].Mass * 
-        ( SQR( P[p].Vel[0] ) + 
-                    SQR( P[p].Vel[1] ) + 
-                    SQR( P[p].Vel[2] ) ) * Time;
-        p = FoFNext[p];
-
-    }
-    for( i=0,m=0; i<6; i++ )
-        m += g->mass_table[i];
-    e -= 0.5 * m *  ( 
-                SQR( g->vel[0] ) +
-                SQR( g->vel[1] ) +
-                SQR( g->vel[2] )
-            ) * Time;
-
-    return e;
-
-}
-#endif
-
-#ifdef GROUPVELDISP
-double group_vel_disp( long index ) {
-
-    long p;
-    double v_disp, v_mean, t;
-    struct group_properties *g;
-
-    g = &Gprops[index];
-
-    p = g->Head;
-    v_mean = 0;
-    while( p >= 0 ) {
-
-        if ( P[p].Type == 0 ) {
-            t = sqrt( SQR( P[p].Vel[0] ) + 
-                        SQR( P[p].Vel[1] ) + 
-                        SQR( P[p].Vel[2] ) );
-            v_mean += t * sqrt( Time );
-        }
-        p = FoFNext[p];
-
-    }
-    v_mean /= g->npart[0];
-    //printf( "v_mean: %g\n", v_mean );
-
-    p = g->Head;
-    v_disp = 0;
-    while( p >= 0 ) {
-
-        if ( P[p].Type == 0 ) {
-            t = sqrt( SQR( P[p].Vel[0] ) + 
-                        SQR( P[p].Vel[1] ) + 
-                        SQR( P[p].Vel[2] ) );
-            t =  t * sqrt( Time ) - v_mean;
-            v_disp += t*t;
-        }
-        p = FoFNext[p];
-
-    }
-    v_disp /= g->npart[0];
-    v_disp = sqrt( v_disp );
-
-    return v_disp;
-
-}
-#endif
-
-#ifdef GROUPVIRIAL
-void group_virial() {
-     FILE *fd;
-     int index; 
-     double v_disp, ek, ep, f;
-     put_header( "group virial" );
-     create_dir( "%sVirial", GroupDir  );
-     if ( ThisTask_Local == 0 )
-        fd = myfopen( "w", "%sVirial/Virial_%03i.dat",
-            GroupDir, SnapIndex);
-     for ( index=0; index<Ngroups; index++  ) {
-         if ( !group_present( index  )  )
-             break;
-             writelog( "group: %i\n", index );
-             v_disp = group_vel_disp( index );
-             ek = group_kin( index );
-             ep = group_pot( index );
-             f = group_luminosity( 1400, index, 1 );
-             if ( ThisTask_Local == 0 )
-                fprintf( fd, "%g %g %g %g\n", ep, ek, v_disp, f );
-     }
-     if ( ThisTask_Local == 0 )
-        fclose( fd );
-     put_end();
-}
-#endif
-
-
 #ifdef OUTPUTGROUP
-void output_group( int gidx ) {
-    long p;
+void output_group() {
+
+    int index, i;
+    double ep;
     FILE *fd;
-    double fac, t0, t1, t2;
-    fd = myfopen( "w", "%s/g_%04i.dat", GroupDir, gidx );
-    p = Gprops[gidx].Head;
-    fac =  1 / ( 4.0 * PI * SQR( LumDis * g2c.cm  )  ) * 1e26;
-    while( p>=0 ) {
-        if ( P[p].Type != 0 ) {
-            p = FoFNext[p];
-            continue;
-        }
+    struct group_properties *g;
+#ifdef OUTPUTGROUPLUM
+    double lum;
+#endif
 
-        if ( SphP[p].CRE_C == 0 ) {
-            p = FoFNext[p];
-            continue;
-        }
 
-        if (get_particle_radio_index( p, 0  ) * fac < 1e-8 ) {
-            p = FoFNext[p];
-            continue;
-        }
+    fd = myfopen( "w", "%s/group_%03i.csv",
+            GroupDir, SnapIndex);
+    fprintf( fd, "mtot,"
+            "x,y,z,"
+            "mgas,mdm,mstar,"
+#ifdef OUTPUTGROUPLUM
+           "Lum,"
+#endif
+           "r200,ek,ep,vr,v_mean,v_disp"
+           "\n");
 
-        fprintf( fd, "%.2e %5.2f %.2e %.2e %.2e %.2e ",
-        SphP[p].CRE_C,
-        SphP[p].CRE_Alpha,
-        SphP[p].CRE_qmin,
-        SphP[p].CRE_qmax,
-        get_B( p ) * 1e6,
-        SphP[p].Density / Time3 / RhoBaryon
+    for ( index=0; index<Ngroups; index++  ) {
+
+        if ( !group_present(index) )
+            continue;
+
+        //printf( "%i\n", index );
+        g = &Gprops[index];
+        ep = group_pot( index );
+#ifdef OUTPUTGROUPLUM
+        lum = group_luminosity( All.OutputGroupFreq, index, 1 );
+#endif
+        
+        fprintf( fd, "%g,", g->mass );
+
+        for( i=0; i<3; i++ )
+            fprintf( fd, "%g,", g->cm[i] );
+
+        fprintf( fd, "%g,%g,%g,",
+        g->mass_table[0],
+        g->mass_table[1],
+        g->mass_table[4]
         );
-        t0  = get_particle_radio_index( p, 0  ) * fac;
-        t1  = get_particle_radio_index( p, 50  ) * fac;
-        t2  = get_particle_radio_index( p, 99  ) * fac;
-        fprintf( fd, "%.2e %.2e %.2e ", t0, t1, t2 );
-        if ( t2 != 0  )
-            fprintf( fd, "%.2f", log(t0/t2)/log(All.NuMin/All.NuMax) );
-        else
-            fprintf( fd, "0" );
-        /*
-        for( i=0; i<All.NuNum; i++ ) {
-            fprintf( fd, "%e ", get_particle_radio_index( p, i ) );
-        }
-        */
-        fprintf( fd, "\n" );
-        p = FoFNext[p];
-    }
+#ifdef OUTPUTGROUPLUM
+            fprintf( fd, "%g,", lum );
+#endif
+
+        fprintf( fd, "%g,%g,%g,%g,%g,%g\n",
+                g->vr200, g->ek, ep, g->ek/ep, g->v_mean, g->v_disp );
+
+     }
+
     fclose( fd );
-    //endruns( "output_group" );
 
 }
 #endif
@@ -503,15 +401,7 @@ void group_analysis() {
     put_header( "group analysis" );
 
 #ifdef OUTPUTGROUP
-    output_group( All.OutputGroupIndex );
-#endif
-
-#ifdef GROUPTOTLUM
-    group_tot_lum();
-#endif
-
-#ifdef GROUPVIRIAL
-    group_virial();
+    output_group();
 #endif
 
 #ifdef GROUPSPEC

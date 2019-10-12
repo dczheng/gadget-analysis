@@ -144,7 +144,7 @@ void group_luminosity( int nu_index, long index, double *lumgrid, double *num ) 
 
 */
 
-#ifdef GROUPLUM
+#if defined(GROUPSPEC) || defined(OUTPUTGROUPLUM)
 
 double group_luminosity( double nu, long index, int mode) {
 
@@ -190,6 +190,9 @@ double group_luminosity( double nu, long index, int mode) {
     return F;
 
 }
+#endif
+
+#if defined(GROUPSPEC)
 
 void group_flux( int nu_index, long index, double *flux, double *flux_nosr ) {
 
@@ -525,13 +528,13 @@ void group_spectrum_index() {
 
         image.img = spec_index;
         make_group_output_filename( buf, spec_index_str, index );
-        write_img( buf, spec_index_str );
+        write_img( buf );
 
         image.img = spec_index_err;
         sprintf( buf, "%s%s/%s_%03i_%04i_%c.dat",
             GroupDir, spec_index_str, spec_index_err_str,
             SnapIndex, index, Sproj );
-        write_img( buf, spec_index_err_str );
+        write_img( buf );
 
     }
 
