@@ -70,12 +70,6 @@ void set_units() {
     SofteningTable[3] = All.SofteningBulge;
     SofteningTable[4] = All.SofteningStar;
     SofteningTable[5] = All.SofteningBndry;
-    Start[0] = All.StartX;
-    Start[1] = All.StartY;
-    Start[2] = All.StartZ;
-    End[0] = All.EndX;
-    End[1] = All.EndY;
-    End[2] = All.EndZ;
     PicSize = All.PicSize;
 
     writelog( "gadget: \n" );

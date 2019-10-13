@@ -30,7 +30,7 @@ $(EXEC): $(OBJS)
 
 clean:
 	-rm  $(EXEC) *.o 
-	-rm  allvars.c add_params.h gadget-analysis-config.h gadget-analysis.in protos.h
+	-rm  allvars.c add_params.h gadget-analysis-config.h protos.h
 delete:
 	-rm  $(EXEC)
 

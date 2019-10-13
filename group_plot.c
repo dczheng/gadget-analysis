@@ -115,7 +115,7 @@ double get_group_filed_data( enum group_fields blk, long p ) {
             return 0;
 #endif
        default:
-            endruns( "can't be !!!" );
+            endruns( "can't occur !!!" );
             return 0;
     }
 }
@@ -172,7 +172,7 @@ void get_group_filed_name( enum group_fields blk, char *buf ) {
             break;
 
         default:
-            endruns( "can't be !!!" );
+            endruns( "can't occur !!!" );
     }
 }
 
@@ -185,7 +185,7 @@ void group_plot() {
          xo, yo, pic_index, ii, jj;
 
     char buf[100], buf1[100];
-    double *data[GROUP_FILED_NBLOCKS];
+    double *data[GROUP_FIELD_NBLOCKS];
     sprintf( buf, "group plot [%c]", Sproj );
     put_header( buf );
 
@@ -205,7 +205,7 @@ void group_plot() {
 
     mymalloc2( num, PicSize2 * sizeof( int ) );
 
-    for( i=0; i<GROUP_FILED_NBLOCKS; i++ ) {
+    for( i=0; i<GROUP_FIELD_NBLOCKS; i++ ) {
 
         if ( !group_filed_present( i ) )
             continue;
@@ -229,13 +229,10 @@ void group_plot() {
                 break;
             g = Gprops[g_index];
     
-            for ( i=0,p=g.Head; i<g.Len; i++, p=FoFNext[p] ) {
-                if ( P[p].Type != 0 )
-                    continue;
-            vmax2( L, PERIODIC_HALF( P[p].Pos[x] - g.cm[x] ) * 1.01 );
-            vmax2( L, PERIODIC_HALF( P[p].Pos[y] - g.cm[y] ) * 1.01 );
-            }
+            vmax2( L, g.size[x]);
+            vmax2( L, g.size[y]);
         }
+        L *= 1.1;
     }
 #endif
 
@@ -245,7 +242,7 @@ void group_plot() {
             break;
 
         memset( num, 0, PicSize2 * sizeof( int ) );
-        for( i=0; i<GROUP_FILED_NBLOCKS; i++ ) {
+        for( i=0; i<GROUP_FIELD_NBLOCKS; i++ ) {
 
             if ( !group_filed_present(i) )
                 continue;
@@ -259,13 +256,8 @@ void group_plot() {
         r200 = g.vr200;
 
 #ifndef GROUPFIXEDSIZE
-       L = 0;
-       for ( i=0,p=g.Head; i<g.Len; i++, p=FoFNext[p] ) {
-           if ( P[p].Type != 0 )
-               continue;
-       vmax2( L, PERIODIC_HALF( P[p].Pos[x] - g.cm[x] ) * 1.1 );
-       vmax2( L, PERIODIC_HALF( P[p].Pos[y] - g.cm[y] ) * 1.1 );
-       }
+       L = vmax( g.size[x], g.size[y] );
+       L *= 1.1;
 #endif
 
         //L = get_group_size( &g ) * 1.1;
@@ -275,6 +267,7 @@ void group_plot() {
         writelog( "center of mass: %g %g %g\n",
                 g.cm[0], g.cm[1], g.cm[2] );
 
+        writelog( "r200: %g\n", r200 );
         writelog( "npart: " );
         for ( i=0; i<6; i++ )
             writelog( "%li ", g.npart[i] );
@@ -282,7 +275,6 @@ void group_plot() {
 
         writelog( "mass: " );
         for ( i=0; i<6; i++ ) {
-            mass[i] *= 1e10;
             writelog( "%g ", mass[i] );
         }
         writelog( "\n" );
@@ -318,7 +310,7 @@ void group_plot() {
 #else
             w = 1;
 #endif
-            for( i=0; i<GROUP_FILED_NBLOCKS; i++ ) {
+            for( i=0; i<GROUP_FIELD_NBLOCKS; i++ ) {
                 if ( !group_filed_present(i) )
                     continue;
                 if ( i == GROUP_DENS )
@@ -343,7 +335,7 @@ void group_plot() {
 
             if ( data[GROUP_DENS][i] == 0 ) continue;
 
-            for ( j=0; j<GROUP_FILED_NBLOCKS; j++ ) {
+            for ( j=0; j<GROUP_FIELD_NBLOCKS; j++ ) {
 
                 if ( !group_filed_present( j ) )
                     continue;
@@ -374,14 +366,14 @@ void group_plot() {
 
         for ( i=0; i<6; i++ )
             img_props(i) = mass[i];
-        img_props(0) = r200;
+        img_props(7) = r200;
         img_xmin =  -L;
         img_xmax =  L;
         img_ymin =  -L;
         img_ymax =  L;
 
 
-        for( i=0; i<GROUP_FILED_NBLOCKS; i++ ) {
+        for( i=0; i<GROUP_FIELD_NBLOCKS; i++ ) {
 
             if ( !group_filed_present( i ) )
                 continue;
@@ -397,7 +389,7 @@ void group_plot() {
 
                     img_xmin =  img_ymin = -L / ComDis * fac_arc;
                     img_xmax =  img_ymax = -img_xmin;
-                    img_props(0) = r200 / ComDis * fac_arc;
+                    img_props(7) = r200 / ComDis * fac_arc;
                     image.img = data[i];
                     get_group_filed_name( i, buf1 );
                     make_group_output_filename( buf, buf1, g_index );
@@ -423,7 +415,7 @@ void group_plot() {
 
     myfree( num );
 
-    for( i=0; i<GROUP_FILED_NBLOCKS; i++ ) {
+    for( i=0; i<GROUP_FIELD_NBLOCKS; i++ ) {
 
         if ( !group_filed_present( i ) )
             continue;

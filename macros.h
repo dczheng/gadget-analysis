@@ -291,3 +291,12 @@ writelog( "[Timer Start in `%s`]\n", __FUNCTION__ ); \
 #define PRESSURE2( c, a, q1, q2 )            ( PRESSURE( (c), (a), (q1) ) - PRESSURE( (c), (a), (q2) ) )
 
 #define cre_pressure( i )                    ( PRESSURE2( SphP[i].CRE_C, SphP[i].CRE_Alpha, SphP[i].CRE_qmin, SphP[i].CRE_qmax ) )
+
+#define InSlice( i ) (\
+    (P[(i)].Pos[0]>SliceStart[0]) && \
+    (P[(i)].Pos[1]>SliceStart[1]) && \
+    (P[(i)].Pos[2]>SliceStart[2]) && \
+    (P[(i)].Pos[0]<SliceEnd[0]) && \
+    (P[(i)].Pos[1]<SliceEnd[1]) && \
+    (P[(i)].Pos[2]<SliceEnd[2]) \
+                    )

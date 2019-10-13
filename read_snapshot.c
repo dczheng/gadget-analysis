@@ -512,7 +512,7 @@ void empty_buffer( enum iofields blk, int offset, int pt ) {
 #endif
             break;
         default:
-            endruns( "can't be!!!" );
+            endruns( "can't occur!" );
             break;
 
     }

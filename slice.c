@@ -2,439 +2,309 @@
 
 void slice_init() {
 
-    int pt;
-    long offset, num, index, i;
-    ParticleData p_tmp;
-    SphParticleData sphp_tmp;
+    long i;
+    int flag;
 
-    writelog( "determine slice info ...\n" );
+    put_header( "determine slice info" );
 
-    if ( End[proj_i] - Start[proj_i] !=
-            End[proj_j] - Start[proj_j] )
-        endruns( "Projection Region Must Be Square!..." );
+    SliceStart[0] = All.SliceStartX;
+    SliceStart[1] = All.SliceStartY;
+    SliceStart[2] = All.SliceStartZ;
+    SliceEnd[0] = All.SliceEndX;
+    SliceEnd[1] = All.SliceEndY;
+    SliceEnd[2] = All.SliceEndZ;
 
-    if ( End[0] == 0 ){
-        Start[0] = 0;
-        End[0] = BoxSize;
-    }
-
-    if ( End[1] == 0 ){
-        Start[1] = 0;
-        End[1] = BoxSize;
-    }
-
-    if ( End[2] == 0 ){
-        Start[2] = 0;
-        End[2] = BoxSize;
-    }
-
-    writelog( "StartX: %g, EndX: %g\n"
-            "StartY: %g, EndY: %g\n"
-            "StartZ: %g, EndZ: %g\n",
-            Start[0], End[0],
-            Start[1], End[1],
-            Start[2], End[2] );
-
-    for ( pt=0; pt<6; pt++ ) {
-
-        offset = OffsetPart6[pt];
-        num = NumPart6[pt];
-        //printf( "%li %li\n", offset, num );
-        index = offset;
-
-        if ( num == 0 ) {
-            SliceStart[pt] = -1;
-            SliceEnd[pt] = -1;
-            continue;
+    for( i=0; i<3; i++ )
+        if ( SliceEnd[i] == 0 ) {
+            SliceStart[i] = 0;
+            SliceEnd[i] = BoxSize;
         }
 
-        writelog( "particle %i: offset=%li, num=%li\n",
-                pt, offset, num );
+    writelog( "Slice: " );
+    for( i=0; i<3; i++ )
+        writelog( "(%g, %g) ", SliceStart[i], SliceEnd[i] );
+    writelog( "\n" );
 
-        for ( i=offset; i<offset+num; i++ ) {
-            if ( P[i].Pos[0] >= Start[0] &&
-                 P[i].Pos[0] <= End[0] &&
-                 P[i].Pos[1] >= Start[1] &&
-                 P[i].Pos[1] <= End[1] &&
-                 P[i].Pos[2] >= Start[2] &&
-                 P[i].Pos[2] <= End[2] ) {
-
-                p_tmp = P[index];
-                P[index] = P[i];
-                P[i] = p_tmp;
-
-                if ( pt == 0 ) {
-                    sphp_tmp = SphP[ index ];
-                    SphP[index] = SphP[i];
-                    SphP[i] = sphp_tmp;
-                }
-
-                index ++;
-            }
+    flag = 0;
+    for( i=0; i<3; i++ )
+        if ( SliceStart[i] != 0 || SliceEnd[i] != BoxSize ) {
+            flag = 1;
+            break;
         }
 
-        SliceStart[pt] = offset;
-        SliceEnd[pt] = index;
-    }
-    writelog( "Slice Start: " );
+   if ( !flag ) {
+       NumPartInSlice = NumPart;
+       N_GasInSlice = N_Gas;
+   }
+   else {
+   NumPartInSlice = N_GasInSlice = 0;
+   for( i=0; i<NumPart; i++ ) 
+       if ( InSlice(i) ) {
+           NumPartInSlice++;
+           if ( P[i].Type == 0 )
+               N_GasInSlice ++;
+       }
+   }
 
-    for ( pt=0; pt<6; pt++ ) {
-        writelog( "%ld ", SliceStart[pt] );
-    }
+   if ( SliceEnd[proj_i] - SliceStart[proj_i] !=
+        SliceEnd[proj_j] - SliceStart[proj_j])
+       endruns( "invalid slice" );
 
-    writelog( "\n" );
-    writelog( "Slice End: " );
+   SliceL = SliceEnd[proj_i] - SliceStart[proj_i];
 
-    for ( pt=0; pt<6; pt++ ) {
-        writelog( "%ld ", SliceEnd[pt] );
-    }
-    writelog( "\n" );
-
-    writelog( "determine slice info ... done.\n" );
+   writelog( "NumPartInSlice: %li\n", NumPartInSlice );
+   writelog( "N_GasInSlice: %li\n", N_GasInSlice );
+   writelog( "SliceL: %g\n", SliceL );
+   put_end();
 
 }
 
-void make_slice_img( int pt, double *data, long NPart, double *weight ) {
 
-    double *img, *num, dx, dy, x, y, h, dh, lx, ly, v, w;
-    int i, xi, yi, N, Nhalf, i1, i2, j1, j2, li, lj;
-    long start, end;
+int slice_field_present( enum  group_fields blk ) {
 
-    writelog( "make slice imgage  ...\n" );
+    switch( blk ) {
+        case GROUP_MAG:
+#ifdef BSLICE
+        return 1;
+#endif
+        return 0;
 
-    reset_img();
-    img = image.img;
-    num = image.num;
+        case GROUP_DENS:
+#ifdef DENSITYSLICE
+        return 1;
+#endif
+        return 0;
 
-    dx = dy = (End[proj_i] - Start[proj_i])/ PicSize;
-    //writelog( "dx: %f, dy: %f\n", dx, dy  );
+        case GROUP_MACH:
+#ifdef MACHSLICE
+        return 1;
+#endif
+        return 0;
 
-    N = All.KernelN;
-    Nhalf = N / 2;
-    h = SofteningTable[pt];
-    dh = h / Nhalf;
+        case GROUP_TEMP:
+#ifdef TEMPSLICE
+        return 1;
+#endif
+        return 0;
 
-    if ( NPart ) {
-        start = 0;
-        end = NPart;
-    }
-    else {
-        start = SliceStart[pt];
-        end = SliceEnd[pt];
-    }
+        case GROUP_CREE:
+#ifdef CREESLICE
+        return 1;
+#endif
+        return 0;
 
-    for ( i=start; i<end; i++ ) {
+        case GROUP_CREN:
+#ifdef CRENSLICE
+        return 1;
+#endif
+        return 0;
+        case GROUP_RAD:
+#ifdef RADSLICE
+        return 1;
+#endif
+        return 0;
 
-        if ( NPart ) {
-            x = data[i*3];
-            y = data[i*3+1];
-            v = data[i*3+2];
-            if ( weight ) {
-                w = weight[i];
-                v *= w;
-            }
-            else {
-                w = 1;
-            }
-        }
-        else {
-            x = P[i].Pos[proj_i];
-            y = P[i].Pos[proj_j];
-            x -= Start[proj_i];
-            y -= Start[proj_j];
-            v = data[ i-SliceStart[pt] ];
-            if ( weight ) {
-                w = weight[i];
-                v *= w;
-            }
-            else
-                w = 1;
-        }
-
-        //printf( "%g\n", v );
-        xi = x / dx;
-        yi = y / dy;
-        //printf( "%i, %i\n", xi, yi );
-        check_picture_index( xi );
-        check_picture_index( yi );
-
-        if ( All.KernelInterpolation == 0 ){
-            img[ xi * PicSize + yi ] += v;
-            num[ xi * PicSize + yi ] += w;
-            continue;
-        }
-
-        i1 = (int)(( x-h ) / dx);
-        i2 = (int)(( x+h ) / dx);
-        j1 = (int)(( y-h ) / dy);
-        j2 = (int)(( y+h ) / dy);
-
-
-        if ( i1 != xi || i2 != xi || j1 != yi || j2 != yi ) {
-            /*
-            writelog( "(%f, %f ), ( %i, %i), (%f, %f, %f, %f), (%i, %i, %i, %i)\n",
-                x, y, xi, yi, x-h, x+h, y-h, y+h, i1, i2, j1, j2 );
-                */
-            for ( li=0; li<N; li++ )
-                for ( lj=0; lj<N; lj++ ){
-                        lx = x + ( li-Nhalf ) * dh;
-                        ly = y + ( lj-Nhalf ) * dh;
-                        i1 = lx / dx;
-                        j1 = ly / dy;
-                        if ( i1 < 0 || i1 >= PicSize ||
-                                j1 < 0 || j1 >= PicSize ) continue;
-                        img[ i1 * PicSize + j1 ] += v * KernelMat2D[pt][ li*N + lj ];
-                        num[ i1 * PicSize + j1 ] += w * KernelMat2D[pt][ li*N + lj ];
-                        //writelog( "%f %f\n", v, v * KernelMat2D[pt][li*N+lj] );
-                }
-
-        }
-        else {
-            img[ xi * PicSize + yi ] += v;
-            num[ xi * PicSize + yi ] += w;
-        }
-        //printf( "%g\n", img[ xi * PicSize + yi ] );
-
+        default:
+            return 0;
     }
 
-    for ( i=0; i<SQR(All.PicSize); i++ )
-        if ( num[i] != 0 )
-            img[i] /= num[i];
+}
 
-#ifdef UNITAREASLICE
-        for ( i=0; i<SQR(All.PicSize); i++ )
-            img[i] /= SQR(dx);
+double get_slice_field_data( enum group_fields blk, long p ) {
+
+    switch( blk ) {
+        case GROUP_DENS:
+#ifdef DENSITYSLICE
+        return SphP[p].Density / Time3 / RhoBaryon;
+#endif
+        case GROUP_MAG:
+#ifdef BSLICE
+        return get_B( p ) * 1e6;
 #endif
 
-    img_xmin = Start[ proj_i ];
-    img_xmax = End[ proj_i ];
-    img_ymin = Start[ proj_j ];
-    img_ymax = End[ proj_j ];
+        case GROUP_MACH:
+#ifdef MACHSLICE
+        return SphP[p].MachNumber;
+#endif
+        case GROUP_TEMP:
+#ifdef TEMPSLICE
+        return SphP[p].Temp;
+#endif
+        case GROUP_CREE:
+#ifdef CREESLICE
+        return SphP[p].CRE_e / SphP[p].u;
+#endif
+        case GROUP_CREN:
+#ifdef CRENSLICE
+        return SphP[p].CRE_n * SphP[p].Density / guc.m_e / CUBE( g2c.cm );
+#endif
+        case GROUP_RAD:
+#ifdef RADSLICE
+        return get_particle_radio_freq(i, All.RadSliceFreq) * 
+                1.0 / (4.0 * PI * SQR( LumDis * g2c.cm )) / ( SQR(SliceL/PicSize) / SQR(ComDis) );
+#endif
+        default:
+            endruns( "can't occur !!!"  );
+            return 0;
+    }
 
 }
 
-void field_slice( int pt, double *data, char *name, long N, double *weight ) {
+void get_slice_field_name( enum group_fields blk, char *buf ) {
+
+    switch( blk ) {
+        case GROUP_DENS:
+#ifdef DENSITYSLICE
+        sprintf( buf, "Density" );
+        break;
+#endif
+        case GROUP_MAG:
+#ifdef BSLICE
+        sprintf( buf, "MagneticField" );
+        break;
+#endif
+
+        case GROUP_MACH:
+#ifdef MACHSLICE
+        sprintf( buf, "MachNumber" );
+        break;
+#endif
+        case GROUP_TEMP:
+#ifdef TEMPSLICE
+        sprintf( buf, "Temperature" );
+        break;
+#endif
+        case GROUP_CREE:
+#ifdef CREESLICE
+        sprintf( buf, "cre_e" );
+        break;
+#endif
+        case GROUP_CREN:
+#ifdef CRENSLICE
+        sprintf( buf, "cre_n" );
+        break;
+#endif
+        case GROUP_RAD:
+#ifdef RADSLICE
+        sprintf( buf, "radio_%.2f", All.RadSliceFreq );
+        break;
+#endif
+        default:
+            endruns( "can't occur !!!"  );
+    }
+
+}
+
+void field_slice( double *data, char *name, long N, double *weight) {
 
     char buf[100];
 
-    sprintf( buf, "`%s` slice\n", name );
-    writelog( buf );
+    //sprintf( buf, "`%s` slice\n", name );
+    //writelog( buf );
 
     create_dir( "%s%s", OutputDir, name );
     sprintf( buf, "%s%s/%s_%03i.dat", OutputDir, name, name, SnapIndex );
 
-    if ( N )
-        make_slice_img( 0, data, N, weight );
-    else
-        make_slice_img( pt, data, 0, weight );
+    reset_img();
+    data_to_grid2d( data, image.img, N, PicSize, SliceL, weight );
+    img_xmin = 0;
+    img_xmax = SliceL;
+    img_ymin = 0;
+    img_ymax = SliceL;
 
     write_img( buf );
 
 }
 
-#ifdef BSLICE
-void mag_slice() {
-    int num, i;
+void slice() {
+    long i;
+    int k;
     double *data, *weight;
+    char buf[100];
 
-    num = SliceEnd[0] - SliceStart[0];
-    mymalloc2( data, sizeof( double ) * num );
-    mymalloc2( weight, sizeof( double ) * num );
-    for ( i=SliceStart[0]; i<SliceEnd[0]; i++ ) {
-        data[i] = get_B( i ) * 1e6;
-        weight[i] = SphP[i].Density;
+    mymalloc2( data, 3 * sizeof( double ) * N_GasInSlice );
+    mymalloc2( weight, sizeof( double ) * N_GasInSlice );
+    for( k=0; k<GROUP_FIELD_NBLOCKS; k++ ) {
+
+        if ( slice_field_present( k ) )
+            continue;
+
+        for ( i=0; i<N_Gas; i++ ) {
+            if ( !InSlice(i) )
+                continue;
+            data[3*i] = P[i].Pos[proj_i] - SliceStart[proj_i];
+            data[3*i+1] = P[i].Pos[proj_j] - SliceStart[proj_j];
+            data[3*i+2] = get_slice_field_data( k, i );
+            weight[i] = SphP[i].Density;
+        }
+        get_slice_field_name( k, buf );
+        field_slice( data, buf, N_GasInSlice, weight );
     }
-    field_slice( 0, data, "MagneticField", 0, weight );
+
     myfree( data );
     myfree( weight );
 }
-#endif
-
-#ifdef MACHSLICE
-void mach_slice() {
-    int num, i;
-    double *data, *weight;
-
-    num = SliceEnd[0] - SliceStart[0];
-    mymalloc2( data, sizeof( double ) * num );
-    mymalloc2( weight, sizeof( double ) * num );
-    for ( i=SliceStart[0]; i<SliceEnd[0]; i++ ) {
-        data[i] = SphP[i].MachNumber;
-        weight[i] = SphP[i].Density;
-    }
-    field_slice( 0, data, "MachNumber", 0, weight );
-    myfree( data );
-    myfree( weight );
-}
-#endif
 
 #ifdef DENSITYSLICE
 void density_slice() {
-    int num, i;
+    int i;
     long index;
-    double *data, *data3;
+    double *data;
 
-    num = SliceEnd[0] - SliceStart[0];
-    mymalloc2( data, sizeof( double ) * num );
-    mymalloc2( data3, sizeof( double ) * num * 3 );
+    mymalloc2( data, sizeof( double ) * N_GasInSlice * 3 );
 
     index = 0;
-    for ( i=SliceStart[0]; i<SliceEnd[0]; i++ ) {
-        data[i] = SphP[i].Density / Time3 / RhoBaryon;
-        //data3[3*index] = P[i].Pos[proj_i] - Start[proj_i];
-        //data3[3*index+1] = P[i].Pos[proj_j] - Start[proj_j];
-        //data3[3*index+2] = SphP[i].Density / Time3 / RhoBaryon;
-        index ++;
-    }
-
-    field_slice( 0, data, "Density", 0, NULL );
-    //field_slice( 0, data3, "Density", index, NULL );
-
-    index = 0;
-    for ( i=SliceStart[0]; i<SliceEnd[0]; i++ ) {
+    for ( i=0; i<N_Gas; i++ ) {
+        if ( !InSlice(i) )
+            continue;
         if ( SphP[i].Temp >= 1e7 ) {
-            data3[3*index] = P[i].Pos[proj_i] - Start[proj_i];
-            data3[3*index+1] = P[i].Pos[proj_j] - Start[proj_j];
-            data3[3*index+2] = SphP[i].Density / Time3 / RhoBaryon;
+            data[3*index] = P[i].Pos[proj_i] - SliceStart[proj_i];
+            data[3*index+1] = P[i].Pos[proj_j] - SliceStart[proj_j];
+            data[3*index+2] = SphP[i].Density / Time3 / RhoBaryon;
             index ++;
         }
     }
-    field_slice( 0, data3, "Density_hot", index, NULL );
+    field_slice( data, "Density_hot", index, NULL );
 
     index = 0;
-    for ( i=SliceStart[0]; i<SliceEnd[0]; i++ ) {
+    for ( i=0; i<N_Gas; i++ ) {
+        if ( !InSlice(i) )
+            continue;
         if ( SphP[i].Temp < 1e7 && SphP[i].Temp >= 1e5 ) {
-            data3[3*index] = P[i].Pos[proj_i] - Start[proj_i];
-            data3[3*index+1] = P[i].Pos[proj_j] - Start[proj_j];
-            data3[3*index+2] = SphP[i].Density / Time3 / RhoBaryon;
+            data[3*index] = P[i].Pos[proj_i] - SliceStart[proj_i];
+            data[3*index+1] = P[i].Pos[proj_j] - SliceStart[proj_j];
+            data[3*index+2] = SphP[i].Density / Time3 / RhoBaryon;
             index ++;
         }
     }
-    field_slice( 0, data3, "Density_warm-hot", index, NULL );
+    field_slice( data, "Density_warm", index, NULL );
 
     index = 0;
-    for ( i=SliceStart[0]; i<SliceEnd[0]; i++ ) {
+    for ( i=0; i<N_Gas; i++ ) {
+        if ( !InSlice(i) )
+            continue;
         if ( ( SphP[i].Density / Time3 / RhoBaryon ) < 1e3 && SphP[i].Temp < 1e5 ) {
-            data3[3*index] = P[i].Pos[proj_i] - Start[proj_i];
-            data3[3*index+1] = P[i].Pos[proj_j] - Start[proj_j];
-            data3[3*index+2] = SphP[i].Density / Time3 / RhoBaryon;
+            data[3*index] = P[i].Pos[proj_i] - SliceStart[proj_i];
+            data[3*index+1] = P[i].Pos[proj_j] - SliceStart[proj_j];
+            data[3*index+2] = SphP[i].Density / Time3 / RhoBaryon;
             index ++;
         }
     }
-    field_slice( 0, data3, "Density_diffuse", index, NULL );
+    field_slice( data, "Density_cool", index, NULL );
 
     index = 0;
-    for ( i=SliceStart[0]; i<SliceEnd[0]; i++ ) {
+    for ( i=0; i<N_Gas; i++ ) {
+        if ( !InSlice(i) )
+            continue;
         if ( ( SphP[i].Density / Time3 / RhoBaryon ) >= 1e3 && SphP[i].Temp < 1e5 ) {
-            data3[3*index] = P[i].Pos[proj_i] - Start[proj_i];
-            data3[3*index+1] = P[i].Pos[proj_j] - Start[proj_j];
-            data3[3*index+2] = SphP[i].Density / Time3 / RhoBaryon ;
+            data[3*index] = P[i].Pos[proj_i] - SliceStart[proj_i];
+            data[3*index+1] = P[i].Pos[proj_j] - SliceStart[proj_j];
+            data[3*index+2] = SphP[i].Density / Time3 / RhoBaryon;
             index ++;
         }
     }
-    field_slice( 0, data3, "Density_condensed", index, NULL );
-
-    myfree( data3 );
-    myfree( data );
-}
-#endif
-
-#ifdef TEMPSLICE
-void temperature_slice() {
-    int num, i;
-    double *data, *weight;
-
-    num = SliceEnd[0] - SliceStart[0];
-    mymalloc2( data, sizeof( double ) * num );
-    mymalloc2( weight, sizeof( double ) * num );
-    for ( i=SliceStart[0]; i<num; i++ ) {
-        data[i] = SphP[i].Temp;
-        weight[i] = SphP[i].Density;
-    }
-    field_slice( 0, data, "Temperature", 0, weight );
-    myfree( data );
-    myfree( weight );
-}
-#endif
-
-#ifdef CRENSLICE
-void cren_slice() {
-    int num, i;
-    double *data, *weight;
-
-    num = SliceEnd[0] - SliceStart[0];
-    mymalloc2( data, sizeof( double ) * num );
-    mymalloc2( weight, sizeof( double ) * num );
-    for ( i=SliceStart[0]; i<SliceEnd[0]; i++ ) {
-        data[i] = SphP[i].CRE_n * SphP[i].Density / guc.m_e / CUBE( g2c.cm );
-        weight[i] = SphP[i].Density;
-    }
-    field_slice( 0, data, "cre_n", 0, weight );
-    myfree( data );
-    myfree( weight );
-}
-#endif
-
-#ifdef CREESLICE
-void cree_slice() {
-    int num, i;
-    double *data, *weight;
-
-    num = SliceEnd[0] - SliceStart[0];
-    mymalloc2( data, sizeof( double ) * num );
-    mymalloc2( weight, sizeof( double ) * num );
-    for ( i=SliceStart[0]; i<SliceEnd[0]; i++ ) {
-        data[i] = SphP[i].CRE_e / SphP[i].u;
-        weight[i] = SphP[i].Density;
-    }
-    field_slice( 0, data, "cre_e", 0, weight );
-    myfree( data );
-    myfree( weight );
-}
-#endif
-
-#ifdef RADSLICE
-void radio_slice() {
-
-    double dnu, *data, x, area, frac, *weight;
-    int num, index, index1, i;
-    char buf[20];
-
-    dnu = log( All.NuMax/All.NuMin ) / ( All.NuNum-1 );
-    num = SliceEnd[0] - SliceStart[0];
-
-    x = log( All.RadSliceFreq/All.NuMin ) / dnu;
-    index = (int)(x);
-
-    if ( index >= All.NuNum || index < 0 ) {
-        endrun( 20190711 );
-    }
-
-    x -= index;
-
-    area = (End[proj_i] - Start[proj_i]) / PicSize;
-    area = SQR( area );
-
-    index1 = ( index == All.NuNum-1 ) ? All.NuNum-1 : index + 1;
-
-    mymalloc2( data, sizeof( double ) * num );
-    mymalloc2( weight, sizeof( double ) * num );
-
-    frac = 1.0 / (4.0 * PI * SQR( LumDis * g2c.cm )) / ( area / SQR(ComDis) );
-    for ( i=SliceStart[0]; i<SliceEnd[0]; i++ ) {
-        data[i] = exp (
-                log( get_particle_radio_index(i, index) ) * ( 1-x )
-              + log( get_particle_radio_index(i, index1) ) * x
-               ) * frac;
-        weight[i] = SphP[i].Density;
-    }
-
-
-    sprintf( buf, "radio_%.2f", All.RadSliceFreq );
-    field_slice( 0, data, buf, 0, weight );
+    field_slice( data, "Density_condensed", index, NULL );
 
     myfree( data );
-    myfree( weight );
-
 }
 #endif

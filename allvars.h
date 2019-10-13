@@ -19,6 +19,7 @@
 #include "libgen.h"
 #include "gadget-analysis-config.h"
 #include "drfftw.h"
+#include "debug.h"
 
 #define ZDEBUG
 
@@ -140,7 +141,7 @@ enum iofields {
     IO_TEMP
 };
 
-#define GROUP_FILED_NBLOCKS 1000
+#define GROUP_FIELD_NBLOCKS 1000
 enum group_fields {
     GROUP_DENS,
     GROUP_TEMP,
@@ -271,12 +272,12 @@ typedef struct GlobalParams{
             SofteningBulge ,
             SofteningStar  ,
             SofteningBndry ,
-            StartX,
-            StartY,
-            StartZ,
-            EndX,
-            EndY,
-            EndZ,
+            SliceStartX,
+            SliceStartY,
+            SliceStartZ,
+            SliceEndX,
+            SliceEndY,
+            SliceEndZ,
             UnitMass_in_g,
             UnitVelocity_in_cm_per_s,
             TreeAllocFactor, LinkLength,
@@ -420,7 +421,8 @@ extern malloc_struct ms;
 extern long 
             MaxNodes, *NextNode, *Ngblist,
             *FoFNext,
-            SliceStart[6], SliceEnd[6],
+            NumPartInSlice,
+            N_GasInSlice,
             *ConvKernel,
             *id_to_index, NumPart, N_Gas, OffsetPart6[6], NumPart6[6] ;
 extern int 
@@ -459,7 +461,8 @@ extern double
             Hubble, Omega0, OmegaLambda, OmegaBaryon,
             UnitPressure_in_cgs,
             UnitTime_in_s,
-            SofteningTable[6], Start[6], End[6],
+            SofteningTable[6], 
+            SliceL, SliceStart[3], SliceEnd[3],
             *PartRad, *KernelMat2D[6], *KernelMat3D[6],
             *ShortRangeTablePotential;
 extern gsl_integration_workspace *inte_ws;

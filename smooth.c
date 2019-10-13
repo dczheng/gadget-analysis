@@ -17,6 +17,10 @@ void smooth() {
     mymalloc1( Ngblist, NumPart * sizeof(long) );
 
     for( i=0; i<N_Gas; i++ ) {
+
+        if ( i % NTask_Local != ThisTask_Local )
+            continue;
+
         h_i = SphP[i].Hsml;
         h2_i = h_i*h_i;
         kernel_hinv( h_i, &hinv_i, &hinv3_i, &hinv4_i );

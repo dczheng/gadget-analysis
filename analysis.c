@@ -14,7 +14,6 @@ void init_analysis() {
 
     do_sync( "" );
 
-    slice_init();
     if ( All.KernelInterpolation )
         init_kernel_matrix();
 
@@ -28,6 +27,7 @@ void init_analysis() {
     init_img();
     create_dir( OutputDir );
     put_end();
+
 }
 
 void free_analysis() {
@@ -38,17 +38,12 @@ void free_analysis() {
 
     myfree( ShortRangeTablePotential );
 
-    if ( ThisTask_Local == 0 ) {
-
-#ifdef FOF
-            fof_free();
-#endif
-
 #ifdef TREE
-            tree_free();
+    tree_free();
 #endif
-
-    }
+#ifdef FOF
+    fof_free();
+#endif
 
 
 #ifndef ALTRAD
@@ -60,90 +55,74 @@ void free_analysis() {
 
 void analysis(){
 
-
     mytimer_start();
     put_header( "start analyais" );
     put_sep0;
+
     init_analysis();
     put_sep0;
     part_info();
     put_sep0;
 
-    if ( ThisTask_Local == 0 ) {
-
+    test_fof();
+    test_group_pot();
 #ifdef TREE
-            tree_build();
-            put_sep0;
+    tree_build();
+    put_sep0;
+#endif
+#ifdef FOF
+    fof();
+    check_fof( 0, 1 );
+    put_sep0;
+#endif
+
+
+
+#ifdef COMPUTETEMP
+    compute_temperature();
 #endif
 
 #ifdef SMOOTH
-        smooth();
-        put_sep0;
+    smooth();
+    put_sep0;
 #endif
 
-#ifdef FOF
-            fof();
-            put_sep0;
-#endif
-
-#ifdef COMPUTETEMP
-            compute_temperature();
-#endif
 
 #ifdef MACHNOISE
     remove_mach_noise();
 #endif
 
-    }
-
-    do_sync( "global compute1" );
-
 #ifndef ALTRAD
 #ifdef RADSPEC
-        compute_particle_radio();
-        put_sep0;
+    compute_particle_radio();
+    put_sep0;
 #endif
 #endif
 
 #ifdef TOTSPEC
-        total_radio_spectrum();
-        put_sep0;
+    total_radio_spectrum();
+    put_sep0;
 #endif
 
-    do_sync( "global compute2" );
-    put_sep0;
-
 #ifdef CREPPDF
-       cre_pressure_pdf();
+    cre_pressure_pdf();
 #endif
 
 #ifdef CORRTDIFFDENS
-        corr_Tdiff_dens();
+    corr_Tdiff_dens();
 #endif
 
 #ifdef PDFTDIFFDENS
-        pdf_Tdiff_dens();
+    pdf_Tdiff_dens();
 #endif
+
+    do_sync( "global compute" );
+    put_sep0;
 
     if ( ThisTask_Local == 0 ) {
+            slice();
 #ifdef PHASE
             phase();
-#endif
-
-#ifdef MACHSLICE
-            mach_slice();
-#endif
-
-#ifdef BSLICE
-            mag_slice();
-#endif
-
-#ifdef CRENSLICE
-            cren_slice();
-#endif
-
-#ifdef CREESLICE
-            cree_slice();
 #endif
 
 #ifdef BPDF
@@ -154,20 +133,12 @@ void analysis(){
             DivB_Err_Pdf();
 #endif
 
-#ifdef RADSLICE
-            radio_slice();
-#endif
-
 #ifdef POWSPEC
             powerspec();
 #endif
 
 #ifdef DENSITYSLICE
             density_slice();
-#endif
-
-#ifdef TEMPSLICE
-            temperature_slice();
 #endif
 
 #ifdef MF

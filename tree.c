@@ -109,10 +109,11 @@ void tree_build_single() {
                 /*dealing with particles at identical locations ( or extremely close ). */
                 if ( nfreep -> len < 1.0e-3 * SofteningTable[P[n].Type] ) {
 
-                    printf( "[task: %i] extremely close particle:\n"
+                    if ( ThisTask_Local == 0 )
+                        printf( "[snapshoft: %03i] extremely close particle:\n"
                             "[1][%i][%i]( %.10f, %.10f, %.10f )\n"
                             "[2][%i][%i]( %.10f, %.10f, %.10f )\n",
-                            ThisTask,
+                            SnapIndex,
                             P[n].ID, P[n].Type, P[n].Pos[0], P[n].Pos[1], P[n].Pos[2],
                             P[i].ID, P[i].Type, P[i].Pos[0], P[i].Pos[1], P[i].Pos[2] );
 

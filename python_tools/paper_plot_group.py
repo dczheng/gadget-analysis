@@ -291,7 +291,7 @@ mm, nn = ds[0][0].shape
 #font.set_weight( 'medium' )
 for i in range(n):
     ax = axs[0][i]
-    ax.text( 0.05*nn, 0.05*mm, r"$\rm G_{%i}, R_{200}=%.2fMpc$"%(i+1, r200_L[i]/1000), fontsize=60 )
+    ax.text( 0.05*nn, 0.05*mm, r"$R_{200}=%.2f \, h^{-1}{\rm Mpc}$"%( r200_L[i]/1000), fontsize=60 )
 
 #fig.savefig( str(snap_idx) + '_' + ''.join(Projs) + '.png' )
 fig.savefig( str(snap_idx) + '_' + ''.join(Projs) + '.pdf' )

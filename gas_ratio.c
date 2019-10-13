@@ -25,20 +25,22 @@ void gas_ratio() {
 
         m_tot += m;
         
-        if ( dens >= D3 ) {
-            m_dense += m;
+        if ( T<T5 ) {
+            if ( dens>=D3 )
+                m_dense += m;
+            else
+                m_diffuse_cool += m;
             continue;
         }
 
-        if ( dens < D3 ) {
-            if ( T < T5 )
-                m_diffuse_cool += m;
-            if ( T >= T5 && T < T7 )
-                m_diffuse_warm += m;
-            if ( T >= T7 ) {
-                m_diffuse_hot += m;
-                //printf( "%g %g\n", T, SphP[p].u );
-            }
+        if ( T<T7 && T>=T5 ) {
+           m_diffuse_warm += m;
+            continue;
+        }
+
+        if ( T>=T7 ){
+            m_diffuse_hot += m;
+            continue;
         }
     }
 

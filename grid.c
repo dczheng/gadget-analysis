@@ -1,7 +1,7 @@
 #include "allvars.h"
 
-void field_to_grid_fft( double *data, fftw_real *grid, double L, int NGrid, long N, int in_place ) {
-
+void field_to_grid_fft( const double *data, fftw_real *grid, double L, int NGrid, long N, int in_place, int periodic ) {
+    
     double fac, v, t, dx[6];
     int i, x[6], NGrid3;
     long p, index;
@@ -26,8 +26,19 @@ void field_to_grid_fft( double *data, fftw_real *grid, double L, int NGrid, long
 
         }
 
-        for( i=0; i<6; i++ )
-            x[i] %= NGrid;
+            for( i=0; i<6; i++ )
+                if ( periodic ) {
+                    x[i] %= NGrid;
+                }
+                else {
+                    if ( x[i] >= NGrid ) {
+                        printf( "NGrid:%i ", NGrid );
+                        for( i=0; i<6; i++ )
+                            printf( "%i ", x[i] );
+                        printf( "\n" );
+                        endruns( "can't occur!" );
+                    }
+                }
 
 /*
             index = x[0] * NGrid * NGrid3 +
@@ -129,7 +140,7 @@ void field_to_grid( double *data, double *grid, int pt, int Nmin, int flag ) {
 
 }
 
-void data_to_grid2d( double *data, double *grid, long Ndata, int NGrid, double L ) {
+void data_to_grid2d( double *data, double *grid, long Ndata, int NGrid, double L, double *weight ) {
 
     double dx;
     long p;
@@ -145,8 +156,15 @@ void data_to_grid2d( double *data, double *grid, long Ndata, int NGrid, double L
         j = data[p*3+1] / dx;
         if ( i<0 || i > NGrid-1 )
             continue;
-        num[i*NGrid+j] ++;
-        grid[i*NGrid+j] += data[p*3+2];
+
+        if (weight) {
+            num[i*NGrid+j] += weight[p];
+            grid[i*NGrid+j] += data[p*3+2]*weight[p];
+        }
+        else {
+            num[i*NGrid+j] ++;
+            grid[i*NGrid+j] += data[p*3+2];
+        }
     }
 
     for( p=0; p<NGrid2; p++ )

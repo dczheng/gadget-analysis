@@ -15,6 +15,9 @@ void compute_temperature() {
     yhelium = ( 1 - XH ) / ( 4 * XH );
     for ( i=0; i<N_Gas; i++ ) {
 
+        if ( i % NTask_Local != ThisTask_Local )
+            continue;
+
         u = SphP[i].u * UnitEnergy_in_cgs / All.UnitMass_in_g;
         //u = u * 0.5;
 #ifndef READELEC

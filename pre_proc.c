@@ -499,7 +499,6 @@ void test_attach_particle_to_gas() {
 void pre_proc() {
 
     long i;
-    (void)i;
 
     if ( ThisTask_Local != 0 )
         return;
@@ -526,6 +525,14 @@ void pre_proc() {
             P[i].Pos[2] = PERIODIC( P[i].Pos[2] + All.PosShiftZ );
         }
     }
+
+#ifdef READVEL
+int k;
+    writelog( "conviert velocity to comoving\n" );
+    for( i=0; i<NumPart; i++ )
+        for( k=0; k<3; k++ )
+            P[i].Vel[k] /= sqrt( Time );   // to comoving
+#endif
 
 /*
     long offset;

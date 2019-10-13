@@ -3,12 +3,6 @@
 #ifdef FOF
 double LinkL, rhodm;
 
-void fof_allocate( long N ) {
-
-    mymalloc2( Gprops, N * sizeof( struct group_properties ) );
-    mymalloc2( FoFNext, NumPart * sizeof( long ) );
-}
-
 void fof_free() {
 
     writelog( "fof free\n" );
@@ -139,12 +133,11 @@ void fof_compute_group_properties() {
                 g->cm[k] += P[p].Mass *
                     ( PERIODIC_HALF( P[p].Pos[k]-P[p0].Pos[k] )
                       + P[p0].Pos[k] );
-                g->vel[k] += P[p].Mass * P[p].Vel[k];
-
+                g->vel[k] += P[p].Mass * P[p].Vel[k]; 
                 v2 += SQR( P[p].Vel[k] );
             }
 
-            g->ek +=  0.5 * P[p].Mass * v2;
+            g->ek +=  0.5 * P[p].Mass * v2 / Time;  // to comoving energy
             g->v_mean += sqrt(v2);
             g->mass += P[p].Mass;
             g->npart[ P[p].Type ] ++;
@@ -168,12 +161,12 @@ void fof_compute_group_properties() {
             g->cm[k] /= g->mass;
             g->vel[k] /= g->mass;
         }
-
         g->v_mean /= g->Len;
+
         g->ek -= 0.5 * g->mass *  (
-                SQR( g->vel[0]  ) +
-                SQR( g->vel[1]  ) +
-                SQR( g->vel[2]  ) );
+                SQR( g->vel[0] ) +
+                SQR( g->vel[1] ) +
+                SQR( g->vel[2] ) ) / Time;   // to comoving energy
 
         p = g->Head;
         while( p>=0 ){
@@ -197,24 +190,6 @@ void fof_compute_group_properties() {
     mytimer_end();
     writelog( "FoF compute groups properties ... done\n" );
 
-}
-
-void fof_test() {
-
-    int i, index;
-    long p;
-    FILE *fd;
-    index = 0;
-    fd = fopen( "fof.txt", "w" );
-    p = Gprops[index].Head;
-    for ( i=0; i<Gprops[index].Len; i++ ){
-        fprintf( fd, "%g %g %g\n",
-                P[p].Pos[0],
-                P[p].Pos[1],
-                P[p].Pos[2] );
-        p = FoFNext[p];
-    }
-    fclose( fd );
 }
 
 void fof_save() {
@@ -440,7 +415,8 @@ void fof_read() {
     H5Aread( hdf5_attribute, H5T_NATIVE_INT, &All.FoFMinLen );
     H5Aclose( hdf5_attribute );
 
-    fof_allocate( Ngroups );
+    mymalloc2( Gprops, Ngroups * sizeof( struct group_properties ) );
+    mymalloc2( FoFNext, NumPart * sizeof( long ) );
 
     writelog( "Ngroups: %i, MinLength: %i\n", Ngroups, All.FoFMinLen );
 
@@ -576,28 +552,28 @@ void fof() {
     double masstot, mass;
     char fn[ FILENAME_MAX ];
 
-    do_sync_master( "Begin FoF" );
 
-    writelog( "Start FoF ...\n" );
-    mytimer_start();
-    sprintf( fn, "%s/fof_%03i.hdf5", All.FoFDir, SnapIndex );
+    if ( ThisTask_Local == 0 ) {
+        writelog( "Start FoF ...\n" );
+        sprintf( fn, "%s/fof_%03i.hdf5", All.FoFDir, SnapIndex );
 
-    flag = 1;
+        flag = 1;
 
-    if ( access( fn, 0 ) != -1 ) {
-        fof_read();
-        flag = 0;
+        if ( access( fn, 0 ) != -1 ) {
+            fof_read();
+            flag = 0;
+        }
+
+        num = 0;
+
+        MPI_Reduce( &flag, &num, 1, MPI_INT, MPI_SUM, 0, MpiComm_Master );
+        MPI_Bcast( &num, 1, MPI_INT, 0, MpiComm_Master );
+
+        create_dir( All.FoFDir );
+        writelog( "%i snapshots Need to do FoF ...\n", num );
     }
 
-    num = 0;
-
-    MPI_Reduce( &flag, &num, 1, MPI_INT, MPI_SUM, 0, MpiComm_Master );
-    MPI_Bcast( &num, 1, MPI_INT, 0, MpiComm_Master );
-
-    if ( num == NTask_Master )
-        create_dir( All.FoFDir );
-
-    writelog( "%i Task Need to do FoF ...\n", num );
+    MPI_Bcast( &flag, 1, MPI_INT, 0, MpiComm_Local );
 
     for ( i=0, npart=0, masstot=0; i<NumPart; i++ )
         if ( ( 1 << P[i].Type ) & All.TreePartType ) {
@@ -612,34 +588,88 @@ void fof() {
     writelog( "` used in FoF\n" )
     writelog( "total particle number is: %li\n", npart );
 
-    if ( flag == 0 )
+
+    if ( flag == 0 ) {
+
+        if ( ThisTask_Local != 0 )
+            mymalloc2( FoFNext, NumPart * sizeof( long ) );
+
+        MPI_Bcast( &Ngroups, 1, MPI_INT, 0, MpiComm_Local );
+        MPI_Bcast( FoFNext, NumPart*sizeof(long), MPI_BYTE, 0, MpiComm_Local );
+
+        if ( ThisTask_Local != 0 )
+            mymalloc2( Gprops, Ngroups * sizeof( struct group_properties ) );
+
+        MPI_Bcast( Gprops, Ngroups*sizeof( struct group_properties ),
+                MPI_BYTE, 0, MpiComm_Local );
+
         return;
 
-    fof_allocate( NumPart );
+    }
 
-    //if ( flag == 1 ) {
+    mytimer_start();
+    mymalloc2( Gprops, NumPart * sizeof( struct group_properties ) );
+    mymalloc2( FoFNext, NumPart * sizeof( long ) );
 
-        rhodm = (Omega0-All.OmegaBaryon) * 3 *  SQR(Hubble) / ( 8 * PI * G );
-        mass = masstot / npart;
-        LinkL = All.LinkLength * pow( mass / rhodm, 1.0/3 );
-        //LinkL = 65.5483;
-        /*
-        printf( "%.10f %.10f %.10f %.10f %.20f %.10f %.10f %li \n",
-             Omega0, All.OmegaBaryon,
-             Hubble, G, rhodm, M_PI, masstot, npart );
-             */
+    rhodm = (Omega0-All.OmegaBaryon) * 3 *  SQR(Hubble) / ( 8 * PI * G );
+    mass = masstot / npart;
+    LinkL = All.LinkLength * pow( mass / rhodm, 1.0/3 );
+    //LinkL = 65.5483;
+    /*
+    printf( "%.10f %.10f %.10f %.10f %.20f %.10f %.10f %li \n",
+         Omega0, All.OmegaBaryon,
+         Hubble, G, rhodm, M_PI, masstot, npart );
+         */
 
-        writelog( "critical density of dark matter: %g\n"
-            "comoving linking lenght %g\n", rhodm, LinkL );
-        fof_find_groups();
-        fof_compute_group_properties();
-        //fof_test();
+    writelog( "critical density of dark matter: %g\n"
+        "comoving linking lenght %g\n", rhodm, LinkL );
+    fof_find_groups();
+    printf( "ok\n" );
+    fof_compute_group_properties();
+
+    printf( "ok\n" );
+    if ( ThisTask_Local == 0 )
         fof_save();
-
-    //}
 
     mytimer_end();
     writelog( "FoF ... done\n" );
 
 }
+
+void check_fof( int gi, int flag ) {
+
+    struct group_properties *g;
+    long p;
+    int i;
+    for( i=0; i<100; i++)
+        printf( "%li ", FoFNext[i] );
+    printf( "\n" );
+    g= &Gprops[gi];
+    p = g->Head;
+    while( p>=0 ) {
+        for ( i=0; i<3; i++ )
+            if ( PERIODIC_HALF( P[p].Pos[i] - g->cm[i] ) > g->size[i] ) {
+                printf( "[flag: %i][%i]%g %g %g\n",
+                        flag, i, P[p].Pos[i], g->cm[i], g->size[i]  );
+                 endruns( "can't occur!"  );
+            }
+        p = FoFNext[p];
+    }
+
+}
+
+void test_fof() {
+
+#ifdef FOF_TEST
+printf( "test_fof...\n" );
+    tree_build();
+    fof();
+
+    check_fof( 0, 0 );
+
+    endruns( "test_fof" );
 #endif
+}
+
+#endif
+

@@ -32,6 +32,7 @@ void reset_img() {
 
 }
 
+//#define WRITE_IMG_DEBUG
 void write_img( char *fn ) {
 
     FILE *fd;
@@ -44,8 +45,15 @@ void write_img( char *fn ) {
 
     for ( i=0; i<All.PicSize; i++ ) {
         fprintf( fd, "%g ", image.props[i] );
+#ifdef WRITE_IMG_DEBUG
+        printf( "%g ", image.props[i] );
+#endif
     }
     fprintf( fd, "\n" );
+#ifdef WRITE_IMG_DEBUG
+    printf( "\n" );
+    endruns( "write_img-debuf" );
+#endif
 
     for ( i=0; i<All.PicSize; i++ ) {
         for ( j=0; j<All.PicSize; j++ ) {

@@ -140,8 +140,8 @@ font = FontProperties()
 font.set_size( 'xx-large' )
 font.set_weight('medium')
 
-fx = [ x3*0.4, (n-x3)*0.1+x3, n*0.1, n*0.1 ]
-fy = [ y5*0.1, y5*0.3, (y7-y5)*0.6+y5, (m-y7)*0.5+y7 ]
+fx = [ x3*0.4, (n-x3)*0.1+x3, n*0.3, n*0.1 ]
+fy = [ y5*0.1, y5*0.3, (y7-y5)*0.5+y5, (m-y7)*0.5+y7 ]
 ft = [ 'Diffuse', 'Condensed', 'Warm-hot', 'Hot' ]
 
 for i in range(4):
@@ -199,9 +199,9 @@ for i in range(4):
     axs[i].invert_yaxis()
     axs[i].grid()
 
-    axs[i].plot( [x3, x3], [0, m-1],  'c--' )
-    axs[i].plot( [0,  x3], [y5, y5], 'c--' )
-    axs[i].plot( [0,  x3], [y7, y7], 'c--' )
+    axs[i].plot( [x3, x3], [0, y5],  'c--' )
+    axs[i].plot( [0,  n-1], [y5, y5], 'c--' )
+    axs[i].plot( [0,  n-1], [y7, y7], 'c--' )
 
     if i == 0:
         axs[i].set_title( "Gas Phase", fontsize=20 )
@@ -209,11 +209,12 @@ for i in range(4):
         axs[i].set_title( "Relative Difference", fontsize=20 )
 
 
-    for kk in range(len(fx)):
-        axs[i].text( fx[kk], fy[kk], ft[kk], \
-            fontproperties=font )
+    if i%2 == 0:
+        for kk in range(len(fx)):
+            axs[i].text( fx[kk], fy[kk], ft[kk], \
+                fontproperties=font )
 
-    axs[i].text( (n-1)*0.8, (m-1)*0.8, zfmt%zs[i//2], fontproperties=font  )
+    axs[i].text( (n-1)*0.8, (m-1)*0.9, zfmt%zs[i//2], fontproperties=font  )
 
 
 fig.savefig( f_out )

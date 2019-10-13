@@ -23,18 +23,21 @@ double group_pot_direct( long index ) {
     for test
     */
 
-    double *m, *pos, r, e;
+    double *m, *pos, r, e, e_tot;
     long p;
     int i, j, k, N;
     struct group_properties *g;
     g = &Gprops[index];
 
-    printf( "npart: " );
-    for( i=0; i<6; i++ )
-        printf( "%li ", g->npart[i] );
-    printf( "\n" );
     N =  g->npart[0];
-    printf( "N: %i\n", N );
+    if ( ThisTask_Local == 0 ) {
+        printf( "npart: " );
+        for( i=0; i<6; i++ )
+            printf( "%li ", g->npart[i] );
+        printf( "\n" );
+        printf( "N: %i\n", N );
+    }
+
     mymalloc2( m, N * sizeof(double) );
     mymalloc2( pos, N * sizeof(double) * 3 );
 
@@ -56,6 +59,9 @@ double group_pot_direct( long index ) {
 
     e = 0;
     for( i=0; i<N-1; i++ ) {
+        if ( i % NTask_Local != ThisTask_Local )
+            continue;
+
         for( j=i+1; j<N; j++ ) {
             r = 0;
             for(k=0; k<3; k++)
@@ -63,187 +69,138 @@ double group_pot_direct( long index ) {
             r = sqrt( r );
             e += -G * m[i] * m[j] / r;
         }
-        printf( "N: %i, i: %i, e: %g\n", N, i, e );
+#ifdef GROUP_POT_TEST2
+        if ( i%(N/10) == 0 && ThisTask_Local == 0 )
+            printf( "%5.2f%%, e: %g\n", ((double)i)/N*100, e );
+#endif
     }
 
     myfree( m );
     myfree( pos );
 
-    return e;
+    MPI_Allreduce( &e, &e_tot, 1, MPI_DOUBLE, MPI_SUM, MpiComm_Local );
+
+    return e_tot;
 }
 #endif
 
 #ifdef GROUPPOT
+//#define TREEPOT
 double group_pot( long index ) {
 
-    long p, pp;
-    int i, j, k, m, NGrid, NGrid3, ks[3], k2, ip, ngbnum, tabindex;
-    double e, L, *data, fac, f[3], smth, ff, asmth2, asmth, rcut, r, asmthfac;
+    long p;
+    int i, j, k, NGrid, ip, N;
+    double e, L, *data, *pot;
     struct group_properties *g;
-#ifdef GROUP_POT_TEST
-    index = 2;
-#endif
 
-    fftw_real *rhogrid, *massgrid;
-    fftw_complex *fft_of_rhogrid;
-    rfftwnd_plan fft_plan, fft_plan_inv;
     NGrid = All.GroupPotGrid;
-    NGrid3 = 2 * ( NGrid / 2 + 1  );
+    fftw_real *massgrid;
 
-    mymalloc2( rhogrid, SQR(NGrid) * NGrid3 * sizeof(fftw_real)  );
-    mymalloc2( massgrid, SQR(NGrid) * NGrid3 * sizeof(fftw_real)  );
-    fft_of_rhogrid = ( fftw_complex*  )rhogrid;
+    mymalloc2( massgrid, CUBE(NGrid) * sizeof(fftw_real)  );
+    mymalloc2( pot, CUBE(NGrid) * sizeof(double)  );
 
     g = &Gprops[index];
     L = g->size[0];
     for( i=1; i<3; i++ )
         vmax2( L, g->size[i] );
-    L *= 1.01;
     L *= 2;
+    L += 4 * L/NGrid;   
+#ifdef GROUP_POT_TEST
+    N = g->npart[0];
+#else
+    N = g->Len;
+#endif
 
-    k = 0;
+    check_fof( 0, 10 );
+
+    mymalloc2( data, sizeof(double)*N*4 );
+
     for( i=0; i<6; i++ )
         if ( g->npart[i]>0 ) 
             if ( ((All.TreePartType>>i)&1) == 0 )
                 endruns( "error" );
 
-    mymalloc1( Ngblist, g->Len * sizeof(long) );
-
-    asmth = ASMTH * ( L/NGrid );
-    //rcut = RCUT * asmth;
-    rcut = asmth;
-    asmth2 = ( 2*PI ) / L * asmth;
-    asmth2 *= asmth2;
-    asmthfac = 0.5 / asmth * ( NSRPTAB/3.0 );
-
-    fft_plan = rfftw3d_create_plan( NGrid, NGrid, NGrid,
-            FFTW_REAL_TO_COMPLEX, FFTW_ESTIMATE | FFTW_IN_PLACE ); 
-    fft_plan_inv = rfftw3d_create_plan( NGrid, NGrid, NGrid,
-            FFTW_COMPLEX_TO_REAL, FFTW_ESTIMATE | FFTW_IN_PLACE ); 
-    mymalloc2( data, sizeof( double ) * g->Len * 4  );
-    p = g->Head;
     ip = 0;
-#ifdef GROUP_POT_TEST
-    double mtot=0, mtot2=0;
-#endif
+    p = g->Head;
     while( p >= 0 ) {
+        printf( "%i,", P[p].Type );
+        if ( P[p].Pos[0]<70000 ) {
+            printf( "xx: %g, %li\n",P[p].Pos[0], index );
+            endruns( "xxx" );
+        }
+        for( i=0; i<3; i++ ) {
+            printf( "%g ", P[p].Pos[i] );
+        }
+        for( i=0; i<3; i++ )
+            printf( "%g ", g->cm[i] );
+        printf( "\n" );
+        p = FoFNext[p];
+        continue;
 #ifdef GROUP_POT_TEST
-        if ( P[p].Type != 0 ) {
+        if ( P[p].Type ) {
             p = FoFNext[p];
             continue;
         }
 #endif
-        for( i=0; i<3; i++ )
+        for( i=0; i<3; i++ ) {
             data[ip*4+i] = PERIODIC_HALF( P[p].Pos[i] - g->cm[i] ) + L/2;
+            if ( fabs(PERIODIC_HALF( P[p].Pos[i] - g->cm[i] )) > L/2){
+                printf( "%li, %i, %i, %g %g %g\n",
+                        index,
+                    P[p].Type, i, P[p].Pos[i], g->cm[i], L );
+                endruns( "can't occur!" );
+            }
+        }
 
-#ifdef GROUP_POT_TEST
-       mtot += P[p].Mass;
-#endif
         data[ip*4+3] = P[p].Mass;
         ip ++;
         p = FoFNext[p];
     }
 
-    field_to_grid_fft( data, rhogrid, L, NGrid, ip, 1 );
+    if ( ip != N )
+           endruns( "can't occur!" );
 
-#ifdef GROUP_POT_TEST
-    for( i=0; i<NGrid; i++ )
-        for( j=0; j<NGrid; j++ )
-            for( k=0; k<NGrid; k++ ) {
-                ip = i * NGrid * NGrid3 + j * NGrid3 + k;
-                mtot2 += rhogrid[ip];
-            }
-    printf( "mtot: %g, mtot2: %g\n", mtot, mtot2 );
-#endif
+    field_to_grid_fft( data, massgrid, L, NGrid, N, 0, 0 );
+    pm_potential( data, N, L, NGrid, 0, pot );
 
-    memcpy( massgrid, rhogrid, sizeof(fftw_real) * SQR(NGrid) * NGrid3 );
-    myfree( data );
-
-    fac = G / ( PI * L );
-    /*
-     to get potential
-     [4 * PI * G / ( k_i * 2*Pi / L )^2]  * [1 / ( L/N )^3] * N^3,
-     1 / ( L/N )^3: mass to density;
-     N^3: implementation of fftw, that is FFTW computes an unnormalized transform,
-    */
-
-#ifdef GROUP_POT_TEST
-    for( i=0; i<100; i++ )
-        printf( "%g ", rhogrid[NGrid/2 * NGrid * NGrid3 + NGrid/2 * NGrid3 + i] );
-    printf( "\n" );
-#endif
-
-    rfftwnd_one_real_to_complex( fft_plan, rhogrid, NULL  );
-
-    for( i=0; i<NGrid; i++ )
-        for( j=0; j<NGrid; j++ )
-            for( k=0; k<NGrid/2+1; k++ ) {
-
-                if ( i==0 && j==0 && k==0 ) {
-                    fft_of_rhogrid[0].re = fft_of_rhogrid[0].im = 0;
-                    continue;
-                }
-
-                ks[0] = ( i>NGrid/2 ) ? i-NGrid : i;
-                ks[1] = ( j>NGrid/2 ) ? j-NGrid : j;
-                ks[2] = ( k>NGrid/2 ) ? k-NGrid : k;
-
-                for( m=0, k2=0; m<3; m++ ) {
-                    k2 += ks[m]*ks[m];
-                    f[m] = 1;
-                    if ( ks[m] != 0 ) {
-                        f[m] = ( PI * ks[m] ) / NGrid;
-                        f[m] = sin(f[m]) / f[m];
-                    }
-                }
-
-                ff = 1 / ( f[0] * f[1] * f[2] );
-                smth = - exp( -k2 * asmth2 ) / k2 * fac * ff * ff * ff * ff;
-
-                ip = i * NGrid * ( NGrid/2+1 ) + j * ( NGrid/2+1 ) + k;
-                fft_of_rhogrid[ ip ].re *= smth; 
-                fft_of_rhogrid[ ip ].im *= smth;
-            }
-
-    rfftwnd_one_complex_to_real( fft_plan_inv, fft_of_rhogrid, NULL  );
-
-#ifdef GROUP_POT_TEST
-    for( i=0; i<100; i++ )
-        printf( "%g ", rhogrid[NGrid/2 * NGrid * NGrid3 + NGrid/2 * NGrid3 + i] );
-    printf( "\n" );
-#endif
+/*
+    for( i=0; i<10; i++ )
+        printf( "%g\n",pot[ NGrid/2*NGrid*NGrid + NGrid/2*NGrid + (NGrid/2-5)+i ]);
+*/
 
     e = 0;
     for( i=0; i<NGrid; i++ )
         for( j=0; j<NGrid; j++ )
             for( k=0; k<NGrid; k++ ) {
-                ip = i * NGrid * NGrid3 + j * NGrid3 + k;
-                e += rhogrid[ip] * massgrid[ip];
+                ip = i * NGrid * NGrid + j * NGrid + k;
+                e += 0.5 * pot[ip] * massgrid[ip];
             }
 
 /*
-    p = g->Head;
     ip = 0;
     e = 0;
-    fac = NGrid / L;
-    while( p >= 0 ) {
+    double fac = NGrid / L;
+    for( i=0; i<N; i++ ){
+            ip =
+            data[i*4+0] * fac * NGrid * NGrid +
+            data[i*4+1] * fac * NGrid +
+            data[i*4+2] * fac;
 
-#ifdef GROUP_POT_TEST
-        if ( P[p].Type != 0 ) {
-            p = FoFNext[p];
-            continue;
-        }
-#endif
-         ip = 
-            (PERIODIC_HALF( P[p].Pos[0] - g->cm[0] ) + L/2) * fac * NGrid * NGrid3 +
-            (PERIODIC_HALF( P[p].Pos[1] - g->cm[1] ) + L/2) * fac * NGrid3 +
-            (PERIODIC_HALF( P[p].Pos[2] - g->cm[2] ) + L/2) * fac ;
-         e += P[p].Mass * rhogrid[ip];
-        p = FoFNext[p];
+        e += data[i*4+3] * pot[ip];
     }
 */
 
+#ifdef TREEPOT
 /* now, compute shortrange potential energy */
+    int tabindex, ngbnum;
+    long pp;
+    double rcut, asmthfac, tabindex;
+    mymalloc1( Ngblist, g->Len * sizeof(long) );
+
+    rcut = asmth;
+    //rcut = RCUT * asmth;
+    asmthfac = 0.5 / asmth * ( NSRPTAB/3.0 );
+
     for( p=0; p<NumPart; p++ )
         P[p].flag = 0;
 
@@ -284,50 +241,13 @@ double group_pot( long index ) {
 
         p = FoFNext[p];
     }
-
-
-#ifdef GROUP_POT_TEST
-    FILE *fd;
-    double e_direct, t;
-    fd = myfopen( "w", "group-pot-test-pot.dat" );
-    for( k=0; k<NGrid; k++ ) {
-        for( j=0; j<NGrid; j++ ) {
-            t = 0;
-            for( i=0; i<NGrid; i++ ) {
-                ip = i * NGrid * NGrid3 + j * NGrid3 + k;
-                t += rhogrid[ip];
-            }
-            fprintf( fd, "%g ", t );
-        }
-        fprintf( fd, "\n" );
-   }
-   fclose( fd );
-
-    fd = myfopen( "w", "group-pot-test-mass.dat" );
-    for( k=0; k<NGrid; k++ ) {
-        for( j=0; j<NGrid; j++ ) {
-            t = 0;
-            for( i=0; i<NGrid; i++ ) {
-                ip = i * NGrid * NGrid3 + j * NGrid3 + k;
-                t += massgrid[ip];
-            }
-            fprintf( fd, "%g ", t );
-        }
-        fprintf( fd, "\n" );
-   }
-   fclose( fd );
-   //e_direct = group_pot_direct( index );
-   printf( "pot fft: %g \n", e );
-   printf( "pot direct: %g \n", e_direct );
-
-   endruns( "group-pot-test" );
+    myfree( Ngblist );
 #endif
 
-    rfftwnd_destroy_plan( fft_plan  );
-    rfftwnd_destroy_plan( fft_plan_inv );
-    myfree( rhogrid );
+
     myfree( massgrid );
-    myfree( Ngblist );
+    myfree( pot );
+    myfree( data );
 
     return e;
 
@@ -335,12 +255,50 @@ double group_pot( long index ) {
 #endif
 
 #ifdef OUTPUTGROUP
+#define OUTPUTGROUP_DEBUG
+#ifdef OUTPUTGROUP_DEBUG
+double group_ek( long index ) {
+    long p;
+    int i;
+    struct group_properties *g;
+    double t, vc[3],v2, m, ek, mtot;
+    g = &Gprops[index];
+
+    vc[0] = vc[1] = vc[2] = 0;
+    ek = 0;
+    p = g->Head; 
+    while( p>=0 ) {
+        m = P[p].Mass;
+        for( i=0,v2=0; i<3; i++ ) {
+            t = P[p].Vel[i] / sqrt(Time);
+            vc[i] += t * m;
+            v2 += t*t;
+        }
+        ek += 0.5 * m * v2;
+        p = FoFNext[p];
+    }
+
+    for(i=0,mtot=0; i<6; i++)
+        mtot += g->mass_table[i];
+    for(i=0,v2=0; i<3; i++) {
+        vc[i] /= mtot;
+        v2 += vc[i]*vc[i];
+    }
+
+    ek -= 0.5 * mtot * v2;
+    return ek;
+
+}
+#endif
+
 void output_group() {
 
     int index, i;
-    double ep;
+    long p;
+    double ep, ek, m_diffuse, m_warmhot, m_hot, m_condensed, m, d, t;
     FILE *fd;
     struct group_properties *g;
+    put_header( "output_group" );
 #ifdef OUTPUTGROUPLUM
     double lum;
 #endif
@@ -350,7 +308,7 @@ void output_group() {
             GroupDir, SnapIndex);
     fprintf( fd, "mtot,"
             "x,y,z,"
-            "mgas,mdm,mstar,"
+            "mgas,mdm,mstar,mdiffuse,mwarmhot,mhot,mcondensed,"
 #ifdef OUTPUTGROUPLUM
            "Lum,"
 #endif
@@ -364,7 +322,40 @@ void output_group() {
 
         //printf( "%i\n", index );
         g = &Gprops[index];
+        p = g->Head; 
+        m_diffuse = m_warmhot = m_hot = m_condensed = 0;
+        while( p>=0 ) {
+            if ( P[p].Type ) {
+                p = FoFNext[p];
+                continue;
+            }
+            d = SphP[p].Density / Time3 / RhoBaryon;
+            t = SphP[p].Temp;
+            m = P[p].Mass;
+
+            if ( t < 1e5 ) {
+                if ( d>1e3 )
+                    m_condensed += m;
+                else
+                    m_diffuse += m;
+            }
+
+            if ( t>=1e5 && t<1e7 )
+                m_warmhot += m;
+
+            if ( t>=1e7 )
+                m_hot += m;
+
+            p = FoFNext[p];
+        }
+
         ep = group_pot( index );
+#ifdef OUTPUTGROUP_DEBUG
+        ek = group_ek( index );
+#else
+        ek = g->ek;
+#endif
+
 #ifdef OUTPUTGROUPLUM
         lum = group_luminosity( All.OutputGroupFreq, index, 1 );
 #endif
@@ -374,21 +365,33 @@ void output_group() {
         for( i=0; i<3; i++ )
             fprintf( fd, "%g,", g->cm[i] );
 
-        fprintf( fd, "%g,%g,%g,",
+        fprintf( fd, "%g,%g,%g,%g,%g,%g,%g,",
         g->mass_table[0],
         g->mass_table[1],
-        g->mass_table[4]
+        g->mass_table[4],
+        m_diffuse,
+        m_warmhot,
+        m_hot,
+        m_condensed
         );
 #ifdef OUTPUTGROUPLUM
             fprintf( fd, "%g,", lum );
 #endif
 
         fprintf( fd, "%g,%g,%g,%g,%g,%g\n",
-                g->vr200, g->ek, ep, g->ek/ep, g->v_mean, g->v_disp );
+                g->vr200, ek, ep, ek/ep, g->v_mean, g->v_disp );
+#ifdef OUTPUTGROUP_DEBUG
+        if ( index == 2 )
+        break;
+#endif
 
      }
 
     fclose( fd );
+    put_end();
+#ifdef OUTPUTGROUP_DEBUG
+    endruns( "output_group-debug" );
+#endif
 
 }
 #endif
@@ -452,3 +455,36 @@ void group_analysis() {
 #endif
 
 
+void test_group_pot() {
+#ifdef GROUP_POT_TEST
+    double e, e_direct;
+    int i;
+
+    //tree_build();
+    fof();
+    for( i=0; i<10; i++ ) {
+
+#ifdef GROUP_POT_TEST2
+        i = 1;
+#endif
+        if ( ThisTask_Local == 0 )
+            e = group_pot(i);
+
+        MPI_Barrier( MpiComm_Local );
+        e_direct = group_pot_direct(i);
+
+        if ( ThisTask_Local == 0 )
+        printf( "[%3i] pot fft: %g, pot direct: %g, err: %.2f%%, r: %g\n",
+            i, e, e_direct, (e-e_direct)/e_direct*100, e/e_direct );
+#ifdef GROUP_POT_TEST2
+        break;
+#endif
+    }
+
+    do_sync( "" );
+    if ( ThisTask_Local == 0 )
+        endruns( "group_pot-test" );
+
+#endif
+
+}
