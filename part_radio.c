@@ -577,12 +577,12 @@ double get_particle_radio_index( long p, int i ) {
     return PartRad[ p*All.NuNum + i ] / V1 * V2;
 */
 #ifndef ALTRAD
-    double r = 1, B, V;
+    double r = 1, B, V, bmax;
+    bmax = 10;  // muG
     B = get_B( p ) * 1e6;
-    if ( B > 100 ) {
-        //r = SQR(100 / B);
-        //r = 1;
-        r = 0;
+    if ( B > bmax ) {
+        //r = 0;
+        r = SQR(bmax/B);
     }
 
     //V = 4.0 / 3.0 * PI * CUBE( SofteningTable[0] * g2c.cm * Time );

@@ -27,7 +27,7 @@ print( '-' * ( 6 + (w+1)*len(ds) ) )
 for i in range(m):
     if N>0 and i>=N:
         break
-    print( "%6i "%(i+1), end='' )
+    print( "%6i "%(i), end='' )
     for j in range(n):
         print( fmt2%d[i,j], end='' )
     print()

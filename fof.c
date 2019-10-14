@@ -137,7 +137,6 @@ void fof_compute_group_properties() {
                 v2 += SQR( P[p].Vel[k] );
             }
 
-            g->ek +=  0.5 * P[p].Mass * v2 / Time;  // to comoving energy
             g->v_mean += sqrt(v2);
             g->mass += P[p].Mass;
             g->npart[ P[p].Type ] ++;
@@ -163,11 +162,6 @@ void fof_compute_group_properties() {
         }
         g->v_mean /= g->Len;
 
-        g->ek -= 0.5 * g->mass *  (
-                SQR( g->vel[0] ) +
-                SQR( g->vel[1] ) +
-                SQR( g->vel[2] ) ) / Time;   // to comoving energy
-
         p = g->Head;
         while( p>=0 ){
             for ( k=0, v2=0; k<3; k++ ) {
@@ -175,6 +169,13 @@ void fof_compute_group_properties() {
                 v2 += SQR( P[p].Vel[k] );
             }
             g->v_disp += SQR( sqrt(v2) - g->v_mean );
+
+            for ( k=0, v2=0; k<3; k++ ) {
+                v2 += SQR(  P[p].Vel[k] - g->vel[k] );
+            }
+            g->ek += 0.5 * P[p].Mass * v2 * Time3; 
+            // to comoving energy,  v is comoving speed
+
             p = FoFNext[p];
         }
         g->vr200 = pow( g->mass /

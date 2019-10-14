@@ -17,6 +17,7 @@ void init_analysis() {
     if ( All.KernelInterpolation )
         init_kernel_matrix();
 
+    slice_init();
     mymalloc1( ShortRangeTablePotential, sizeof(double) * NSRPTAB );
 
     for( i=0; i<NSRPTAB; i++ ) {
@@ -72,7 +73,6 @@ void analysis(){
 #endif
 #ifdef FOF
     fof();
-    check_fof( 0, 1 );
     put_sep0;
 #endif
 
@@ -185,12 +185,6 @@ void analysis(){
             u_T_pdf();
 #endif
 
-#ifdef GROUP
-            sprintf( GroupDir, "%sgroup/", OutputDir );
-            create_dir( GroupDir );
-            group_analysis();
-#endif
-
 #ifdef BDENSPDF
             B_dens_pdf();
 #endif
@@ -200,6 +194,13 @@ void analysis(){
 #endif
 
     }
+
+#ifdef GROUP
+    sprintf( GroupDir, "%sgroup/", OutputDir );
+    create_dir( GroupDir );
+    group_analysis();
+#endif
+
 
     do_sync( "" );
     put_sep0;

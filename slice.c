@@ -226,7 +226,7 @@ void slice() {
     mymalloc2( weight, sizeof( double ) * N_GasInSlice );
     for( k=0; k<GROUP_FIELD_NBLOCKS; k++ ) {
 
-        if ( slice_field_present( k ) )
+        if ( !slice_field_present( k ) )
             continue;
 
         for ( i=0; i<N_Gas; i++ ) {

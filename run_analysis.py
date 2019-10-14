@@ -260,7 +260,7 @@ def gen_config( param_file, run_dir, new_param_file ):
                 "GROUPTEMPPROFILE", "GROUPTEMPSTACK", "GROUPLUM"
                  ), "GROUP" )
     deps1( fd_h, fd_c, ("GROUPSFR","BPDF", "PHASE"), "READSFR" )
-    deps1( fd_h, fd_c, ("GROUPU","UTPFD", "GROUPCRE", "CREESLICE"), "READU" )
+    deps1( fd_h, fd_c, ("GROUPU","UTPFD", "GROUPCRE", "CREESLICE", "OUTPUTGROUPLUM"), "READU" )
     deps1( fd_h, fd_c, ("GROUPB", "BPDF", "BDENSPDF", "DIVBERRPDF"), "READB" )
     deps1( fd_h, fd_c, ("DIVBERRPDF", "DIVBERRPDf", "DIVBERRDENSPDF"), "READDIVB" )
     deps1( fd_h, fd_c, ("GROUPMACH","MACHNOISE", "MACHSLICE"), "READMACH" )

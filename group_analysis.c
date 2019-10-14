@@ -17,7 +17,7 @@ inline double get_group_size( struct group_properties *g ) {
     return vmax( g->size[proj_i], g->size[proj_j] );
 }
 
-#ifdef GROUP_POT_TEST
+#define GROUP_POT_TEST_ALLPART
 double group_pot_direct( long index ) {
     /*
     for test
@@ -29,12 +29,17 @@ double group_pot_direct( long index ) {
     struct group_properties *g;
     g = &Gprops[index];
 
+#if !defined(GROUP_POT_TEST_ALLPART) && defined( GROUP_POT_TEST )
     N =  g->npart[0];
+#else
+    N =  g->Len;
+#endif
     if ( ThisTask_Local == 0 ) {
         printf( "npart: " );
         for( i=0; i<6; i++ )
             printf( "%li ", g->npart[i] );
         printf( "\n" );
+        printf( "mass: %g\n", g->mass );
         printf( "N: %i\n", N );
     }
 
@@ -44,10 +49,12 @@ double group_pot_direct( long index ) {
     index = 0;
     p = g->Head;
     while( p >= 0 ) {
+#if !defined(GROUP_POT_TEST_ALLPART) && defined( GROUP_POT_TEST )
         if ( P[p].Type != 0 ) {
             p = FoFNext[p];
             continue;
         }
+#endif
 
         m[index] = P[p].Mass;
 
@@ -67,6 +74,8 @@ double group_pot_direct( long index ) {
             for(k=0; k<3; k++)
                 r += SQR( PERIODIC_HALF( pos[i*3+k] - pos[j*3+k] ) );
             r = sqrt( r );
+            if ( r == 0 )
+                continue;
             e += -G * m[i] * m[j] / r;
         }
 #ifdef GROUP_POT_TEST2
@@ -82,7 +91,6 @@ double group_pot_direct( long index ) {
 
     return e_tot;
 }
-#endif
 
 #ifdef GROUPPOT
 //#define TREEPOT
@@ -105,13 +113,12 @@ double group_pot( long index ) {
         vmax2( L, g->size[i] );
     L *= 2;
     L += 4 * L/NGrid;   
-#ifdef GROUP_POT_TEST
+
+#if  !defined(GROUP_POT_TEST_ALLPART) && defined(GROUP_POT_TEST)
     N = g->npart[0];
 #else
     N = g->Len;
 #endif
-
-    check_fof( 0, 10 );
 
     mymalloc2( data, sizeof(double)*N*4 );
 
@@ -123,6 +130,7 @@ double group_pot( long index ) {
     ip = 0;
     p = g->Head;
     while( p >= 0 ) {
+        /*
         printf( "%i,", P[p].Type );
         if ( P[p].Pos[0]<70000 ) {
             printf( "xx: %g, %li\n",P[p].Pos[0], index );
@@ -136,7 +144,8 @@ double group_pot( long index ) {
         printf( "\n" );
         p = FoFNext[p];
         continue;
-#ifdef GROUP_POT_TEST
+        */
+#if  !defined(GROUP_POT_TEST_ALLPART) && defined(GROUP_POT_TEST)
         if ( P[p].Type ) {
             p = FoFNext[p];
             continue;
@@ -194,9 +203,11 @@ double group_pot( long index ) {
 /* now, compute shortrange potential energy */
     int tabindex, ngbnum;
     long pp;
-    double rcut, asmthfac, tabindex;
+    double rcut, asmthfac, asmth, r;
+
     mymalloc1( Ngblist, g->Len * sizeof(long) );
 
+    asmth = ASMTH * ( L/NGrid  );
     rcut = asmth;
     //rcut = RCUT * asmth;
     asmthfac = 0.5 / asmth * ( NSRPTAB/3.0 );
@@ -206,7 +217,7 @@ double group_pot( long index ) {
 
     p = g->Head;
     while( p >= 0 ) {
-#ifdef GROUP_POT_TEST
+#if  !defined(GROUP_POT_TEST_ALLPART) && defined(GROUP_POT_TEST)
         if ( P[p].Type != 0 ) {
             p = FoFNext[p];
             continue;
@@ -218,7 +229,7 @@ double group_pot( long index ) {
 
     p = g->Head;
     while( p >= 0 ) {
-#ifdef GROUP_POT_TEST
+#if  !defined(GROUP_POT_TEST_ALLPART) && defined(GROUP_POT_TEST)
         if ( P[p].Type != 0 ) {
             p = FoFNext[p];
             continue;
@@ -232,6 +243,8 @@ double group_pot( long index ) {
             for(k=0; k<3; k++)
                 r += SQR( PERIODIC_HALF( P[p].Pos[k] - P[pp].Pos[k] ) );
             r = sqrt(r);
+            if ( r == 0 )
+                continue;
             tabindex = (int)( asmthfac * r );
             //printf( "%i %i\n", tabindex, NSRPTAB );
             if ( tabindex < NSRPTAB )
@@ -255,13 +268,12 @@ double group_pot( long index ) {
 #endif
 
 #ifdef OUTPUTGROUP
-#define OUTPUTGROUP_DEBUG
 #ifdef OUTPUTGROUP_DEBUG
 double group_ek( long index ) {
     long p;
     int i;
     struct group_properties *g;
-    double t, vc[3],v2, m, ek, mtot;
+    double t, vc[3],v2, m, ek, mtot, ek2;
     g = &Gprops[index];
 
     vc[0] = vc[1] = vc[2] = 0;
@@ -270,7 +282,7 @@ double group_ek( long index ) {
     while( p>=0 ) {
         m = P[p].Mass;
         for( i=0,v2=0; i<3; i++ ) {
-            t = P[p].Vel[i] / sqrt(Time);
+            t = P[p].Vel[i];
             vc[i] += t * m;
             v2 += t*t;
         }
@@ -286,7 +298,22 @@ double group_ek( long index ) {
     }
 
     ek -= 0.5 * mtot * v2;
-    return ek;
+
+    p = g->Head;
+    ek2 = 0;
+    while( p>=0 ) {
+        for( i=0, v2=0; i<3; i++ )
+            v2 += SQR( P[p].Vel[i]-g->vel[i] );
+        ek2 += 0.5 * P[p].Mass * v2;
+        p = FoFNext[p];
+    }
+
+    ek *= Time3;
+    ek2 *= Time3;
+
+    printf( "ek: %g, ek2: %g, err: %g\n", ek, ek2, (ek-ek2)/ek2 );
+
+    return ek2;
 
 }
 #endif
@@ -295,7 +322,7 @@ void output_group() {
 
     int index, i;
     long p;
-    double ep, ek, m_diffuse, m_warmhot, m_hot, m_condensed, m, d, t;
+    double ep, ek, m_diffuse, m_warmhot, m_hot, m_condensed, m, d, t, dens, ee;
     FILE *fd;
     struct group_properties *g;
     put_header( "output_group" );
@@ -304,6 +331,7 @@ void output_group() {
 #endif
 
 
+    if ( ThisTask_Local == 0 ) {
     fd = myfopen( "w", "%s/group_%03i.csv",
             GroupDir, SnapIndex);
     fprintf( fd, "mtot,"
@@ -311,19 +339,30 @@ void output_group() {
             "mgas,mdm,mstar,mdiffuse,mwarmhot,mhot,mcondensed,"
 #ifdef OUTPUTGROUPLUM
            "Lum,"
+           "ee,"
 #endif
            "r200,ek,ep,vr,v_mean,v_disp"
            "\n");
+    }
 
     for ( index=0; index<Ngroups; index++  ) {
 
         if ( !group_present(index) )
             continue;
 
+       // ep = group_pot( index );
+        ep = group_pot_direct( index );
+
+        if ( ThisTask_Local != 0 )
+            continue;
+
+
         //printf( "%i\n", index );
         g = &Gprops[index];
         p = g->Head; 
         m_diffuse = m_warmhot = m_hot = m_condensed = 0;
+        ee = 0;
+        dens = 0;
         while( p>=0 ) {
             if ( P[p].Type ) {
                 p = FoFNext[p];
@@ -332,6 +371,10 @@ void output_group() {
             d = SphP[p].Density / Time3 / RhoBaryon;
             t = SphP[p].Temp;
             m = P[p].Mass;
+#ifdef OUTPUTGROUPLUM
+            ee += SphP[p].CRE_e / SphP[p].u * SphP[p].Density;
+#endif
+            dens += SphP[p].Density;
 
             if ( t < 1e5 ) {
                 if ( d>1e3 )
@@ -349,7 +392,6 @@ void output_group() {
             p = FoFNext[p];
         }
 
-        ep = group_pot( index );
 #ifdef OUTPUTGROUP_DEBUG
         ek = group_ek( index );
 #else
@@ -358,6 +400,7 @@ void output_group() {
 
 #ifdef OUTPUTGROUPLUM
         lum = group_luminosity( All.OutputGroupFreq, index, 1 );
+        ee /= dens;
 #endif
         
         fprintf( fd, "%g,", g->mass );
@@ -376,6 +419,7 @@ void output_group() {
         );
 #ifdef OUTPUTGROUPLUM
             fprintf( fd, "%g,", lum );
+            fprintf( fd, "%g,", ee );
 #endif
 
         fprintf( fd, "%g,%g,%g,%g,%g,%g\n",
@@ -387,7 +431,8 @@ void output_group() {
 
      }
 
-    fclose( fd );
+    if ( ThisTask_Local == 0 )
+        fclose( fd );
     put_end();
 #ifdef OUTPUTGROUP_DEBUG
     endruns( "output_group-debug" );
@@ -406,6 +451,9 @@ void group_analysis() {
 #ifdef OUTPUTGROUP
     output_group();
 #endif
+
+    if ( ThisTask_Local != 0 )
+        return;
 
 #ifdef GROUPSPEC
         group_spectrum();
@@ -460,7 +508,9 @@ void test_group_pot() {
     double e, e_direct;
     int i;
 
-    //tree_build();
+#ifdef TREEPOT
+    tree_build();
+#endif
     fof();
     for( i=0; i<10; i++ ) {
 
