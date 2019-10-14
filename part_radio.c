@@ -158,11 +158,6 @@ double particle_radio2( double nu,  SphParticleData *part ) {
 
     B = SQR(part->B[0]) + SQR(part->B[1]) + SQR(part->B[2]);
     B = sqrt( B );
-    //if ( B > 100 )
-    //    B = 100;
-    //B *= 1.1;
-    //if ( B > 1e-4 )
-    //    B = 1e-4;
     r = radio( &particle_df, params, B, nu, params[2], params[3], 1e-2 );
     return r;
 
@@ -362,9 +357,7 @@ void compute_particle_radio() {
                 flag = 1;    // ignore particle with very weak radio emission.
                 break;
             }
-
 #endif
-
         }
 
         if ( flag )
@@ -578,11 +571,11 @@ double get_particle_radio_index( long p, int i ) {
 */
 #ifndef ALTRAD
     double r = 1, B, V, bmax;
-    bmax = 10;  // muG
+    bmax = 100;  // muG
     B = get_B( p ) * 1e6;
     if ( B > bmax ) {
-        //r = 0;
-        r = SQR(bmax/B);
+        r = 0;
+        //r = SQR(bmax/B);
     }
 
     //V = 4.0 / 3.0 * PI * CUBE( SofteningTable[0] * g2c.cm * Time );

@@ -322,7 +322,8 @@ void output_group() {
 
     int index, i;
     long p;
-    double ep, ek, m_diffuse, m_warmhot, m_hot, m_condensed, m, d, t, dens, ee;
+    double ep, ek, m_diffuse, m_warmhot, m_hot, m_condensed, m, d, t, dens, ee,
+            B;
     FILE *fd;
     struct group_properties *g;
     put_header( "output_group" );
@@ -340,6 +341,7 @@ void output_group() {
 #ifdef OUTPUTGROUPLUM
            "Lum,"
            "ee,"
+           "B,"
 #endif
            "r200,ek,ep,vr,v_mean,v_disp"
            "\n");
@@ -362,6 +364,7 @@ void output_group() {
         p = g->Head; 
         m_diffuse = m_warmhot = m_hot = m_condensed = 0;
         ee = 0;
+        B = 0;
         dens = 0;
         while( p>=0 ) {
             if ( P[p].Type ) {
@@ -371,10 +374,11 @@ void output_group() {
             d = SphP[p].Density / Time3 / RhoBaryon;
             t = SphP[p].Temp;
             m = P[p].Mass;
+            dens += d;
 #ifdef OUTPUTGROUPLUM
-            ee += SphP[p].CRE_e / SphP[p].u * SphP[p].Density;
+            ee += SphP[p].CRE_e / SphP[p].u  * d;
+            B += get_B(p) * 1e6;
 #endif
-            dens += SphP[p].Density;
 
             if ( t < 1e5 ) {
                 if ( d>1e3 )
@@ -401,6 +405,7 @@ void output_group() {
 #ifdef OUTPUTGROUPLUM
         lum = group_luminosity( All.OutputGroupFreq, index, 1 );
         ee /= dens;
+        B /= g->npart[0];
 #endif
         
         fprintf( fd, "%g,", g->mass );
@@ -420,6 +425,7 @@ void output_group() {
 #ifdef OUTPUTGROUPLUM
             fprintf( fd, "%g,", lum );
             fprintf( fd, "%g,", ee );
+            fprintf( fd, "%g,", B );
 #endif
 
         fprintf( fd, "%g,%g,%g,%g,%g,%g\n",

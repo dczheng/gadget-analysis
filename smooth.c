@@ -13,7 +13,10 @@ void smooth() {
     (void)h2_i;
 
     mytimer_start();
-    writelog( "smooth ...\n" );
+    put_header( "smooth" );
+#ifdef BSMOOTH
+    writelog( "B smooth\n" );
+#endif
     mymalloc1( Ngblist, NumPart * sizeof(long) );
 
     for( i=0; i<N_Gas; i++ ) {
@@ -82,6 +85,8 @@ void smooth() {
     }
 
     for ( i=0; i<N_Gas; i++ ) {
+        if ( i % NTask_Local != ThisTask_Local )
+            continue;
 #ifdef BSMOOTH
         for( k=0; k<3; k++ )
             SphP[i].B[k] = SphP[i].SmoothB[k];
@@ -95,6 +100,7 @@ void smooth() {
 #ifdef SMOOTH_DEBUG
     endruns( "smooth-test" );
 #endif
+    put_end();
 
 }
 #endif
