@@ -1,7 +1,7 @@
 #include "allvars.h"
 
-#ifdef MACHNOISE
 void  remove_mach_noise() {
+#ifdef MACHNOISE
     long i;
     put_header( "remove mach noise" );
     for ( i=0; i<N_Gas; i++ ) {
@@ -15,6 +15,6 @@ void  remove_mach_noise() {
     }
 
     put_end();
-}
 #endif
+}
 

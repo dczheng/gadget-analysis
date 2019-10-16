@@ -27,10 +27,10 @@ B = B[index]
 
 print( np.abs(ep)/ek )
 print( ek/np.abs(ep) )
-fig, axs = plt.subplots( 3, 1, figsize=(5,3*5) )
+fig, axs = plt.subplots( 2, 1, figsize=(5,2*5) )
 ax_e = axs[0]
-ax_B = axs[1]
-ax_I = axs[2]
+#ax_B = axs[1]
+ax_I = axs[1]
 #I = np.log10( I )
 #plt.plot( M, I, '*' )
 #vr = np.abs(ep) / ek
@@ -40,7 +40,7 @@ ax_I = axs[2]
 #ee = ee[idx]
 vr = np.abs( vr+0.5 )
 ax_e.plot( vr, ee, '*' )
-ax_B.plot( vr, B, '*' )
+#ax_B.plot( vr, B, '*' )
 ax_I.plot( vr, I, '*' )
 
 for i in range( len(vr) ):
@@ -54,16 +54,14 @@ for i in range( len(vr) ):
 xlabels = [\
 r'$E_k/E_p$',\
 r'$E_k/E_p$',\
-r'$E_k/E_p$',\
 ]
 ylabels = [\
 r'$\epsilon_{\rm CRE}/\epsilon$',\
-r'$B \, [\mu G]$',\
 r'$P_{\rm 1.4GHz} \, [W Hz^{-1}]$',\
 ]
 
 ax_I.set_yscale( 'log' )
-for i in range(3):
+for i in range(2):
     axs[i].set_xlabel( xlabels[i] )
     axs[i].set_ylabel( ylabels[i] )
 

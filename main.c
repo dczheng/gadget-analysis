@@ -31,10 +31,12 @@ void global_init() {
     ms.max_mem = ms.mem = ms.nn = 0;
     srand( time(NULL) );
     inte_ws = gsl_integration_workspace_alloc( GSL_INTE_WS_LEN );
+    inte_ws2 = gsl_integration_workspace_alloc( GSL_INTE_WS_LEN );
 }
 
 void global_free() {
     gsl_integration_workspace_free( inte_ws );
+    gsl_integration_workspace_free( inte_ws2 );
 }
 
 void mpi_comms_test() {

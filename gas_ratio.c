@@ -1,7 +1,7 @@
 #include "allvars.h"
 
-#ifdef GASRATIO
 void gas_ratio() {
+#ifdef GASRATIO
     double m_tot, m_diffuse_cool, m_diffuse_warm, m_diffuse_hot, m_dense, dens, T, m,
            *m_diffuse_cool_all,
            *m_diffuse_warm_all,
@@ -84,5 +84,5 @@ void gas_ratio() {
         myfree( m_diffuse_hot_all);
         myfree( m_dense_all );
     }
-}
 #endif
+}

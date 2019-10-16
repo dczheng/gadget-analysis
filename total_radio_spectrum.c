@@ -1,7 +1,7 @@
 #include "allvars.h"
 
-#ifdef TOTSPEC
 void total_radio_spectrum() {
+#ifdef TOTSPEC
 
     long index;
     int Nnu, i, j, k, t;
@@ -152,5 +152,5 @@ void total_radio_spectrum() {
     myfree( flux );
     writelog( "total radio spectrum ... done.\n" );
 
-}
 #endif
+}

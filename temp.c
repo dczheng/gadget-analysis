@@ -1,8 +1,8 @@
 #include "allvars.h"
 
-#ifdef COMPUTETEMP
 void compute_temperature() {
 
+#ifdef COMPUTETEMP
 #ifdef READTEMP
         return;
 #else
@@ -33,6 +33,5 @@ void compute_temperature() {
     writelog( "compute gas temprature... done.\n" );
 #endif
 
-}
-
 #endif
+}

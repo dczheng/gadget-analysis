@@ -225,7 +225,17 @@ writelog( "[Timer Start in `%s`]\n", __FUNCTION__ ); \
 }
 
 #define get_index( i, j, k, N ) ( ((i)*(N)+(j))*(N)+(k) )
-#define get_B( i ) ( sqrt(SQR(SphP[i].B[0]) + SQR(SphP[i].B[1]) + SQR(SphP[i].B[2]) ) )
+#define get_B( i ) (\
+                    sqrt(\
+                            SQR(SphP[i].B[0]) +\
+                            SQR(SphP[i].B[1]) +\
+                            SQR(SphP[i].B[2])\
+                         )\
+                   )
+#define get_V( i )  (\
+            P[i].Mass / SphP[i].Density * CUBE( g2c.cm * Time  )\
+            )
+            //4.0/3.0 * PI * CUBE( SphP[i].Hsml * g2c.cm * Time )
 
 #define get_pressure( i ) (SphP[i].u*( GAMMA_MINUS1*SphP[i].Density/Time3 ))
 

@@ -1,9 +1,8 @@
 #include "allvars.h"
 
-#ifdef GROUP
 
-#ifdef GROUPTEMPPROFILE
 void group_temp_profile() {
+#ifdef GROUPTEMPPROFILE
 
     long p;
     struct group_properties g;
@@ -91,11 +90,11 @@ void group_temp_profile() {
     myfree( data );
     myfree( Ngblist );
 
-}
 #endif
+}
 
-#ifdef GROUPTEMPSTACK
 void group_temp_stack() {
+#ifdef GROUPTEMPSTACK
 
     double Rmin, Rmax, dlogR, r;
     int RN, g_index, i, ii, mi, k, ngbnum;
@@ -244,7 +243,6 @@ void group_temp_stack() {
 
     myfree( Ngblist );
 
+#endif
 }
-#endif
 
-#endif

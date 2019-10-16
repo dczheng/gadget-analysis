@@ -1,7 +1,6 @@
 #include "allvars.h"
 #include "drfftw.h"
 #ifdef GROUP
-
 int group_present( long index ) {
 
     if ( Gprops[index].mass >= All.GroupMassMin) 
@@ -446,8 +445,46 @@ void output_group() {
 
 }
 #endif
+#endif
+
+void test_group_pot() {
+#ifdef GROUP_POT_TEST
+    double e, e_direct;
+    int i;
+
+#ifdef TREEPOT
+    tree_build();
+#endif
+    fof();
+    for( i=0; i<10; i++ ) {
+
+#ifdef GROUP_POT_TEST2
+        i = 1;
+#endif
+        if ( ThisTask_Local == 0 )
+            e = group_pot(i);
+
+        MPI_Barrier( MpiComm_Local );
+        e_direct = group_pot_direct(i);
+
+        if ( ThisTask_Local == 0 )
+        printf( "[%3i] pot fft: %g, pot direct: %g, err: %.2f%%, r: %g\n",
+            i, e, e_direct, (e-e_direct)/e_direct*100, e/e_direct );
+#ifdef GROUP_POT_TEST2
+        break;
+#endif
+    }
+
+    do_sync( "" );
+    if ( ThisTask_Local == 0 )
+        endruns( "group_pot-test" );
+
+#endif
+}
 
 void group_analysis() {
+
+#ifdef GROUP
 
     int proj_tmp[3], i;
     char Sproj_tmp;
@@ -488,59 +525,13 @@ void group_analysis() {
     Sproj = Sproj_tmp;
 
 
-#ifdef GROUPTEMPPROFILE
-        group_temp_profile();
-#endif
-
-#ifdef GROUPTEMPSTACK
-        group_temp_stack();
-#endif
-
-#ifdef GROUPGASRATIO
-        group_gas_ratio();
-#endif
+    group_temp_profile();
+    group_temp_stack();
 
     reset_img();
     put_sep0;
     put_end();
 
+#endif
 }
 
-#endif
-
-
-void test_group_pot() {
-#ifdef GROUP_POT_TEST
-    double e, e_direct;
-    int i;
-
-#ifdef TREEPOT
-    tree_build();
-#endif
-    fof();
-    for( i=0; i<10; i++ ) {
-
-#ifdef GROUP_POT_TEST2
-        i = 1;
-#endif
-        if ( ThisTask_Local == 0 )
-            e = group_pot(i);
-
-        MPI_Barrier( MpiComm_Local );
-        e_direct = group_pot_direct(i);
-
-        if ( ThisTask_Local == 0 )
-        printf( "[%3i] pot fft: %g, pot direct: %g, err: %.2f%%, r: %g\n",
-            i, e, e_direct, (e-e_direct)/e_direct*100, e/e_direct );
-#ifdef GROUP_POT_TEST2
-        break;
-#endif
-    }
-
-    do_sync( "" );
-    if ( ThisTask_Local == 0 )
-        endruns( "group_pot-test" );
-
-#endif
-
-}

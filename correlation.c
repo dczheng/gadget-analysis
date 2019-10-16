@@ -213,8 +213,8 @@ void put_temp_on_grid( double *grid, int Nmin ) {
 }
 #endif
 
-#ifdef CORRDM
 void corr_dm() {
+#ifdef CORRDM
 
     double *DM, *DMCorr, *DMCorr1d, DMBar;
     long p, num_dm;
@@ -251,11 +251,11 @@ void corr_dm() {
     myfree( DMCorr );
     myfree( DMCorr1d );
 
-}
 #endif
+}
 
-#ifdef CORRGAS
 void corr_gas() {
+#ifdef CORRGAS
 
     double *Gas, Gasbar, *GasCorr, *GasCorr1d;
     long p;
@@ -293,8 +293,8 @@ void corr_gas() {
     myfree( GasCorr );
     myfree( GasCorr1d );
 
-}
 #endif
+}
 
 #ifdef CORRTDIFFDENS
 void corr_Tdiff_dens() {

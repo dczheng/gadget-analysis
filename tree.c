@@ -1,6 +1,6 @@
 #include "allvars.h"
 
-#ifdef TREE
+#if defined(TREE) || defined(FOF) || defined(SMOOTH)
 long last, parent, father, npart;
 
 void tree_allocate() {
@@ -13,12 +13,6 @@ void tree_allocate() {
     Nodes = Nodes_Base - NumPart;
 
     mymalloc1( NextNode, NumPart * sizeof( long ) );
-}
-
-void tree_free() {
-    writelog( "free memory for tree\n" );
-    myfree( Nodes_Base );
-    myfree( NextNode );
 }
 
 void tree_build_single() {
@@ -110,7 +104,7 @@ void tree_build_single() {
                 if ( nfreep -> len < 1.0e-3 * SofteningTable[P[n].Type] ) {
 
                     if ( ThisTask_Local == 0 )
-                        printf( "[snapshoft: %03i] extremely close particle:\n"
+                        printf( "[snapshot: %03i] extremely close particle:\n"
                             "[1][%i][%i]( %.10f, %.10f, %.10f )\n"
                             "[2][%i][%i]( %.10f, %.10f, %.10f )\n",
                             SnapIndex,
@@ -204,8 +198,10 @@ void tree_walk_test(){
     }
     fclose( fd );
 }
+#endif
 
 void tree_build() {
+#if defined(TREE) || defined(FOF) || defined(SMOOTH)
     long i;
     /*
     npart = 30;
@@ -249,5 +245,13 @@ void tree_build() {
     //tree_walk_test();
     mytimer_end();
     writelog( "tree walk ... done.\n" );
-}
 #endif
+}
+void tree_free() {
+#if defined(TREE) || defined(FOF) || defined(SMOOTH)
+    writelog( "free memory for tree\n" );
+    myfree( Nodes_Base );
+    myfree( NextNode );
+#endif
+}
+

@@ -51,6 +51,7 @@ def my_plot0():
         y = np.log10( F[ii3:ii5] )
         x = np.log10( p[ii3:ii5] )
         r = curve_fit( fit_f, x, y )
+        print( x.min(), y.min() )
         print( 'ele: ', r[0], r[1] )
         alpha_e = r[0][0]
 

@@ -73,9 +73,11 @@ void compute_sigma8() {
     printf( "Sigma8: %g\n", All.Sigma8 );
 
 }
+#endif
 
 void powerspec() {
 
+#ifdef POWSPEC
     double fac, dis[6], mass, mass_tot, K[3], K2, k,
            f[3], ff, smth, po, ponorm,
            *SumPS, *SumPSUncorr, ktmp,
@@ -344,5 +346,5 @@ void powerspec() {
 
     writelog( "compute power spectrum ... done.\n" );
 
-}
 #endif
+}

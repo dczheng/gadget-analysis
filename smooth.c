@@ -1,8 +1,8 @@
 #include "allvars.h"
 
-#ifdef SMOOTH
 
 void smooth() {
+#ifdef SMOOTH
 
 //#define SMOOTH_DEBUG
     int ngbnum, k, n;
@@ -88,6 +88,17 @@ void smooth() {
         if ( i % NTask_Local != ThisTask_Local )
             continue;
 #ifdef BSMOOTH
+            /*
+        if ( i < 100 ) {
+            printf( "B: " );
+            for( k=0; k<3; k++ )
+                printf( "%g ", SphP[i].B[k] * 1e6 );
+            printf( "SmoothB: " );
+            for( k=0; k<3; k++ )
+                printf( "%g ", SphP[i].SmoothB[k] * 1e6 );
+            printf( "\n" );
+        }
+            */
         for( k=0; k<3; k++ )
             SphP[i].B[k] = SphP[i].SmoothB[k];
 #endif
@@ -102,5 +113,5 @@ void smooth() {
 #endif
     put_end();
 
-}
 #endif
+}

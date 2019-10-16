@@ -245,8 +245,8 @@ void slice() {
     myfree( weight );
 }
 
-#ifdef DENSITYSLICE
 void density_slice() {
+#ifdef DENSITYSLICE
     int i;
     long index;
     double *data;
@@ -306,5 +306,5 @@ void density_slice() {
     field_slice( data, "Density_condensed", index, NULL );
 
     myfree( data );
-}
 #endif
+}

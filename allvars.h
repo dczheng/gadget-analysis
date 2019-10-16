@@ -63,8 +63,9 @@
 #define NSRPTAB 1000
 
 #define GSL_INTE_WS_LEN 10000
-#define GSL_INTE_ERR_ABS ((double)(0.0))
-#define GSL_INTE_ERR_REL ((double)(1e-10))
+#define GSL_INTE_ERR_ABS  ((double)(0.0))
+#define GSL_INTE_ERR_REL  ((double)(1e-3))
+#define GSL_INTE_ERR_REL2 ((double)(1e-2))
 #define GSL_INTE_KEY GSL_INTEG_GAUSS61
 
 #define SQR(X) ( (X)*(X) )
@@ -466,6 +467,7 @@ extern double
             *PartRad, *KernelMat2D[6], *KernelMat3D[6],
             *ShortRangeTablePotential;
 extern gsl_integration_workspace *inte_ws;
+extern gsl_integration_workspace *inte_ws2;
 //extern_end
 
 #define proj_i Proj[0]

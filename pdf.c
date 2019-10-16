@@ -1,7 +1,7 @@
 #include"allvars.h"
 
-#ifdef DENSPDF
 void dens_pdf() {
+#ifdef DENSPDF
 
     double *num, *num_warm_hot, dlogDens, Densmin, Densmax, *num_diffuse_condense, *num_hot;
     int N, i;
@@ -69,11 +69,11 @@ void dens_pdf() {
     myfree( num_diffuse_condense );
     myfree( num_hot );
 
-}
 #endif
+}
 
-#ifdef TPDF
 void T_pdf() {
+#ifdef TPDF
 
     double *num, dlogT, Tmin, Tmax;
     int N, i;
@@ -115,11 +115,11 @@ void T_pdf() {
     fclose( fd );
     myfree( num );
 
-}
 #endif
+}
 
-#ifdef BPDF
 void B_Pdf() {
+#ifdef BPDF
     long i;
     int j, N;
     double Bmin, Bmax, *n, dlogB, B, s, *nn;
@@ -218,11 +218,11 @@ void B_Pdf() {
     }
 */
 
-}
 #endif
+}
 
-#ifdef DIVBERRPDF
 void DivB_Err_Pdf() {
+#ifdef DIVBERRPDF
     long i, idxmin, idxmax;
     int j, N;
     double errmin, errmax, *n, dlogerr, err, B, errmean, vsum, v;
@@ -298,5 +298,5 @@ void DivB_Err_Pdf() {
     fclose( fd );
     myfree( n );
 
-}
 #endif
+}

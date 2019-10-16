@@ -79,7 +79,8 @@ double qtrap( double (*func)( double, void* ),
 
 //#define QTRAP_DEBUB
 #ifdef QTRAP_DEBUB
-printf( "a: %g, b: %g, err: %g\n", a, b, err );
+    if ( !ThisTask_Local )
+        printf( "a: %g, b: %g, err: %g\n", a, b, err );
 #endif
 
     olds = -DBL_MAX;
@@ -95,6 +96,7 @@ printf( "a: %g, b: %g, err: %g\n", a, b, err );
 
         olds = s;
 #ifdef QTRAP_DEBUB
+    if ( !ThisTask_Local )
         printf( "[%2i] s: %g\n", i, s );
 #endif
     }
@@ -108,9 +110,7 @@ printf( "a: %g, b: %g, err: %g\n", a, b, err );
 
 }
 
-//#define TEST_MATH
-
-#ifdef TEST_MATH
+#ifdef MATH_TEST
 
 double f( double x, void *params) {
     //return x*x;
@@ -120,7 +120,7 @@ double f( double x, void *params) {
 #endif
 
 void test_math() {
-#ifdef TEST_MATH
+#ifdef MATH_TEST
     double a, b, err, r1, r2;
     a = 1e-5;
     b = 10;
@@ -131,9 +131,8 @@ void test_math() {
         printf( "no-log: %g, log: %g\n", r1, r2 );
     }
     do_sync( "" );
-    endruns( "test-math" );
-#else
-    return;
+    if ( !ThisTask )
+        endruns( "test-math" );
 #endif
 }
 

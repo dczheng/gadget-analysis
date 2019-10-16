@@ -39,19 +39,9 @@ void free_analysis() {
 
     myfree( ShortRangeTablePotential );
 
-#ifdef TREE
     tree_free();
-#endif
-#ifdef FOF
     fof_free();
-#endif
-
-
-#ifndef ALTRAD
-#ifdef RADSPEC
-        free_particle_radio();
-#endif
-#endif
+    free_particle_radio();
 }
 
 void analysis(){
@@ -67,42 +57,16 @@ void analysis(){
 
     test_fof();
     test_group_pot();
-#ifdef TREE
+
     tree_build();
-    put_sep0;
-#endif
-#ifdef FOF
+
     fof();
-    put_sep0;
-#endif
 
-
-
-#ifdef COMPUTETEMP
     compute_temperature();
-#endif
-
-#ifdef SMOOTH
     smooth();
-    put_sep0;
-#endif
-
-
-#ifdef MACHNOISE
     remove_mach_noise();
-#endif
-
-#ifndef ALTRAD
-#ifdef RADSPEC
     compute_particle_radio();
-    put_sep0;
-#endif
-#endif
-
-#ifdef TOTSPEC
     total_radio_spectrum();
-    put_sep0;
-#endif
 
 #ifdef CREPPDF
     cre_pressure_pdf();
@@ -121,85 +85,32 @@ void analysis(){
 
     if ( ThisTask_Local == 0 ) {
             slice();
-#ifdef PHASE
-            phase();
-#endif
-
-#ifdef BPDF
-            B_Pdf();
-#endif
-
-#ifdef DIVBERRPDF
-            DivB_Err_Pdf();
-#endif
-
-#ifdef POWSPEC
-            powerspec();
-#endif
-
-#ifdef DENSITYSLICE
             density_slice();
-#endif
-
-#ifdef MF
+            phase();
+            B_Pdf();
+            DivB_Err_Pdf();
+            powerspec();
             mass_function();
-#endif
 
-#ifdef CORRGAS
             corr_gas();
-#endif
-    
-#ifdef CORRDM
             corr_dm();
-#endif
     
-#ifdef DENSPDF
             dens_pdf();
-#endif
-        
-#ifdef CRENTPDF
             cren_T_pdf();
-#endif
-    
-#ifdef TPDF
             T_pdf();
-#endif
-
-#ifdef GASRATIO
-            gas_ratio();
-#endif
-
-#ifdef HSMLTPDF
             hsml_T_pdf();
-#endif
-
-#ifdef HSMLDENSPDF
+            gas_ratio();
             hsml_dens_pdf();
-#endif
-
-#ifdef MACHDENSPDF
             mach_dens_pdf();
-#endif
-
-#ifdef UTPDF
             u_T_pdf();
-#endif
-
-#ifdef BDENSPDF
             B_dens_pdf();
-#endif
-
-#ifdef DIVBERRDENSPDF
             divBerr_dens_pdf();
-#endif
 
     }
 
-#ifdef GROUP
     sprintf( GroupDir, "%sgroup/", OutputDir );
     create_dir( GroupDir );
     group_analysis();
-#endif
 
 
     do_sync( "" );

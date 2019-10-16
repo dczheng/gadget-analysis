@@ -135,8 +135,8 @@ void pdf2d_or_field2d( double *x, double *y, double *w, long num, char *dn,
 
 }
 
-#ifdef BDENSPDF
 void B_dens_pdf() {
+#ifdef BDENSPDF
 
     double *bdp_x, *bdp_y, mm[4];
     long p; 
@@ -182,11 +182,11 @@ void B_dens_pdf() {
     myfree( bdp_x );
     myfree( bdp_y );
     put_end();
-}
 #endif
+}
 
-#ifdef CRENTPDF
 void cren_T_pdf() {
+#ifdef CRENTPDF
 
     double *ntp_x, *ntp_y, mm[4], n;
     long p, N; 
@@ -235,11 +235,11 @@ void cren_T_pdf() {
 
     myfree( ntp_x );
     myfree( ntp_y );
-}
 #endif
+}
 
-#ifdef HSMLTPDF
 void hsml_T_pdf() {
+#ifdef HSMLTPDF
 
     double *htp_x, *htp_y;
     long p; 
@@ -264,11 +264,11 @@ void hsml_T_pdf() {
 
     myfree( htp_x );
     myfree( htp_y );
-}
 #endif
+}
 
-#ifdef UTPDF
 void u_T_pdf() {
+#ifdef UTPDF
 
     double *utp_x, *utp_y;
     long p; 
@@ -289,11 +289,11 @@ void u_T_pdf() {
 
     myfree( utp_x );
     myfree( utp_y );
-}
 #endif
+}
 
-#ifdef HSMLDENSPDF
 void hsml_dens_pdf() {
+#ifdef HSMLDENSPDF
 
     double *hdp_x, *hdp_y;
     long p; 
@@ -318,11 +318,11 @@ void hsml_dens_pdf() {
 
     myfree( hdp_x );
     myfree( hdp_y );
-}
 #endif
+}
 
-#ifdef MACHDENSPDF
 void mach_dens_pdf() {
+#ifdef MACHDENSPDF
 
     double *mdp_x, *mdp_y;
     long p; 
@@ -343,11 +343,11 @@ void mach_dens_pdf() {
 
     myfree( mdp_x );
     myfree( mdp_y );
-}
 #endif
+}
 
-#ifdef DIVBERRDENSPDF
 void divBerr_dens_pdf() {
+#ifdef DIVBERRDENSPDF
 
     double *divbdp_x, *divbdp_y, mm[4], B;
     long p, N; 
@@ -397,5 +397,5 @@ void divBerr_dens_pdf() {
     myfree( divbdp_x );
     myfree( divbdp_y );
     put_end();
-}
 #endif
+}
