@@ -1,12 +1,12 @@
 #include "allvars.h"
 
-#ifdef GROUP
-
 int group_filed_present( enum group_fields blk ) {
 
     switch( blk ) {
         case GROUP_DENS:
+#ifdef GROUPDENSITY
                 return 1;
+#endif
         case GROUP_TEMP:
 #ifdef GROUPTEMP
                 return 1;
@@ -61,8 +61,10 @@ int group_filed_present( enum group_fields blk ) {
 double get_group_filed_data( enum group_fields blk, long p ) {
 
     switch( blk ) {
+#ifdef GROUPDENSITY
         case GROUP_DENS:
             return SphP[p].Density;
+#endif
 #ifdef GROUPTEMP
         case GROUP_TEMP:
             return SphP[p].Temp;
@@ -178,6 +180,7 @@ void get_group_filed_name( enum group_fields blk, char *buf ) {
 
 void group_plot() {
 
+#if defined(GROUPTEMP) || defined(GROUPU) || defined(GROUPSFR) || defined(GROUPB) || defined(GROUPMACH) || defined(GROUPCRE) || defined(GROUPRAD) || defined(GROUPRADINDEX) || defined(GROUPDENSITY)
     long p;
     struct group_properties g;
     double L, dL, *mass, r200, w, fac_arc; 
@@ -431,6 +434,5 @@ void group_plot() {
     reset_img();
     put_end();
 
-}
-
 #endif
+}

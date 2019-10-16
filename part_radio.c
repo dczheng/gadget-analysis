@@ -1,6 +1,105 @@
 #include "allvars.h"
 
 #ifdef RAD
+void save_particle_radio() {
+
+    char fn[ FILENAME_MAX ];
+    int ndims;
+    hsize_t dims[2];
+
+    put_header( "save radio" );
+    hid_t hdf5_file, hdf5_dataset, hdf5_dataspace, hdf5_attribute, hdf5_type;
+
+    sprintf( fn, "%s/rad_%03i.hdf5", All.RadDir, SnapIndex );
+
+    hdf5_file = H5Fcreate( fn, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT );
+
+    hdf5_dataspace = H5Screate( H5S_SCALAR );
+    hdf5_attribute = H5Acreate( hdf5_file, "NuNum", H5T_NATIVE_INT, hdf5_dataspace, H5P_DEFAULT );
+    H5Awrite( hdf5_attribute, H5T_NATIVE_INT, &All.NuNum );
+    H5Aclose( hdf5_attribute );
+    H5Sclose( hdf5_dataspace );
+
+    hdf5_dataspace = H5Screate( H5S_SCALAR );
+    hdf5_attribute = H5Acreate( hdf5_file, "NuMin", H5T_NATIVE_INT, hdf5_dataspace, H5P_DEFAULT );
+    H5Awrite( hdf5_attribute, H5T_NATIVE_DOUBLE, &All.NuMin );
+    H5Aclose( hdf5_attribute );
+    H5Sclose( hdf5_dataspace );
+
+    hdf5_dataspace = H5Screate( H5S_SCALAR );
+    hdf5_attribute = H5Acreate( hdf5_file, "NuMax", H5T_NATIVE_INT, hdf5_dataspace, H5P_DEFAULT );
+    H5Awrite( hdf5_attribute, H5T_NATIVE_DOUBLE, &All.NuMax );
+    H5Aclose( hdf5_attribute );
+    H5Sclose( hdf5_dataspace );
+
+    ndims = 2;
+    dims[0] = N_Gas;
+    dims[1] = All.NuNum;
+
+    hdf5_dataspace = H5Screate_simple( ndims, dims, NULL );
+    hdf5_type = H5Tcopy( H5T_NATIVE_DOUBLE );
+    hdf5_dataset = H5Dcreate( hdf5_file, "Radio", hdf5_type, hdf5_dataspace, H5P_DEFAULT );
+    H5Dwrite( hdf5_dataset, hdf5_type, hdf5_dataspace, H5S_ALL, H5P_DEFAULT, PartRad );
+    H5Dclose( hdf5_dataset );
+    H5Tclose( hdf5_type );
+    H5Sclose( hdf5_dataspace );
+
+    H5Fclose( hdf5_file );
+
+}
+
+int read_particle_radio() {
+
+    double NuMin, NuMax;
+    int nuN;
+    char fn[ FILENAME_MAX ];
+    hid_t hdf5_file, hdf5_dataset, hdf5_attribute, hdf5_type;
+
+    writelog( "read radio ...\n" );
+
+    sprintf( fn, "%s/rad_%03i.hdf5", All.RadDir, SnapIndex );
+
+    hdf5_file = H5Fopen( fn, H5F_ACC_RDWR, H5P_DEFAULT );
+
+    hdf5_attribute = H5Aopen_name( hdf5_file, "NuNum" );
+    H5Aread( hdf5_attribute, H5T_NATIVE_INT, &nuN );
+    H5Aclose( hdf5_attribute );
+
+    if ( nuN != All.NuNum ) {
+        H5Fclose( hdf5_file );
+        return 0;
+    }
+
+    hdf5_attribute = H5Aopen_name( hdf5_file, "NuMin" );
+    H5Aread( hdf5_attribute, H5T_NATIVE_DOUBLE, &NuMin );
+    H5Aclose( hdf5_attribute );
+
+    if ( NuMin != All.NuMin ) {
+        H5Fclose( hdf5_file );
+        return 0;
+    }
+
+    hdf5_attribute = H5Aopen_name( hdf5_file, "NuMax" );
+    H5Aread( hdf5_attribute, H5T_NATIVE_DOUBLE, &NuMax );
+    H5Aclose( hdf5_attribute );
+
+    if ( NuMax != All.NuMax ) {
+        H5Fclose( hdf5_file );
+        return 0;
+    }
+
+    hdf5_type = H5Tcopy( H5T_NATIVE_DOUBLE );
+    hdf5_dataset = H5Dopen( hdf5_file, "Radio" );
+    H5Dread( hdf5_dataset, hdf5_type, H5S_ALL, H5S_ALL, H5P_DEFAULT, PartRad );
+    H5Dclose( hdf5_dataset );
+    H5Tclose( hdf5_type );
+
+    H5Fclose( hdf5_file );
+
+    return 1;
+
+}
+
 double particle_df( double p, void *params ) {
     double *pa;
     pa = params;
@@ -9,7 +108,7 @@ double particle_df( double p, void *params ) {
     return pa[0] * pow( p, -pa[1] );
 }
 
-double particle_radio2( double nu,  SphParticleData *part ) {
+double particle_radio( double nu,  SphParticleData *part ) {
 
     double r, params[4], B;
 
@@ -42,10 +141,14 @@ double particle_radio2( double nu,  SphParticleData *part ) {
 void compute_particle_radio() {
 
 #if defined(RAD) && !defined(RADLARMOR)
-    double numin, numax, dlognu, nu, r_larmor;
+    double numin, numax, dlognu, nu, r_larmor, r;
     int nuN, j, num, flag, *flags, sig;
     long i, dsig, idx, flags_sum, N, Ndo;
     char fn[ FILENAME_MAX ];
+
+#ifdef PART_RADIO_TEST2
+    double err=0, err_max=0, err_mean=0;
+#endif
 
     writelog( "Start compute particle radio ... \n" )
 
@@ -117,7 +220,7 @@ void compute_particle_radio() {
                     ( 4.0 * PI * SQR( LumDis*g2c.cm ) ) * 1e26; // to mJy
 
         if ( r_larmor < 1e-10 ) {
-            //flags[i] = 1;    // ignore particle with very weak radio emission.
+            flags[i] = 1;    // ignore particle with very weak radio emission.
         }
     }
 
@@ -126,7 +229,7 @@ void compute_particle_radio() {
     }
 
     Ndo = N_Gas-flags_sum;
-    writelog( "second [%li][%.2f%%]\n", Ndo, ((double)Ndo)/N_Gasi * 100/ );
+    writelog( "second [%li][%.2f%%]\n", Ndo, ((double)Ndo)/N_Gas * 100 );
     dsig = Ndo / sig;
     N = 0;
     for( i=0; i<N_Gas; i++ ) {
@@ -146,9 +249,7 @@ void compute_particle_radio() {
             if ( idx % NTask_Local != ThisTask_Local )
                 continue;
 #endif
-
             nu = exp( log(numin) + j * dlognu );
-
 #ifdef PART_RADIO_TEST2
                 printf(
                         "--\n[%s], (%li, %i) M: %g, rho: %g, h: %g, B: %g, nu: %g,"
@@ -162,7 +263,23 @@ void compute_particle_radio() {
                     SphP[i].CRE_qmax
                     );
 #endif
-            PartRad[idx] = particle_radio2( nu/Time, &SphP[i] );
+            r = particle_radio( nu/Time, &SphP[i] );
+#ifdef PART_RADIO_TEST2
+            r_larmor = particle_radio_larmor( nu/Time, &SphP[i] );
+            if ( r_larmor ) {
+                err = (r_larmor-r)/r * 100;
+                printf( "r: %g, r_larmor: %g\n, err: %.2f%%\n",\
+                    r, r_larmor, err );
+            }
+            else {
+                err = 0;
+            }
+
+            if ( err>err_max )
+                err_max = err;
+            err_mean += err;
+#endif
+            PartRad[idx] = r;
         }
 
         if ( N % dsig == 0 )
@@ -170,6 +287,13 @@ void compute_particle_radio() {
                 N, Ndo, ((double)(N)) / Ndo * 100 );
         N++;
     }
+#ifdef PART_RADIO_TEST2
+    if ( !ThisTask_Local ) {
+        err_mean /= Ndo;
+        printf( "err_max: %.2f%%, err_mean: %.2f%%\n",
+                    err_max, err_mean );
+    }
+#endif
 
     for( i=0; i<N_Gas; i++ ) {
         if ( !flags[i] )
@@ -211,7 +335,7 @@ double particle_radio_larmor( double nu, SphParticleData *part ) {
 
     B = get_B( idx );
     if (B*1e6>10)
-        return 0;
+        B = 10/1e6;
     vL = B / ( 2*PI ) * cuc.e_mec;
 
     C = SphP[idx].CRE_C * SphP[idx].Density / (guc.m_e * CUBE(g2c.cm) * Time3);
@@ -323,7 +447,7 @@ void test_part_radio() {
 
         nu = 3.40409e+08;
 
-        r = particle_radio2( nu,  &SphP[0]  );
+        r = particle_radio( nu,  &SphP[0]  );
         r_larmor = particle_radio_larmor( nu,  &SphP[0]  );
     
         printf( "r: %g, r_larmor: %g, err: %g%%\n", r, r_larmor, (r-r_larmor)/r*100 );
@@ -343,3 +467,5 @@ void test_part_radio() {
 #endif
 
 }
+
+

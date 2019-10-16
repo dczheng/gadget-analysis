@@ -169,6 +169,79 @@ struct radio_inte_struct{
     double nu;
 };
 
+#if defined(GROUPRAD) || defined(RADSLICE) || defined(TOTSPEC) || defined(GROUPSPEC) || defined(GROUPLUM) || defined(OUTPUTGROUPLUM) 
+#ifndef RADLARMOR
+#define RAD
+#endif
+#endif
+
+#if defined(GROUPTEMP) || defined(TEMPSLICE) || defined(PDFTDIFFDENS) || defined(PHASE) || defined(CRENTPDF) || defined(TPDF) || defined(GASRATIO) || defined(HSMLTPDf) || defined(UTPDF) || defined(BPDF) 
+#ifndef COMPUTETEMP
+#define COMPUTETEMP
+#endif
+#endif
+
+#if defined(GROUPTEMP) || defined(GROUPU) || defined(GROUPSFR) || defined(GROUPB) || defined(GROUPMACH) || defined(GROUPCRE) || defined(GROUPRAD) || defined(GROUPSPEC) || defined(GROUPELECSPEC) || defined(GROUPTEMPPROFILE) || defined(GROUPTEMPSTACK) || defined(GROUPLUM) || defined(OUTPUTGROUP)
+#ifndef FOF 
+#define FOF 
+#endif
+#endif
+
+#if defined(FOF) || defined(BSMOOTH) || defined(CRESMOOTH)
+#ifndef TREE
+#define TREE
+#endif
+#endif
+
+
+#if defined(GROUPCRE) || defined(GROUPELECSPEC) || defined(CREPPDF) || defined(CRENSLICE) || defined(CREESLICE) || defined(CRENTPDF) || defined(RAD) || defined(RADLARMOR)
+#ifndef READCRE
+#define READCRE
+#endif
+#endif
+
+#if defined(HSMLTPDF) || defined(HSMLDENSPDF) || defined(RADSLICE) || defined(DIVBERRDENSPDF) || defined(TOTSPEC) || defined(RAD) || defined(DIVBERRPDF) || defined(BSMOOTH) || defined(RADLARMOR)
+#ifndef READHSML
+#define READHSML
+#endif
+#endif
+
+#if defined(RAD) || defined(GROUPB) || defined(BPDF) || defined(BDENSPDF) || defined(DIVBERRPDF) || defined(BSMOOTH) || defined(RADLARMOR)
+#ifndef READB
+#define READB
+#endif
+#endif
+
+#if defined(GROUPSFR) || defined(BPDF) || defined(PHASE) 
+#ifndef READSFR
+#define READSFR
+#endif
+#endif
+
+#if defined(FOF) || defined(GROUPVELDISP) || defined(GROUPKIN) 
+#ifndef READVEL
+#define READVEL
+#endif
+#endif
+
+#if defined(GROUPU) || defined(UTPFD) || defined(GROUPCRE) || defined(CREESLICE) || defined(OUTPUTGROUPLUM) || (defined(COMPUTETEMP)&&!defined(READTEMP))
+#ifndef READU
+#define READU
+#endif
+#endif
+
+#if defined(DIVBERRPDF) || defined(DIVBERRPDf) || defined(DIVBERRDENSPDF) 
+#ifndef READDIVB
+#define READDIVB
+#endif
+#endif
+
+#if defined(GROUPMACH) || defined(MACHNOISE) || defined(MACHSLICE) 
+#ifndef READMACH
+#define READMACH
+#endif
+#endif
+
 
 typedef struct ParticleData {
 
@@ -212,13 +285,22 @@ typedef struct SphParticleData {
     double CRE_e;
     double CRE_P;
 #endif
+#ifdef CRESMOOTH
+    double SmoothCRE_C;
+    double SmoothCRE_Alpha;
+    double SmoothCRE_qmin;
+    double SmoothCRE_qmax;
+    double SmoothCRE_n;
+    double SmoothCRE_e;
+    double SmoothCRE_P;
+#endif
+
 #ifdef READB
     double B[3];
 #endif
-#ifdef SMOOTH
+
 #ifdef BSMOOTH
     double SmoothB[3];
-#endif
 #endif
 #ifdef READDIVB
     double divB;
@@ -473,7 +555,5 @@ extern gsl_integration_workspace *inte_ws2;
 #define proj_i Proj[0]
 #define proj_j Proj[1]
 #define proj_k Proj[2]
-
 #include "protos.h"
 #include "signal_hander.h"
-

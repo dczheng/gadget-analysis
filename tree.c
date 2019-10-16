@@ -1,6 +1,12 @@
 #include "allvars.h"
 
-#if defined(TREE) || defined(FOF) || defined(SMOOTH)
+#if defined(FOF) || defined(BSMOOTH)
+#ifndef TREE
+#define TREE
+#endif
+#endif
+
+#ifdef TREE
 long last, parent, father, npart;
 
 void tree_allocate() {

@@ -1,6 +1,6 @@
 #include "allvars.h"
 #include "drfftw.h"
-#ifdef GROUP
+
 int group_present( long index ) {
 
     if ( Gprops[index].mass >= All.GroupMassMin) 
@@ -316,9 +316,11 @@ double group_ek( long index ) {
 
 }
 #endif
+#endif
 
 void output_group() {
 
+#ifdef OUTPUTGROUP
     int index, i;
     long p;
     double ep, ek, m_diffuse, m_warmhot, m_hot, m_condensed, m, d, t, dens, ee,
@@ -443,9 +445,8 @@ void output_group() {
     endruns( "output_group-debug" );
 #endif
 
+#endif
 }
-#endif
-#endif
 
 void test_group_pot() {
 #ifdef GROUP_POT_TEST
@@ -484,29 +485,18 @@ void test_group_pot() {
 
 void group_analysis() {
 
-#ifdef GROUP
-
     int proj_tmp[3], i;
     char Sproj_tmp;
 
     put_header( "group analysis" );
 
-#ifdef OUTPUTGROUP
     output_group();
-#endif
 
     if ( ThisTask_Local != 0 )
         return;
 
-#ifdef GROUPSPEC
-        group_spectrum();
-        //group_spectrum_index();
-#endif
-
-#ifdef GROUPELECSPEC
-        group_electron_spectrum();
-        put_sep0;
-#endif
+    group_spectrum();
+    group_electron_spectrum();
 
     for( i=0; i<3; i++ )
         proj_tmp[i] = Proj[i];
@@ -532,6 +522,5 @@ void group_analysis() {
     put_sep0;
     put_end();
 
-#endif
 }
 

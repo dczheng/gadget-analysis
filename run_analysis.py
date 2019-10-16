@@ -182,51 +182,6 @@ def make_protos():
         ff.write( '\n\n' )
     ff.close()
 
-def deps1( fdh, fdc, As, B ):
-    fdh.write( "#if defined(%s) "%As[0] )
-    fdc.write( "#if defined(%s) "%As[0] )
-    for a in As[1:]:
-        fdh.write( "|| defined(%s) "%a )
-        fdc.write( "|| defined(%s) "%a )
-    fdh.write( "\n#ifndef %s\n"%B )
-    fdh.write( "#define %s\n"%B )
-    fdh.write( "#endif\n" )
-    fdh.write( "#endif\n\n" )
-
-    fdc.write( "\n\twritelog(\"%s\\n\");\n"%B )
-    fdc.write( "#endif\n\n" )
-
-
-def deps2( fdh, fdc, A, Bs ):
-    fdh.write( "#ifdef %s\n"%A )
-    fdc.write( "#ifdef %s\n"%A )
-    for b in Bs:
-        fdh.write( "#ifndef %s\n"%b )
-        fdh.write( "#define %s\n"%b )
-        fdh.write( "#endif\n" )
-        fdc.write( "\twritelog(\"%s\\n\");\n"%b )
-    fdh.write( "#endif\n\n" )
-    fdc.write( "#endif\n\n" )
-
-def exc1( fdh, As, B ):
-    fdh.write( "#if defined(%s) "%As[0] )
-    for a in As[1:]:
-        fdh.write( "|| defined(%s) "%a )
-        fdc.write( "|| defined(%s) "%a )
-    fdh.write( "\n#ifdef %s\n"%B )
-    fdh.write( "#undef %s\n"%B )
-    fdh.write( "#endif\n" )
-    fdh.write( "#endif\n\n" )
-
-def exc2( fdh, A, Bs ):
-    fdh.write( "#ifdef %s\n"%A )
-    for b in Bs:
-        fdh.write( "#ifdef %s\n"%b )
-        fdh.write( "#undef %s\n"%b )
-        fdh.write( "#endif\n" )
-    fdh.write( "#endif\n\n" )
-
-
 def gen_config( param_file, run_dir, new_param_file ):
 
     lines = open( param_file ).readlines()
@@ -254,39 +209,6 @@ def gen_config( param_file, run_dir, new_param_file ):
         fd_in.write( l )
     fd_in.close()
 
-    fd_h.write( "\n\n"  )
-    deps1( fd_h,fd_c, ( "GROUPTEMP", "GROUPU", "GROUPSFR", "GROUPB", "GROUPMACH",\
-                "GROUPCRE", "GROUPRAD", "GROUPSPEC", "GROUPELECSPEC",\
-                "GROUPTEMPPROFILE", "GROUPTEMPSTACK", "GROUPLUM"
-                 ), "GROUP" )
-    deps1( fd_h, fd_c, ("GROUPSFR","BPDF", "PHASE"), "READSFR" )
-    deps1( fd_h, fd_c, ("GROUPU","UTPFD", "GROUPCRE", "CREESLICE", "OUTPUTGROUPLUM"), "READU" )
-    deps1( fd_h, fd_c, ("GROUPB", "BPDF", "BDENSPDF", "DIVBERRPDF"), "READB" )
-    deps1( fd_h, fd_c, ("DIVBERRPDF", "DIVBERRPDf", "DIVBERRDENSPDF"), "READDIVB" )
-    deps1( fd_h, fd_c, ("GROUPMACH","MACHNOISE", "MACHSLICE"), "READMACH" )
-    deps1( fd_h, fd_c, ("GROUPCRE","GROUPELECSPEC", "CREPPDF", "CRENSLICE", "CREESLICE",\
-                 "CRENTPDF" ), "READCRE" )
-    deps1( fd_h, fd_c, ("GROUPTEMP","TEMPSLICE", "PDFTDIFFDENS", "PHASE","CRENTPDF",\
-                    "TPDF", "GASRATIO", "HSMLTPDf", "UTPDF", "BPDF" ), "COMPUTETEMP" )
-    deps1( fd_h, fd_c, ("GROUPRAD","RADSLICE", "TOTSPEC", "GROUPSPEC", "GROUPLUM",\
-                        "OUTPUTGROUPLUM" ), "RAD" )
-    deps1( fd_h, fd_c, ("HSMLTPDF","HSMLDENSPDF", "RADSLICE", "SMOOTH", "DIVBERRPDF", "DIVBERRDENSPDF", "TOTSPEC"), "READHSML" )
-    deps1( fd_h, fd_c, ("MF",), "FOF" )
-    deps1( fd_h, fd_c, ("BSMOOTH",), "SMOOTH" )
-
-    deps2( fd_h, fd_c, "OUTPUTGROUP",  ("GROUP", "GROUPPOT") )
-    deps2( fd_h, fd_c, "RAD", ("READB", "READCRE", "READHSML") )
-    deps2( fd_h, fd_c, "GROUP", ("FOF", "TREE") )
-    deps2( fd_h, fd_c, "FOF", ("TREE",) )
-    deps2( fd_h, fd_c, "SMOOTH", ("TREE",) )
-
-    deps1( fd_h, fd_c, ("FOF", "GROUPVELDISP", "GROUPKIN"), "READVEL" )
-
-    fd_h.write( "#ifdef COMPUTETEMP\n" )
-    fd_h.write( "#ifndef READTEMP\n" )
-    fd_h.write( "#define READU\n" )
-    fd_h.write( "#endif\n" )
-    fd_h.write( "#endif\n" )
     fd_c.write( "}\n" )
     
     fd_h.close()

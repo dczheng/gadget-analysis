@@ -1,5 +1,4 @@
 #include "allvars.h"
-#ifdef GROUP
 
 #if defined(GROUPSPEC) || defined(OUTPUTGROUPLUM)
 double group_luminosity( double nu, long index, int mode) {
@@ -49,7 +48,6 @@ double group_luminosity( double nu, long index, int mode) {
 #endif
 
 #if defined(GROUPSPEC)
-
 void group_flux( int nu_index, long index, double *flux, double *flux_nosr ) {
 
     double L;
@@ -65,9 +63,11 @@ void group_flux( int nu_index, long index, double *flux, double *flux_nosr ) {
     *flux = *flux_nosr / ( SQR( size * 2  / ComDis ) );
 
 }
+#endif
 
 void group_spectrum() {
 
+#ifdef GROUPSPEC
     int vN, i, index;
     double v, *flux, *flux_nosr, vmin, vmax, dv;
     /*
@@ -161,8 +161,8 @@ void group_spectrum() {
     */
     put_end();
 
-}
 #endif
+}
 
 #ifdef GROUPELECSPEC
 double particle_f( SphParticleData *part, double p ) {
@@ -178,9 +178,11 @@ double particle_f( SphParticleData *part, double p ) {
     return r;
 
 }
+#endif
 
 void group_electron_spectrum() {
 
+#ifdef GROUPELECSPEC
     long p;
     int i, qn, index;
     double dlogq, qmin, qmax, *f, q, rho, qmax_max, qmin_min;
@@ -280,8 +282,8 @@ void group_electron_spectrum() {
 
     fclose( fd );
 
-}
 #endif
+}
 
 /*
 void group_spectrum_index() {
@@ -403,4 +405,3 @@ void group_spectrum_index() {
 
 }
 */
-#endif
