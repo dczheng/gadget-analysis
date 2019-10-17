@@ -20,3 +20,4 @@ gadget-analysis-config.h
 compile-time-info.c
 *.in
 *log
+*.bak

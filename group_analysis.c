@@ -404,7 +404,7 @@ void output_group() {
 #endif
 
 #ifdef OUTPUTGROUPLUM
-        lum = group_luminosity( All.OutputGroupFreq, index, 1 );
+        lum = group_luminosity( All.OutputGroupFreq*1e6/Time , index );
         ee /= dens;
         B /= g->npart[0];
 #endif

@@ -41,7 +41,7 @@ void free_analysis() {
 
     tree_free();
     fof_free();
-    free_particle_radio();
+    //free_particle_radio();
 }
 
 void analysis(){

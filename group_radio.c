@@ -1,7 +1,7 @@
 #include "allvars.h"
 
 #if defined(GROUPSPEC) || defined(OUTPUTGROUPLUM)
-double group_luminosity( double nu, long index, int mode) {
+double group_luminosity( double nu, long index) {
 
     long p;
     double F;
@@ -13,26 +13,15 @@ double group_luminosity( double nu, long index, int mode) {
     g = &Gprops[index];
     p = g->Head;
     F = 0;
-
     while( p >= 0 ) {
 
         if ( P[p].Type == 0 ) {
 
 #ifdef GROUPLUMDENSITYWEIGHTED
-            if ( mode == 0 ) {
-                F += get_particle_radio_index( p , (int)nu ) * SphP[p].Density;
-            }
-            else {
-                F += get_particle_radio_freq( p , nu ) * SphP[p].Density;
-            }
+            F += get_particle_radio( p , nu ) * SphP[p].Density;
             d += SphP[p].Density;
 #else
-            if ( mode == 0 ) {
-                F += get_particle_radio_index( p, (int)nu);
-            }
-            else {
-                F += get_particle_radio_freq( p, nu);
-            }
+            F += get_particle_radio( p, nu);
 #endif
         }
         p = FoFNext[p];
@@ -48,7 +37,7 @@ double group_luminosity( double nu, long index, int mode) {
 #endif
 
 #if defined(GROUPSPEC)
-void group_flux( int nu_index, long index, double *flux, double *flux_nosr ) {
+void group_flux( double nu, long index, double *flux, double *flux_nosr ) {
 
     double L;
     struct group_properties *g;
@@ -56,7 +45,7 @@ void group_flux( int nu_index, long index, double *flux, double *flux_nosr ) {
 
     g = &Gprops[index];
 
-    L = group_luminosity( (double)nu_index, index, 0 );
+    L = group_luminosity( nu, index );
     size = get_group_size( g );
     //*flux_nosr =  *flux = L;
     *flux_nosr = L / ( 4.0 * PI * SQR( LumDis * g2c.cm ) );
@@ -79,8 +68,8 @@ void group_spectrum() {
     put_header( "group spectrum" );
 
     vN = All.NuNum;
-    vmin = All.NuMin;
-    vmax = All.NuMax;
+    vmin = All.NuMin * 1e6 /Time;
+    vmax = All.NuMax * 1e6 /Time;
 
     dv = log( vmax/vmin ) / ( vN-1 );
 
@@ -106,35 +95,14 @@ void group_spectrum() {
     fprintf( fd1, "\n" );
     fprintf( fd2, "\n" );
 
-/*
-    mymalloc1( lumgrid, sizeof(double) * CUBE(All.GroupLumGrid) );
-    mymalloc1( num, sizeof(double) * CUBE(All.GroupLumGrid) );
-    */
-
     for ( index=0; index<Ngroups; index++ ) {
 
         if ( !group_present( index ) )
             break;
 
-
-/*
-        L = get_group_size( &Gprops[index] );
-        memset( flux_nosr, 0, sizeof(double) *vN );
-*/
-
         for ( i=0; i<vN; i++ ) {
-
-/*
-            group_luminosity( i, index, lumgrid, num );
-
-            for(j=0; j<CUBE(All.GroupLumGrid); j++) {
-                flux_nosr[i] += lumgrid[j];
-            }
-
-            flux_nosr[i] /= ( 4.0 * PI * SQR( LumDis * g2c.cm ) );
-            flux[i] = flux_nosr[i] / ( SQR( L * 2  / ComDis ) );
-*/
-            group_flux( i, index, flux+i, flux_nosr+i );
+            v = exp(log(vmin) + i * dv);
+            group_flux( v, index, flux+i, flux_nosr+i );
         }
 
         fprintf( fd1, "%i  %g  ", index, Gprops[index].mass );
@@ -155,10 +123,6 @@ void group_spectrum() {
 
     myfree( flux );
     myfree( flux_nosr );
-    /*
-    myfree( lumgrid );
-    myfree( num );
-    */
     put_end();
 
 #endif

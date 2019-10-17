@@ -64,6 +64,7 @@ void smooth() {
             r = sqrt( r2 );
 
             h_j = SphP[j].Hsml; 
+            //h_j = h_i;
             h2_j = h_j * h_j;
 
             if ( r2<h2_j ) {
@@ -114,33 +115,39 @@ void smooth() {
         if ( i % NTask_Local != ThisTask_Local )
             continue;
 #ifdef BSMOOTH
-            /*
-        if ( i < 100 ) {
-            printf( "B: " );
-            for( k=0; k<3; k++ )
-                printf( "%g ", SphP[i].B[k] * 1e6 );
-            printf( "SmoothB: " );
-            for( k=0; k<3; k++ )
-                printf( "%g ", SphP[i].SmoothB[k] * 1e6 );
-            printf( "\n" );
-        }
-            */
         for( k=0; k<3; k++ )
             SphP[i].B[k] = SphP[i].SmoothB[k];
 #endif
 
 #ifdef CRESMOOTH
-        SphP[i].CRE_C      =  SphP[j].SmoothCRE_C;
-        SphP[i].CRE_Alpha  =  SphP[j].SmoothCRE_Alpha;
-        SphP[i].CRE_qmin   =  SphP[j].SmoothCRE_qmin;
-        SphP[i].CRE_qmax   =  SphP[j].SmoothCRE_qmax;
-        SphP[i].CRE_n      =  SphP[j].SmoothCRE_n;
-        SphP[i].CRE_e      =  SphP[j].SmoothCRE_e;
+/*
+if (!ThisTask_Local) 
+    printf(
+       "%li c:%g[%g], "
+       "a:%g[%g], "
+       "qmin:%g[%g], "
+       "qmax:%g[%g], "
+       "n:%g[%g], "
+       "e:%g[%g]\n ", 
+        i,
+        SphP[i].CRE_C      ,  SphP[i].SmoothCRE_C,
+        SphP[i].CRE_Alpha  ,  SphP[i].SmoothCRE_Alpha,
+        SphP[i].CRE_qmin   ,  SphP[i].SmoothCRE_qmin,
+        SphP[i].CRE_qmax   ,  SphP[i].SmoothCRE_qmax,
+        SphP[i].CRE_n      ,  SphP[i].SmoothCRE_n,
+        SphP[i].CRE_e      ,  SphP[i].SmoothCRE_e
+        );
+*/
+        SphP[i].CRE_C      =  SphP[i].SmoothCRE_C;
+        SphP[i].CRE_Alpha  =  SphP[i].SmoothCRE_Alpha;
+        SphP[i].CRE_qmin   =  SphP[i].SmoothCRE_qmin;
+        SphP[i].CRE_qmax   =  SphP[i].SmoothCRE_qmax;
+        SphP[i].CRE_n      =  SphP[i].SmoothCRE_n;
+        SphP[i].CRE_e      =  SphP[i].SmoothCRE_e;
 #endif
     }
 
     myfree( Ngblist );
-
     mytimer_end();
 
 #ifdef SMOOTH_DEBUG

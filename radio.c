@@ -1,6 +1,5 @@
 #include "allvars.h"
 
-#ifdef RAD
 #define TAB_F_N 1000000
 #define GSL_BESSEL_UPPER_LIMIT   ((double)600)
 #define GSL_BESSEL_BREAKPOINT    ((double)100)
@@ -351,5 +350,4 @@ double radio( double (*f)( double, void* ), double *params,
     return r;
 
 }
-#endif
 

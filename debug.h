@@ -15,7 +15,7 @@
 //#define MATH_TEST
 //#define QTRAP_DEBUB
 //#define PART_RADIO_TEST
-#define PART_RADIO_TEST2
+//#define PART_RADIO_TEST2
 //#define PART_RADIO_TEST3
 
 #ifdef PART_RADIO_TEST

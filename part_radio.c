@@ -1,105 +1,5 @@
 #include "allvars.h"
 
-#ifdef RAD
-void save_particle_radio() {
-
-    char fn[ FILENAME_MAX ];
-    int ndims;
-    hsize_t dims[2];
-
-    put_header( "save radio" );
-    hid_t hdf5_file, hdf5_dataset, hdf5_dataspace, hdf5_attribute, hdf5_type;
-
-    sprintf( fn, "%s/rad_%03i.hdf5", All.RadDir, SnapIndex );
-
-    hdf5_file = H5Fcreate( fn, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT );
-
-    hdf5_dataspace = H5Screate( H5S_SCALAR );
-    hdf5_attribute = H5Acreate( hdf5_file, "NuNum", H5T_NATIVE_INT, hdf5_dataspace, H5P_DEFAULT );
-    H5Awrite( hdf5_attribute, H5T_NATIVE_INT, &All.NuNum );
-    H5Aclose( hdf5_attribute );
-    H5Sclose( hdf5_dataspace );
-
-    hdf5_dataspace = H5Screate( H5S_SCALAR );
-    hdf5_attribute = H5Acreate( hdf5_file, "NuMin", H5T_NATIVE_INT, hdf5_dataspace, H5P_DEFAULT );
-    H5Awrite( hdf5_attribute, H5T_NATIVE_DOUBLE, &All.NuMin );
-    H5Aclose( hdf5_attribute );
-    H5Sclose( hdf5_dataspace );
-
-    hdf5_dataspace = H5Screate( H5S_SCALAR );
-    hdf5_attribute = H5Acreate( hdf5_file, "NuMax", H5T_NATIVE_INT, hdf5_dataspace, H5P_DEFAULT );
-    H5Awrite( hdf5_attribute, H5T_NATIVE_DOUBLE, &All.NuMax );
-    H5Aclose( hdf5_attribute );
-    H5Sclose( hdf5_dataspace );
-
-    ndims = 2;
-    dims[0] = N_Gas;
-    dims[1] = All.NuNum;
-
-    hdf5_dataspace = H5Screate_simple( ndims, dims, NULL );
-    hdf5_type = H5Tcopy( H5T_NATIVE_DOUBLE );
-    hdf5_dataset = H5Dcreate( hdf5_file, "Radio", hdf5_type, hdf5_dataspace, H5P_DEFAULT );
-    H5Dwrite( hdf5_dataset, hdf5_type, hdf5_dataspace, H5S_ALL, H5P_DEFAULT, PartRad );
-    H5Dclose( hdf5_dataset );
-    H5Tclose( hdf5_type );
-    H5Sclose( hdf5_dataspace );
-
-    H5Fclose( hdf5_file );
-
-}
-
-int read_particle_radio() {
-
-    double NuMin, NuMax;
-    int nuN;
-    char fn[ FILENAME_MAX ];
-    hid_t hdf5_file, hdf5_dataset, hdf5_attribute, hdf5_type;
-
-    writelog( "read radio ...\n" );
-
-    sprintf( fn, "%s/rad_%03i.hdf5", All.RadDir, SnapIndex );
-
-    hdf5_file = H5Fopen( fn, H5F_ACC_RDWR, H5P_DEFAULT );
-
-    hdf5_attribute = H5Aopen_name( hdf5_file, "NuNum" );
-    H5Aread( hdf5_attribute, H5T_NATIVE_INT, &nuN );
-    H5Aclose( hdf5_attribute );
-
-    if ( nuN != All.NuNum ) {
-        H5Fclose( hdf5_file );
-        return 0;
-    }
-
-    hdf5_attribute = H5Aopen_name( hdf5_file, "NuMin" );
-    H5Aread( hdf5_attribute, H5T_NATIVE_DOUBLE, &NuMin );
-    H5Aclose( hdf5_attribute );
-
-    if ( NuMin != All.NuMin ) {
-        H5Fclose( hdf5_file );
-        return 0;
-    }
-
-    hdf5_attribute = H5Aopen_name( hdf5_file, "NuMax" );
-    H5Aread( hdf5_attribute, H5T_NATIVE_DOUBLE, &NuMax );
-    H5Aclose( hdf5_attribute );
-
-    if ( NuMax != All.NuMax ) {
-        H5Fclose( hdf5_file );
-        return 0;
-    }
-
-    hdf5_type = H5Tcopy( H5T_NATIVE_DOUBLE );
-    hdf5_dataset = H5Dopen( hdf5_file, "Radio" );
-    H5Dread( hdf5_dataset, hdf5_type, H5S_ALL, H5S_ALL, H5P_DEFAULT, PartRad );
-    H5Dclose( hdf5_dataset );
-    H5Tclose( hdf5_type );
-
-    H5Fclose( hdf5_file );
-
-    return 1;
-
-}
-
 double particle_df( double p, void *params ) {
     double *pa;
     pa = params;
@@ -131,20 +31,17 @@ double particle_radio( double nu,  SphParticleData *part ) {
         return 0;
 
     B =  get_B( (part-SphP) );
-
     r = radio( &particle_df, params, B, nu, params[2], params[3], 1e-2 );
     return r;
 
 }
-#endif
 
 void compute_particle_radio() {
 
 #if defined(RAD) && !defined(RADLARMOR)
     double numin, numax, dlognu, nu, r_larmor, r;
-    int nuN, j, num, flag, *flags, sig;
+    int nuN, j, *flags, sig;
     long i, dsig, idx, flags_sum, N, Ndo;
-    char fn[ FILENAME_MAX ];
 
 #ifdef PART_RADIO_TEST2
     double err=0, err_max=0, err_mean=0;
@@ -156,51 +53,17 @@ void compute_particle_radio() {
 
     mymalloc1_shared( PartRad, sizeof(double)*N_Gas*All.NuNum, sizeof(double), MpiWin_PartRad );
 
-    if ( ThisTask_Local == 0 ) {
-        //printf( "Task: %i enter %s\n", ThisTask, __FUNCTION__ );
-
-        sprintf( fn, "%s/rad_%03i.hdf5", All.RadDir, SnapIndex );
-        flag = 1;
-
-        if ( access( fn, 0 ) != -1 ) {
-            if ( read_particle_radio() )
-                flag = 0;
-        }
-
-        MPI_Reduce( &flag, &num, 1, MPI_INT, MPI_SUM, 0, MpiComm_Master );
-        MPI_Bcast(  &num, 1, MPI_INT, 0, MpiComm_Master );
-
-        if ( num == NTask_Master )
-            create_dir( All.RadDir );
-
-        writelog( "%i Task Need to compute radio.\n", num );
-
-    }
-
-    MPI_Bcast(  &num, 1, MPI_INT, 0, MpiComm_Local );
-    MPI_Bcast(  &flag, 1, MPI_INT, 0, MpiComm_Local );
-
-    if ( num == 0 )
-        return;
-
 #ifdef TABF
-        writelog( "use tab F\n" );
-        init_tab_F();
+    writelog( "use tab F\n" );
+    init_tab_F();
 #else
-        writelog( "don't use tab F\n" );
+    writelog( "don't use tab F\n" );
 #endif
-
-    if ( flag == 0 ) {
-#ifdef TABF
-        free_tab_F();
-#endif
-        return;
-    }
 
     mymalloc2( flags, sizeof(int) * N_Gas );
     nuN = All.NuNum;
-    numin = All.NuMin * 1e6;
-    numax = All.NuMax * 1e6;
+    numin = All.NuMin * 1e6 / Time;
+    numax = All.NuMax * 1e6 / Time;
     sig = 10;
     dlognu = log( numax/numin ) / ( nuN - 1 );
 
@@ -214,13 +77,15 @@ void compute_particle_radio() {
             writelog( "[%10li] [%10li] [%5.1f%%]\n",\
             i, N_Gas, ((double)(i)) / N_Gas * 100 );
 
-        nu = numin;
-        r_larmor = particle_radio_larmor( nu/Time, &SphP[i] ) *
-                    get_V(i) / 
-                    ( 4.0 * PI * SQR( LumDis*g2c.cm ) ) * 1e26; // to mJy
-
-        if ( r_larmor < 1e-10 ) {
-            flags[i] = 1;    // ignore particle with very weak radio emission.
+        flags[i] =1;
+        for( j=0; j<nuN; j++ ) {
+            idx = i * nuN + j;
+            nu = exp( log(numin) + j * dlognu );
+            r_larmor = particle_radio_larmor( nu, &SphP[i] );
+            if (r_larmor>0) {
+                flags[i] =0;
+                break;
+            }
         }
     }
 
@@ -265,10 +130,10 @@ void compute_particle_radio() {
 #endif
             r = particle_radio( nu/Time, &SphP[i] );
 #ifdef PART_RADIO_TEST2
-            r_larmor = particle_radio_larmor( nu/Time, &SphP[i] );
+            r_larmor = particle_radio_larmor( nu, &SphP[i] );
             if ( r_larmor ) {
                 err = (r_larmor-r)/r * 100;
-                printf( "r: %g, r_larmor: %g\n, err: %.2f%%\n",\
+                printf( "r: %g, r_larmor: %g, err: %.2f%%\n",\
                     r, r_larmor, err );
             }
             else {
@@ -307,22 +172,9 @@ void compute_particle_radio() {
     myfree( flags );
 
 #ifdef TABF
-        free_tab_F();
+    free_tab_F();
 #endif
-
-#ifdef PART_RADIO_TEST2
-        do_sync_local( "" );
-#endif
-
-    if ( ThisTask_Local == 0 )
-        save_particle_radio();
-
-#endif
-}
-
-void free_particle_radio() {
-#if defined(RAD) && !defined(RADLARMOR)
-    myfree_shared( MpiWin_PartRad );
+    do_sync_local( "" );
 #endif
 }
 
@@ -334,8 +186,9 @@ double particle_radio_larmor( double nu, SphParticleData *part ) {
     idx = part - SphP;
 
     B = get_B( idx );
-    if (B*1e6>10)
-        B = 10/1e6;
+
+    if(B==0)  return 0;
+
     vL = B / ( 2*PI ) * cuc.e_mec;
 
     C = SphP[idx].CRE_C * SphP[idx].Density / (guc.m_e * CUBE(g2c.cm) * Time3);
@@ -355,47 +208,31 @@ double particle_radio_larmor( double nu, SphParticleData *part ) {
 #endif
 
 
-double get_particle_radio_freq( long p, double nu ) {
+double get_particle_radio( long p, double nu ) {
 
+    double V, r;
+    V = get_V(p);
 #if defined(RAD) && !defined(RADLARMOR)
     double nu_x, dlognu;
     int nu_i;
-    dlognu = log( All.NuMax/ All.NuMin  ) / ( All.NuNum  );
+    dlognu = log( All.NuMax/ All.NuMin  ) / ( All.NuNum -1 );
     nu_x = log( nu / All.NuMin ) / dlognu;
     nu_i = nu_x;
     nu_x -= nu_i;
     if ( nu_i >= All.NuNum-1  )
-        return get_particle_radio_index( p, All.NuNum-1 );
+        r =  PartRad[p*All.NuNum+nu_i+All.NuNum-1] ;
     if ( nu_i < 0 )
-        return get_particle_radio_index(p, 0);
+        r =  PartRad[p*All.NuNum+nu_i] ;
 
-    return get_particle_radio_index(p, nu_i) * ( 1-nu_x  ) + 
-            get_particle_radio_index(p, nu_i+1) * nu_x;
+    r =  PartRad[p*All.NuNum+nu_i] * ( 1-nu_x  ) + 
+            PartRad[p*All.NuNum+nu_i+1] * nu_x;
 #endif
 
 #ifdef RADLARMOR
-           double V;
-           V = get_V(p);
-    return particle_radio_larmor( nu, &SphP[p] ) * V;
+    r =  particle_radio_larmor( nu, &SphP[p] );
 #endif
-    return 0;
-}
 
-double get_particle_radio_index( long p, int i ) {
-
-#if defined(RAD) && !defined(RADLARMOR)
-    double V;
-    V = get_V( i );
-    return PartRad[ p*All.NuNum + i ] * V;
-#endif
-#ifdef RADLARMOR
-
-    double dlognu, nu;
-    dlognu = log( All.NuMax/ All.NuMin  ) / ( All.NuNum  );
-    nu = All.NuMin * exp( i * dlognu );
-    return get_particle_radio_freq( p, nu );
-#endif
-    return 0;
+    return r*V;
 }
 
 void test_part_radio() {
