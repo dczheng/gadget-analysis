@@ -213,7 +213,7 @@ void smooth2() {
     int ngbnum, k, n;
     long i, j;
     double h_i, h2_i, h_j, h2_j, r, cm[3], r2, t, hinv_i, hinv3_i, hinv4_i, u,
-           wk, dwk, m_j, hinv_j, hinv3_j, hinv4_j;
+           wk, dwk, m_j, hinv_j, hinv3_j, hinv4_j, densitynorm, fac;
 
 #ifdef RADSMOOTH
     double *Smoothedrad;
@@ -243,7 +243,6 @@ void smooth2() {
         densitynorm = 0;
         for( k=0; k<3; k++ ) {
             cm[k] = P[i].Pos[k];
-            B[k] = 0;
         }
 
         ngbnum = ngb( cm, h_i, 0 );

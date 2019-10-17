@@ -11,8 +11,8 @@ Projs       = sys.argv[3:]
 NGroup  = len( Projs )
 ds_name = [  "Density", "MagneticField", "Mach", "Cre_e",\
              "Radio",
-             #"Radio1",
-             #"Radio2"
+             "Radio1",
+             "RadioIndex"
             ]
 fig_name = [  r"$\rm {\rho}/{\bar{\rho}}$", \
               r"$\rm B \,[\mu G]$",\
@@ -120,7 +120,6 @@ for j in range(n):
     #ds[i][j][ idx_mag ] = 0
     ds[i][j][ds[i][j]<ds[i][j].max()*1e-13] = 0
 
-'''
 i = name2index[ "Radio1" ]
 for j in range(n):
     ds[i][j] = ds[i][j] / mycc.mJy
@@ -137,7 +136,6 @@ for j in range(n):
 #    ds[i][j] *= -1
 #    #ds[i][j][ds[name2index['Radio']][j]==0] = 0
 #    ds[i][j][ds[i][j] > 3] = 0
-'''
 
 
 i = name2index[ "Mach" ]
