@@ -233,9 +233,9 @@ writelog( "[Timer Start in `%s`]\n", __FUNCTION__ ); \
                          )\
                    )
 #define get_V( i )  (\
-            P[i].Mass / SphP[i].Density * CUBE( g2c.cm * Time  )\
+            4.0/3.0 * PI * CUBE( SphP[i].Hsml * g2c.cm * Time ) \
             )
-            //4.0/3.0 * PI * CUBE( SphP[i].Hsml * g2c.cm * Time )
+            //P[i].Mass / SphP[i].Density * CUBE( g2c.cm * Time  )
 
 #define get_pressure( i ) (SphP[i].u*( GAMMA_MINUS1*SphP[i].Density/Time3 ))
 
