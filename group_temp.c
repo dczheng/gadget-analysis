@@ -25,7 +25,7 @@ void group_temp_profile() {
     create_dir( "%s%s", GroupDir, dn );
 
     reset_img();
-    for ( g_index=0; g_index<Ngroups; g_index++ ) {
+    for ( g_index=0; g_index<Ngroup; g_index++ ) {
 
         if ( !group_present( g_index ) )
             break;
@@ -124,7 +124,7 @@ void group_temp_stack() {
         memset( num[i], 0, sizeof(int)*RN );
     }
 
-    for ( g_index=0; g_index<Ngroups; g_index++ ) {
+    for ( g_index=0; g_index<Ngroup; g_index++ ) {
         g = Gprops[g_index];
         if ( g.mass < m[0] )
             continue;
@@ -172,7 +172,7 @@ void group_temp_stack() {
             if ( num[mi][i] > 0 )
                 T[mi][i] /= num[mi][i];
 
-    for ( g_index=0; g_index<Ngroups; g_index++ ) {
+    for ( g_index=0; g_index<Ngroup; g_index++ ) {
         g = Gprops[g_index];
         if ( g.mass < m[0] )
             continue;

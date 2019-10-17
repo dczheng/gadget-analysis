@@ -64,9 +64,12 @@ void group_spectrum() {
 
     put_header( "group spectrum" );
 
-    vN = All.NuNum;
-    vmin = All.NuMin;
-    vmax = All.NuMax;
+    vN = All.FreqN;
+    vmin = All.FreqMin;
+    vmax = All.FreqMax;
+
+    mymalloc1( flux, sizeof(double) * vN );
+    mymalloc1( flux_nosr, sizeof(double) * vN );
 
     dv = log( vmax/vmin ) / ( vN-1 );
 
@@ -86,13 +89,13 @@ void group_spectrum() {
 
     for ( i=0; i<vN; i++ ) {
         v = exp(log(vmin) + i * dv);
-        fprintf( fd1, "%g  ", v );
-        fprintf( fd2, "%g  ", v );
+        fprintf( fd1, "%g  ", v/1e6*Time );
+        fprintf( fd2, "%g  ", v/1e6*Time );
     }
     fprintf( fd1, "\n" );
     fprintf( fd2, "\n" );
 
-    for ( index=0; index<Ngroups; index++ ) {
+    for ( index=0; index<Ngroup; index++ ) {
 
         if ( !group_present( index ) )
             break;
@@ -172,7 +175,7 @@ void group_electron_spectrum() {
 
     mymalloc2( f, sizeof(double) * qn );
 
-    for ( index=0; index<Ngroups; index++ ) {
+    for ( index=0; index<Ngroup; index++ ) {
 
         if ( !group_present( index ) )
             break;

@@ -64,6 +64,8 @@ void analysis(){
 
     compute_temperature();
     compute_particle_radio();
+
+    smooth2();
     remove_mach_noise();
     total_radio_spectrum();
 

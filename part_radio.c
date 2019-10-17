@@ -51,7 +51,7 @@ void compute_particle_radio() {
 
     init_compute_F();
 
-    mymalloc1_shared( PartRad, sizeof(double)*N_Gas*All.NuNum, sizeof(double), MpiWin_PartRad );
+    mymalloc1_shared( PartRad, sizeof(double)*N_Gas*All.FreqN, sizeof(double), MpiWin_PartRad );
 
 #ifdef TABF
     writelog( "use tab F\n" );
@@ -63,9 +63,9 @@ void compute_particle_radio() {
     mymalloc2( flags, sizeof(int) * N_Gas );
     mymalloc2( flags_local, sizeof(int) * N_Gas );
 
-    nuN = All.NuNum;
-    numin = All.NuMin;
-    numax = All.NuMax;
+    nuN = All.FreqN;
+    numin = All.FreqMin;
+    numax = All.FreqMax;
     sig = 10;
     dlognu = log( numax/numin ) / ( nuN - 1 );
 
@@ -228,22 +228,23 @@ double get_particle_radio( long p, double nu ) {
 /*
 nu: Mhz
 */
+#if defined(RAD) || defined(RADLARMOR)
     double V, r;
     V = get_V(p);
-#if defined(RAD) && !defined(RADLARMOR)
+#if defined(RAD) 
     double nu_x, dlognu;
     int nu_i;
-    dlognu = log( All.NuMax/ All.NuMin  ) / ( All.NuNum -1 );
-    nu_x = log( nu / All.NuMin ) / dlognu;
+    dlognu = log( All.FreqMax/ All.FreqMin  ) / ( All.FreqN -1 );
+    nu_x = log( nu / All.FreqMin ) / dlognu;
     nu_i = nu_x;
     nu_x -= nu_i;
-    if ( nu_i >= All.NuNum-1  )
-        r =  PartRad[p*All.NuNum+nu_i+All.NuNum-1] ;
+    if ( nu_i >= All.FreqN-1  )
+        r =  PartRad[p*All.FreqN+nu_i+All.FreqN-1] ;
     if ( nu_i < 0 )
-        r =  PartRad[p*All.NuNum+nu_i] ;
+        r =  PartRad[p*All.FreqN+nu_i] ;
 
-    r =  PartRad[p*All.NuNum+nu_i] * ( 1-nu_x  ) + 
-            PartRad[p*All.NuNum+nu_i+1] * nu_x;
+    r =  PartRad[p*All.FreqN+nu_i] * ( 1-nu_x  ) + 
+            PartRad[p*All.FreqN+nu_i+1] * nu_x;
 #endif
 
 #ifdef RADLARMOR
@@ -251,6 +252,8 @@ nu: Mhz
 #endif
 
     return r*V;
+#endif
+    return 0;
 }
 
 void test_part_radio() {

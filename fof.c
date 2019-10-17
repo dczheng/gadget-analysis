@@ -21,7 +21,7 @@ void fof_save() {
 
     hdf5_dataspace = H5Screate( H5S_SCALAR );
     hdf5_attribute = H5Acreate( hdf5_file, "GroupsNumberAboveMinLength", H5T_NATIVE_INT, hdf5_dataspace, H5P_DEFAULT );
-    H5Awrite( hdf5_attribute, H5T_NATIVE_INT, &Ngroups );
+    H5Awrite( hdf5_attribute, H5T_NATIVE_INT, &Ngroup );
     H5Aclose( hdf5_attribute );
     H5Sclose( hdf5_dataspace );
 
@@ -43,35 +43,35 @@ void fof_save() {
 
 
     if ( sizeof( double ) > sizeof( long ) ) {
-        mymalloc1( buf, Ngroups * sizeof( double ) * 6 );
+        mymalloc1( buf, Ngroup * sizeof( double ) * 6 );
     }
     else {
-        mymalloc1( buf, Ngroups * sizeof( long ) * 6 );
+        mymalloc1( buf, Ngroup * sizeof( long ) * 6 );
     }
 
     buf1 = (long *)buf;
     buf2 = (double *)buf;
 
     /*
-    printf( "%i\n", Ngroups );
+    printf( "%i\n", Ngroup );
     endrun(20181107);
     */
 
     hdf5_type = H5Tcopy( H5T_NATIVE_UINT64 );
     /*****************int 1d********************/
     ndims = 1;
-    dims[0] = Ngroups;
+    dims[0] = Ngroup;
 
     hdf5_dataspace = H5Screate_simple( ndims, dims, NULL );
 
-    for ( i=0; i<Ngroups; i++ ) {
+    for ( i=0; i<Ngroup; i++ ) {
         buf1[i] = Gprops[i].Head;
     }
     hdf5_dataset = H5Dcreate( hdf5_file, "Head", hdf5_type, hdf5_dataspace, H5P_DEFAULT );
     H5Dwrite( hdf5_dataset, hdf5_type, hdf5_dataspace, H5S_ALL, H5P_DEFAULT, buf );
     H5Dclose( hdf5_dataset );
 
-    for ( i=0; i<Ngroups; i++ ) {
+    for ( i=0; i<Ngroup; i++ ) {
         buf1[i] = Gprops[i].Len;
     }
     hdf5_dataset = H5Dcreate( hdf5_file, "Length", hdf5_type, hdf5_dataspace, H5P_DEFAULT );
@@ -83,11 +83,11 @@ void fof_save() {
 
     /*****************int 2d********************/
     ndims = 2;
-    dims[0] = Ngroups;
+    dims[0] = Ngroup;
     dims[1] = 6;
     hdf5_dataspace = H5Screate_simple( ndims, dims, NULL );
 
-    for ( i=0; i<Ngroups; i++ )
+    for ( i=0; i<Ngroup; i++ )
         for ( j=0; j<6; j++ )
             buf1[i*6+j] = Gprops[i].npart[j];
     hdf5_dataset = H5Dcreate( hdf5_file, "npart", hdf5_type, hdf5_dataspace, H5P_DEFAULT );
@@ -101,10 +101,10 @@ void fof_save() {
     hdf5_type = H5Tcopy( H5T_NATIVE_DOUBLE );
     /*****************real 1d********************/
     ndims = 1;
-    dims[0] = Ngroups;
+    dims[0] = Ngroup;
     hdf5_dataspace = H5Screate_simple( ndims, dims, NULL );
 
-    for ( i=0; i<Ngroups; i++ ) {
+    for ( i=0; i<Ngroup; i++ ) {
         buf2[i] = Gprops[i].mass;
     }
 
@@ -112,7 +112,7 @@ void fof_save() {
     H5Dwrite( hdf5_dataset, hdf5_type, hdf5_dataspace, H5S_ALL, H5P_DEFAULT, buf );
     H5Dclose( hdf5_dataset );
 
-    for ( i=0; i<Ngroups; i++ ) {
+    for ( i=0; i<Ngroup; i++ ) {
         buf2[i] = Gprops[i].vr200;
     }
 
@@ -120,7 +120,7 @@ void fof_save() {
     H5Dwrite( hdf5_dataset, hdf5_type, hdf5_dataspace, H5S_ALL, H5P_DEFAULT, buf );
     H5Dclose( hdf5_dataset );
 
-    for ( i=0; i<Ngroups; i++ ) {
+    for ( i=0; i<Ngroup; i++ ) {
         buf2[i] = Gprops[i].ek;
     }
 
@@ -128,7 +128,7 @@ void fof_save() {
     H5Dwrite( hdf5_dataset, hdf5_type, hdf5_dataspace, H5S_ALL, H5P_DEFAULT, buf );
     H5Dclose( hdf5_dataset );
     
-    for ( i=0; i<Ngroups; i++ ) {
+    for ( i=0; i<Ngroup; i++ ) {
         buf2[i] = Gprops[i].v_mean;
     }
 
@@ -136,7 +136,7 @@ void fof_save() {
     H5Dwrite( hdf5_dataset, hdf5_type, hdf5_dataspace, H5S_ALL, H5P_DEFAULT, buf );
     H5Dclose( hdf5_dataset );
 
-    for ( i=0; i<Ngroups; i++ ) {
+    for ( i=0; i<Ngroup; i++ ) {
         buf2[i] = Gprops[i].v_disp;
     }
 
@@ -149,11 +149,11 @@ void fof_save() {
 
     /*****************real 2d********************/
     ndims = 2;
-    dims[0] = Ngroups;
+    dims[0] = Ngroup;
     dims[1] = 3;
     hdf5_dataspace = H5Screate_simple( ndims, dims, NULL );
 
-    for ( i=0; i<Ngroups; i++ ) {
+    for ( i=0; i<Ngroup; i++ ) {
         for ( j=0; j<3; j++ ) {
             buf2[i*3+j] = Gprops[i].size[j];
         }
@@ -164,7 +164,7 @@ void fof_save() {
     H5Dclose( hdf5_dataset );
 
 
-    for ( i=0; i<Ngroups; i++ )
+    for ( i=0; i<Ngroup; i++ )
         for ( j=0; j<3; j++ )
             buf2[i*3+j] = Gprops[i].cm[j];
 
@@ -172,7 +172,7 @@ void fof_save() {
     H5Dwrite( hdf5_dataset, hdf5_type, hdf5_dataspace, H5S_ALL, H5P_DEFAULT, buf );
     H5Dclose( hdf5_dataset );
 
-    for ( i=0; i<Ngroups; i++ )
+    for ( i=0; i<Ngroup; i++ )
         for ( j=0; j<3; j++ )
             buf2[i*3+j] = Gprops[i].vel[j];
 
@@ -185,7 +185,7 @@ void fof_save() {
     dims[1] = 6;
     hdf5_dataspace = H5Screate_simple( ndims, dims, NULL );
 
-    for ( i=0; i<Ngroups; i++ )
+    for ( i=0; i<Ngroup; i++ )
         for ( j=0; j<6; j++ )
         buf2[i*6+j] = Gprops[i].mass_table[j];
 
@@ -219,23 +219,23 @@ void fof_read() {
     hdf5_file = H5Fopen( fn, H5F_ACC_RDWR, H5P_DEFAULT );
 
     hdf5_attribute = H5Aopen_name( hdf5_file, "GroupsNumberAboveMinLength" );
-    H5Aread( hdf5_attribute, H5T_NATIVE_INT, &Ngroups );
+    H5Aread( hdf5_attribute, H5T_NATIVE_INT, &Ngroup );
     H5Aclose( hdf5_attribute );
 
     hdf5_attribute = H5Aopen_name( hdf5_file, "MinLength" );
     H5Aread( hdf5_attribute, H5T_NATIVE_INT, &All.FoFMinLen );
     H5Aclose( hdf5_attribute );
 
-    mymalloc2( Gprops, Ngroups * sizeof( struct group_properties ) );
+    mymalloc2( Gprops, Ngroup * sizeof( struct group_properties ) );
     mymalloc2( FoFNext, NumPart * sizeof( long ) );
 
-    writelog( "Ngroups: %i, MinLength: %i\n", Ngroups, All.FoFMinLen );
+    writelog( "Ngroup: %i, MinLength: %i\n", Ngroup, All.FoFMinLen );
 
     if ( sizeof( double ) > sizeof( long ) ) {
-        mymalloc1( buf, Ngroups * sizeof( double ) * 6 );
+        mymalloc1( buf, Ngroup * sizeof( double ) * 6 );
     }
     else {
-        mymalloc1( buf, Ngroups * sizeof( long ) * 6 );
+        mymalloc1( buf, Ngroup * sizeof( long ) * 6 );
     }
 
     buf1 = (long *)buf;
@@ -255,21 +255,21 @@ void fof_read() {
     hdf5_dataset = H5Dopen( hdf5_file, "Head" );
     H5Dread( hdf5_dataset, hdf5_type, H5S_ALL, H5S_ALL, H5P_DEFAULT, buf );
     H5Dclose( hdf5_dataset );
-    for ( i=0; i<Ngroups; i++ )
+    for ( i=0; i<Ngroup; i++ )
         Gprops[i].Head = buf1[i];
 
     writelog( "read Length ...\n" );
     hdf5_dataset = H5Dopen( hdf5_file, "Length" );
     H5Dread( hdf5_dataset, hdf5_type, H5S_ALL, H5S_ALL, H5P_DEFAULT, buf );
     H5Dclose( hdf5_dataset );
-    for ( i=0; i<Ngroups; i++ )
+    for ( i=0; i<Ngroup; i++ )
         Gprops[i].Len = buf1[i];
 
     writelog( "read npart ...\n" );
     hdf5_dataset = H5Dopen( hdf5_file, "npart" );
     H5Dread( hdf5_dataset, hdf5_type, H5S_ALL, H5S_ALL, H5P_DEFAULT, buf );
     H5Dclose( hdf5_dataset );
-    for ( i=0; i<Ngroups; i++ )
+    for ( i=0; i<Ngroup; i++ )
         for ( j=0; j<6; j++ )
             Gprops[i].npart[j] = buf1[ i*6+j ];
 
@@ -283,42 +283,42 @@ void fof_read() {
     hdf5_dataset = H5Dopen( hdf5_file, "Mass" );
     H5Dread( hdf5_dataset, hdf5_type, H5S_ALL, H5S_ALL, H5P_DEFAULT, buf );
     H5Dclose( hdf5_dataset );
-    for ( i=0; i<Ngroups; i++ )
+    for ( i=0; i<Ngroup; i++ )
         Gprops[i].mass = buf2[i];
 
     writelog( "read VirialR200 ...\n" );
     hdf5_dataset = H5Dopen( hdf5_file, "VirialR200" );
     H5Dread( hdf5_dataset, hdf5_type, H5S_ALL, H5S_ALL, H5P_DEFAULT, buf );
     H5Dclose( hdf5_dataset );
-    for ( i=0; i<Ngroups; i++)
+    for ( i=0; i<Ngroup; i++)
         Gprops[i].vr200 = buf2[i];
 
     writelog( "read KineticEnergy ...\n" );
     hdf5_dataset = H5Dopen( hdf5_file, "KineticEnergy" );
     H5Dread( hdf5_dataset, hdf5_type, H5S_ALL, H5S_ALL, H5P_DEFAULT, buf );
     H5Dclose( hdf5_dataset );
-    for ( i=0; i<Ngroups; i++)
+    for ( i=0; i<Ngroup; i++)
         Gprops[i].ek = buf2[i];
 
     writelog( "read v_mean ...\n" );
     hdf5_dataset = H5Dopen( hdf5_file, "VMEAN" );
     H5Dread( hdf5_dataset, hdf5_type, H5S_ALL, H5S_ALL, H5P_DEFAULT, buf );
     H5Dclose( hdf5_dataset );
-    for ( i=0; i<Ngroups; i++)
+    for ( i=0; i<Ngroup; i++)
         Gprops[i].v_mean = buf2[i];
 
     writelog( "read v_disp ...\n" );
     hdf5_dataset = H5Dopen( hdf5_file, "VDISP" );
     H5Dread( hdf5_dataset, hdf5_type, H5S_ALL, H5S_ALL, H5P_DEFAULT, buf );
     H5Dclose( hdf5_dataset );
-    for ( i=0; i<Ngroups; i++)
+    for ( i=0; i<Ngroup; i++)
         Gprops[i].v_disp = buf2[i];
 
     writelog( "read Size ...\n" );
     hdf5_dataset = H5Dopen( hdf5_file, "Size" );
     H5Dread( hdf5_dataset, hdf5_type, H5S_ALL, H5S_ALL, H5P_DEFAULT, buf );
     H5Dclose( hdf5_dataset );
-    for ( i=0; i<Ngroups; i++)
+    for ( i=0; i<Ngroup; i++)
         for (j=0; j<3; j++)
             Gprops[i].size[j] = buf2[i*3+j];
 
@@ -326,7 +326,7 @@ void fof_read() {
     hdf5_dataset = H5Dopen( hdf5_file, "CenterOfMass" );
     H5Dread( hdf5_dataset, hdf5_type, H5S_ALL, H5S_ALL, H5P_DEFAULT, buf );
     H5Dclose( hdf5_dataset );
-    for ( i=0; i<Ngroups; i++ )
+    for ( i=0; i<Ngroup; i++ )
         for ( j=0; j<3; j++ )
             Gprops[i].cm[j] = buf2[i*3+j];
 
@@ -334,7 +334,7 @@ void fof_read() {
     hdf5_dataset = H5Dopen( hdf5_file, "CenterOfVelocity" );
      H5Dread( hdf5_dataset, hdf5_type, H5S_ALL, H5S_ALL, H5P_DEFAULT, buf );
     H5Dclose( hdf5_dataset );
-    for ( i=0; i<Ngroups; i++ )
+    for ( i=0; i<Ngroup; i++ )
         for ( j=0; j<3; j++ )
             Gprops[i].vel[j] = buf2[i*3+j];
 
@@ -342,7 +342,7 @@ void fof_read() {
     hdf5_dataset = H5Dopen( hdf5_file, "MassTable" );
      H5Dread( hdf5_dataset, hdf5_type, H5S_ALL, H5S_ALL, H5P_DEFAULT, buf );
     H5Dclose( hdf5_dataset );
-    for ( i=0; i<Ngroups; i++ )
+    for ( i=0; i<Ngroup; i++ )
         for ( j=0; j<6; j++ )
             Gprops[i].mass_table[j] = buf2[ i*6+j ];
 
@@ -455,19 +455,19 @@ void fof_compute_group_properties() {
     writelog( "FoF compute groups properties ... \n" );
     mytimer_start();
 
-    Ngroups = 0;
+    Ngroup = 0;
     for ( i=0; i<NumPart; i++ ) {
         if ( Gprops[i].Len >= All.FoFMinLen ) {
-            Gprops[ Ngroups++ ] = Gprops[i];
+            Gprops[ Ngroup++ ] = Gprops[i];
         }
     }
 
-    qsort( Gprops, Ngroups, sizeof( struct group_properties ), fof_compare_len );
+    qsort( Gprops, Ngroup, sizeof( struct group_properties ), fof_compare_len );
 
-    writelog( "The number of groups with at least %i particles: %i\n", All.FoFMinLen, Ngroups );
+    writelog( "The number of groups with at least %i particles: %i\n", All.FoFMinLen, Ngroup );
     writelog( "Largest group has %li particles\n", Gprops[0].Len );
 
-    for ( i=0; i<Ngroups; i++ ) {
+    for ( i=0; i<Ngroup; i++ ) {
 
         g = &Gprops[i];
 
@@ -531,7 +531,7 @@ void fof_compute_group_properties() {
 
     }
 
-    qsort( Gprops, Ngroups, sizeof( struct group_properties ), fof_compare_mass );
+    qsort( Gprops, Ngroup, sizeof( struct group_properties ), fof_compare_mass );
 
     mytimer_end();
     writelog( "FoF compute groups properties ... done\n" );
@@ -612,13 +612,13 @@ void fof() {
         if ( ThisTask_Local != 0 )
             mymalloc2( FoFNext, NumPart * sizeof( long ) );
 
-        MPI_Bcast( &Ngroups, 1, MPI_INT, 0, MpiComm_Local );
+        MPI_Bcast( &Ngroup, 1, MPI_INT, 0, MpiComm_Local );
         MPI_Bcast( FoFNext, NumPart*sizeof(long), MPI_BYTE, 0, MpiComm_Local );
 
         if ( ThisTask_Local != 0 )
-            mymalloc2( Gprops, Ngroups * sizeof( struct group_properties ) );
+            mymalloc2( Gprops, Ngroup * sizeof( struct group_properties ) );
 
-        MPI_Bcast( Gprops, Ngroups*sizeof( struct group_properties ),
+        MPI_Bcast( Gprops, Ngroup*sizeof( struct group_properties ),
                 MPI_BYTE, 0, MpiComm_Local );
 
         return;

@@ -84,19 +84,17 @@ void set_units() {
     writelog1( guc.mec2 );
 
 
-    All.NuMin *= 1e6 / Time;
-    All.NuMax *= 1e6 / Time;
+    All.FreqMin *= 1e6 / Time;
+    All.FreqMax *= 1e6 / Time;
     All.GroupRadFreq *= 1e6 / Time;
     All.GroupRadFreq1 *= 1e6 / Time;
-    All.GroupRadFreq2 *= 1e6 / Time;
     All.OutputGroupFreq *= 1e6 / Time;
     All.RadSliceFreq *= 1e6 / Time;
 
-    writelog1( All.NuMin );
-    writelog1( All.NuMax );
+    writelog1( All.FreqMin );
+    writelog1( All.FreqMax );
     writelog1( All.GroupRadFreq );
     writelog1( All.GroupRadFreq1 );
-    writelog1( All.GroupRadFreq2 );
     writelog1( All.GroupRadFreq );
     writelog1( All.RadSliceFreq );
 

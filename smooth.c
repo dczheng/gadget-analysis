@@ -6,7 +6,7 @@
 
 void smooth() {
 
-#if defined(BSMOOTH) || defined(CRESMOOTH)
+#if defined(BSMOOTH) || defined(CRESMOOTH) || defined (MACHSMOOTH)
     int ngbnum, k, n;
     long i, j;
     double h_i, h2_i, h_j, h2_j, r, cm[3], r2, t, hinv_i, hinv3_i, hinv4_i, u,
@@ -20,6 +20,22 @@ void smooth() {
      long debug_i=99;
 #endif
 
+#ifdef BSMOOTH
+    double *SmoothedB;
+    mymalloc2( SmoothedB, sizeof(double) * N_Gas * 3 );
+#endif
+
+#ifdef MACHSMOOTH
+    double *SmoothedM;
+    mymalloc2( SmoothedM, sizeof(double) * N_Gas );
+#endif
+
+#ifdef CRESMOOTH
+    double *SmoothedCRE_e, *SmoothedCRE_n;
+    mymalloc2( SmoothedCRE_e, sizeof(double) * N_Gas );
+    mymalloc2( SmoothedCRE_n, sizeof(double) * N_Gas );
+#endif
+
     mytimer_start();
     put_header( "smooth" );
     writelog(
@@ -28,6 +44,9 @@ void smooth() {
 #endif
 #ifdef CRESMOOTH
     "CRE smooth\n"
+#endif
+#ifdef MACHSMOOTH
+    "MACH smooth\n"
 #endif
     );
 
@@ -57,22 +76,8 @@ void smooth() {
         densitynorm = 0;
         for( k=0; k<3; k++ ) {
             cm[k] = P[i].Pos[k];
-#ifdef BSMOOTH
-#ifdef HIGH_PRECISION
             B[k] = 0;
-#else
-            SphP[i].SmoothB[k] = 0;
-#endif
-#endif
         }
-#ifdef CRESMOOTH
-        SphP[i].SmoothCRE_C =
-        SphP[i].SmoothCRE_Alpha =
-        SphP[i].SmoothCRE_qmin =
-        SphP[i].SmoothCRE_qmax =
-        SphP[i].SmoothCRE_n =
-        SphP[i].SmoothCRE_e = 0;
-#endif
 
         ngbnum = ngb( cm, h_i, 0 );
         if ( ngbnum == 0 )
@@ -92,7 +97,6 @@ void smooth() {
             r = sqrt( r2 );
 
             h_j = SphP[j].Hsml; 
-            //h_j = h_i;
             h2_j = h_j * h_j;
 
             if ( r2<h2_j ) {
@@ -110,15 +114,14 @@ void smooth() {
                      B[k] += fac * SphP[j].B[k];
 #endif
                 }
-
 #ifdef CRESMOOTH
-                SphP[i].SmoothCRE_C      += fac * SphP[j].CRE_C;
-                SphP[i].SmoothCRE_Alpha  += fac * SphP[j].CRE_Alpha;
-                SphP[i].SmoothCRE_qmin   += fac * SphP[j].CRE_qmin;
-                SphP[i].SmoothCRE_qmax   += fac * SphP[j].CRE_qmax;
-                SphP[i].SmoothCRE_n      += fac * SphP[j].CRE_n;
-                SphP[i].SmoothCRE_e      += fac * SphP[j].CRE_e;
+                SmoothedCRE_n[i]      += fac * SphP[j].CRE_n;
+                SmoothedCRE_e[i]      += fac * SphP[j].CRE_e;
 #endif
+#ifdef MACHSMOOTH
+                SmoothedM[i] += fac * SphP[j].MachNumber;
+#endif
+
                 densitynorm += fac; 
             }
 #ifdef SMOOTH_DEBUG2
@@ -135,16 +138,15 @@ void smooth() {
         if ( densitynorm > 0 ) {
             for( k=0; k<3; k++ ) {
 #ifdef BSMOOTH
-                SphP[i].SmoothB[k] = B[k] / densitynorm;
+                SmoothedB[i*3+k] = B[k] / densitynorm;
 #endif
             }
 #ifdef CRESMOOTH
-            SphP[i].CRE_C      /= densitynorm; 
-            SphP[i].CRE_Alpha  /= densitynorm; 
-            SphP[i].CRE_qmin   /= densitynorm; 
-            SphP[i].CRE_qmax   /= densitynorm; 
-            SphP[i].CRE_n      /= densitynorm; 
-            SphP[i].CRE_e      /= densitynorm; 
+            SmoothedCRE_e[i]      /= densitynorm; 
+            SmoothedCRE_n[i]      /= densitynorm; 
+#endif
+#ifdef MACHSMOOTH
+            SmoothedM[i] /= densitynorm;
 #endif
         }
 #ifdef SMOOTH_DEBUG2
@@ -157,41 +159,34 @@ void smooth() {
     for ( i=0; i<N_Gas; i++ ) {
         if ( i % NTask_Local != ThisTask_Local )
             continue;
+        for( k=0; k<3; k++ ) {
 #ifdef BSMOOTH
-        for( k=0; k<3; k++ )
-            SphP[i].B[k] = SphP[i].SmoothB[k];
+            SphP[i].B[k] = SmoothedB[i*3+k];
 #endif
+        }
 
 #ifdef CRESMOOTH
-/*
-if (!ThisTask_Local) 
-    printf(
-       "%li c:%g[%g], "
-       "a:%g[%g], "
-       "qmin:%g[%g], "
-       "qmax:%g[%g], "
-       "n:%g[%g], "
-       "e:%g[%g]\n ", 
-        i,
-        SphP[i].CRE_C      ,  SphP[i].SmoothCRE_C,
-        SphP[i].CRE_Alpha  ,  SphP[i].SmoothCRE_Alpha,
-        SphP[i].CRE_qmin   ,  SphP[i].SmoothCRE_qmin,
-        SphP[i].CRE_qmax   ,  SphP[i].SmoothCRE_qmax,
-        SphP[i].CRE_n      ,  SphP[i].SmoothCRE_n,
-        SphP[i].CRE_e      ,  SphP[i].SmoothCRE_e
-        );
-*/
-        SphP[i].CRE_C      =  SphP[i].SmoothCRE_C;
-        SphP[i].CRE_Alpha  =  SphP[i].SmoothCRE_Alpha;
-        SphP[i].CRE_qmin   =  SphP[i].SmoothCRE_qmin;
-        SphP[i].CRE_qmax   =  SphP[i].SmoothCRE_qmax;
-        SphP[i].CRE_n      =  SphP[i].SmoothCRE_n;
-        SphP[i].CRE_e      =  SphP[i].SmoothCRE_e;
+        SphP[i].CRE_n      =  SmoothedCRE_n[i];
+        SphP[i].CRE_e      =  SmoothedCRE_e[i];
+#endif
+#ifdef MACHSMOOTH
+        SphP[i].MachNumber =  SmoothedM[i];
 #endif
     }
 
     myfree( Ngblist );
     mytimer_end();
+
+#ifdef BSMOOTH
+    myfree( SmoothedB );
+#endif
+#ifdef MACHSMOOTH
+    myfree( SmoothedM )
+#endif
+#ifdef CRESMOOTH
+    myfree( SmoothedCRE_n );
+    myfree( SmoothedCRE_e );
+#endif
 
     do_sync_local( "smooth" );
 
@@ -206,6 +201,118 @@ if (!ThisTask_Local)
         endruns( "smooth-test" );
     }
 #endif
+    put_end();
+
+#endif
+
+}
+
+void smooth2() {
+
+#if defined(RADSMOOTH)
+    int ngbnum, k, n;
+    long i, j;
+    double h_i, h2_i, h_j, h2_j, r, cm[3], r2, t, hinv_i, hinv3_i, hinv4_i, u,
+           wk, dwk, m_j, hinv_j, hinv3_j, hinv4_j;
+
+#ifdef RADSMOOTH
+    double *Smoothedrad;
+    mymalloc2( Smoothedrad, sizeof(double) * N_Gas * All.FreqN );
+#endif
+
+    mytimer_start();
+    put_header( "smooth2" );
+    writelog(
+#ifdef RADSMOOTH
+    "rad smooth\n"
+#endif
+    );
+
+    (void)h2_i;
+
+    mymalloc1( Ngblist, NumPart * sizeof(long) );
+
+    for( i=0; i<N_Gas; i++ ) {
+
+        if ( i % NTask_Local != ThisTask_Local )
+            continue;
+
+        h_i = SphP[i].Hsml;
+        h2_i = h_i*h_i;
+        kernel_hinv( h_i, &hinv_i, &hinv3_i, &hinv4_i );
+        densitynorm = 0;
+        for( k=0; k<3; k++ ) {
+            cm[k] = P[i].Pos[k];
+            B[k] = 0;
+        }
+
+        ngbnum = ngb( cm, h_i, 0 );
+        if ( ngbnum == 0 )
+            continue;
+
+        for( n=0; n<ngbnum; n++ ) {
+
+            j = Ngblist[n];
+            if ( P[j].Type != 0 )
+                continue;
+            for( k=0, r2=0; k<3; k++ ) {
+                t = P[j].Pos[k] - cm[k];
+                t = PERIODIC_HALF( t );
+                r2 += t*t;
+            }
+
+            r = sqrt( r2 );
+
+            h_j = SphP[j].Hsml; 
+            h2_j = h_j * h_j;
+
+            if ( r2<h2_j ) {
+
+                kernel_hinv( h_j, &hinv_j, &hinv3_j, &hinv4_j );
+                m_j = P[j].Mass;
+
+                u = r * hinv_j;
+                kernel_main( u, hinv3_j, hinv4_j, &wk, &dwk, -1 );
+                wk /= SphP[j].Density;
+
+                fac = m_j * wk;
+#ifdef RADSMOOTH
+                for( k=0; k<All.FreqN; k++ )
+                    Smoothedrad[i*All.FreqN+k] += PartRad[i*All.FreqN+k];
+#endif
+
+                densitynorm += fac; 
+            }
+
+        } // for n
+
+        if ( densitynorm > 0 ) {
+            for( k=0; k<All.FreqN; k++ ) {
+                Smoothedrad[i*All.FreqN+k] /= densitynorm;
+            }
+        }
+    } // for i
+
+    do_sync_local( "smooth2" );
+
+    for ( i=0; i<N_Gas; i++ ) {
+        if ( i % NTask_Local != ThisTask_Local )
+            continue;
+        for( k=0; k<All.FreqN; k++ ) {
+            PartRad[i*All.FreqN+k] = Smoothedrad[i*All.FreqN+k];
+        }
+
+    }
+
+    myfree( Ngblist );
+    mytimer_end();
+
+#ifdef RADSMOOTH
+    myfree( Smoothedrad );
+#endif
+
+    do_sync_local( "smooth2" );
+
     put_end();
 
 #endif

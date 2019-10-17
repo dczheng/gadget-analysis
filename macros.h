@@ -271,9 +271,9 @@ writelog( "[Timer Start in `%s`]\n", __FUNCTION__ ); \
         }\
 }
 
-#define make_group_output_filename( buf, nstr, group_index ) \
+#define make_group_output_filename( _buf, _nstr, _group_index, _p ) \
     sprintf( buf, "%s%s/%s_%03i_%04i_%c.dat",\
-            GroupDir, nstr, nstr, SnapIndex, group_index, Sproj );
+            GroupDir, _nstr, _nstr, SnapIndex, _group_index, _p );
 
 #define put_header( s ) {\
     writelog( ">>> %s\n", s );\

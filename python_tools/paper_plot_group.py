@@ -11,8 +11,8 @@ Projs       = sys.argv[3:]
 NGroup  = len( Projs )
 ds_name = [  "Density", "MagneticField", "Mach", "Cre_e",\
              "Radio",
-             "Radio1",
-             "Radio2"
+             #"Radio1",
+             #"Radio2"
             ]
 fig_name = [  r"$\rm {\rho}/{\bar{\rho}}$", \
               r"$\rm B \,[\mu G]$",\
@@ -86,8 +86,8 @@ for i in range(m):
         Ls.append( (xmin, xmax, ymin, ymax) )
         res.append( dL )
         #print( dL )
-        r200_L.append( d[0, 8] )
-        r200.append( d[0, 8] / dL )
+        r200_L.append( d[0, 15] )
+        r200.append( d[0, 15] / dL )
 
     ds.append(t)
 
@@ -120,6 +120,7 @@ for j in range(n):
     #ds[i][j][ idx_mag ] = 0
     ds[i][j][ds[i][j]<ds[i][j].max()*1e-13] = 0
 
+'''
 i = name2index[ "Radio1" ]
 for j in range(n):
     ds[i][j] = ds[i][j] / mycc.mJy
@@ -131,29 +132,12 @@ for j in range(n):
     #ds[i][j][ idx_mag ] = 0
     ds[i][j][ds[i][j]<ds[i][j].max()*1e-13] = 0
 
-i = name2index[ "Radio2" ]
-for j in range(n):
-    i1 = name2index[ "Radio" ]
-    i2 = name2index[ "Radio1" ]
-
-    mm, nn = ds[i][j].shape
-    for ii in range(mm):
-        for jj in range(mm):
-            if ds[i1][j][ii,jj] > 0 and \
-                ds[i2][j][ii,jj] > 0:
-                ds[i][j][ii, jj] =\
-                    -np.log( ds[i1][j][ii,jj]/ds[i2][j][ii,jj] )\
-                    / np.log( 350.0/1400.0 )
-            else:
-                ds[i][j][ii, jj] = 0
-    print( len( ds[i][j][ds[i][j]>2] ), len( ds[i][j][ds[i][j]>0] ) )
-    ds[i][j][ ds[i][j]>2.5 ] = 0
-
 #i = name2index[ "RadioIndex" ]
 #for j in range(n):
 #    ds[i][j] *= -1
 #    #ds[i][j][ds[name2index['Radio']][j]==0] = 0
 #    ds[i][j][ds[i][j] > 3] = 0
+'''
 
 
 i = name2index[ "Mach" ]
@@ -169,8 +153,8 @@ i = name2index[ "MagneticField" ]
 for j in range(n):
     ds[i][j][ds[i][j]<1e-5] = 0
     idx_mag = ds[name2index['MagneticField']][j] > 10 
-    print( len(ds[i][j][ idx_mag ]) )
-    ds[i][j][ idx_mag ] = 10
+    print( len(ds[i][j][ idx_mag ]), ds[i][j][idx_mag] )
+    #ds[i][j][ idx_mag ] = 10
 
 vmin = []
 vmax = []

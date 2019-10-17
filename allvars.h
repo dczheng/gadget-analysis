@@ -158,7 +158,6 @@ enum group_fields {
     GROUP_CREQMAX,
     GROUP_RAD,
     GROUP_RAD1,
-    GROUP_RAD2,
     GROUP_RADINDEX
 };
 
@@ -169,8 +168,8 @@ struct radio_inte_struct{
     double nu;
 };
 
-#if defined(GROUPRAD) || defined(RADSLICE) || defined(TOTSPEC) || defined(GROUPSPEC) || defined(GROUPLUM) || defined(OUTPUTGROUPLUM) 
-#ifndef RADLARMOR
+#if defined(GROUPRAD) || defined(RADSLICE) || defined(TOTSPEC) || defined(GROUPSPEC) || defined(GROUPLUM) || (defined(OUTPUTGROUP) && defined(OUTPUTGROUPLUM)) || defined(RADSMOOTH)
+#ifndef RADLARMOr
 #define RAD
 #endif
 #endif
@@ -236,7 +235,7 @@ struct radio_inte_struct{
 #endif
 #endif
 
-#if defined(GROUPMACH) || defined(MACHNOISE) || defined(MACHSLICE) 
+#if defined(GROUPMACH) || defined(MACHNOISE) || defined(MACHSLICE)  || defined(MACHSMOOTH)
 #ifndef READMACH
 #define READMACH
 #endif
@@ -285,23 +284,10 @@ typedef struct SphParticleData {
     double CRE_e;
     double CRE_P;
 #endif
-#ifdef CRESMOOTH
-    double SmoothCRE_C;
-    double SmoothCRE_Alpha;
-    double SmoothCRE_qmin;
-    double SmoothCRE_qmax;
-    double SmoothCRE_n;
-    double SmoothCRE_e;
-    double SmoothCRE_P;
-#endif
-
 #ifdef READB
     double B[3];
 #endif
 
-#ifdef BSMOOTH
-    double SmoothB[3];
-#endif
 #ifdef READDIVB
     double divB;
 #endif
@@ -325,8 +311,7 @@ typedef struct SphParticleData {
 
 typedef struct GlobalParams{
     char FilePrefix[ MYFILENAME_MAX ],
-            FoFDir[ MYFILENAME_MAX ],
-         RadDir[ MYFILENAME_MAX ];
+            FoFDir[ MYFILENAME_MAX ];
 
     int 
         MpcFlag,
@@ -343,7 +328,7 @@ typedef struct GlobalParams{
         NumFilesPerSnapshot,
         GroupPotGrid,
 
-        QNum, NuNum, FoFMinLen,
+        QNum, FreqN, FoFMinLen,
         TreePartType,
         StartSnapIndex, ProjectDirection, KernelN,
         PicSize;
@@ -366,8 +351,8 @@ typedef struct GlobalParams{
             TreeAllocFactor, LinkLength,
             UnitLength_in_cm,
             Sigma8,
-            ConvSigma, NuMin, NuMax, GroupMassMin,
-            GroupRadFreq, GroupRadFreq1, GroupRadFreq2,
+            ConvSigma, FreqMin, FreqMax, GroupMassMin,
+            GroupRadFreq, GroupRadFreq1,
             OutputGroupFreq,
             RadSliceFreq,
             QMin, QMax, MFMmin, MFMmax, MFMSplit,
@@ -511,7 +496,7 @@ extern long
 extern int 
             Proj[3], SnapIndex,
             PicSize, PicSize2,
-            Ngroups,
+            Ngroup, NPresentGroup,
             ThisTask, NTask, MasterTask, ThisTask_Local, NTask_Local,
             ThisTask_Master, NTask_Master, IOGroups,
             WinDisp,

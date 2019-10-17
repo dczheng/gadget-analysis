@@ -348,7 +348,7 @@ void output_group() {
            "\n");
     }
 
-    for ( index=0; index<Ngroups; index++  ) {
+    for ( index=0; index<Ngroup; index++  ) {
 
         if ( !group_present(index) )
             continue;
@@ -485,36 +485,23 @@ void test_group_pot() {
 
 void group_analysis() {
 
-    int proj_tmp[3], i;
-    char Sproj_tmp;
+    int i;
 
     put_header( "group analysis" );
 
-    output_group();
+    for( i=0, NPresentGroup; i<Ngroup; i++ )
+        if ( group_present(i) )
+            NPresentGroup++;
+    writelog( "NPresentGroup: %i\n", NPresentGroup );
 
-    if ( ThisTask_Local != 0 )
+    output_group();
+    group_plot();
+
+    if ( ThisTask_Local )
         return;
 
     group_spectrum();
     group_electron_spectrum();
-
-    for( i=0; i<3; i++ )
-        proj_tmp[i] = Proj[i];
-    Sproj_tmp = Sproj;
-
-    for( i=0; i<3; i++ ) {
-        proj_k = i;
-        proj_i = ( i + 1  ) % 3;
-        proj_j = ( i + 2  ) % 3;
-        Sproj = i + 'x';
-        group_plot();
-    }
-
-    for( i=0; i<3; i++ )
-        Proj[i] = proj_tmp[i];
-    Sproj = Sproj_tmp;
-
-
     group_temp_profile();
     group_temp_stack();
 

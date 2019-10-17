@@ -10,9 +10,9 @@ void total_radio_spectrum() {
     FILE *fd;
 
     writelog( "total radio spectrum ...\n" );
-    Nnu = All.NuNum;
-    numin = All.NuMin;
-    numax = All.NuMax;
+    Nnu = All.FreqN;
+    numin = All.FreqMin;
+    numax = All.FreqMax;
     dnu = log( numax/numin) / (Nnu-1);
 
     mymalloc1( nu, sizeof( double ) * Nnu );

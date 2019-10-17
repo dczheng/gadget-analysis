@@ -13,7 +13,7 @@ void mass_function() {
     gm_min = DBL_MAX;
     gm_max = -DBL_MAX;
 
-    for ( g=0; g<Ngroups; g++ ) {
+    for ( g=0; g<Ngroup; g++ ) {
         vmin2( gm_min, Gprops[g].mass );
         vmax2( gm_max, Gprops[g].mass );
     }
@@ -63,7 +63,7 @@ void mass_function() {
     mymalloc2( num, sizeof(int) * (N) );
     mymalloc2( cum_num, sizeof(int) * (N) );
 
-    for ( g=0; g<Ngroups; g++ ) {
+    for ( g=0; g<Ngroup; g++ ) {
 
         M = Gprops[g].mass;
 
