@@ -140,7 +140,7 @@ double get_slice_field_data( enum group_fields blk, long p ) {
 #endif
         case GROUP_RAD:
 #ifdef RADSLICE
-        return get_particle_radio_freq(i, All.RadSliceFreq) * 
+        return get_particle_radio(i, All.RadSliceFreq) * 
                 1.0 / (4.0 * PI * SQR( LumDis * g2c.cm )) / ( SQR(SliceL/PicSize) / SQR(ComDis) );
 #endif
         default:

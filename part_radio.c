@@ -40,7 +40,7 @@ void compute_particle_radio() {
 
 #if defined(RAD) && !defined(RADLARMOR)
     double numin, numax, dlognu, nu, r_larmor, r;
-    int nuN, j, *flags, sig;
+    int nuN, j, *flags, *flags_local, sig;
     long i, dsig, idx, flags_sum, N, Ndo;
 
 #ifdef PART_RADIO_TEST2
@@ -61,9 +61,11 @@ void compute_particle_radio() {
 #endif
 
     mymalloc2( flags, sizeof(int) * N_Gas );
+    mymalloc2( flags_local, sizeof(int) * N_Gas );
+
     nuN = All.NuNum;
-    numin = All.NuMin * 1e6 / Time;
-    numax = All.NuMax * 1e6 / Time;
+    numin = All.NuMin;
+    numax = All.NuMax;
     sig = 10;
     dlognu = log( numax/numin ) / ( nuN - 1 );
 
@@ -77,24 +79,34 @@ void compute_particle_radio() {
             writelog( "[%10li] [%10li] [%5.1f%%]\n",\
             i, N_Gas, ((double)(i)) / N_Gas * 100 );
 
-        flags[i] =1;
+        if ( i % NTask_Local != ThisTask_Local )
+            continue;
+
+        flags_local[i] = 1;
+        //flags[i] = 1;
         for( j=0; j<nuN; j++ ) {
-            idx = i * nuN + j;
             nu = exp( log(numin) + j * dlognu );
             r_larmor = particle_radio_larmor( nu, &SphP[i] );
             if (r_larmor>0) {
-                flags[i] =0;
+                flags_local[i] =0;
+                //flags[i] = 0;
                 break;
             }
         }
     }
+
+    MPI_Allreduce( flags_local, flags, N_Gas, MPI_INT, MPI_SUM, MpiComm_Local );
+    myfree( flags_local );
+    do_sync_local( "" );
 
     for( i=0, flags_sum=0; i<N_Gas; i++ ) {
         flags_sum += flags[i];
     }
 
     Ndo = N_Gas-flags_sum;
+    //writelog( "second [%li] %li \n", N_Gas, flags_sum );
     writelog( "second [%li][%.2f%%]\n", Ndo, ((double)Ndo)/N_Gas * 100 );
+
     dsig = Ndo / sig;
     N = 0;
     for( i=0; i<N_Gas; i++ ) {
@@ -115,7 +127,10 @@ void compute_particle_radio() {
                 continue;
 #endif
             nu = exp( log(numin) + j * dlognu );
-#ifdef PART_RADIO_TEST2
+#if defined(PART_RADIO_TEST2) || defined(PART_RADIO_TEST3)
+#ifdef PART_RADIO_TEST3
+            if ( !ThisTask_Local )
+#endif
                 printf(
                         "--\n[%s], (%li, %i) M: %g, rho: %g, h: %g, B: %g, nu: %g,"
                         " c: %g, a: %g, qmin: %g, qmax: %g\n",
@@ -128,7 +143,7 @@ void compute_particle_radio() {
                     SphP[i].CRE_qmax
                     );
 #endif
-            r = particle_radio( nu/Time, &SphP[i] );
+            r = particle_radio( nu, &SphP[i] );
 #ifdef PART_RADIO_TEST2
             r_larmor = particle_radio_larmor( nu, &SphP[i] );
             if ( r_larmor ) {
@@ -145,13 +160,13 @@ void compute_particle_radio() {
             err_mean += err;
 #endif
             PartRad[idx] = r;
-        }
+        } // for j
 
         if ( N % dsig == 0 )
             writelog( "[%10li] [%10li] [%5.1f%%]\n",\
                 N, Ndo, ((double)(N)) / Ndo * 100 );
         N++;
-    }
+    } // for i
 #ifdef PART_RADIO_TEST2
     if ( !ThisTask_Local ) {
         err_mean /= Ndo;
@@ -210,6 +225,9 @@ double particle_radio_larmor( double nu, SphParticleData *part ) {
 
 double get_particle_radio( long p, double nu ) {
 
+/*
+nu: Mhz
+*/
     double V, r;
     V = get_V(p);
 #if defined(RAD) && !defined(RADLARMOR)
@@ -306,3 +324,8 @@ void test_part_radio() {
 }
 
 
+void free_particle_radio() {
+#if defined(RAD) && !defined(RADLARMOR)
+    myfree_shared( MpiWin_PartRad );
+#endif
+}

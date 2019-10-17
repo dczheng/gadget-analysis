@@ -41,7 +41,7 @@ void free_analysis() {
 
     tree_free();
     fof_free();
-    //free_particle_radio();
+    free_particle_radio();
 }
 
 void analysis(){
@@ -58,15 +58,16 @@ void analysis(){
     test_fof();
     test_group_pot();
 
-    tree_build();
 
-    fof();
+    tree_build();
+    smooth();
 
     compute_temperature();
-    smooth();
-    remove_mach_noise();
     compute_particle_radio();
+    remove_mach_noise();
     total_radio_spectrum();
+
+    fof();
 
 #ifdef CREPPDF
     cre_pressure_pdf();

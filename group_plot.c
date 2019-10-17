@@ -101,19 +101,20 @@ double get_group_filed_data( enum group_fields blk, long p ) {
 #endif
 #ifdef GROUPRAD
         case GROUP_RAD:
-             return get_particle_radio_freq( p, All.GroupRadFreq );
+             return get_particle_radio( p, All.GroupRadFreq );
         case GROUP_RAD1:
-             return get_particle_radio_freq( p, All.GroupRadFreq1 );
+             return get_particle_radio( p, All.GroupRadFreq1 );
         case GROUP_RAD2:
-             return get_particle_radio_freq( p, All.GroupRadFreq2 );
+             return get_particle_radio( p, All.GroupRadFreq2 );
 #endif
 #ifdef GROUPRAD
-        double f0, f1;
+        double f1, f2;
         case GROUP_RADINDEX:
-            f0 = get_particle_radio_index( p, 0 );
-            f1 = get_particle_radio_index( p, All.NuNum-1 );
-            if ( f1 != 0 )
-                return log(f1/f0) / log(All.NuMin/All.NuMax);
+            f1 = get_particle_radio( p, All.GroupRadFreq1 );
+            f2 = get_particle_radio( p, All.GroupRadFreq2 );
+            if ( f2 != 0 )
+                return log(f1/f2) /
+                    log(All.GroupRadFreq2/All.GroupRadFreq1);
             return 0;
 #endif
        default:

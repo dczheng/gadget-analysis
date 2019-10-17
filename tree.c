@@ -61,7 +61,7 @@ void tree_build_single() {
         nfreep->center[j] = ( max[j] + min[j] ) * 0.5;
     }
     for ( j=0; j<8; j++ ) {
-        nfreep->suns[j] = -1;
+        nfreep->sons[j] = -1;
     }
     nfreep->len = len;
     nfreep -> bitflags = 0;
@@ -79,20 +79,20 @@ void tree_build_single() {
             if ( n >= NumPart ){
                 for( j=0, subnode=0, bits=1; j<3; j++, bits<<=1 )
                     subnode += ( P[i].Pos[j] > Nodes[n].center[j] ) ? bits : 0;
-                nn = Nodes[n].suns[subnode];
+                nn = Nodes[n].sons[subnode];
                 if ( nn>=0 ) {
                     parent = n;
                     n = nn;
                 }
                 else {
-                    Nodes[n].suns[subnode] = i;
+                    Nodes[n].sons[subnode] = i;
                     //printf( "%li\n", i );
                     break;
                 }
             }
             else {
 
-                Nodes[parent].suns[subnode] = nfree;
+                Nodes[parent].sons[subnode] = nfree;
                 nfreep->len = 0.5 * Nodes[parent].len;
                 nfreep -> bitflags = 0;
                 lenhalf = 0.25 * Nodes[parent].len;
@@ -100,11 +100,9 @@ void tree_build_single() {
                 for ( j=0, bits=1; j<3; j++, bits<<=1 )
                     nfreep->center[j] = Nodes[parent].center[j] + ( (subnode & bits) ? ( lenhalf ) : ( -lenhalf ) );
                 for ( j=0; j<8; j++ )
-                    nfreep->suns[j] = -1;
+                    nfreep->sons[j] = -1;
                 for ( j=0, subnode=0, bits=1; j<3; j++, bits<<=1 )
                     subnode += (( P[n].Pos[j] > nfreep->center[j] ) ? bits : 0);
-
-
 
                 /*dealing with particles at identical locations ( or extremely close ). */
                 if ( nfreep -> len < 1.0e-3 * SofteningTable[P[n].Type] ) {
@@ -122,7 +120,7 @@ void tree_build_single() {
                         subnode = 7;
                 }
 
-                nfreep->suns[subnode] = n;
+                nfreep->sons[subnode] = n;
 
                 if ( nfree-NumPart >= MaxNodes ){
                     printf( "( %.10f, %.10f, %.10f ), ( %.10f, %.10f, %.10f )\ntype: (%i, %i), ID: (%i, %i)\n",
@@ -160,13 +158,13 @@ void tree_walk_recursive( long n, long sib, long father ) {
         last = n;
         /*
         for ( i=0; i<8; i++ )
-            printf( "%li ", Nodes[n].suns[i] );
+            printf( "%li ", Nodes[n].sons[i] );
         printf( "\n" );
         */
         for ( i=0; i<8; i++ ) {
-            if ( (p = Nodes[n].suns[i]) >= 0 ) {
+            if ( (p = Nodes[n].sons[i]) >= 0 ) {
                 for ( j=i+1; j<8; j++ )
-                    if ( (pp = Nodes[n].suns[j]) >= 0 )
+                    if ( (pp = Nodes[n].sons[j]) >= 0 )
                         break;
                 nextsib = ( j<8 ) ? pp : sib;
                 tree_walk_recursive( p, nextsib, n );
@@ -235,7 +233,7 @@ void tree_build() {
     for ( i=0; i<npart*All.TreeAllocFactor; i++ ) {
         printf( "%2i %2i: ", i, i+npart );
         for ( j=0; j<8; j++ )
-            printf( "%3li ", Nodes_Base[i].suns[j] );
+            printf( "%3li ", Nodes_Base[i].sons[j] );
         printf( "\n" );
     }
     */

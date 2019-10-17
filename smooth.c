@@ -1,5 +1,8 @@
 #include "allvars.h"
 
+//#define SMOOTH_DEBUG
+//#define SMOOTH_DEBUG2
+#define HIGH_PRECISION
 
 void smooth() {
 
@@ -7,24 +10,46 @@ void smooth() {
     int ngbnum, k, n;
     long i, j;
     double h_i, h2_i, h_j, h2_j, r, cm[3], r2, t, hinv_i, hinv3_i, hinv4_i, u,
-           wk, dwk, m_j, densitynorm, hinv_j, hinv3_j, hinv4_j, fac;
-
-    (void)h2_i;
+           wk, dwk, m_j, hinv_j, hinv3_j, hinv4_j;
+#ifdef HIGH_PRECISION
+    long double B[3], densitynorm, fac;
+#else
+     double B[3], densitynorm, fac;
+#endif
+#ifdef SMOOTH_DEBUG2
+     long debug_i=99;
+#endif
 
     mytimer_start();
     put_header( "smooth" );
+    writelog(
 #ifdef BSMOOTH
-    writelog( "B smooth\n" );
+    "B smooth\n"
 #endif
 #ifdef CRESMOOTH
-    writelog( "CRE smooth\n" );
+    "CRE smooth\n"
 #endif
+    );
+
+#ifdef HIGH_PRECISION
+    writelog( "long double: %li, double: %li\n",
+        sizeof(long double), sizeof(double) );
+#endif
+
+    (void)h2_i;
+
     mymalloc1( Ngblist, NumPart * sizeof(long) );
 
     for( i=0; i<N_Gas; i++ ) {
 
+#ifdef SMOOTH_DEBUG2
+        i = debug_i;
+        if (ThisTask_Local)
+            continue;
+#else
         if ( i % NTask_Local != ThisTask_Local )
             continue;
+#endif
 
         h_i = SphP[i].Hsml;
         h2_i = h_i*h_i;
@@ -33,7 +58,11 @@ void smooth() {
         for( k=0; k<3; k++ ) {
             cm[k] = P[i].Pos[k];
 #ifdef BSMOOTH
+#ifdef HIGH_PRECISION
+            B[k] = 0;
+#else
             SphP[i].SmoothB[k] = 0;
+#endif
 #endif
         }
 #ifdef CRESMOOTH
@@ -54,7 +83,6 @@ void smooth() {
             j = Ngblist[n];
             if ( P[j].Type != 0 )
                 continue;
-
             for( k=0, r2=0; k<3; k++ ) {
                 t = P[j].Pos[k] - cm[k];
                 t = PERIODIC_HALF( t );
@@ -79,7 +107,7 @@ void smooth() {
                 fac = m_j * wk;
                 for( k=0; k<3; k++ ) {
 #ifdef BSMOOTH
-                     SphP[i].SmoothB[k] += fac * SphP[j].B[k];
+                     B[k] += fac * SphP[j].B[k];
 #endif
                 }
 
@@ -93,13 +121,23 @@ void smooth() {
 #endif
                 densitynorm += fac; 
             }
-
-        }
-        if ( densitynorm > 0 ) {
-#ifdef BSMOOTH
-            for( k=0; k<3; k++ )
-                SphP[i].SmoothB[k] /= densitynorm;
+#ifdef SMOOTH_DEBUG2
+            printf( "(%g %g %g): %g\n",
+            P[j].Pos[0],
+            P[j].Pos[1],
+            P[j].Pos[2],
+            get_B(j)
+            );
 #endif
+
+        } // for n
+
+        if ( densitynorm > 0 ) {
+            for( k=0; k<3; k++ ) {
+#ifdef BSMOOTH
+                SphP[i].SmoothB[k] = B[k] / densitynorm;
+#endif
+            }
 #ifdef CRESMOOTH
             SphP[i].CRE_C      /= densitynorm; 
             SphP[i].CRE_Alpha  /= densitynorm; 
@@ -109,7 +147,12 @@ void smooth() {
             SphP[i].CRE_e      /= densitynorm; 
 #endif
         }
-    }
+#ifdef SMOOTH_DEBUG2
+        break;
+#endif
+    } // for i
+
+    do_sync_local( "smooth" );
 
     for ( i=0; i<N_Gas; i++ ) {
         if ( i % NTask_Local != ThisTask_Local )
@@ -150,8 +193,18 @@ if (!ThisTask_Local)
     myfree( Ngblist );
     mytimer_end();
 
+    do_sync_local( "smooth" );
+
 #ifdef SMOOTH_DEBUG
-    endruns( "smooth-test" );
+    if ( !ThisTask_Local ) {
+#ifdef SMOOTH_DEBUG2
+        printf( "[%li] %g\n", debug_i, get_B(debug_i) );
+#else
+        for( i=0; i<100; i++ )
+            printf( "[%li] %g\n", i, get_B(i) );
+#endif
+        endruns( "smooth-test" );
+    }
 #endif
     put_end();
 

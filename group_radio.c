@@ -59,17 +59,14 @@ void group_spectrum() {
 #ifdef GROUPSPEC
     int vN, i, index;
     double v, *flux, *flux_nosr, vmin, vmax, dv;
-    /*
-    double *lumgrid, *num, L;
-    int j;
-    */
+
     FILE *fd1, *fd2;
 
     put_header( "group spectrum" );
 
     vN = All.NuNum;
-    vmin = All.NuMin * 1e6 /Time;
-    vmax = All.NuMax * 1e6 /Time;
+    vmin = All.NuMin;
+    vmax = All.NuMax;
 
     dv = log( vmax/vmin ) / ( vN-1 );
 
@@ -248,124 +245,3 @@ void group_electron_spectrum() {
 
 #endif
 }
-
-/*
-void group_spectrum_index() {
-
-    double *spec, *v, vmin, vmax, dv, cov00, cov01, cov11, c0,
-           *spec_index, *spec_index_err,L, dL, *mass;
-    int vN, k, PicS, PicS2, ii, jj, i, j, x, y, xo, yo, flag,
-        index, p;
-    struct group_properties g;
-    char buf[100],
-         *spec_index_str="SpectrumIndex",
-         *spec_index_err_str="SpectrumIndex_err";
-
-    writelog( "group spectrum index... \n" );
-    vN = All.NuNum;
-    vmin = All.NuMin;
-    vmax = All.NuMax;
-    PicS = All.PicSize;
-    PicS2 = SQR( PicS );
-    x = proj_i;
-    y = proj_j;
-    xo = PicS / 2;
-    yo = PicS / 2;
-
-    dv = log10( vmax/vmin) / vN;
-
-    create_dir( "%s%s", GroupDir, spec_index_str );
-
-    mymalloc1( v, sizeof( double ) * vN );
-    mymalloc1( spec, sizeof( double ) * vN * PicS2 );
-    mymalloc1( spec_index, sizeof( double ) * PicS2 );
-    mymalloc1( spec_index_err, sizeof( double ) * PicS2 );
-
-    for ( i=0; i<vN; i++ )
-        v[i] = log10(vmin) + i * dv;
-
-    for ( index=0; index<Ngroups; index++ ) {
-
-        if ( !group_present( index ) ) {
-            break;
-        }
-
-        g = Gprops[index];
-        memset( spec, 0, sizeof( double ) * vN * PicS2 );
-        memset( spec_index, 0, sizeof( double ) * PicS2 );
-        memset( spec_index_err, 0, sizeof( double ) * PicS2 );
-
-        L = get_group_size( &g ) * 1.1;
-        dL = 2 * L / PicS;
-
-        p = g.Head;
-        for ( i=0; i<g.Len; i++, p=FoFNext[p] ) {
-
-            if ( P[p].Type != 0 )
-                continue;
-
-            ii = PERIODIC( P[p].Pos[x] - g.cm[x] ) / dL + xo;
-            jj = PERIODIC( P[p].Pos[y] - g.cm[y] ) / dL + yo;
-
-            check_picture_index( ii );
-            check_picture_index( jj );
-
-            for ( k=0; k<vN; k++ )
-                spec[ii*PicS*vN + jj * vN + k] += get_particle_radio_index( p, k );
-        }
-
-        for ( i=0; i<vN * PicS2; i++ )
-            if ( spec[i] != 0 )
-                spec[i] = log10( spec[i] );
-
-        for ( i=0; i<PicS; i++ )
-            for ( j=0; j<PicS; j++ ) {
-                flag = 0;
-                for ( k=0; k<vN; k++ )
-                    if ( spec[ i*PicS*vN + j*vN + k ] != 0 ){
-                        flag = 1;
-                        break;
-                    }
-                if ( flag ) {
-                    gsl_fit_linear( v, 1, &spec[ i*PicS*vN + j*vN], 1,
-                            vN, &c0, &spec_index[i*PicS + j],
-                            &cov00, &cov01, &cov11,
-                            &spec_index_err[i*PicS+j] );
-                    if ( spec_index_err[i*PicS+j] > 1 ) {
-                        spec_index_err[i*PicS+j] = 0;
-                        spec_index[i*PicS+j] = 0;
-                    }
-                }
-            }
-        mass = g.mass_table;
-        for ( i=0; i<6; i++ ) {
-            mass[i] *= 1e10;
-        }
-        for ( i=0; i<6; i++ )
-            img_props(i) = mass[i];
-        img_xmin =  -L;
-        img_xmax =  L;
-        img_ymin =  -L;
-        img_ymax =  L;
-
-        image.img = spec_index;
-        make_group_output_filename( buf, spec_index_str, index );
-        write_img( buf );
-
-        image.img = spec_index_err;
-        sprintf( buf, "%s%s/%s_%03i_%04i_%c.dat",
-            GroupDir, spec_index_str, spec_index_err_str,
-            SnapIndex, index, Sproj );
-        write_img( buf );
-
-    }
-
-    myfree( v );
-    myfree( spec );
-    myfree( spec_index );
-    myfree( spec_index_err );
-    reset_img();
-    writelog( "group spectrum index... done.\n" );
-
-}
-*/

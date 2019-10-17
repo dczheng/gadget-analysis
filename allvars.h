@@ -403,7 +403,7 @@ typedef struct GlobalParams{
 typedef struct NODE {
     double center[3];
     double len;
-    long suns[8], sibling, father;
+    long sons[8], sibling, father;
     long nextnode;
     int bitflags;
 } NODE;
