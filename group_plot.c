@@ -107,8 +107,7 @@ double get_group_filed_data( enum group_fields blk, long p ) {
             f = get_particle_radio( p, All.GroupRadFreq );
             f1 = get_particle_radio( p, All.GroupRadFreq1 );
             if ( f1 != 0 )
-                return log(f/f1) /
-                    log(All.GroupRadFreq1/All.GroupRadFreq);
+                return log(f/f1) / log(All.GroupRadFreq1/All.GroupRadFreq);
             return 0;
 #endif
        default:
@@ -172,12 +171,13 @@ void get_group_filed_name( enum group_fields blk, char *buf ) {
 
 void group_plot() {
 
-#if defined(GROUPTEMP) || defined(GROUPU) || defined(GROUPSFR) || defined(GROUPB) || defined(GROUPMACH) || defined(GROUPCRE) || defined(GROUPRAD) || defined(GROUPRADINDEX)
+#define ALTINDEX
+#if defined(GROUPTEMP) || defined(GROUPU) || defined(GROUPSFR) || defined(GROUPB) || defined(GROUPMACH) || defined(GROUPCRE) || defined(GROUPRAD) || defined(GROUPRADINDEX) || defined(GROUPDENSITY)
     long p;
     struct group_properties g;
-    double L, dL, *mass, r200, w, fac_arc; 
+    double L, dL, *mass, r200, w, area, fac_to_arcmin; 
     int *num, g_index, i, j, x, y,
-         xo, yo, pic_index, ii, jj, z;
+         xo, yo, pic_index, ii, jj, z, proj_tmp;
 
     char buf[100], buf1[100];
     double *data[GROUP_FIELD_NBLOCKS];
@@ -190,7 +190,7 @@ void group_plot() {
     fd_d = myfopen( "w", "group_plot-test.dat" );
 #endif
 
-    fac_arc = 180 * 60 * 60 / PI;
+    fac_to_arcmin = 1 / PI * 180 * 60;
 
 #ifdef GROUPFIXEDSIZE
     double L3[3];
@@ -232,6 +232,7 @@ void group_plot() {
     xo = PicSize / 2;
     yo = PicSize / 2;
     
+    proj_tmp = All.ProjectDirection;
     for( z=0; z<3; z++ ) {
 
         x = (z+1) % 3;
@@ -239,6 +240,8 @@ void group_plot() {
 
         writelog( "%c (%c %c)\n", 'x'+z, 'x'+x, 'x'+y );
        
+        Sproj = 'x'+z;
+        All.ProjectDirection = z;
         for ( g_index=0; g_index<Ngroup; g_index++ ) {
     
             if ( !group_present( g_index ) )
@@ -270,7 +273,7 @@ void group_plot() {
     
            dL = 2 * L / PicSize;
 #ifdef PRINT_GROUP_INFO
-            writelog( "group plot[%c]: %i ...\n", z+'x', g_index );
+            writelog( "group plot[%c]: %i ...\n", Sproj, g_index );
             writelog( "center of mass: %g %g %g\n",
                     g.cm[0], g.cm[1], g.cm[2] );
     
@@ -320,6 +323,10 @@ void group_plot() {
                 for( i=0; i<GROUP_FIELD_NBLOCKS; i++ ) {
                     if ( !group_filed_present(i) )
                         continue;
+#ifdef ALTINDEX
+                    if ( i == GROUP_RADINDEX )
+                        continue;
+#endif
                     if ( i == GROUP_DENS )
                         data[i][pic_index] += get_group_filed_data(i, p);
                     else
@@ -348,6 +355,10 @@ void group_plot() {
                         continue;
                     if ( j==GROUP_DENS )
                         continue;
+#ifdef ALTINDEX
+                    if ( i == GROUP_RADINDEX )
+                        continue;
+#endif
     
 #ifdef GROUPDENSITYWEIGHTED
                         data[j][i] /= data[GROUP_DENS][i];
@@ -358,7 +369,6 @@ void group_plot() {
                 }
     
             }
-    
             for ( i=0; i<PicSize2; i++ ) {
     
                 if ( num[i] == 0 )
@@ -366,19 +376,20 @@ void group_plot() {
                 data[GROUP_DENS][i] /= num[i];
                 data[GROUP_DENS][i] /= Time3;
                 data[GROUP_DENS][i] /= RhoBaryon;
-                data[GROUP_DENS][i]  *= (( g2c.g ) / CUBE( g2c.cm ) / CUBE( Time ));
+                //data[GROUP_DENS][i]  *= (( g2c.g ) / CUBE( g2c.cm ) / CUBE( Time ));
     
             }
-    
-    
-            for ( i=0; i<6; i++ )
-                img_props(i) = mass[i];
-            img_props(7) = r200;
-            img_xmin =  -L;
-            img_xmax =  L;
-            img_ymin =  -L;
-            img_ymax =  L;
-    
+#ifdef ALTINDEX
+#ifdef GROUPRADINDEX
+            for( i=0; i<PicSize2; i++ ) {
+                if ( data[GROUP_RAD1][i] > 0 ) {
+                    data[GROUP_RADINDEX][i] =
+                    log( data[GROUP_RAD][i] / data[GROUP_RAD1][i]) /
+                                            log( All.GroupRadFreq1/All.GroupRadFreq );
+                }
+            }
+#endif
+#endif
             for( i=0; i<GROUP_FIELD_NBLOCKS; i++ ) {
     
                 if ( !group_filed_present( i ) )
@@ -386,29 +397,37 @@ void group_plot() {
     
                 if ( i == GROUP_RAD || i == GROUP_RAD1 ) {
     
+                    area = get_solid_angle( dL, dL, ComDis ) * SQR(fac_to_arcmin);
                     if ( Redshift > 1e-10 ) {
                         for ( j=0; j<PicSize2; j++ ) {
                             data[i][j]  = data[i][j] / ( 4 * PI * SQR( LumDis*g2c.cm ) )
-                                           //   / SQR( dL / ComDis  ) ;
-                                           / SQR( dL / ComDis  / PI * 180 * 60 ) ;
+                                           / area;
                         }
     
-                        img_xmin =  img_ymin = -L / ComDis * fac_arc;
+                        img_xmin =  img_ymin = -L / ComDis * fac_to_arcmin;
                         img_xmax =  img_ymax = -img_xmin;
-                        img_props(7) = r200 / ComDis * fac_arc;
+                        img_props(7) = r200 / ComDis * fac_to_arcmin;
                         image.img = data[i];
                         get_group_filed_name( i, buf1 );
-                        make_group_output_filename( buf, buf1, g_index, z+'x' );
+                        make_group_output_filename( buf, buf1, g_index );
                         write_img( buf );
     
                         continue;
                     }
                 }
+
+                for ( j=0; j<6; j++ )
+                    img_props(j) = mass[j];
+                img_props(7) = r200;
+                img_xmin =  -L;
+                img_xmax =  L;
+                img_ymin =  -L;
+                img_ymax =  L;
     
                 image.img = data[i];
                 //conv( dL );
                 get_group_filed_name( i, buf1 );
-                make_group_output_filename( buf, buf1, g_index, z+'x' );
+                make_group_output_filename( buf, buf1, g_index );
                 write_img( buf );
     
             }
@@ -420,6 +439,9 @@ void group_plot() {
         } // for index
 
     } // for z
+
+    All.ProjectDirection = proj_tmp;
+    Sproj = proj_tmp + 'x';
     
     myfree( num );
 

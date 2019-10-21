@@ -90,6 +90,7 @@ void set_units() {
     All.GroupRadFreq1 *= 1e6 / Time;
     All.OutputGroupFreq *= 1e6 / Time;
     All.RadSliceFreq *= 1e6 / Time;
+    All.GroupRadProfileFreq *= 1e6 / Time;
 
     writelog1( All.FreqMin );
     writelog1( All.FreqMax );
@@ -97,6 +98,7 @@ void set_units() {
     writelog1( All.GroupRadFreq1 );
     writelog1( All.GroupRadFreq );
     writelog1( All.RadSliceFreq );
+    writelog1( All.GroupRadProfileFreq );
 
 }
 

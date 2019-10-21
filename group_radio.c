@@ -128,6 +128,98 @@ void group_spectrum() {
 #endif
 }
 
+void group_rad_profile() {
+
+#ifdef GROUPRADPROFILE
+    int RN, gi, i, *n;
+    double dlogr, rmin, rmax, *I, r, rr, fac_to_arcmin, fac_to_flux, area;
+    group_properties g;
+    long p;
+    FILE *fd;
+
+    put_header( "group rad profile" );
+    RN = All.GroupRadProfileRN;
+    mymalloc2( I, sizeof(double) * RN );
+    mymalloc2( n, sizeof(int) * RN );
+    //dlogr = log(rmax/rmin) / (RN-1);
+    fd = myfopen( "w", "%s/GroupRadProfile_%03i.dat", GroupDir, SnapIndex );
+
+    rr = 0.05;
+    fac_to_flux = 1 / ( 4*PI * SQR(LumDis*g2c.cm) );
+    fac_to_arcmin = SQR(1 / PI * 180 * 60);
+    dlogr = log(1/rr) / (RN-1);
+
+    for(i=0; i<RN; i++)
+         fprintf( fd, "%g ", rr*exp(i*dlogr) );
+    fprintf( fd, "\n" );
+
+    for( gi=0; gi<Ngroup; gi++ ) {
+        if ( !group_present(gi) )
+            continue;
+
+        g = Gprops[gi];
+        p = g.Head;
+
+        for( i=0; i<RN; i++ )
+            I[i] = 0;
+        rmax = g.vr200;;
+        rmin = rr * rmax;
+    
+        while( p>=0 ) {
+    
+            if ( P[p].Type ) {
+                p = FoFNext[p];
+                continue;
+            }
+
+            for(i=0, r=0; i<3; i++)
+                r += SQR( PERIODIC_HALF( P[p].Pos[i]-g.cm[i] ) );
+            r = sqrt(r);
+
+            if ( r > rmax ) {
+                p = FoFNext[p];
+                continue;
+            }
+    
+            if ( r<rmin )
+                i = 0;
+            else
+                i = log(r/rmin) / dlogr + 1;
+
+            if ( i<=RN-1 ) {
+                I[i] += get_particle_radio( p, All.GroupRadProfileFreq );
+                n[i] ++;
+            }
+            p = FoFNext[p];
+        }
+
+        for( i=0; i<RN; i++ ) {
+            if ( i==0 )
+                area = PI * SQR(rmin);
+            else
+                area  = PI * (SQR(rmin*exp(i*dlogr))-SQR(rmin*exp((i-1)*dlogr)));
+            area = area / SQR(ComDis) * fac_to_arcmin;
+            I[i] = I[i] / area * fac_to_flux;
+        }
+
+        for(i=0; i<RN; i++)\
+            fprintf( fd, "%g ", I[i] );
+        fprintf( fd, "\n" );
+
+        for(i=0; i<RN; i++)\
+            fprintf( fd, "%i ", n[i] );
+        fprintf( fd, "\n" );
+
+    }
+
+    fclose( fd );
+    myfree( I );
+    myfree( n );
+
+    put_end();
+
+#endif
+}
 #ifdef GROUPELECSPEC
 double particle_f( SphParticleData *part, double p ) {
 

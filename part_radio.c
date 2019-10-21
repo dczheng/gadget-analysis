@@ -1,5 +1,6 @@
 #include "allvars.h"
 
+#if defined(RAD) && !defined(RADLARMOR)
 double particle_df( double p, void *params ) {
     double *pa;
     pa = params;
@@ -35,6 +36,7 @@ double particle_radio( double nu,  SphParticleData *part ) {
     return r;
 
 }
+#endif
 
 void compute_particle_radio() {
 
@@ -49,6 +51,7 @@ void compute_particle_radio() {
 
     writelog( "Start compute particle radio ... \n" )
 
+  mytimer_start();
     init_compute_F();
 
     mymalloc1_shared( PartRad, sizeof(double)*N_Gas*All.FreqN, sizeof(double), MpiWin_PartRad );
@@ -73,6 +76,8 @@ void compute_particle_radio() {
     dsig  = N_Gas / sig;
 
     writelog( "first\n" );
+    double V, fac_to_flux;
+    fac_to_flux = 1 / ( 4*PI * SQR(LumDis*g2c.cm))*1e26;
     for( i=0; i<N_Gas; i++ ) {
 
         if ( i % dsig == 0 )
@@ -87,7 +92,9 @@ void compute_particle_radio() {
         for( j=0; j<nuN; j++ ) {
             nu = exp( log(numin) + j * dlognu );
             r_larmor = particle_radio_larmor( nu, &SphP[i] );
-            if (r_larmor>0) {
+            V = get_V(i);
+            r = r_larmor * V * fac_to_flux;
+            if (r>1e-2) {
                 flags_local[i] =0;
                 //flags[i] = 0;
                 break;
@@ -190,6 +197,7 @@ void compute_particle_radio() {
     free_tab_F();
 #endif
     do_sync_local( "" );
+    mytimer_end();
 #endif
 }
 
@@ -200,6 +208,7 @@ double particle_radio_larmor( double nu, SphParticleData *part ) {
     long idx;
     idx = part - SphP;
 
+    //printf( "idx: %li\n", idx );
     B = get_B( idx );
 
     if(B==0)  return 0;
@@ -225,9 +234,6 @@ double particle_radio_larmor( double nu, SphParticleData *part ) {
 
 double get_particle_radio( long p, double nu ) {
 
-/*
-nu: Mhz
-*/
 #if defined(RAD) || defined(RADLARMOR)
     double V, r;
     V = get_V(p);

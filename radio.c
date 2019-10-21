@@ -221,7 +221,7 @@ double err_x;
     }
 
 #ifdef INIT_TAB_F_DEBUG
-    printf( "[%03i], x: %g, err_x: %g\n", ThisTask, err_x, err_max );
+    writelog( "[%03i], x: %g, err_x: %g\n", ThisTask, err_x, err_max );
 #endif
 
     MPI_Reduce( &err_max, &err_max_global, 1, MPI_DOUBLE,

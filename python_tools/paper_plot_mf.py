@@ -1,21 +1,25 @@
 #!/usr/bin/env python3
 
 from my_work_env import *
-import matplotlib.gridspec as gridspec
-
 
 ps_fn = sys.argv[1]
 mf_fn = sys.argv[2]
 cre_mf_fn =  sys.argv[3]
 fn_out = sys.argv[4]
 
-axN = 3
-axs = []
-gs = gridspec.GridSpec( axN, 1, height_ratios=[1,1,1] )
-for i in range( axN ):
-    axs.append( plt.subplot( gs[i] ))
+fs = 8
+m = 3
+n = 1
+t_pad_x = 0.15
+t_pad_y = 0.1
+r = 0.2
+dx = (1 - t_pad_x-t_pad_x*r) / n
+dy = (1 - t_pad_y-t_pad_y*r) / m
+fig = plt.figure( figsize=(fs, fs) )
 
-data_dir = './'
+axs = [ fig.add_axes( [t_pad_x, (m-1-i)*dy+t_pad_y, dx, dy] )\
+        for i in range(m)]
+
 ls = [ '-', '-.' ]
 ss = [ '*', '^' ]
 colors = [ 'k', 'r' ]
@@ -24,37 +28,18 @@ ps = np.loadtxt( ps_fn )
 mf = np.loadtxt( mf_fn )
 cre_mf = np.loadtxt( cre_mf_fn )
 
-#axs[0].plot( ps[:,0], ps[:,1], label='PS' )
+um = 1e2
+#axs[0].plot( ps[:,0]/um, ps[:,1], label='PS' )
 
-xlim_fac = 2
+#index = (mf[:,-1]>100) * (cre_mf[:,-1]>100)
+#mf = mf[index, :]
+#cre_mf = cre_mf[index,:]
 
-def my_hist( M, N ):
-    MM = []
-    NN = []
-    for k in range( len( M ) ):
-
-        if k == 0:
-            NN.append( N[k] )
-            MM.append( M[k] )
-            continue
-        MM.append( M[k] )
-        MM.append( M[k] )
-        if k == len(M)-1:
-            NN.append( N[k-1] )
-            NN.append( N.min() )
-            continue
-        NN.append( N[k-1] )
-        NN.append( N[k] )
-    MM.append( M.max() * xlim_fac )
-    NN.append( N[-1] )
-
-    return ( MM, NN )
-
-M = mf[:, 0]
+M = mf[:, 0] / um 
 dndm = mf[:, 1]
 N = mf[:, -1]
 
-cre_M = cre_mf[:, 0]
+cre_M = cre_mf[:, 0] / um
 cre_dndm = cre_mf[:, 1]
 cre_N = cre_mf[:, -1]
 
@@ -80,45 +65,40 @@ axs[0].plot( cre_M, cre_dndm, '--', label=r'$\rm SIM-CRE$' )
 axs[0].plot( M, dndm, '*')
 axs[0].plot( cre_M, cre_dndm, '.')
 
-MM, NN = my_hist( M, N )
-cre_MM, cre_NN = my_hist( cre_M, cre_N )
-
-axs[2].plot( MM, NN, '-.', label=r'$\rm SIM$')
-axs[2].plot( cre_MM, cre_NN, '-', label=r'$\rm SIM-CRE$')
 
 axs[1].plot( M, (cre_dndm-dndm) / dndm )
 axs[1].plot( M, (cre_dndm-dndm) / dndm, 'o' )
 print( (cre_dndm-dndm) / dndm )
 
-for i in range( axN ):
+axs[2].step( M, N, '-.', label=r'$\rm SIM$')
+axs[2].step( cre_M, cre_N, '-', label=r'$\rm SIM-CRE$')
+
+for i in range( m ):
     axs[i].set_xscale( 'log' )
     axs[i].set_yscale( 'log' )
-    #axs[i].grid()
-    axs[i].set_xlim( [M.min()/xlim_fac, M.max()*xlim_fac] )
 
     if i == 0:
-        #axs[i].set_ylabel( r'$\frac{dn} {dlog_{10}(M/M_{\odot})} \,\rm [(h/Mpc)^3]$', fontsize=20 )
-        axs[i].set_ylabel( r'$\rm MF\;[\frac{(h/Mpc)^3}{dlog_{10}(M/M_{\odot})}]$', fontsize=20 )
+        axs[i].set_ylabel( r'$\rm MF \;[\frac{(h/Mpc)^3}{dlog_{10}(M/M_{\odot})}]$', fontsize=20 )
         axs[i].legend( prop={'size':20}, framealpha=0.1)
         axs[i].set_ylim( [dndm_min/2, dndm_max*2] )
+        remove_tick_labels( axs[i], 'x' )
     if i == 1:
-        axs[i].set_ylabel( r'$\rm Error$', fontsize=20 )
+        axs[i].set_ylabel( r'$\rm Difference$', fontsize=20 )
         #axs[i].yaxis.set_major_locator(plt.LinearLocator(numticks=8))
         axs[i].set_yscale( 'linear' )
-        axs[i].yaxis.set_major_locator(plt.MultipleLocator(0.02))
+        #axs[i].yaxis.set_major_locator(plt.MultipleLocator(0.02))
+        remove_tick_labels( axs[i], 'x' )
 
     if i == 2:
-        axs[i].set_ylabel( r'$\rm Number$', fontsize=20 )
+        axs[i].set_ylabel( r'$N$', fontsize=20 )
         axs[i].legend( prop={'size':20}, framealpha=0.1)
-        axs[i].set_xlabel( r'$\rm M/M_{\odot}$', fontsize=20 )
+        axs[i].set_xlabel( r'$M [\times 10^{12}\,h^{-1}M_{\odot}]$', fontsize=20 )
 
     axs[i].tick_params( axis='both', direction='in', pad=5, labelsize=20 )
     if i == 1:
         axs[i].tick_params( axis='both', direction='in', pad=5, labelsize=15 )
     axs[i].minorticks_off()
 
-fig = plt.gcf()
 fig.set_size_inches(8,8)
-fig.tight_layout()
 
 fig.savefig( fn_out )

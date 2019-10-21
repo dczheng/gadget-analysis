@@ -64,7 +64,7 @@
 
 #define GSL_INTE_WS_LEN 10000
 #define GSL_INTE_ERR_ABS  ((double)(0.0))
-#define GSL_INTE_ERR_REL  ((double)(1e-3))
+#define GSL_INTE_ERR_REL  ((double)(1e-2))
 #define GSL_INTE_ERR_REL2 ((double)(1e-2))
 #define GSL_INTE_KEY GSL_INTEG_GAUSS61
 
@@ -168,9 +168,13 @@ struct radio_inte_struct{
     double nu;
 };
 
-#if defined(GROUPRAD) || defined(RADSLICE) || defined(TOTSPEC) || defined(GROUPSPEC) || defined(GROUPLUM) || (defined(OUTPUTGROUP) && defined(OUTPUTGROUPLUM)) || defined(RADSMOOTH)
-#ifndef RADLARMOr
+#if defined(GROUPRAD) || defined(RADSLICE) || defined(TOTSPEC) || defined(GROUPSPEC) || defined(GROUPLUM) || (defined(OUTPUTGROUP) && defined(OUTPUTGROUPLUM)) || defined(RADSMOOTH) || defined(GROUPRADPROFILE)
 #define RAD
+#endif
+
+#ifdef RADLARMOR
+#ifdef RAD
+#undef RAD
 #endif
 #endif
 
@@ -180,18 +184,17 @@ struct radio_inte_struct{
 #endif
 #endif
 
-#if defined(GROUPTEMP) || defined(GROUPU) || defined(GROUPSFR) || defined(GROUPB) || defined(GROUPMACH) || defined(GROUPCRE) || defined(GROUPRAD) || defined(GROUPSPEC) || defined(GROUPELECSPEC) || defined(GROUPTEMPPROFILE) || defined(GROUPTEMPSTACK) || defined(GROUPLUM) || defined(OUTPUTGROUP)
+#if defined(GROUPTEMP) || defined(GROUPU) || defined(GROUPSFR) || defined(GROUPB) || defined(GROUPMACH) || defined(GROUPCRE) || defined(GROUPRAD) || defined(GROUPSPEC) || defined(GROUPELECSPEC) || defined(GROUPTEMPPROFILE) || defined(GROUPTEMPSTACK) || defined(GROUPLUM) || defined(OUTPUTGROUP) || defined(GROUPDENSITY) || defined(MF)
 #ifndef FOF 
 #define FOF 
 #endif
 #endif
 
-#if defined(FOF) || defined(BSMOOTH) || defined(CRESMOOTH)
+#if (defined(FOF) || defined(BSMOOTH) || defined(CRESMOOTH)) && !defined(NOTREE)
 #ifndef TREE
 #define TREE
 #endif
 #endif
-
 
 #if defined(GROUPCRE) || defined(GROUPELECSPEC) || defined(CREPPDF) || defined(CRENSLICE) || defined(CREESLICE) || defined(CRENTPDF) || defined(RAD) || defined(RADLARMOR)
 #ifndef READCRE
@@ -317,6 +320,7 @@ typedef struct GlobalParams{
         MpcFlag,
         MFBins, BPdfBins, DivBErrPdfBins,
         GroupTempProfileRN,
+        GroupRadProfileRN,
         KernelInterpolation,
         ConvN,
         PowSpecNGrid, PowSpecPartType, PowSpecBins,
@@ -355,7 +359,7 @@ typedef struct GlobalParams{
             GroupRadFreq, GroupRadFreq1,
             OutputGroupFreq,
             RadSliceFreq,
-            QMin, QMax, MFMmin, MFMmax, MFMSplit,
+            QMin, QMax, MFMmin, MFMmax,
             PhaseTempMin, 
             PhaseTempMax,
             PhaseDensMax,
@@ -378,6 +382,7 @@ typedef struct GlobalParams{
             BPdfBMin, BPdfBMax,
             DivBErrPdfMin, DivBErrPdfMax,
             BDensPdfBMin, BDensPdfBMax,
+            GroupRadProfileFreq,
             BDensPdfDensMin, BDensPdfDensMax,
             DivBerrDensPdfDivBMin, DivBerrDensPdfDivBMax,
             DivBerrDensPdfDensMin, DivBerrDensPdfDensMax,

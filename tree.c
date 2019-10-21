@@ -1,11 +1,5 @@
 #include "allvars.h"
 
-#if defined(FOF) || defined(BSMOOTH)
-#ifndef TREE
-#define TREE
-#endif
-#endif
-
 #ifdef TREE
 long last, parent, father, npart;
 
@@ -205,7 +199,7 @@ void tree_walk_test(){
 #endif
 
 void tree_build() {
-#if defined(TREE) || defined(FOF) || defined(SMOOTH)
+#if defined(TREE)
     long i;
     /*
     npart = 30;
@@ -252,7 +246,7 @@ void tree_build() {
 #endif
 }
 void tree_free() {
-#if defined(TREE) || defined(FOF) || defined(SMOOTH)
+#if defined(TREE)
     writelog( "free memory for tree\n" );
     myfree( Nodes_Base );
     myfree( NextNode );

@@ -323,28 +323,38 @@ void output_group() {
 #ifdef OUTPUTGROUP
     int index, i;
     long p;
-    double ep, ek, m_diffuse, m_warmhot, m_hot, m_condensed, m, d, t, dens, ee,
-            B;
+    double m_diffuse, m_warmhot, m_hot, m_condensed, m, d, t, dens,
+            mgas_r200, r, T;
+            
     FILE *fd;
     struct group_properties *g;
     put_header( "output_group" );
 #ifdef OUTPUTGROUPLUM
-    double lum;
+    double lum, B, e;
+#endif
+
+#ifdef OUTPUTVIR
+    double ep, ek;
 #endif
 
 
     if ( ThisTask_Local == 0 ) {
     fd = myfopen( "w", "%s/group_%03i.csv",
             GroupDir, SnapIndex);
-    fprintf( fd, "mtot,"
+    fprintf( fd, "z,mtot,ntot,"
             "x,y,z,"
-            "mgas,mdm,mstar,mdiffuse,mwarmhot,mhot,mcondensed,"
+            "mgas,mdm,mstar,ngas,ndm,nstar,mdiffuse,"
+            "mwarmhot,mhot,mcondensed,mgas_r200,T,"
 #ifdef OUTPUTGROUPLUM
            "Lum,"
            "ee,"
            "B,"
 #endif
-           "r200,ek,ep,vr,v_mean,v_disp"
+           "r200,"
+#ifdef OUTPUTVIR
+           "ek,ep,vr,"
+#endif
+           "v_mean,v_disp"
            "\n");
     }
 
@@ -354,7 +364,9 @@ void output_group() {
             continue;
 
        // ep = group_pot( index );
+#ifdef OUTPUTVIR
         ep = group_pot_direct( index );
+#endif
 
         if ( ThisTask_Local != 0 )
             continue;
@@ -364,9 +376,13 @@ void output_group() {
         g = &Gprops[index];
         p = g->Head; 
         m_diffuse = m_warmhot = m_hot = m_condensed = 0;
+#ifdef OUTPUTGROUPLUM
         ee = 0;
         B = 0;
+#endif
         dens = 0;
+        mgas_r200 = 0;
+        T = 0;
         while( p>=0 ) {
             if ( P[p].Type ) {
                 p = FoFNext[p];
@@ -380,6 +396,12 @@ void output_group() {
             ee += SphP[p].CRE_e / SphP[p].u  * d;
             B += get_B(p) * 1e6;
 #endif
+            T += t * d;
+            for(i=0,r=0; i<3; i++)
+                r += SQR( PERIODIC_HALF(P[p].Pos[i]-g->cm[i]) );
+            r = sqrt(r);
+            if ( r<= g->vr200 )
+                mgas_r200 += m;
 
             if ( t < 1e5 ) {
                 if ( d>1e3 )
@@ -397,10 +419,12 @@ void output_group() {
             p = FoFNext[p];
         }
 
+#ifdef OUTPUTVIR
 #ifdef OUTPUTGROUP_DEBUG
         ek = group_ek( index );
 #else
         ek = g->ek;
+#endif
 #endif
 
 #ifdef OUTPUTGROUPLUM
@@ -408,20 +432,26 @@ void output_group() {
         ee /= dens;
         B /= g->npart[0];
 #endif
+
+        T /= dens;
         
-        fprintf( fd, "%g,", g->mass );
+        fprintf( fd, "%g,%g,%li,", Redshift, g->mass, g->Len );
 
         for( i=0; i<3; i++ )
             fprintf( fd, "%g,", g->cm[i] );
 
-        fprintf( fd, "%g,%g,%g,%g,%g,%g,%g,",
+        fprintf( fd, "%g,%g,%g,%li,%li,%li,%g,%g,%g,%g,%g,%g,",
         g->mass_table[0],
         g->mass_table[1],
         g->mass_table[4],
+        g->npart[0],
+        g->npart[1],
+        g->npart[4],
         m_diffuse,
         m_warmhot,
         m_hot,
-        m_condensed
+        m_condensed,
+        mgas_r200,T
         );
 #ifdef OUTPUTGROUPLUM
             fprintf( fd, "%g,", lum );
@@ -429,8 +459,14 @@ void output_group() {
             fprintf( fd, "%g,", B );
 #endif
 
-        fprintf( fd, "%g,%g,%g,%g,%g,%g\n",
-                g->vr200, ek, ep, ek/ep, g->v_mean, g->v_disp );
+        fprintf( fd, "%g,",
+                g->vr200 );
+#ifdef OUTPUTVIR
+        fprintf( fd, "%g,%g,%g",
+                ek, ep, ek/ep );
+#endif
+        fprintf( fd, "%g,%g\n",
+                g->v_mean, g->v_disp );
 #ifdef OUTPUTGROUP_DEBUG
         if ( index == 2 )
         break;
@@ -500,6 +536,7 @@ void group_analysis() {
     if ( ThisTask_Local )
         return;
 
+    group_rad_profile();
     group_spectrum();
     group_electron_spectrum();
     group_temp_profile();

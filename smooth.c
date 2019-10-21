@@ -277,7 +277,7 @@ void smooth2() {
                 fac = m_j * wk;
 #ifdef RADSMOOTH
                 for( k=0; k<All.FreqN; k++ )
-                    Smoothedrad[i*All.FreqN+k] += PartRad[i*All.FreqN+k];
+                    Smoothedrad[i*All.FreqN+k] += fac * PartRad[i*All.FreqN+k];
 #endif
 
                 densitynorm += fac; 

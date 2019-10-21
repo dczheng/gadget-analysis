@@ -16,8 +16,10 @@ ax = fig.add_subplot( 111 )
 def fit_f( x, a, b ):
     return x*a + b
 
-x = dat_1[:,0]
-y = dat_1[:,1] / mycc.mJy
+x = dat_1[0,1:]
+y = dat_1[-1,1:] / mycc.mJy
+print( x )
+print( y )
 
 xx = np.log10( x )
 yy = np.log10( y )

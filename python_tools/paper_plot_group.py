@@ -18,8 +18,8 @@ fig_name = [  r"$\rm {\rho}/{\bar{\rho}}$", \
               r"$\rm B \,[\mu G]$",\
               r"$\rm Mach$",  \
               r"$\rm \epsilon / \epsilon_{\rm bar}$", \
-              r"$\rm I_{350M}\, [mJy\,arcsec^{-2}]$",\
-              r"$\rm I_{1.4G}\, [mJy\,arcsec^{-2}]$",\
+              r"$\rm I_{350M}\, [Jy\,arcmin^{-2}]$",\
+              r"$\rm I_{1.4G}\, [Jy\,arcmin^{-2}]$",\
               r'$\rm \alpha_{rad} \; [350MHz-1.4GHz]$',
               ]
 norms   = [  mplc.LogNorm,\
@@ -104,43 +104,44 @@ for i in range(m):
     name2index[ ds_name[i] ] = i
 print( name2index )
 
-i = name2index[ "Cre_e" ]
-for j in range(n):
-    d = ds[i][j]
-    d[ d<d.max()*1e-4 ] = 0
-
 i = name2index[ "Radio" ]
+i1 = name2index[ "Radio1" ]
+ii = name2index[ "RadioIndex" ]
+i_cre = name2index[ "Cre_e" ]
 for j in range(n):
-    ds[i][j] = ds[i][j] / mycc.mJy
-    idx1 = ds[name2index['Density']][j] > 1e4
-    idx2 = ds[name2index['Mach']][j] > 2 
-    idx = idx1 * idx2
-    #ds[i][j][ idx ] = 0 
-    #idx_mag = ds[name2index['MagneticField']][j] > 10 
-    #ds[i][j][ idx_mag ] = 0
-    ds[i][j][ds[i][j]<ds[i][j].max()*1e-13] = 0
 
-i = name2index[ "Radio1" ]
-for j in range(n):
-    ds[i][j] = ds[i][j] / mycc.mJy
-    idx1 = ds[name2index['Density']][j] > 1e4
-    idx2 = ds[name2index['Mach']][j] > 2 
-    idx = idx1 * idx2
-    #ds[i][j][ idx ] = 0 
-    #idx_mag = ds[name2index['MagneticField']][j] > 10 
-    #ds[i][j][ idx_mag ] = 0
-    ds[i][j][ds[i][j]<ds[i][j].max()*1e-13] = 0
+    ds[i_cre][j][ ds[i_cre][j]<ds[i_cre][j].max()*1e-4 ] = 0
+    ds[i][j] = ds[i][j] / mycc.Jy
+    ds[i1][j] = ds[i1][j] / mycc.Jy
 
-#i = name2index[ "RadioIndex" ]
-#for j in range(n):
-#    ds[i][j] *= -1
-#    #ds[i][j][ds[name2index['Radio']][j]==0] = 0
-#    ds[i][j][ds[i][j] > 3] = 0
+    idx = ds[i][j] < ds[i][j].max()*1e-8
+    idx1 = ds[i1][j] < ds[i1][j].max()*1e-10
+
+    idx = idx + idx1
+    ds[i][j][idx] = 0
+    ds[i1][j][idx] = 0
+    ds[ii][j][idx] = 0
+
+    print( \
+    len(ds[ii][j][ds[ii][j]>3]),\
+    len(ds[ii][j][ds[ii][j]>0])
+    )
+
+    ds[ii][j][ds[ii][j]>3] = 0
+
+    '''
+    ds[i][j] = np.log10(ds[name2index['Radio']][j] / \
+                ds[name2index['Radio1']][j]) / \
+                np.log10(1400/350.0)
+    ds[i][j][np.isnan(ds[i][j])] = 0
+    ds[i][j][np.isinf(ds[i][j])] = 0
+    '''
 
 
 i = name2index[ "Mach" ]
 for j in range(n):
-    ds[i][j][0,0] = 1
+    pass
+    #ds[i][j][0,0] = 1
     #ds[i][j][ds[i][j]>4] = 1
     #ds[i][j][ idx_mag ] = ds[i][j].min()
     #idx1 = ds[name2index['Density']][j] > 1e5
