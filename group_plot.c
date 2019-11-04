@@ -175,7 +175,7 @@ void group_plot() {
 #if defined(GROUPTEMP) || defined(GROUPU) || defined(GROUPSFR) || defined(GROUPB) || defined(GROUPMACH) || defined(GROUPCRE) || defined(GROUPRAD) || defined(GROUPRADINDEX) || defined(GROUPDENSITY)
     long p;
     struct group_properties g;
-    double L, dL, *mass, r200, w, area, fac_to_arcmin; 
+    double L, dL, *mass, r200, w, area, fac_to_arcmin, Lz; 
     int *num, g_index, i, j, x, y,
          xo, yo, pic_index, ii, jj, z, proj_tmp;
 
@@ -290,13 +290,26 @@ void group_plot() {
             writelog( "\n" );
             writelog( "L: %g, dL:%g\n", 2*L, dL );
 #endif
-    
-            p = g.Head;
-            while( p>=0 ){
-                if ( P[p].Type != 0 ) {
-                    p = FoFNext[p];
-                    continue;
-                }
+
+//            p = g.Head;
+//           while( p>=0 ){
+//              if ( P[p].Type != 0 ) {
+//                 p = FoFNext[p];
+//                continue;
+//           }
+
+            Lz = All.GroupSizeZ;
+            if ( Lz == 0 )
+                Lz = g.size[z];
+
+                for( p=0; p<N_Gas; p++ ) {
+                    if ( 
+                        ( NGB_PERIODIC(P[p].Pos[x] - g.cm[x]) > L ) ||
+                        ( NGB_PERIODIC(P[p].Pos[y] - g.cm[y]) > L ) ||
+                        ( NGB_PERIODIC(P[p].Pos[z] - g.cm[z]) > Lz )
+                        )
+                        continue;
+
                 ii = PERIODIC_HALF( P[p].Pos[x] - g.cm[x] ) / dL + xo;
                 jj = PERIODIC_HALF( P[p].Pos[y] - g.cm[y] ) / dL + yo;
 #ifdef GROUP_PLOT_DEBUG
@@ -339,7 +352,7 @@ void group_plot() {
 #ifdef GROUP_PLOT_DEBUG
                 printf( "\n" );
 #endif
-                p = FoFNext[p];
+            //    p = FoFNext[p];
             } 
 #ifdef GROUP_PLOT_DEBUG
             endruns( "group-plot-debug" );

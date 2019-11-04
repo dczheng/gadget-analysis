@@ -94,7 +94,7 @@ void compute_particle_radio() {
             r_larmor = particle_radio_larmor( nu, &SphP[i] );
             V = get_V(i);
             r = r_larmor * V * fac_to_flux;
-            if (r>1e-2) {
+            if (r>1e-8) {
                 flags_local[i] =0;
                 //flags[i] = 0;
                 break;

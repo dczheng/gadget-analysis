@@ -237,7 +237,7 @@ writelog( "[Timer Start in `%s`]\n", __FUNCTION__ ); \
             )
             //P[i].Mass / SphP[i].Density * CUBE( g2c.cm * Time  )
 
-#define get_pressure( i ) (SphP[i].u*( GAMMA_MINUS1*SphP[i].Density/Time3 ))
+#define get_pressure( i ) (SphP[i].u * GAMMA_MINUS1*(SphP[i].Density/Time3))
 
 #define get_gas_density_min_max( dmin, dmax ) {\
     long p;\

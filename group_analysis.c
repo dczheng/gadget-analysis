@@ -330,10 +330,10 @@ void output_group() {
     struct group_properties *g;
     put_header( "output_group" );
 #ifdef OUTPUTGROUPLUM
-    double lum, B, e;
+    double lum, B, ee;
 #endif
 
-#ifdef OUTPUTVIR
+#ifdef OUTPUTGROUPVIR
     double ep, ek;
 #endif
 
@@ -351,7 +351,7 @@ void output_group() {
            "B,"
 #endif
            "r200,"
-#ifdef OUTPUTVIR
+#ifdef OUTPUTGROUPVIR
            "ek,ep,vr,"
 #endif
            "v_mean,v_disp"
@@ -364,7 +364,7 @@ void output_group() {
             continue;
 
        // ep = group_pot( index );
-#ifdef OUTPUTVIR
+#ifdef OUTPUTGROUPVIR
         ep = group_pot_direct( index );
 #endif
 
@@ -419,7 +419,7 @@ void output_group() {
             p = FoFNext[p];
         }
 
-#ifdef OUTPUTVIR
+#ifdef OUTPUTGROUPVIR
 #ifdef OUTPUTGROUP_DEBUG
         ek = group_ek( index );
 #else
@@ -461,8 +461,8 @@ void output_group() {
 
         fprintf( fd, "%g,",
                 g->vr200 );
-#ifdef OUTPUTVIR
-        fprintf( fd, "%g,%g,%g",
+#ifdef OUTPUTGROUPVIR
+        fprintf( fd, "%g,%g,%g,",
                 ek, ep, ek/ep );
 #endif
         fprintf( fd, "%g,%g\n",

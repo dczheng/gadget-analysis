@@ -14,7 +14,7 @@ void pdf2d_or_field2d( double *x, double *y, double *w, long num, char *dn,
     require data > 0 for log.
     */
 
-    double dx, dy, xmin, xmax, ymin, ymax, s, area;
+    double dx, dy, xmin, xmax, ymin, ymax, s, area, sum;
     int i, j, N, N2;
     long p;
 
@@ -70,10 +70,16 @@ void pdf2d_or_field2d( double *x, double *y, double *w, long num, char *dn,
 
     writelog( "[%s], dx: %g ,dy: %g, area: %g\n", __FUNCTION__,
         dx, dy, area );
+    if ( flag & PDF2D_BIT_UNIT_AREA ) {
+        writelog( "use unit area\n" );
+    }
+    else {
+        writelog( "don't use unit area\n" );
+    }
 
     for( p=0; p<N_Gas; p++ ) {
-        i = ( y[p] - ymin ) / dy;
-        j = ( x[p] - xmin ) / dx;
+        i = floor(( y[p] - ymin ) / dy);
+        j = floor(( x[p] - xmin ) / dx);
         if ( i < 0 || i > N-1 || j < 0 || j > N-1 )
             continue;
 
@@ -93,6 +99,10 @@ void pdf2d_or_field2d( double *x, double *y, double *w, long num, char *dn,
 
     }
 
+    for( p=0,sum=0; p<N2; p++ )
+        sum += image.img[p];
+    writelog( "N_Gas: %li, pic sum: %.10f\n", N_Gas, sum );
+
     if ( flag & PDF2D_BIT_MODE  ) {
         for( p=0; p<N2; p++ )
             if ( image.num[p] >= Nmin )
@@ -101,9 +111,11 @@ void pdf2d_or_field2d( double *x, double *y, double *w, long num, char *dn,
                 image.img[p] = 0;
     }
     else {
-        if ( flag & PDF2D_BIT_UNIT_AREA )
+        if ( flag & PDF2D_BIT_UNIT_AREA ) {
             for( p=0; p<N2; p++ )
                 image.img[p] /=  area;
+               // printf( "ok\n" );
+        }
 
         if ( flag & PDF2D_BIT_NORM ) {
             for( s=0,p=0; p<N2; p++ )
@@ -132,7 +144,6 @@ void pdf2d_or_field2d( double *x, double *y, double *w, long num, char *dn,
         img_ylog = 0;
 
     write_img( buf );
-
 }
 
 void B_dens_pdf() {

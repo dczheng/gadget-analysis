@@ -7,12 +7,13 @@ fn_out = sys.argv[2]
 #matplotlib.style.use( 'default' )
 
 cmaps = [
-        cm.hot,\
-        #cm.jet,\
-        #plt.get_cmap( 'ds9b' ),\
-        cm.nipy_spectral,\
+        cm.jet,\
+        cm.magma,\
         plt.get_cmap( 'ds9a' ),\
-        cm.plasma
+        cm.nipy_spectral,\
+        #plt.get_cmap( 'ds9b' ),\
+        cm.plasma,\
+        cm.hot,\
         ]
 Names = [
         r'$\rm {\rho}/{\bar{\rho}}$', \
@@ -22,10 +23,10 @@ Names = [
         ]
 
 norms = [
-        mplc.LogNorm(),\
-        mplc.LogNorm(),\
-        mplc.LogNorm(),\
-        mplc.LogNorm()
+        mplc.LogNorm,\
+        mplc.LogNorm,\
+        mplc.LogNorm,\
+        mplc.LogNorm
         ]
 
 FileNames1 = [
@@ -105,34 +106,42 @@ for j in range(N):
         data_all[i][j] = data_all[i][j][1:,:]
         print( data_all[i][j][data_all[i][j]>0].min(), data_all[i][j].max() )
 
+vmaxs = []
+vmins = []
 for j in range(N):
-    vmax = np.max( [ data_all[i][j].max() for i in range(4)] )
-    vmin = np.min( [ data_all[i][j][data_all[i][j]>0].min() for i in range(4)] )
+    for i in range(4):
+        d = data_all[j][i]
+        d[d==0] = d[d>0].min() / 100
+
+    vmaxs.append(np.max( [ data_all[i][j].max() for i in range(4)] ))
+    vmins.append(np.min( [ data_all[i][j][data_all[i][j]>0].min() for i in range(4)] ))
+
     if "Mach" in Names[j]:
-        v = 0.9
+        print( "Mach" )
+        vmins[j] = 1
+        mmax =300 
+        for i in range(4):
+            d = data_all[i][j]
+            print( d.min(), d.max() )
+            n1 = len(d[d>mmax])
+            n2 = len(d[d>vmins[j]])
+            print( n1, n2, (n1/n2)*100 )
+        vmaxs[j] = mmax
 
     if "rho" in Names[j]:
-        v = vmin * 0.1
+        pass
 
     if "Magnetic" in Names[j]:
-        v = vmax * 1e-12
+        vmins[j] = 1e-9
 
     if "epsilon" in Names[j]:
-        v = vmax * 1e-12
-
-    for i in range( 4 ):
-        data_all[i][j][ data_all[i][j]<=v ] = v
-        data_all[i][j][0,0] = vmax
+        vmins[j] = vmaxs[j] * 1e-5
 
 for i in range(4):
     for j in range(N):
         print( data_all[i][j].shape )
 
 m, n = data1[0].shape
-for j in range(N):
-    print( Names[j] )
-    for i in range(4):
-        print( data_all[i][j].min(), data_all[i][j].max() )
 
 for ax in ax_all:
     for a in ax:
@@ -152,7 +161,7 @@ for i in range(4):
             ax_all[i][j].spines['left'].set_color( 'black' )
             ax_all[i][j].spines['right'].set_color( 'black' )
 
-wh = int(5000 / 100000 * m)
+wh = int(10000.0 / 100000 * m)
 rxy= [ (n-wh)//2,(m-wh)//2 ]
 
 fx = 0.15 * n
@@ -160,16 +169,24 @@ fy = 0.8 * m
 
 for i in range(N):
 
+    print( '-' * 30 )
     print( Names[i] )
     norm = norms[i]
     cmap = cmaps[i]
     Name = Names[i]
+    v1 = vmins[i]
+    v2 = vmaxs[i]
+    print( v1, v2 )
 
     #----------------------------------#
     ax = ax_up[i]
     data = data1[i]
 
-    ax.imshow( data, norm = norm, cmap=cmap )
+    if norm:
+        ax.imshow( data, norm = norm(vmin=v1, vmax=v2), cmap=cmap )
+    else:
+        ax.imshow( data, vmin=v1, vmax=v2, cmap=cmap )
+
     ax.add_patch( matplotlib.patches.Rectangle( rxy, wh, wh, color='w', fill=False ) )
     '''
     if "Mach" in Names[i]:
@@ -184,39 +201,45 @@ for i in range(N):
 
     ax = ax_up_little[i]
     data = data1_little[i]
-    ax.imshow( data, norm = norm, cmap=cmap )
+    if norm:
+        ax.imshow( data, norm = norm(vmin=v1, vmax=v2), cmap=cmap )
+    else:
+        ax.imshow( data, vmin=v1, vmax=v2, cmap=cmap )
 
     #----------------------------------#
     ax = ax_middle[i]
     bar_ax = ax_bottom[i]
     data = data2[i]
 
-    vmin = data[data>0].min()
-    vmax = data.max()
-    print( vmin, vmax )
-    img = ax.imshow( data, norm = norm, cmap=cmap )
+    if norm:
+        img = ax.imshow( data, norm = norm(vmin=v1, vmax=v2), cmap=cmap )
+    else:
+        img = ax.imshow( data, vmin=v1, vmax=v2, cmap=cmap )
     ax.add_patch( matplotlib.patches.Rectangle( rxy, wh, wh, color='w', fill=False ) )
     cbar = plt.colorbar( img, cax = bar_ax, orientation='horizontal' )
-    vmin = int(np.log10(vmin))
-    vmax = int(np.log10(vmax))
-    if "rho" in Names[i]:
-        t = range( vmin, vmax, 2 )
-    if "Mach" in Names[i]:
-        t = range( vmin, vmax+1 )
-    if "Magnetic" in Names[i]:
-        t = range( vmin, vmax+1, 2 )
-    if "epsilon" in Names[i]:
-        t = range( vmin, vmax+1, 2 )
-    tik = [ 10**v for v in t ]
-    print( tik )
-    cbar.set_ticks( tik )
+
     set_tick_params( bar_ax, 25 )
-    bar_ax.minorticks_off()
     bar_ax.set_xlabel( Name, fontsize=30 )
+
+    if "Magnetic" in Names[i]:
+        make_log_ticks( v1, v2, 2, a=2, axis=bar_ax.xaxis )
+
+    if "Mach" in Names[i]:
+        make_log_ticks( v1, v2, 2, a=1, axis=bar_ax.xaxis )
+
+    if "rho" in Names[i]:
+        make_log_ticks( v1, v2, 2, a=2, axis=bar_ax.xaxis )
+
+    if "epsilon" in Names[i]:
+        make_log_ticks( v1, v2, 2, a=1, axis=bar_ax.xaxis )
 
     ax = ax_middle_little[i]
     data = data2_little[i]
-    img = ax.imshow( data, norm = norm, cmap=cmap )
+
+    if norm:
+        ax.imshow( data, norm = norm(vmin=v1, vmax=v2), cmap=cmap )
+    else:
+        ax.imshow( data, vmin=v1, vmax=v2, cmap=cmap )
 
     #----------------------------------#
 

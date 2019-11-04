@@ -31,6 +31,7 @@ ax.set_xlabel( r'$\rm \nu \, [MHz]$', fontsize=20 )
 ax.set_ylabel( r'$\rm I_{\nu}\; \rm [mJy\,sr^{-1}]$', fontsize=20 )
 ax.legend( framealpha=0.1, prop={'size':20} )
 #ax.grid()
+set_tick_params( ax, 15 )
 ax.tick_params( axis='both', direction='in', which='both', labelsize=20, pad=5 )
 #ax.minorticks_off()
 

@@ -148,7 +148,30 @@ def fmt_tick_labels( ax, xy ):
                 tt.append( r'$%s$'%real2tex( float(xx[1]) ) )
         ax.set_yticklabels( tt )
 
-def make_log_ticks( xmin, xmax, n, a=0, axis=None ):
+def make_ticks( xmin, xmax, n=2, nn=0, a=1, axis=None, l=0, r=1 ):
+
+    loc = np.arange( int(xmin)-1, int(xmax)+2, a )
+    x = '%%.%if'%nn 
+    #print( x )
+    fmt = [ x%i for i in loc ] 
+    loc = ( loc - xmin ) / ( xmax-xmin ) * ( n-1 )
+    #print( loc )
+    #print( fmt )
+    t1 = []
+    t2 = []
+    print( loc )
+    for i in range( len(loc) ):
+        if loc[i]>l and loc[i]<r*(n-1):
+            t1.append( loc[i] )
+            t2.append( fmt[i] )
+    loc = tik.FixedLocator( t1 )
+    fmt = tik.FixedFormatter( t2 )
+    if axis:
+        axis.set_major_locator( loc )
+        axis.set_major_formatter( fmt )
+    return ( loc, fmt )
+
+def make_log_ticks( xmin, xmax, n, a=0, axis=None, l=0, r=1 ):
     xmin = np.log10( xmin )
     xmax = np.log10( xmax )
     #print( xmin, xmax )
@@ -162,7 +185,7 @@ def make_log_ticks( xmin, xmax, n, a=0, axis=None ):
     t1 = []
     t2 = []
     for i in range( len(loc) ):
-        if loc[i]>0 and loc[i]<n:
+        if loc[i]>l and loc[i]<r*(n-1):
             t1.append( loc[i] )
             t2.append( fmt[i] )
     loc = tik.FixedLocator( t1 )

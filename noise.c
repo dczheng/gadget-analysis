@@ -2,6 +2,7 @@
 
 void  remove_mach_noise() {
 #ifdef MACHNOISE
+    return;
     long i;
     put_header( "remove mach noise" );
     for ( i=0; i<N_Gas; i++ ) {

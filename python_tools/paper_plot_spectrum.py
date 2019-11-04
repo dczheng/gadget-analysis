@@ -30,7 +30,7 @@ def my_plot0():
 
     print( "ii3: %i [%g], ii5: %i [%g]"%(ii3, p[ii3], ii5, p[ii5] ) )
 
-    for i in range( 1, m ):
+    for i in range( 1, 50 ):
 
         M = dat_e[ i, 1 ] * 1e10
         index = dat_e[ i, 0 ]
@@ -160,6 +160,9 @@ def my_plot2():
         label_e = r'$G_{%i}:\,%.2f$'%(i, -alpha_e)
         label_r = r'$G_{%i}:\,%.2f$'%(i, -alpha_r)
         axs[0].loglog( p, F, ss, label=label_e )
+        xlim = list(axs[0].get_xlim())
+        xlim[0] = 0.3 
+        axs[0].set_xlim(xlim)
         axs[1].loglog( v, P, ss, label=label_r )
         #print( axs[1].get_xlim() )
 

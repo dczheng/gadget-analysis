@@ -32,6 +32,7 @@ void set_units() {
 
     g2c.density  = g2c.g / CUBE( g2c.cm );
     g2c.erg      = g2c.g * SQR(g2c.cm)  / SQR(g2c.s);
+    g2c.pressure = g2c.g / ( g2c.cm * SQR(g2c.s) );
 
     cuc.m_e = ELECTRON_MASS;
     cuc.m_p = PROTONMASS;

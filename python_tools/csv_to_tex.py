@@ -22,7 +22,7 @@ names = [\
     '$R_{\\rm warm-hot}$-diff',\
             ]
 caption = "\n\
-    Impact of CRE process on the component mass of\
+    Impact of CRE process on the mass components of\
     31 massive cluster.\n\
     $M_{\\rm tot}$ is the total mass of cluster,\n\
     $M_{\\rm gas}$ is the total gas mass of cluster,\n\
@@ -32,7 +32,7 @@ caption = "\n\
     $R_{\\rm hot} = M_{\\rm hot}/M_{\\rm gas}$,\n\
         where $M_{\\rm hot}$ is the hot gas mass of cluster.\n \
     Note: the unit of mass is $10^{13} \\, h^{-1}M_\\odot$ and \n \
-    all mass is obtained from simulation SIM-CRE.\n\
+    all mass is obtained from SIM-CRE simulation.\n\
     See Fig.~\\ref{fig:g_profile} and \\ref{fig:g_cre_profile}\
     of appendix \\ref{sec:visual} for\
     the gas density profile of those clusters in our two simulations.\

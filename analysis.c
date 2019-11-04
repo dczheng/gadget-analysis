@@ -71,9 +71,7 @@ void analysis(){
 
     fof();
 
-#ifdef CREPPDF
-    cre_pressure_pdf();
-#endif
+    mach_stat();
 
 #ifdef CORRTDIFFDENS
     corr_Tdiff_dens();
@@ -82,6 +80,8 @@ void analysis(){
 #ifdef PDFTDIFFDENS
     pdf_Tdiff_dens();
 #endif
+
+    compute_cre_pressure();
 
     do_sync( "global compute" );
     put_sep0;
@@ -108,6 +108,10 @@ void analysis(){
             u_T_pdf();
             B_dens_pdf();
             divBerr_dens_pdf();
+            cree_pdf();
+            crep_pdf();
+            crp_pdf();
+            mach_pdf();
 
     }
 

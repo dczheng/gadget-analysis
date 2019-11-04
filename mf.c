@@ -39,8 +39,8 @@ void mass_function() {
     for ( g=0; g<Ngroup; g++ ) {
 
         M = Gprops[g].mass;
-        i = log10( M/m_min ) / dlogm;
-        if ( i<=0 || i>N-1 )
+        i = floor(log10( M/m_min ) / dlogm);
+        if ( i<0 || i>N-1 )
             continue;
         num[i] ++;
 

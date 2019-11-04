@@ -178,7 +178,7 @@ struct radio_inte_struct{
 #endif
 #endif
 
-#if defined(GROUPTEMP) || defined(TEMPSLICE) || defined(PDFTDIFFDENS) || defined(PHASE) || defined(CRENTPDF) || defined(TPDF) || defined(GASRATIO) || defined(HSMLTPDf) || defined(UTPDF) || defined(BPDF) 
+#if defined(GROUPTEMP) || defined(TEMPSLICE) || defined(PDFTDIFFDENS) || defined(PHASE) || defined(CRENTPDF) || defined(TPDF) || defined(GASRATIO) || defined(HSMLTPDf) || defined(UTPDF) || defined(BPDF)  || defined(TPDF)
 #ifndef COMPUTETEMP
 #define COMPUTETEMP
 #endif
@@ -190,25 +190,25 @@ struct radio_inte_struct{
 #endif
 #endif
 
-#if (defined(FOF) || defined(BSMOOTH) || defined(CRESMOOTH)) && !defined(NOTREE)
+#if (defined(FOF) || defined(BSMOOTH) || defined(CRESMOOTH)) && !defined(NOTREE) || defined(MACHSMOOTH)
 #ifndef TREE
 #define TREE
 #endif
 #endif
 
-#if defined(GROUPCRE) || defined(GROUPELECSPEC) || defined(CREPPDF) || defined(CRENSLICE) || defined(CREESLICE) || defined(CRENTPDF) || defined(RAD) || defined(RADLARMOR)
+#if defined(GROUPCRE) || defined(GROUPELECSPEC) || defined(CREPPDF) || defined(CRENSLICE) || defined(CREESLICE) || defined(CRENTPDF) || defined(RAD) || defined(RADLARMOR) || defined(CREEPDF) || defined(CREPPDF) || defined(CRPPDF)
 #ifndef READCRE
 #define READCRE
 #endif
 #endif
 
-#if defined(HSMLTPDF) || defined(HSMLDENSPDF) || defined(RADSLICE) || defined(DIVBERRDENSPDF) || defined(TOTSPEC) || defined(RAD) || defined(DIVBERRPDF) || defined(BSMOOTH) || defined(RADLARMOR)
+#if defined(HSMLTPDF) || defined(HSMLDENSPDF) || defined(RADSLICE) || defined(DIVBERRDENSPDF) || defined(TOTSPEC) || defined(RAD) || defined(DIVBERRPDF) || defined(BSMOOTH) || defined(RADLARMOR) || defined(MACHSMOOTH) || defined(MACHPDF)
 #ifndef READHSML
 #define READHSML
 #endif
 #endif
 
-#if defined(RAD) || defined(GROUPB) || defined(BPDF) || defined(BDENSPDF) || defined(DIVBERRPDF) || defined(BSMOOTH) || defined(RADLARMOR)
+#if defined(RAD) || defined(GROUPB) || defined(BPDF) || defined(BDENSPDF) || defined(DIVBERRPDF) || defined(BSMOOTH) || defined(RADLARMOR) || defined(BSLICE)
 #ifndef READB
 #define READB
 #endif
@@ -226,7 +226,7 @@ struct radio_inte_struct{
 #endif
 #endif
 
-#if defined(GROUPU) || defined(UTPFD) || defined(GROUPCRE) || defined(CREESLICE) || defined(OUTPUTGROUPLUM) || (defined(COMPUTETEMP)&&!defined(READTEMP))
+#if defined(GROUPU) || defined(UTPFD) || defined(GROUPCRE) || defined(CREESLICE) || defined(OUTPUTGROUPLUM) || (defined(COMPUTETEMP)&&!defined(READTEMP)) || defined(CREEPDF)
 #ifndef READU
 #define READU
 #endif
@@ -238,9 +238,15 @@ struct radio_inte_struct{
 #endif
 #endif
 
-#if defined(GROUPMACH) || defined(MACHNOISE) || defined(MACHSLICE)  || defined(MACHSMOOTH)
+#if defined(GROUPMACH) || defined(MACHNOISE) || defined(MACHSLICE)  || defined(MACHSMOOTH) || defined(MACHSTAT) || defined(MACHPDF)
 #ifndef READMACH
 #define READMACH
+#endif
+#endif
+
+#if defined(CRPPDF) || defined(CREPPDF)
+#ifndef READCR
+#define READCR
 #endif
 #endif
 
@@ -334,6 +340,10 @@ typedef struct GlobalParams{
 
         QNum, FreqN, FoFMinLen,
         TreePartType,
+        CREePdfN,
+        CREPPdfN,
+        MachPdfN,
+        CRPPdfN,
         StartSnapIndex, ProjectDirection, KernelN,
         PicSize;
 
@@ -364,6 +374,14 @@ typedef struct GlobalParams{
             PhaseTempMax,
             PhaseDensMax,
             PhaseDensMin,
+            CREePdfMin,
+            CREePdfMax,
+            CREPPdfMin,
+            CREPPdfMax,
+            MachPdfMin,
+            MachPdfMax,
+            CRPPdfMin,
+            CRPPdfMax,
             DensPdfMin, DensPdfMax,
             OmegaBaryon,
             TPdfMin, TPdfMax,
@@ -386,7 +404,7 @@ typedef struct GlobalParams{
             BDensPdfDensMin, BDensPdfDensMax,
             DivBerrDensPdfDivBMin, DivBerrDensPdfDivBMax,
             DivBerrDensPdfDensMin, DivBerrDensPdfDensMax,
-            PosShiftX, PosShiftY, PosShiftZ, GroupSize;
+            PosShiftX, PosShiftY, PosShiftZ, GroupSize, GroupSizeZ;
 
 } GlobalParams;
 
@@ -405,7 +423,7 @@ typedef struct group_properties{
 } group_properties;
 
 typedef struct gadget_2_cgs_unit{
-    double cm, g, s, erg, density;
+    double cm, g, s, erg, density, pressure;
 } gadget_2_cgs_unit;
 
 typedef struct physical_constants_in_gadget_unit{

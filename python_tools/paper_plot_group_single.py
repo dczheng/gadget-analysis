@@ -22,37 +22,45 @@ fig_name = [  r"$ {\rho}/{\bar{\rho}}$", \
               ]
 norms   = [  mplc.LogNorm,\
              mplc.LogNorm,\
-             None,\
+             #mplc.LogNorm,\
+             None,
              mplc.LogNorm,\
              mplc.LogNorm,
              None,
              mplc.LogNorm,
              ]
 cmaps   = [ \
-        cm.hot,\
+        #cm.viridis,\
+        #cm.brg,\
+        #cm.PuRd_r,\
+        #cm.gist_earth,\
+        #cm.ocean,\
+        #cm.winter,\
+        cm.jet,\
+        cm.magma,\
+        plt.get_cmap( 'ds9a' ),\
+        cm.spectral,\
+        cm.magma,\
+        cm.gnuplot,\
+        #cm.hot,\
+        cm.winter,\
+        cm.plasma,\
+        cm.jet,\
+        cm.gist_heat,\
+        cm.magma,\
+        #cm.ocean,\
+        #cm.magma,\
+        #cm.summer,\
+        #cm.inferno,\
+        #cm.nipy_spectral,\
         #cm.viridis,\
         #cm.gist_ncar,\
         #cm.gnuplot2,\
         #cm.spectral,\
         #plt.get_cmap( 'ds9b' ),\
-        cm.magma,\
-        plt.get_cmap( 'ds9a' ),\
-        #cm.plasma,\
-        cm.spectral,\
-        cm.magma,\
-        #cm.magma,\
-        #cm.jet,\
-        #cm.ocean,\
-        #cm.magma,\
-        #cm.summer,\
-        #cm.winter,\
-        #cm.inferno,\
-        #cm.gnuplot,\
-        #cm.nipy_spectral,\
-        cm.spectral,\
-        cm.magma,\
-        cm.gist_heat,\
         ]
+
+
 
 ds = []
 nds = len(ds_name)
@@ -95,8 +103,8 @@ for j in range(m+1):
     for i in range(n):
         ds[j][i] = ds[j][i][1:,:]
 
-r_cre_e = 1e-4
-r_rad = 1e-12
+r_cre_e = 1e-5
+r_rad = 1e-10
 
 idx_rad = []
 for j in range(m+1):
@@ -106,6 +114,7 @@ print( idx_rad )
 
 xxx = [ 'Y-X', 'Z-X', 'X-Y' ]
 for j in range(m):
+    print( '-' * 30 )
     print( 'plot %s'%ds_name[j] )
     vmin = np.min( [ dd[dd>0].min() for dd in ds[j] ] )
     vmax = np.max( [ dd.max() for dd in ds[j]] )
@@ -115,14 +124,17 @@ for j in range(m):
     cax = cbar_axs[j]
 
     if "Cre_e"  in ds_name[j]:
+        emax = 1e-3
         for i in range(n):
             d = ds[j][i]
+            print( len(d[d>emax]), d[d>emax] )
+            d[d>emax] = emax
             d[d<d.max()*r_cre_e] = 0
             ds[j][i] = d
         #vmin = vmax * 1e-4
 
     if "Radio" in ds_name[j] and "RadioIndex" not in ds_name[j]:
-        #print( ds_name[j] )
+        print( ds_name[j] )
         for i in range(n):
             d = ds[j][i]
             d[d<d.max()*r_rad] = 0
@@ -141,20 +153,32 @@ for j in range(m):
 
             d = ds[j][i]
             d[idx] = 0
-            print( len(d[d>3]), len(d[d>0]), d[d>3] )
-            d[d>3] = 0
+            amax = 3.1
+            print( len(d[d>amax]), len(d[d>0]), d[d>amax] )
+            d[d>amax] = 0
 
             ds[j][i] = d
 
-
+    if "Mach" in ds_name[j]:
+        mmax = 5 
+        for i in range(n):
+            d = ds[j][i]
+            print( len(d[d>mmax]), d[d>mmax] )
+            d[d>mmax] = mmax
 
     vmin = np.min( [ dd[dd>0].min() for dd in ds[j] ] )
     vmax = np.max( [ dd.max() for dd in ds[j]] )
     print( "[new] vmin: %g, vmax: %g"%(vmin, vmax) )
 
+    for dd in ds[j]:
+        dd[dd==0] = dd[dd>0].min() / 10 
+
+
     for i in range(n):
         d = ds[j][i]
         ax = axs[j][i]
+
+
         if not norm:
             d[ d==0 ] = np.nan
 
@@ -178,26 +202,29 @@ for j in range(m):
                 make_log_ticks( vmin, vmax, 2, a = 2, axis=cax.xaxis )
 
             if "Density" in ds_name[j]:
-                make_log_ticks( vmin, vmax, 2, a = 1, axis=cax.xaxis )
-
-            if "Cre_e" in ds_name[j]:
                 make_log_ticks( vmin, vmax, 2, a = 2, axis=cax.xaxis )
 
+            if "Cre_e" in ds_name[j]:
+                make_log_ticks( vmin, vmax, 2, a = 1, axis=cax.xaxis )
+
+            if "Mach" in ds_name[j]:
+                make_ticks( vmin, vmax, nn=1, a=1, r=0.9, axis=cax.xaxis )
+
             if "Radio" in ds_name[j] and "RadioIndex" not in ds_name[j]:
-                make_log_ticks( vmin, vmax, 2, a = 3, axis=cax.xaxis )
+                make_log_ticks( vmin, vmax, 2, a = 2, axis=cax.xaxis )
                 rx = 0.1
 
             if "RadioIndex" in ds_name[j]:
                 rx = 0.1
                 fs = 30
 
-            ax.text(rx*nn, ry*mm, fig_name[j], fontsize=fs )
+            ax.text(rx*nn, ry*mm, fig_name[j], fontsize=fs, color='white' )
         ax.invert_yaxis()
-        if j == 0:
+        if j == m-1:
             mm, nn = d.shape
-            fs = 30
-            ax.text(0.01*nn, 0.6*mm, r'$%.0f \, h^{-1}\, {\rm Mpc} $'%L[i],\
-                        rotation=90, fontsize=fs )
+            fs = 40
+            ax.text(nn-0.2*nn, 0.6*mm, r'$%.0f \, h^{-1}\, {\rm Mpc} $'%L[i],\
+                        rotation=90, fontsize=fs, color='white' )
 
             ax.text(0.1*nn, 0.8*mm, '%s'%xxx[i], fontsize=fs )
 

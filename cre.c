@@ -60,8 +60,9 @@ double beta( double a, double b, double x ) {
 
 }
 
-#ifdef CREPPDF
 void compute_cre_pressure() {
+
+#if defined(CREPPDF) || defined(CRPPDF)
 
     long i, t;
     t = N_Gas / 10;
@@ -74,142 +75,11 @@ void compute_cre_pressure() {
         if ( i % NTask_Local != ThisTask_Local )
             continue;
         if ( SphP[i].CRE_n != 0 ) {
-            SphP[i].CRE_P = cre_pressure( i ) * SphP[i].Density;
+            SphP[i].CRE_P = cre_pressure( i ) * (SphP[i].Density / CUBE(Time));
         }
     }
     mytimer_end();
-
-}
-
-void cre_pressure_pdf() {
-
-    long i;
-    int PicSize, ii, jj, *cre_cr, *cr_bar;
-    char buf[100], bins=30;
-    double p, cre_r, cr_r, cre_r_max, cr_r_max, cre_r_min, cr_r_min,
-           dlogcr_r, dlogcre_r, sum,
-           dlogcre_bar, dlogcr_bar, t;
-
-    FILE *fd;
-
-    PicSize = All.PicSize;
-    cre_r_max = cr_r_max = 0;
-    cre_r_min = cr_r_min = DBL_MAX;
-
-    compute_cre_pressure();
-    do_sync_local( "" );
-
-    if ( ThisTask_Local != 0 )
-        return;
-
-    mytimer_start();
-    writelog( "cre pressure ...\n" );
-
-    for( i=0; i<N_Gas; i++ ) {
-
-         if ( SphP[i].CRE_n == 0 )
-             continue;
-
-        p = get_pressure( i );
-
-        cre_r = SphP[i].CRE_P / p;
-        cr_r  = SphP[i].CR_P0 / p;
-
-        //printf( "CRE_P: %g, CR_P: %g\n", SphP[i].CRE_P, SphP[i].CR_P0 );
-
-        vmax2( cre_r_max, cre_r );
-        vmax2( cr_r_max, cr_r );
-
-        vmin2( cre_r_min, cre_r );
-        vmin2( cr_r_min, cr_r );
-
-    }
-
-    writelog( "[min] cr: %g, cre: %g\n", cr_r_min, cre_r_min );
-    writelog( "[max] cr: %g, cre: %g\n", cr_r_max, cre_r_max );
-
-    dlogcr_r = log10( cr_r_max / cr_r_min ) / ( PicSize-1 );
-    dlogcre_r = log10( cre_r_max / cre_r_min ) / ( PicSize-1 );
-
-    reset_img();
-
-    sum = 0;
-    for( i=0; i<N_Gas; i++ ) {
-
-        if ( SphP[i].CRE_n == 0 )
-            continue;
-
-        p = get_pressure( i );
-        cre_r = SphP[i].CRE_P / p;
-        cr_r  = SphP[i].CR_P0 / p;
-
-        ii = ( log10( cre_r / cre_r_min ) ) / dlogcre_r;
-        jj = ( log10( cr_r / cr_r_min ) ) / dlogcr_r;
-
-        check_picture_index( ii );
-        check_picture_index( jj );
-
-        image.img[ ii*PicSize + jj ] += 1;
-        sum ++;
-
-    }
-
-
-    for( i=0; i<SQR(PicSize); i++ )
-        image.img[i] /= sum * dlogcre_r * dlogcr_r;
-
-    create_dir( "%s/CrePressurePdf", OutputDir);
-    sprintf( buf, "%s/CrePressurePdf/CrePressurePdf_%03i.dat",
-                    OutputDir,  SnapIndex );
-
-    img_xmin = log10( cr_r_min );
-    img_xmax = log10( cr_r_max );
-    img_ymin = log10( cre_r_min );
-    img_ymax = log10( cre_r_max );
-
-    write_img( buf );
-
-    dlogcre_bar = log10( cre_r_max / cre_r_min ) / ( bins-1 );
-    dlogcr_bar = log10( cr_r_max / cr_r_min ) / ( bins-1 );
-
-    mymalloc2( cre_cr, sizeof(int) * bins );
-    mymalloc2( cr_bar, sizeof(int) * bins );
-
-    for( i=0; i<N_Gas; i++ ){
-
-        if ( SphP[i].CRE_n == 0 )
-            continue;
-
-        p = get_pressure( i );
-        t = SphP[i].CRE_P / p;
-        ii = log10(t/cre_r_min) / dlogcre_bar;
-        if ( ii >= bins )
-            printf( "%i\n", ii );
-        cre_cr[ii] ++;
-
-        t = SphP[i].CR_P0 / p;
-        ii = log10(t/cr_r_min) / dlogcr_bar;
-        if ( ii >= bins )
-            printf( "%i\n", ii );
-        cr_bar[ii] ++;
-    }
-
-    fd = myfopen( "w", "%s/CrePressurePdf/CrePressure_%03i.dat",
-                        OutputDir, SnapIndex );
-
-    for ( i=0; i<bins; i++ ){
-        fprintf( fd, "%g %i %g %i\n",
-                pow( 10, log10(cre_r_min) + dlogcre_bar * i ),
-                cre_cr[i],
-                pow( 10, log10(cr_r_min) + dlogcr_bar * i ),
-                cr_bar[i]
-                );
-    }
-
-    fclose( fd );
-    myfree( cre_cr );
-    myfree( cr_bar );
-    mytimer_end();
-
-}
 #endif
+
+}
+

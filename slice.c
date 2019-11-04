@@ -217,28 +217,55 @@ void field_slice( double *data, char *name, long N, double *weight) {
 }
 
 void slice() {
-    long i;
-    int k;
+    long i, idx;
+    int k, flag;
     double *data, *weight;
     char buf[100];
+
+    flag = 0;
+
+    for(k=0; k<GROUP_FIELD_NBLOCKS; k++) {
+        if ( !slice_field_present( k ) )
+            continue;
+        flag = 1;
+        break;
+    }
+
+    if ( !flag )
+        return;
 
     mymalloc2( data, 3 * sizeof( double ) * N_GasInSlice );
     mymalloc2( weight, sizeof( double ) * N_GasInSlice );
     for( k=0; k<GROUP_FIELD_NBLOCKS; k++ ) {
 
+        memset( data, 0, sizeof(double) * 3 * N_GasInSlice );
         if ( !slice_field_present( k ) )
             continue;
 
+        idx = 0;
         for ( i=0; i<N_Gas; i++ ) {
             if ( !InSlice(i) )
                 continue;
-            data[3*i] = P[i].Pos[proj_i] - SliceStart[proj_i];
-            data[3*i+1] = P[i].Pos[proj_j] - SliceStart[proj_j];
-            data[3*i+2] = get_slice_field_data( k, i );
-            weight[i] = SphP[i].Density;
+            data[3*idx] = P[i].Pos[proj_i] - SliceStart[proj_i];
+            data[3*idx+1] = P[i].Pos[proj_j] - SliceStart[proj_j];
+            data[3*idx+2] = get_slice_field_data( k, i );
+            weight[idx] = SphP[i].Density;
+            idx++;
         }
         get_slice_field_name( k, buf );
-        field_slice( data, buf, N_GasInSlice, weight );
+        /*
+        for( i=0; i<10; i++ ) {
+            printf( "%g %g %g\n", data[i*3], data[i*3+1], data[i*3+2] );
+        }
+        endruns("");
+        */
+        field_slice( data, buf, N_GasInSlice, NULL );
+        /*
+        if ( k==GROUP_DENS )
+            field_slice( data, buf, N_GasInSlice, NULL );
+        else
+            field_slice( data, buf, N_GasInSlice, weight );
+        */
     }
 
     myfree( data );

@@ -10,11 +10,13 @@ void smooth() {
     int ngbnum, k, n;
     long i, j;
     double h_i, h2_i, h_j, h2_j, r, cm[3], r2, t, hinv_i, hinv3_i, hinv4_i, u,
-           wk, dwk, m_j, hinv_j, hinv3_j, hinv4_j;
+           wk, dwk, m_j, hinv_j, hinv3_j, hinv4_j, densitynorm, fac;
+#ifdef BSMOOTH
 #ifdef HIGH_PRECISION
-    long double B[3], densitynorm, fac;
+    long double B[3];
 #else
-     double B[3], densitynorm, fac;
+     double B[3];
+#endif
 #endif
 #ifdef SMOOTH_DEBUG2
      long debug_i=99;
@@ -76,7 +78,9 @@ void smooth() {
         densitynorm = 0;
         for( k=0; k<3; k++ ) {
             cm[k] = P[i].Pos[k];
+#ifdef BSMOOTH
             B[k] = 0;
+#endif
         }
 
         ngbnum = ngb( cm, h_i, 0 );

@@ -58,7 +58,7 @@ void write_img( char *fn ) {
     for ( i=0; i<All.PicSize; i++ ) {
         for ( j=0; j<All.PicSize; j++ ) {
             v = image.img[ i*All.PicSize + j ];
-            fprintf( fd, "%g ", v );
+            fprintf( fd, "%e ", v );
             }
         fprintf( fd, "\n" );
     }

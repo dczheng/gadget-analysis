@@ -24,7 +24,7 @@ print( zs )
 xmin, xmax, xlog, ymin, ymax, ylog = hs[0][1:7] 
 m, n = ds[i].shape
 for h in hs:
-    mm, nn = ds[i].shape
+    mm, nn = ds[0].shape
     if xmin != hs[i][1] or \
        xmax != hs[i][2] or \
        ymin != hs[i][4] or \
@@ -34,12 +34,16 @@ for h in hs:
        print( "error2" )
        exit()
 
-Nmin = 1e6 
-contour_levles = [ 1e4, 1e5, 1e6, 2e6 ]
+Nmin = 1e4 
+contour_levles = [ 1e2, 1e3, 1e4, 2e4 ]
 print( "contour levels: ", contour_levles )
 Errmin = 1e-2
 err_lognorm = 0
-zfmt = r'$z:%.2f$'
+zfmt = r'$z:%.0f$'
+
+for i in range(4):
+    d = ds[i].astype( 'float64' )
+    print( d.sum() )
 
 for i in range(2):
     t1 = ds[i*2].copy()
@@ -55,7 +59,7 @@ for i in range(2):
     t = (t2 - t1) / t1
 
     ds[i*2+1] = t
-    ds[i*2][ds[i*2]<5e2] = 0
+    ds[i*2][ds[i*2]<10] = 0
 
 vmin = [0] * 4
 vmax = [0] * 4
@@ -86,25 +90,22 @@ d1_err = ds[1]
 d2 = ds[2]
 d2_err = ds[3] 
 
-fs = 8
-rc = 0.1
+fs = 6
+rc = 0.15
+r_pad = 0.22
+r_cbar = 0.05
 
-fig = plt.figure( figsize=(fs/(1-3*rc),fs/(1-2*rc)) )
-rrc = 0.3 
-raw = ( 1-3*rc ) / 2.0
-rah = ( 1-2*rc ) / 2.0 
-ax1      = fig.add_axes(      [rc,          rah+rc,  raw,     rah] )
-ax1_cbar = fig.add_axes(      [rc+raw,      rah+rc,  rc*rrc,  rah] )
-ax1_err = fig.add_axes(       [2*rc+raw,    rah+rc,  raw,     rah] )
-ax1_err_cbar = fig.add_axes(  [2*rc+2*raw,  rah+rc,  rc*rrc,  rah] )
+dx =  1 / ( 2 + 2*r_pad+r_cbar )
+dy =  1 / ( 2 + 2*r_pad )
+fig = plt.figure( figsize=(fs/dx,fs/dy) )
+#rrc = 0.3 
+#raw = ( 1-3*rc ) / 2.0
+#rah = ( 1-2*rc ) / 2.0 
 
-ax2     = fig.add_axes(       [rc,          rc, raw,    rah] )
-ax2_cbar = fig.add_axes(      [rc+raw,      rc, rc*rrc, rah] )
-ax2_err = fig.add_axes(       [2*rc+raw,    rc, raw,    rah] )
-ax2_err_cbar = fig.add_axes(  [2*rc+2*raw,  rc, rc*rrc, rah] )
-
-axs = [ ax1, ax1_err, ax2, ax2_err ]
-axs_cbar = [ ax1_cbar, ax1_err_cbar, ax2_cbar, ax2_err_cbar ]
+axs = [ fig.add_axes( [dx*(r_pad+j), dy*(r_pad+(1-i)), dx, dy] ) \
+        for j in range(2) for i in range(2) ]
+axs_cbar = [ fig.add_axes( [ dx*(r_pad+2), dy*(r_pad+(1-j)), dx*r_cbar, dy ]) \
+            for j in range(2) ]
 
 cmap1 = cm.jet
 #cmap2 = cm.jet
@@ -134,19 +135,13 @@ x3 = (3 - xmin) / ( xmax - xmin ) * (n-1)
 y5 = (5 - ymin) / ( ymax - ymin ) * (m-1)
 y7 = (7 - ymin) / ( ymax - ymin ) * (m-1)
 
-fc = 'black'
-font = FontProperties()
-#font.set_family('monospace')
-font.set_size( 'xx-large' )
-font.set_weight('medium')
-
 fx = [ x3*0.4, (n-x3)*0.1+x3, n*0.3, n*0.1 ]
 fy = [ y5*0.1, y5*0.3, (y7-y5)*0.5+y5, (m-y7)*0.5+y7 ]
 ft = [ 'Diffuse', 'Condensed', 'Warm-hot', 'Hot' ]
 
 for i in range(4):
 
-    if i % 2 == 0:
+    if i%2 == 0:
         con = axs[i].contour( ds[i], levels=contour_levles, linestyles='dashdot', linewidths=1, colors=['black'] )
 
         for l in con.collections:
@@ -156,14 +151,10 @@ for i in range(4):
                 x = v[:,0]
                 y = v[:,1]
                 axs[i+1].plot( x, y, 'b-.', linewidth=1 )
-
-    if i % 2:
+    else:
         t = ds[i]
         index = ds[i-1] < Nmin 
         t[index] = np.nan
-
-    #ds[i][0,0] = vmin[i]
-    #ds[i][0,1] = vmax[i]
 
     if norms[i]:
         if norms[i] == mplc.LogNorm:
@@ -177,24 +168,23 @@ for i in range(4):
             img = axs[i].imshow( ds[i],\
                 vmin=vmin[i], vmax=vmax[i], cmap=cmaps[i] )
 
-    plt.colorbar( img, cax=axs_cbar[i] )
-    if i % 2 == 0:
-        axs_cbar[i].set_ylabel( r'$\rm {dN}/[{dlog(\rho)dlog(T)}]$', fontsize=25 )
-
-    if i > 1:
+    if i%2:
         make_log_ticks( 10**xmin, 10**xmax, n, axis=axs[i].xaxis )
-        axs[i].set_xlabel( r"${\rho}/{\bar{\rho}}$", fontsize=20 )
+        axs[i].set_xlabel( r"${\rho}/{\bar{\rho}}$", fontsize=40 )
     else:
         axs[i].set_xticks( [] )
+        axs[i].text( (n-1)*0.8, (m-1)*0.9, zfmt%zs[i//2], fontsize=30 )
 
-    if i % 2 ==  0:
+    if i<2:
         make_log_ticks( 10**ymin, 10**ymax, m, axis=axs[i].yaxis )
-        axs[i].set_ylabel( r"$T[K]$", fontsize=20 )
+        axs[i].set_ylabel( r"$T[K]$", fontsize=30 )
     else:
         axs[i].set_yticks( [] )
+        plt.colorbar( img, cax=axs_cbar[i-2] )
+        set_tick_params( axs_cbar[i-2], 25 )
 
-    set_tick_params( axs_cbar[i], 15 )
-    set_tick_params( axs[i], 15 )
+
+    set_tick_params( axs[i], 25 )
 
     axs[i].invert_yaxis()
     axs[i].grid()
@@ -203,19 +193,14 @@ for i in range(4):
     axs[i].plot( [0,  n-1], [y5, y5], 'c--' )
     axs[i].plot( [0,  n-1], [y7, y7], 'c--' )
 
-    if i == 0:
-        axs[i].set_title( "Gas Phase", fontsize=20 )
-    if i == 1:
-        axs[i].set_title( "Relative Difference", fontsize=20 )
-
-
     if i%2 == 0:
         for kk in range(len(fx)):
-            axs[i].text( fx[kk], fy[kk], ft[kk], \
-                fontproperties=font )
-
-    axs[i].text( (n-1)*0.8, (m-1)*0.9, zfmt%zs[i//2], fontproperties=font  )
-
+            axs[i].text( fx[kk], fy[kk], ft[kk], fontsize=30 )
+axs_cbar[0].set_ylabel( r'$\rm Particle\ number\ in\ each\ bin$',\
+        fontsize=25, labelpad=30 )
+make_log_ticks( vmin[0], vmax[0], 2, axis=axs_cbar[0].yaxis )
+#axs_cbar[0].tick_params( axis='y', which='major', pad=15 )
+axs_cbar[1].set_ylabel( r'$\rm Relative\ difference $', fontsize=25 )
 
 fig.savefig( f_out )
 
