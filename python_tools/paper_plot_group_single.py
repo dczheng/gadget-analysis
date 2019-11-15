@@ -41,6 +41,7 @@ cmaps   = [ \
         plt.get_cmap( 'ds9a' ),\
         cm.spectral,\
         cm.magma,\
+        cm.spectral,\
         cm.gnuplot,\
         #cm.hot,\
         cm.winter,\
@@ -170,8 +171,8 @@ for j in range(m):
     vmax = np.max( [ dd.max() for dd in ds[j]] )
     print( "[new] vmin: %g, vmax: %g"%(vmin, vmax) )
 
-    for dd in ds[j]:
-        dd[dd==0] = dd[dd>0].min() / 10 
+    #for dd in ds[j]:
+    #    dd[dd==0] = dd[dd>0].min() / 10 
 
 
     for i in range(n):
@@ -218,13 +219,13 @@ for j in range(m):
                 rx = 0.1
                 fs = 30
 
-            ax.text(rx*nn, ry*mm, fig_name[j], fontsize=fs, color='white' )
+            ax.text(rx*nn, ry*mm, fig_name[j], fontsize=fs, color='black' )
         ax.invert_yaxis()
         if j == m-1:
             mm, nn = d.shape
             fs = 40
             ax.text(nn-0.2*nn, 0.6*mm, r'$%.0f \, h^{-1}\, {\rm Mpc} $'%L[i],\
-                        rotation=90, fontsize=fs, color='white' )
+                        rotation=90, fontsize=fs, color='black' )
 
             ax.text(0.1*nn, 0.8*mm, '%s'%xxx[i], fontsize=fs )
 

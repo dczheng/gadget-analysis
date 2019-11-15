@@ -505,11 +505,6 @@ void pre_proc() {
 
     put_header( "pre proc" )
 
-    for ( i=0; i<6; i++ ) {
-         NumPart6[i] = get_particle_num( i );
-         OffsetPart6[i] = get_particle_offset( i );
-    }
-
     writelog( "Shift Position: (%g, %g, %g)\n", All.PosShiftX, All.PosShiftY, All.PosShiftZ );
 
     if ( fabs( All.PosShiftX) >= BoxSize ||

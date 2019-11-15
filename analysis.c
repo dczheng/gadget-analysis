@@ -105,6 +105,7 @@ void analysis(){
             gas_ratio();
             hsml_dens_pdf();
             mach_dens_pdf();
+            mach_dens();
             u_T_pdf();
             B_dens_pdf();
             divBerr_dens_pdf();

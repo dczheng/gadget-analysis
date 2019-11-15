@@ -538,13 +538,69 @@ void crp_pdf() {
 #endif
 
 }
+void mach_dens() {
+
+#ifdef MACHDENS
+    double *M, *rho, *vs, d, dmin, dmax, dlogd, v;
+    int N, i;
+    long p;
+    FILE *fd;
+
+    get_gas_density_min_max( dmin, dmax );
+    dmin /= Time3 * RhoBaryon;
+    dmax /= Time3 * RhoBaryon;
+
+    if ( All.MachDensDensMin > 0 )
+        dmin = All.MachDensDensMin;
+    if ( All.MachDensDensMax > 0 )
+        dmax = All.MachDensDensMax;
+     N = All.MachDensN;
+
+     dlogd = log10( dmax/dmin ) / N;
+
+     mymalloc2( M, sizeof(double) * N );
+     mymalloc2( rho, sizeof(double) * N );
+     mymalloc2( vs, sizeof(double) * N );
+
+     for( p=0; p<N_Gas; p++ ) {
+         d = SphP[p].Density / ( Time3 * RhoBaryon );
+         i =  log10( d/dmin ) / dlogd;
+         if ( i<0 || i>N-1 )
+             continue;
+         v = get_V(p);
+         M[i] += SphP[p].MachNumber * v;
+         vs[i] += v;
+     }
+
+     for( i=0; i<N; i++ ) {
+         if ( vs[i] > 0 )
+             M[i] /= vs[i];
+     }
+
+    create_dir( "%s/MachDens", OutputDir );
+    fd = myfopen( "w", "%s/MachDens/MachDens_%03i.dat", OutputDir, SnapIndex );
+
+    fprintf( fd, "%g %g\n", Redshift, Redshift );
+    for( i=0; i<N; i++ )
+        fprintf( fd, "%g %g\n", dmin*pow(10,  i*dlogd ), M[i] );
+
+    fclose( fd );
+
+
+     myfree(M);
+     myfree(rho);
+     myfree(vs);
+    
+#endif
+
+}
 
 void mach_pdf() {
 
 #ifdef MACHPDF
     double *num, dlogm, mmin, mmax, m, v, vsum;
     int N, i;
-    long p;
+    long p, nn;
     FILE *fd;
     
     N = All.MachPdfN;
@@ -572,7 +628,7 @@ void mach_pdf() {
 #endif
     mymalloc2( num, sizeof(double) * N );
 
-    for( p=0,vsum; p<N_Gas; p++ ) {
+    for( p=0,vsum, nn=0; p<N_Gas; p++ ) {
         m = SphP[p].MachNumber;
         v = get_V(p);
         //v = 4.0 / 3.0 * PI * P[p].Mass / SphP[p].Density;
@@ -586,20 +642,32 @@ void mach_pdf() {
             continue;
         num[i] += v;
         vsum += v;
+        //nn++;
+        //num[i] ++;
     }
 
-    for( i=0; i<N; i++ ) {
+    printf( "%li %li\n", nn, N_Gas );
+    for( i=0; i<N-1; i++ ) {
         //num[i] = num[i] / ((double)N_Gas);
+        //num[i] = num[i] / ((double)N_Gas) / dlogm;
         //num[i] = num[i] / dlogm;
-        num[i] = num[i] / vsum / dlogm;
+        num[i] = num[i] / vsum / ( mmin*exp((i+1)*dlogm) - mmin*exp(i*dlogm) );
         //num[i] = num[i] / CUBE(BoxSize);
     }
+    //for( i=0; i<N; i++ ) {
+        //num[i] = num[i] / ((double)N_Gas);
+        //num[i] = num[i] / ((double)N_Gas) / dlogm;
+        //num[i] = num[i] / dlogm;
+     //   num[i] = num[i] / vsum / dlogm;
+        //num[i] = num[i] / CUBE(BoxSize);
+    //}
 
     create_dir( "%s/MachPdf", OutputDir );
     fd = myfopen( "w", "%s/MachPdf/MachPdf_%03i.dat", OutputDir, SnapIndex );
 
     fprintf( fd, "%g %g\n", Redshift, Redshift );
-    for( i=0; i<N; i++ )
+    //for( i=0; i<N; i++ )
+    for( i=0; i<N-1; i++ )
 #ifdef USE_LOG
         fprintf( fd, "%g %g\n", mmin*exp( i*dlogm ), num[i] );
 #else

@@ -8,6 +8,8 @@ hsize_t dims[2], maxdims[2];
 int ndims;
 void *CommBuffer;
 
+char *ParticleName[6] = { "Gas", "Halo", "Disk", "Bulge", "Stars", "Bndry" };
+
 #define blockpresent_check( A )  { \
     if ( (A) ) \
         return 1; \
@@ -30,7 +32,7 @@ int blockpresent0( enum iofields blk, int pt ) {
         case IO_MAG:
         case IO_SFR:
         case IO_DIVB:
-        case IO_DBDT:
+        case IO_DTB:
         case IO_U:
         case IO_TEMP:
         case IO_HSML:
@@ -42,12 +44,22 @@ int blockpresent0( enum iofields blk, int pt ) {
         case IO_CR_E0:
         case IO_CR_n0:
         case IO_CR_P0:
+        case IO_CR_DISS:
+        case IO_CR_DTE:
+        case IO_CR_THER:
         case IO_CRE_C:
         case IO_CRE_QMIN:
         case IO_CRE_QMAX:
         case IO_CRE_ALPHA:
         case IO_CRE_N:
         case IO_CRE_E:
+        case IO_DTE:
+        case IO_MET:
+        case IO_NHY:
+        case IO_U_JUMP:
+        case IO_PRE_RHO:
+        case IO_PRE_U:
+        case IO_PRE_XCR:
             blockpresent_check( (pt == 0 && header.npart[pt] > 0) );
         default:
             return 0;
@@ -142,10 +154,72 @@ int blockpresent( enum iofields blk, int pt ) {
             blockpresent_check( blockpresent0(blk,pt) );
 #endif
             return 0;
-
-        case IO_DBDT:
-        case IO_ACCEL:
+            
+        case IO_CR_DISS:
+#ifdef READCR
+#ifdef READCRDISSIPATIONTIME
+            blockpresent_check( blockpresent0(blk,pt) );
+#endif
+#endif
             return 0;
+        case IO_CR_DTE:
+#ifdef READCR
+#ifdef READCRDTE
+            blockpresent_check( blockpresent0(blk,pt) );
+#endif
+#endif
+            return 0;
+
+        case IO_CR_THER:
+#ifdef READCR
+#ifdef READCRTHERMALIZATIONTIME
+            blockpresent_check( blockpresent0(blk,pt) );
+#endif
+#endif
+            return 0;
+
+        case IO_DTB:
+#ifdef READDTB
+            blockpresent_check( blockpresent0(blk,pt) );
+#endif
+            return 0;
+
+        case IO_ACCEL:
+#ifdef READACC
+            blockpresent_check( blockpresent0(blk,pt) );
+#endif
+            return 0;
+
+        case IO_RHO_JUMP:
+#ifdef READDENSITYJUMP
+            blockpresent_check( blockpresent0(blk,pt) );
+#endif
+            return 0;
+        case IO_MET:
+#ifdef READMETALLICITY
+            blockpresent_check( blockpresent0(blk,pt) );
+#endif
+            return 0;
+
+        case IO_NHY:
+#ifdef READNEUTRALHYDROGENABUNDANCE
+            blockpresent_check( blockpresent0(blk,pt) );
+#endif
+            return 0;
+        case IO_PRE_RHO:
+        case IO_PRE_U:
+        case IO_PRE_XCR:
+#ifdef READPRESHOCK 
+            blockpresent_check( blockpresent0(blk,pt) );
+#endif
+            return 0;
+
+        case IO_U_JUMP:
+#ifdef READEJUMP 
+            blockpresent_check( blockpresent0(blk,pt) );
+#endif
+            return 0;
+
         default:
             return 0;
     }
@@ -162,7 +236,7 @@ int get_block_nbytes( enum iofields blk ) {
             break;
         case IO_SFR:
         case IO_DIVB:
-        case IO_DBDT:
+        case IO_DTB:
         case IO_MASS:
         case IO_U:
         case IO_TEMP:
@@ -171,6 +245,16 @@ int get_block_nbytes( enum iofields blk ) {
         case IO_POT:
         case IO_NE:
         case IO_MN:
+        case IO_MET:
+        case IO_NHY:
+        case IO_PRE_RHO:
+        case IO_PRE_U:
+        case IO_PRE_XCR:
+        case IO_RHO_JUMP:
+        case IO_U_JUMP:
+        case IO_CR_DISS:
+        case IO_CR_DTE:
+        case IO_CR_THER:
         case IO_CR_C0:
         case IO_CR_Q0:
         case IO_CR_E0:
@@ -182,6 +266,7 @@ int get_block_nbytes( enum iofields blk ) {
         case IO_CRE_QMAX:
         case IO_CRE_N:
         case IO_CRE_E:
+        case IO_DTE:
             block_nbytes = sizeof( OutputFloat );
             break;
         case IO_ID:
@@ -202,7 +287,7 @@ void get_block_dims( int pt, enum iofields blk, hsize_t (*dims)[2] ) {
             break;
         case IO_SFR:
         case IO_DIVB:
-        case IO_DBDT:
+        case IO_DTB:
         case IO_MASS:
         case IO_U:
         case IO_TEMP:
@@ -212,6 +297,16 @@ void get_block_dims( int pt, enum iofields blk, hsize_t (*dims)[2] ) {
         case IO_NE:
         case IO_ID:
         case IO_MN:
+        case IO_MET:
+        case IO_NHY:
+        case IO_PRE_RHO:
+        case IO_PRE_U:
+        case IO_PRE_XCR:
+        case IO_RHO_JUMP:
+        case IO_U_JUMP:
+        case IO_CR_DISS:
+        case IO_CR_DTE:
+        case IO_CR_THER:
         case IO_CR_C0:
         case IO_CR_Q0:
         case IO_CR_E0:
@@ -223,6 +318,7 @@ void get_block_dims( int pt, enum iofields blk, hsize_t (*dims)[2] ) {
         case IO_CRE_QMAX:
         case IO_CRE_N:
         case IO_CRE_E:
+        case IO_DTE:
             (*dims)[0] = header.npart[pt];
             (*dims)[1] = 1;
             break;
@@ -249,7 +345,7 @@ void get_dataset_name( enum iofields blk, char *buf ) {
         case IO_DIVB:
             strcpy( buf, "DivergenceOfMagneticField" );
             break;
-        case IO_DBDT:
+        case IO_DTB:
             strcpy( buf, "RateOfChangeOfMagneticField" );
             break;
         case IO_MASS:
@@ -294,6 +390,36 @@ void get_dataset_name( enum iofields blk, char *buf ) {
         case IO_CR_P0:
             strcpy( buf, "CR_P0" );
             break;
+        case IO_CR_DISS:
+            strcpy( buf, "CR_DissipationTime" );
+            break;
+        case IO_CR_DTE:
+            strcpy( buf, "CR_DtE" );
+            break;
+        case IO_CR_THER:
+            strcpy( buf, "CR_ThermalizationTime" );
+            break;
+        case IO_RHO_JUMP:
+            strcpy( buf, "DensityJump" );
+            break;
+        case IO_U_JUMP:
+            strcpy( buf, "EnergyJump" );
+            break;
+        case IO_MET:
+            strcpy( buf, "Metallicity" );
+            break;
+        case IO_NHY:
+            strcpy( buf, "NeutralHydrogenAbundance" );
+            break;
+        case IO_PRE_RHO:
+            strcpy( buf, "Preshock_Density" );
+            break;
+        case IO_PRE_U:
+            strcpy( buf, "Preshock_Energy" );
+            break;
+        case IO_PRE_XCR:
+            strcpy( buf, "Preshock_XCR" );
+            break;
         case IO_CRE_C:
             strcpy( buf, "CRE_C" );
             break;
@@ -311,6 +437,9 @@ void get_dataset_name( enum iofields blk, char *buf ) {
             break;
         case IO_CRE_E:
             strcpy( buf, "CRE_e" );
+            break;
+        case IO_DTE:
+            strcpy( buf, "DtEnergy" );
             break;
     }
 }
@@ -409,7 +538,7 @@ void empty_buffer( enum iofields blk, int offset, int pt ) {
                 SphP[offset+i].divB = *fp++;
 #endif
             break;
-        case IO_DBDT:
+        case IO_DTB:
 #ifdef READDTB
             for ( i=0; i<n; i++ )
                 SphP[offset+i].dBdt = *fp++;
@@ -473,6 +602,71 @@ void empty_buffer( enum iofields blk, int offset, int pt ) {
 #ifdef READCR
             for ( i=0; i<n; i++ )
                 SphP[offset+i].CR_P0 = *fp++;
+#endif
+        case IO_CR_DISS:
+#ifdef READCR
+#ifdef READCRDISSIPATIONTIME
+            for ( i=0; i<n; i++ )
+                SphP[offset+i].CR_DissipationTime = *fp++;
+#endif
+#endif
+            break;
+        case IO_CR_DTE:
+#ifdef READCR
+#ifdef READCRDTE
+            for ( i=0; i<n; i++ )
+                SphP[offset+i].CR_DtE = *fp++;
+#endif
+#endif
+            break;
+        case IO_CR_THER:
+#ifdef READCR
+#ifdef READCRTHERMALIZATIONTIME
+            for ( i=0; i<n; i++ )
+                SphP[offset+i].CR_ThermalizationTime = *fp++;
+#endif
+#endif
+            break;
+        case IO_RHO_JUMP:
+#ifdef READDENSITYJUMP
+            for ( i=0; i<n; i++ )
+                SphP[offset+i].DensityJump = *fp++;
+#endif
+            break;
+        case IO_U_JUMP:
+#ifdef READENERGYJUMP
+            for ( i=0; i<n; i++ )
+                SphP[offset+i].EnergyJump = *fp++;
+#endif
+            break;
+        case IO_MET:
+#ifdef READMETALLICITY
+            for ( i=0; i<n; i++ )
+                SphP[offset+i].Metallicity = *fp++;
+#endif
+            break;
+        case IO_NHY:
+#ifdef READNEUTRALHYDROGENABUNDANCE
+            for ( i=0; i<n; i++ )
+                SphP[offset+i].NeutralHydrogenAbundance = *fp++;
+#endif
+            break;
+        case IO_PRE_U:
+#ifdef READPRESHOCK
+            for ( i=0; i<n; i++ )
+                SphP[offset+i].Preshock_Energy = *fp++;
+#endif
+            break;
+        case IO_PRE_RHO:
+#ifdef READPRESHOCK
+            for ( i=0; i<n; i++ )
+                SphP[offset+i].Preshock_Density = *fp++;
+#endif
+            break;
+        case IO_PRE_XCR:
+#ifdef READPRESHOCK
+            for ( i=0; i<n; i++ )
+                SphP[offset+i].Preshock_XCR = *fp++;
 #endif
             break;
         case IO_CRE_C:
@@ -609,6 +803,19 @@ void show_header( io_header header ) {
 #define fmt "%-25s: "
 
     writelog( "Header Info:\n" );
+
+#define LE_TEST
+#ifdef LE_TEST
+    double t;
+    t = ((double)header.npart[4]) / header.npart[0];
+    header.npart[0] = 1024 * 1024 * 1024 * (1-t);
+    header.npart[1] = 1024 * 1024 * 1024;
+    header.npart[4] = 1024 * 1024 * 1024 * t;
+    header.npartTotal[0] = header.npart[0];
+    header.npartTotal[1] = header.npart[1];
+    header.npartTotal[4] = header.npart[4];
+    header.mass[1] /= 64;
+#endif
 
     writelog( fmt, "npart" );
     for ( i=0; i<6; i++ )
@@ -852,6 +1059,11 @@ void read_snapshot() {
     }
     N_Gas = header.npartTotal[0] + ( ( (long)header.npartTotalHighWord[0] ) << 32 );
 
+    for( pt=0; pt<6; pt++ ) {
+        NumPart6[pt] = get_particle_num( pt );
+        OffsetPart6[pt] = get_particle_offset( pt );
+    }
+
     BoxSize = header.BoxSize;
     HalfBoxSize = BoxSize / 2;
     Redshift = header.redshift;
@@ -909,7 +1121,11 @@ void read_snapshot() {
                                     hdf5_file = H5Fopen( file_name, H5F_ACC_RDWR, H5P_DEFAULT );
                                     get_dataset_name( blk, buf );
                                     get_hdf5_native_type( blk, &hdf5_type );
-                                    writelog( "[%i] %8li reading %s ...\n", pt, offset, buf );
+#ifdef LE_TEST
+                                    writelog( "[%5s] reading %s ...\n", ParticleName[pt], buf );
+#else
+                                    writelog( "[%5s] %8li reading %s ...\n", ParticleName[pt], offset, buf );
+#endif
                                     sprintf( buf1, "PartType%i/%s", pt, buf );
                                     hdf5_dataset = H5Dopen( hdf5_file, buf1 );
                                     herr = H5Dread( hdf5_dataset, hdf5_type, H5S_ALL, H5S_ALL, H5P_DEFAULT, CommBuffer );
@@ -956,6 +1172,160 @@ void read_snapshot() {
 
     //read_snapshot_test();
     mytimer_end();
+#ifdef LE_TEST
+    for( i=0; i<NumPart; i++ ) 
+        P[i].Mass /= 64;
+#endif
+
+#ifdef READ_SNAPSHOT_TEST
+    save_data_for_test();
+#endif
     writelog( "read data ... done. \n" );
     //endrun( 20181210 );
+}
+
+int save_data_blockpresent( enum iofields blk, int pt ) {
+    switch( blk ) {
+        case IO_VEL:
+        case IO_POS:
+        /*
+        case IO_ID:
+        case IO_POT:
+        case IO_ACCEL:
+        */
+        case IO_MASS:
+        blockpresent_check( header.npart[pt] > 0 );
+
+        case IO_MAG:
+        case IO_NE:
+        case IO_SFR:
+        case IO_DIVB:
+        case IO_U:
+        case IO_TEMP:
+        case IO_RHO:
+        case IO_NHY:
+        /*
+        case IO_DTB:
+        case IO_HSML:
+        case IO_MN:
+        case IO_CR_C0:
+        case IO_CR_Q0:
+        case IO_CR_E0:
+        case IO_CR_n0:
+        case IO_CR_P0:
+        case IO_CR_DISS:
+        case IO_CR_DTE:
+        case IO_CR_THER:
+        case IO_CRE_C:
+        case IO_CRE_QMIN:
+        case IO_CRE_QMAX:
+        case IO_CRE_ALPHA:
+        case IO_CRE_N:
+        case IO_CRE_E:
+        case IO_DTE:
+        case IO_MET:
+        case IO_U_JUMP:
+        case IO_PRE_RHO:
+        case IO_PRE_U:
+        case IO_PRE_XCR:
+        */
+            blockpresent_check( (pt == 0 && header.npart[pt] > 0) );
+        default:
+            return 0;
+    }
+}
+
+void save_data_for_test() {
+    int blk, pt, i, N, offset;
+    char name[100], fn[100];;
+    N = 100;
+    FILE *fd;
+    if ( ThisTask )
+        return;
+
+    put_header( "save data for test" );
+
+    for ( pt=0; pt<6; pt++ ) {
+        if ( header.npart[pt] == 0 )
+            continue;
+        printf( "%s:\n", ParticleName[pt] );
+        sprintf( fn, "%s.dat", ParticleName[pt] );
+        fd = myfopen( "w", fn );
+        offset = OffsetPart6[pt];
+        for ( blk=0; blk<IO_NBLOCKS; blk++ ) {
+            if ( !save_data_blockpresent( blk, pt ) )
+                continue;
+            get_dataset_name( blk, name );
+            printf( "save %s \n", name );
+            switch( blk ) {
+                case IO_POS:
+                    fprintf( fd, "x,y,z," );
+                    break;
+                case IO_VEL:
+                    fprintf( fd, "Vx,Vy,vz," );
+                    break;
+                case IO_MAG:
+                    fprintf( fd, "Bx,By,Bz," );
+                    break;
+                default:
+                    fprintf( fd, "%s,", name );
+            }
+        }
+        fprintf( fd, "\n" );
+        for( i=offset; i<offset+N; i++ ) {
+            for ( blk=0; blk<IO_NBLOCKS; blk++ ) {
+                if ( ! save_data_blockpresent( blk, pt ) )
+                    continue;
+                get_dataset_name( blk, name );
+                switch( blk ) {
+                    case IO_POS:
+                        fprintf( fd, "%g,%g,%g,",
+                            P[i].Pos[0], 
+                            P[i].Pos[1], 
+                            P[i].Pos[2] 
+                            );
+                        break;
+                    case IO_VEL:
+                        fprintf( fd, "%g,%g,%g,",
+                            P[i].Vel[0], 
+                            P[i].Vel[1], 
+                            P[i].Vel[2] 
+                            );
+                        break;
+                    case IO_MAG:
+                        fprintf( fd, "%g,%g,%g,",
+                            SphP[i].B[0], 
+                            SphP[i].B[1], 
+                            SphP[i].B[2] 
+                            );
+                        break;
+                    case IO_MASS:
+                        fprintf( fd, "%g,", P[i].Mass );
+                        break;
+                    case IO_NE:
+                        fprintf( fd, "%g,", SphP[i].elec );
+                        break;
+                    case IO_SFR:
+                        fprintf( fd, "%g,", SphP[i].sfr );
+                        break;
+                    case IO_TEMP:
+                        fprintf( fd, "%g,", SphP[i].Temp );
+                        break;
+                    case IO_RHO:
+                        fprintf( fd, "%g,", SphP[i].Density );
+                        break;
+                    case IO_NHY:
+                        fprintf( fd, "%g,", SphP[i].NeutralHydrogenAbundance );
+                        break;
+                    case IO_U:
+                        fprintf( fd, "%g,", SphP[i].u );
+                        break;
+                }
+            }
+            fprintf( fd, "\n" );
+        }
+        fclose( fd );
+    }
+    put_end();
+    endruns( "" );
 }

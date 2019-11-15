@@ -122,6 +122,7 @@ enum iofields {
     IO_NE,
     IO_U,
     IO_RHO,
+    IO_RHO_JUMP,
     IO_POT,
     IO_MN,
     IO_CR_C0,
@@ -129,6 +130,10 @@ enum iofields {
     IO_CR_E0,
     IO_CR_n0,
     IO_CR_P0,
+    IO_CR_DISS,
+    IO_CR_DTE,
+    IO_DTE,
+    IO_CR_THER,
     IO_CRE_C,
     IO_CRE_ALPHA,
     IO_CRE_QMIN,
@@ -136,12 +141,17 @@ enum iofields {
     IO_CRE_N,
     IO_CRE_E,
     IO_DIVB,
-    IO_DBDT,
+    IO_DTB,
     IO_SFR,
     IO_HSML,
+    IO_MET,
+    IO_NHY,
+    IO_PRE_RHO,
+    IO_PRE_U,
+    IO_U_JUMP,
+    IO_PRE_XCR,
     IO_TEMP
 };
-
 #define GROUP_FIELD_NBLOCKS 1000
 enum group_fields {
     GROUP_DENS,
@@ -250,6 +260,34 @@ struct radio_inte_struct{
 #endif
 #endif
 
+#define READ_SNAPSHOT_TEST
+#ifdef READ_SNAPSHOT_TEST
+
+#define READCRDISSIPATIONTIME
+#define READCRDTE
+#define READCRTHERMALIZATIONTIME
+#define READDENSITYJUMP
+#define READDTE
+#define READMETALLICITY
+#define READNEUTRALHYDROGENABUNDANCE
+#define READTEMP
+#define READPRESHOCK
+#define READEJUMP
+
+#define READU
+#define READCR
+#define READMACH
+#define READCRE
+#define READDIVB
+#define READDTB
+#define READVEL
+//#define READACC
+#define READELEC
+#define READTEMP
+#define READHSML
+#define READSFR
+
+#endif
 
 typedef struct ParticleData {
 
@@ -269,13 +307,29 @@ typedef struct ParticleData {
     short flag;
 } ParticleData;
 
+
 typedef struct SphParticleData {
     double Density;
 #ifdef READU
     double u;
 #endif
+#ifdef READPRESHOCK
+    double Preshock_Energy, Preshock_Density, Preshock_XCR;
+#endif
+#ifdef READNEUTRALHYDROGENABUNDANCE
+    double NeutralHydrogenAbundance;
+#endif
+#ifdef READMETALLICITY
+    double Metallicity;
+#endif
+#ifdef READEJUMP
+    double EnergyJump;
+#endif
 #ifdef READMACH
     double MachNumber;
+#endif
+#ifdef READDENSITYJUMP
+    double DensityJump;
 #endif
 #ifdef READCR
     double CR_C0;
@@ -283,6 +337,15 @@ typedef struct SphParticleData {
     double CR_n0;
     double CR_E0;
     double CR_P0;
+#ifdef READCRDISSIPATIONTIME
+    double CR_DissipationTime;
+#endif
+#ifdef READCRDTE
+    double CR_DtE;
+#endif
+#ifdef READCRTHERMALIZATIONTIME
+    double CR_ThermalizationTime;
+#endif
 #endif
 #ifdef READCRE
     double CRE_C;
@@ -345,6 +408,7 @@ typedef struct GlobalParams{
         MachPdfN,
         CRPPdfN,
         StartSnapIndex, ProjectDirection, KernelN,
+        MachDensN,
         PicSize;
 
     double 
@@ -374,6 +438,8 @@ typedef struct GlobalParams{
             PhaseTempMax,
             PhaseDensMax,
             PhaseDensMin,
+            MachDensDensMin,
+            MachDensDensMax,
             CREePdfMin,
             CREePdfMax,
             CREPPdfMin,

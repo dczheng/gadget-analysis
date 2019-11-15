@@ -153,6 +153,7 @@ def make_ticks( xmin, xmax, n=2, nn=0, a=1, axis=None, l=0, r=1 ):
     loc = np.arange( int(xmin)-1, int(xmax)+2, a )
     x = '%%.%if'%nn 
     #print( x )
+    #print( loc )
     fmt = [ x%i for i in loc ] 
     loc = ( loc - xmin ) / ( xmax-xmin ) * ( n-1 )
     #print( loc )
