@@ -46,6 +46,7 @@ gadget_velocity_in_cm_per_s    =              1e5
 gadget_time_in_s               =              gadget_length_in_cm / gadget_velocity_in_cm_per_s
 gadget_energy_in_erg           =              gadget_mass_in_g * gadget_length_in_cm**2 / (gadget_time_in_s**2)
 gadget_density                 =              gadget_mass_in_g / gadget_length_in_cm**3
+gadget_gauss                   =              gadget_mass_in_g / ( gadget_length_in_cm * gadget_time_in_s * gadget_time_in_s )
 
 cosmology = LambdaCDM( H0 = HubbleParam*100, Om0=Omega0, Ode0 = OmegaLambda )
 

@@ -3,14 +3,17 @@
 from my_work_env import *
 from matplotlib.patches import Circle
 from scipy.signal import convolve2d
+from scipy import interpolate
 
 DataDir     = sys.argv[1]
 snap_idx    = int( sys.argv[2] )
 g_idx       = int( sys.argv[3] )
 ds_name = [  "Density", "MagneticField", "Mach", "Cre_e",\
-             "Radio1",
-             "RadioIndex",
-             "Radio",
+            "Cre_qmax",
+            "Cre_qmax"
+             #"Radio1",
+             #"RadioIndex",
+             #"Radio",
             ]
 fig_name = [  r"$ {\rho}/{\bar{\rho}}$", \
               r"$ B \,[\rm \mu G]$",\
@@ -38,7 +41,10 @@ cmaps   = [ \
         #cm.winter,\
         cm.jet,\
         cm.magma,\
-        plt.get_cmap( 'ds9a' ),\
+        cm.jet,\
+        #plt.get_cmap( 'ds9a' ),\
+        #cm.jet,\
+        #cm.gnuplot,\
         cm.spectral,\
         cm.magma,\
         cm.spectral,\
@@ -114,6 +120,19 @@ for j in range(m+1):
 print( idx_rad )
 
 xxx = [ 'Y-X', 'Z-X', 'X-Y' ]
+
+for j in range(m):
+    if "Mach" in ds_name[j]:
+        mmax = 5 
+        mmin = 1.1
+        mach_index = j
+        for i in range(n):
+            d = ds[j][i]
+            mm, nn = d.shape
+            print( len(d[d>mmax]), len(d[d>mmax]) / ( mm*nn ), d[d>mmax] )
+            d[d>mmax] = mmax
+            #d[d<mmin] = 0
+
 for j in range(m):
     print( '-' * 30 )
     print( 'plot %s'%ds_name[j] )
@@ -128,8 +147,8 @@ for j in range(m):
         emax = 1e-3
         for i in range(n):
             d = ds[j][i]
-            print( len(d[d>emax]), d[d>emax] )
-            d[d>emax] = emax
+            #print( len(d[d>emax]), d[d>emax] )
+            #d[d>emax] = emax
             d[d<d.max()*r_cre_e] = 0
             ds[j][i] = d
         #vmin = vmax * 1e-4
@@ -160,12 +179,18 @@ for j in range(m):
 
             ds[j][i] = d
 
-    if "Mach" in ds_name[j]:
-        mmax = 5 
-        for i in range(n):
-            d = ds[j][i]
-            print( len(d[d>mmax]), d[d>mmax] )
-            d[d>mmax] = mmax
+    #if "Mach" in ds_name[j]:
+    #    mmax = 10 
+    #    mmin = 1.1
+    #    mach_index = j
+    #    for i in range(n):
+    #        d = ds[j][i]
+    #        print( len(d[d>mmax]), d[d>mmax] )
+    #        d[d>mmax] = mmax
+    #        d[d<mmin] = 0
+
+    for i in range(n):
+        ds[j][i][ np.where( ds[mach_index][i] == 0 ) ] =  0
 
     vmin = np.min( [ dd[dd>0].min() for dd in ds[j] ] )
     vmax = np.max( [ dd.max() for dd in ds[j]] )
@@ -178,6 +203,15 @@ for j in range(m):
     for i in range(n):
         d = ds[j][i]
         ax = axs[j][i]
+        if "Mach" in ds_name[j]:
+            mm, nn = ds[j][i].shape
+            Y, X = np.meshgrid( range(mm), range(nn) )
+            f = interpolate.interp2d(X, Y, ds[j][i], kind='cubic')
+            #f = interpolate.RegularGridInterpolator( range(mm), range(nn), ds[j][i] )
+            y = np.linspace( 0, mm, mm*4 ) 
+            x = np.linspace( 0, nn, nn*4 ) 
+            d = f(x, y)
+        #d = ds[j][i]
 
 
         if not norm:
@@ -208,8 +242,8 @@ for j in range(m):
             if "Cre_e" in ds_name[j]:
                 make_log_ticks( vmin, vmax, 2, a = 1, axis=cax.xaxis )
 
-            if "Mach" in ds_name[j]:
-                make_ticks( vmin, vmax, nn=1, a=1, r=0.9, axis=cax.xaxis )
+            #if "Mach" in ds_name[j]:
+            #    make_ticks( vmin, vmax, nn=1, a=1, r=0.9, axis=cax.xaxis )
 
             if "Radio" in ds_name[j] and "RadioIndex" not in ds_name[j]:
                 make_log_ticks( vmin, vmax, 2, a = 2, axis=cax.xaxis )

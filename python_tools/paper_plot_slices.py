@@ -248,6 +248,7 @@ for ax in ax_all:
         a.invert_yaxis()
 
 
-plt.savefig( fn_out, dpi=300 )
+#plt.savefig( fn_out, dpi=300 )
+plt.savefig( fn_out )
 #plt.show()
 

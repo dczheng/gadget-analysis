@@ -3,6 +3,7 @@
 
 int group_present( long index ) {
 
+//printf( "%g %g \n", Gprops[index].mass, All.GroupMassMin );
     if ( Gprops[index].mass >= All.GroupMassMin) 
             return 1;
     else {
@@ -519,6 +520,11 @@ void test_group_pot() {
 #endif
 }
 
+void output_group_particle_info() {
+#ifdef OUTPUTGROUPPARTICLEINFO
+#endif
+}
+
 void group_analysis() {
 
     int i;
@@ -530,6 +536,7 @@ void group_analysis() {
             NPresentGroup++;
     writelog( "NPresentGroup: %i\n", NPresentGroup );
 
+    output_group_particle_info();
     output_group();
     group_plot();
 

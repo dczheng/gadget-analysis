@@ -804,7 +804,7 @@ void show_header( io_header header ) {
 
     writelog( "Header Info:\n" );
 
-#define LE_TEST
+//#define LE_TEST
 #ifdef LE_TEST
     double t;
     t = ((double)header.npart[4]) / header.npart[0];
@@ -1234,7 +1234,7 @@ int save_data_blockpresent( enum iofields blk, int pt ) {
             return 0;
     }
 }
-
+/*
 void save_data_for_test() {
     int blk, pt, i, N, offset;
     char name[100], fn[100];;
@@ -1328,4 +1328,4 @@ void save_data_for_test() {
     }
     put_end();
     endruns( "" );
-}
+}*/

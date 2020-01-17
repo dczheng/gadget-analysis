@@ -621,6 +621,7 @@ void fof() {
         MPI_Bcast( Gprops, Ngroup*sizeof( struct group_properties ),
                 MPI_BYTE, 0, MpiComm_Local );
 
+        writelog( "%g\n", Gprops[0].mass);
         return;
 
     }
@@ -644,6 +645,7 @@ void fof() {
     fof_find_groups();
     fof_compute_group_properties();
 
+        writelog( "%g\n", Gprops[0].mass);
     if ( ThisTask_Local == 0 )
         fof_save();
 

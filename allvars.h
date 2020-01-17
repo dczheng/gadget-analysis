@@ -260,7 +260,19 @@ struct radio_inte_struct{
 #endif
 #endif
 
-#define READ_SNAPSHOT_TEST
+#ifdef OUTPUTGROUPPARTICLEINFO
+#ifndef READMACH
+#define READMACH
+#endif 
+#ifndef READB
+#define READB
+#endif 
+#ifndef READCRE
+#define READCRE
+#endif 
+#endif
+
+//#define READ_SNAPSHOT_TEST
 #ifdef READ_SNAPSHOT_TEST
 
 #define READCRDISSIPATIONTIME

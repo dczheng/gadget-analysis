@@ -174,6 +174,7 @@ void group_plot() {
 #define ALTINDEX
 #if defined(GROUPTEMP) || defined(GROUPU) || defined(GROUPSFR) || defined(GROUPB) || defined(GROUPMACH) || defined(GROUPCRE) || defined(GROUPRAD) || defined(GROUPRADINDEX) || defined(GROUPDENSITY)
     long p;
+    FILE *fd0;
     struct group_properties g;
     double L, dL, *mass, r200, w, area, fac_to_arcmin, Lz; 
     int *num, g_index, i, j, x, y,
@@ -247,6 +248,11 @@ void group_plot() {
             if ( !group_present( g_index ) )
                 break;
 
+            if ( !g_index ) {
+                sprintf( buf, "g0_%c.txt", 'x' + z );
+                fd0 = myfopen( "w", buf );
+            }
+
             if ( (g_index * 3 + z) % NTask_Local != ThisTask_Local )
                 continue;
     
@@ -290,26 +296,38 @@ void group_plot() {
             writelog( "\n" );
             writelog( "L: %g, dL:%g\n", 2*L, dL );
 #endif
-
             p = g.Head;
-           while( p>=0 ){
-              if ( P[p].Type != 0 ) {
-                 p = FoFNext[p];
-                continue;
-           }
-
             Lz = All.GroupSizeZ;
             if ( Lz == 0 )
                 Lz = g.size[z];
 
-                //for( p=0; p<N_Gas; p++ ) {
-                //    if ( 
-                //        ( NGB_PERIODIC(P[p].Pos[x] - g.cm[x]) > L ) ||
-                //        ( NGB_PERIODIC(P[p].Pos[y] - g.cm[y]) > L ) ||
-                //        ( NGB_PERIODIC(P[p].Pos[z] - g.cm[z]) > Lz )
-                //        )
-                //        continue;
+          // while( p>=0 ){
+          //    if ( P[p].Type != 0 ) {
+          //       p = FoFNext[p];
+          //      continue;
+          // }
 
+            //if ( ( NGB_PERIODIC(P[p].Pos[z] - g.cm[z]) > Lz )  ) { 
+            //     p = FoFNext[p];
+            //    continue;
+            //}
+
+
+                for( p=0; p<N_Gas; p++ ) {
+                    if ( 
+                        ( NGB_PERIODIC(P[p].Pos[x] - g.cm[x]) > L ) ||
+                        ( NGB_PERIODIC(P[p].Pos[y] - g.cm[y]) > L ) ||
+                        NGB_PERIODIC(P[p].Pos[z] - g.cm[z]) > Lz ) 
+                        continue;
+
+                if ( !g_index )
+                    fprintf( fd0, "%g, %g, %g, %g\n", 
+                        PERIODIC_HALF(P[p].Pos[x] - g.cm[x]),
+                        PERIODIC_HALF(P[p].Pos[y] - g.cm[y]), SphP[p].Density,
+                        SphP[p].Hsml
+                    );
+
+                //printf( "%g\n", SphP[p].Hsml );
                 ii = PERIODIC_HALF( P[p].Pos[x] - g.cm[x] ) / dL + xo;
                 jj = PERIODIC_HALF( P[p].Pos[y] - g.cm[y] ) / dL + yo;
 #ifdef GROUP_PLOT_DEBUG
@@ -352,8 +370,12 @@ void group_plot() {
 #ifdef GROUP_PLOT_DEBUG
                 printf( "\n" );
 #endif
-                p = FoFNext[p];
+                //p = FoFNext[p];
+
             } 
+
+            if ( !g_index )
+                 fclose( fd0 );
 #ifdef GROUP_PLOT_DEBUG
             endruns( "group-plot-debug" );
 #endif
@@ -366,6 +388,7 @@ void group_plot() {
     
                     if ( !group_filed_present( j ) )
                         continue;
+
                     if ( j==GROUP_DENS )
                         continue;
 #ifdef ALTINDEX
@@ -449,7 +472,7 @@ void group_plot() {
             //break;
 #endif
     
-        } // for index
+        } // for gindex
 
     } // for z
 

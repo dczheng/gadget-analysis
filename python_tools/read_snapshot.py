@@ -21,6 +21,7 @@ for i in range(2):
         fn_num = f[ '/Header' ].attrs[ 'NumFilesPerSnapshot' ]
         num_high = f[ '/Header' ].attrs[ 'NumPart_Total_HighWord' ]
         num_low = f[ '/Header' ].attrs[ 'NumPart_Total' ]
+        BoxSize = f[ '/Header' ].attrs[ 'BoxSize' ]
         num = num_high * 2**32 + num_low
         Redshift = f[ '/Header' ].attrs[ 'Redshift' ]
         f.close()
@@ -111,6 +112,33 @@ if not read_temp:
     mu = ( 1 + 4 * yh ) / ( 1 + yh + ne )
     gas_temp = ( mycc.Gamma-1 ) / mycc.k_b * gas_u * mycc.m_p * mu
     gas_data['Temperature'] = gas_temp
+
+'''
+N = 512
+dL = BoxSize / N
+x = gas_data['Coordinates'][:,0] / dL
+y = gas_data['Coordinates'][:,1] / dL
+x = x.astype( 'int' )
+y = y.astype( 'int' )
+print( x[ x<0 ] )
+print( x[ x>N-1 ] )
+print( y[ y<0 ] )
+print( y[ y>N-1 ] )
+
+x[ x<0 ] = 0
+x[ x>N-1 ] = N-1
+y[ y<0 ] = 0
+y[ y>N-1 ] = N-1
+
+img = np.zeros( [N, N] )
+for i in range( len(x) ):
+    img[x[i], y[i]] += 1
+
+plt.imshow( img, norm=mplc.LogNorm() )
+plt.grid()
+plt.savefig( 'x.png' )
+exit()
+'''
 
 print( sep_str )
 print( 'save gas data ...' )
