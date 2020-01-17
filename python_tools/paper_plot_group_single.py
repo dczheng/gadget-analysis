@@ -206,12 +206,12 @@ for j in range(m):
         if "Mach" in ds_name[j]:
             mm, nn = ds[j][i].shape
             Y, X = np.meshgrid( range(mm), range(nn) )
-            f = interpolate.interp2d(X, Y, ds[j][i], kind='cubic')
+            #f = interpolate.interp2d(X, Y, ds[j][i], kind='cubic')
             #f = interpolate.RegularGridInterpolator( range(mm), range(nn), ds[j][i] )
             y = np.linspace( 0, mm, mm*4 ) 
             x = np.linspace( 0, nn, nn*4 ) 
-            d = f(x, y)
-        #d = ds[j][i]
+            #d = f(x, y)
+        d = ds[j][i]
 
 
         if not norm:

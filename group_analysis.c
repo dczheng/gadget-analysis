@@ -521,7 +521,60 @@ void test_group_pot() {
 }
 
 void output_group_particle_info() {
+
 #ifdef OUTPUTGROUPPARTICLEINFO
+    FILE *fd;
+    char buf[100];
+    int g_index;
+    long p;
+    struct group_properties g;
+    double L;
+
+#define save_particle_info( _fd, _g, _i ) {\
+    fprintf( _fd, "%g,%g,%g,%g,%g,%g,%g,%g\n",\
+                PERIODIC_HALF(P[_i].Pos[0] - _g.cm[0]),\
+                PERIODIC_HALF(P[_i].Pos[1] - _g.cm[1]),\
+                PERIODIC_HALF(P[_i].Pos[2] - _g.cm[2]),\
+                SphP[_i].Density / Time3 / RhoBaryon,\
+                get_B(_i) * 1e6,\
+                SphP[_i].MachNumber,\
+                SphP[_i].Hsml,\
+                SphP[_i].dEdt\
+        );\
+}
+    for( g_index=0; g_index<NPresentGroup; g_index++ ) {
+
+        g = Gprops[g_index];
+        sprintf( buf, "%s/%03i_%04i.csv", GroupDir, SnapIndex, g_index );
+        fd = myfopen( "w", buf );
+        fprintf( fd, "x,y,z,rho,B,M,h,dEdt\n");
+        L = All.OutputGroupParticleInfoSize / 2;
+    
+        if ( L > 0 ) {
+            for( p=0; p<N_Gas; p++ ) {
+               if ( 
+                   ( NGB_PERIODIC(P[p].Pos[0] - g.cm[0]) > L  ) || 
+                   ( NGB_PERIODIC(P[p].Pos[1] - g.cm[1]) > L  ) ||
+                   ( NGB_PERIODIC(P[p].Pos[2] - g.cm[2]) > L  )
+                  )
+                    continue;
+                save_particle_info(fd, g, p);
+            }
+        }
+        else {
+            p = g.Head;
+            while( p>=0 ) {
+                if ( P[p].Type ) {
+                    p = FoFNext[p];
+                    continue;
+                }
+                save_particle_info(fd, g, p);
+                p = FoFNext[p];
+            }
+        }
+
+        fclose( fd );
+    } // for g_index
 #endif
 }
 

@@ -33,6 +33,7 @@ int blockpresent0( enum iofields blk, int pt ) {
         case IO_SFR:
         case IO_DIVB:
         case IO_DTB:
+        case IO_DTE:
         case IO_U:
         case IO_TEMP:
         case IO_HSML:
@@ -53,7 +54,6 @@ int blockpresent0( enum iofields blk, int pt ) {
         case IO_CRE_ALPHA:
         case IO_CRE_N:
         case IO_CRE_E:
-        case IO_DTE:
         case IO_MET:
         case IO_NHY:
         case IO_U_JUMP:
@@ -184,6 +184,12 @@ int blockpresent( enum iofields blk, int pt ) {
 #endif
             return 0;
 
+        case IO_DTE:
+#ifdef READDTE
+            blockpresent_check( blockpresent0(blk,pt) );
+#endif
+            return 0;
+
         case IO_ACCEL:
 #ifdef READACC
             blockpresent_check( blockpresent0(blk,pt) );
@@ -237,6 +243,7 @@ int get_block_nbytes( enum iofields blk ) {
         case IO_SFR:
         case IO_DIVB:
         case IO_DTB:
+        case IO_DTE:
         case IO_MASS:
         case IO_U:
         case IO_TEMP:
@@ -266,7 +273,6 @@ int get_block_nbytes( enum iofields blk ) {
         case IO_CRE_QMAX:
         case IO_CRE_N:
         case IO_CRE_E:
-        case IO_DTE:
             block_nbytes = sizeof( OutputFloat );
             break;
         case IO_ID:
@@ -288,6 +294,7 @@ void get_block_dims( int pt, enum iofields blk, hsize_t (*dims)[2] ) {
         case IO_SFR:
         case IO_DIVB:
         case IO_DTB:
+        case IO_DTE:
         case IO_MASS:
         case IO_U:
         case IO_TEMP:
@@ -318,7 +325,6 @@ void get_block_dims( int pt, enum iofields blk, hsize_t (*dims)[2] ) {
         case IO_CRE_QMAX:
         case IO_CRE_N:
         case IO_CRE_E:
-        case IO_DTE:
             (*dims)[0] = header.npart[pt];
             (*dims)[1] = 1;
             break;
@@ -347,6 +353,9 @@ void get_dataset_name( enum iofields blk, char *buf ) {
             break;
         case IO_DTB:
             strcpy( buf, "RateOfChangeOfMagneticField" );
+            break;
+        case IO_DTE:
+            strcpy( buf, "DtEnergy" );
             break;
         case IO_MASS:
             strcpy( buf, "Masses" );
@@ -437,9 +446,6 @@ void get_dataset_name( enum iofields blk, char *buf ) {
             break;
         case IO_CRE_E:
             strcpy( buf, "CRE_e" );
-            break;
-        case IO_DTE:
-            strcpy( buf, "DtEnergy" );
             break;
     }
 }
@@ -542,6 +548,12 @@ void empty_buffer( enum iofields blk, int offset, int pt ) {
 #ifdef READDTB
             for ( i=0; i<n; i++ )
                 SphP[offset+i].dBdt = *fp++;
+#endif
+            break;
+        case IO_DTE:
+#ifdef READDTE
+            for ( i=0; i<n; i++ )
+                SphP[offset+i].dEdt = *fp++;
 #endif
             break;
         case IO_U:
@@ -1204,6 +1216,7 @@ int save_data_blockpresent( enum iofields blk, int pt ) {
         case IO_TEMP:
         case IO_RHO:
         case IO_NHY:
+        case IO_DTE:
         /*
         case IO_DTB:
         case IO_HSML:

@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-import numpy as np
-import matplotlib.pyplot as plt
+from my_work_env import *
 from scipy.integrate import quad
 
 def k1( q ): # standar kernel
@@ -81,4 +80,4 @@ print( quad( f2, 0, 1 )[0] * np.pi * 4 )
 print( quad( f3, 0, 1 )[0] * np.pi * 4 )
 print( quad( f4, 0, 1 )[0] * np.pi * 4 )
 
-plt.show()
+plt.savefig( 'kernel.pdf' )

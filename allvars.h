@@ -132,7 +132,6 @@ enum iofields {
     IO_CR_P0,
     IO_CR_DISS,
     IO_CR_DTE,
-    IO_DTE,
     IO_CR_THER,
     IO_CRE_C,
     IO_CRE_ALPHA,
@@ -142,6 +141,7 @@ enum iofields {
     IO_CRE_E,
     IO_DIVB,
     IO_DTB,
+    IO_DTE,
     IO_SFR,
     IO_HSML,
     IO_MET,
@@ -270,6 +270,15 @@ struct radio_inte_struct{
 #ifndef READCRE
 #define READCRE
 #endif 
+#ifndef FOF
+#define FOF 
+#endif 
+#ifndef READHSML
+#define READHSML
+#endif 
+#ifndef READDTE
+#define READDTE
+#endif 
 #endif
 
 //#define READ_SNAPSHOT_TEST
@@ -374,6 +383,9 @@ typedef struct SphParticleData {
 
 #ifdef READDIVB
     double divB;
+#endif
+#ifdef READDTE
+    double dEdt;
 #endif
 #ifdef READDTB
     double dBdt;
@@ -482,7 +494,8 @@ typedef struct GlobalParams{
             BDensPdfDensMin, BDensPdfDensMax,
             DivBerrDensPdfDivBMin, DivBerrDensPdfDivBMax,
             DivBerrDensPdfDensMin, DivBerrDensPdfDensMax,
-            PosShiftX, PosShiftY, PosShiftZ, GroupSize, GroupSizeZ;
+            PosShiftX, PosShiftY, PosShiftZ, GroupSize, GroupSizeZ,
+            OutputGroupParticleInfoSize;
 
 } GlobalParams;
 

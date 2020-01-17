@@ -12,6 +12,7 @@ import matplotlib.colors as mplc
 import cos_and_const as mycc
 import matplotlib.ticker as tik
 import h5py
+import pandas as pd
 
 from matplotlib.font_manager import FontProperties
 #https://matplotlib.org/2.0.0/examples/pylab_examples/fonts_demo.html
