@@ -60,7 +60,7 @@ double get_group_filed_data( enum group_fields blk, long p ) {
 
     switch( blk ) {
         case GROUP_DENS:
-            return SphP[p].Density;
+            return SphP[p].Density / Time3 / RhoBaryon;
 #ifdef GROUPTEMP
         case GROUP_TEMP:
             return SphP[p].Temp;
@@ -173,26 +173,20 @@ void group_plot() {
 
 #define ALTINDEX
 #if defined(GROUPTEMP) || defined(GROUPU) || defined(GROUPSFR) || defined(GROUPB) || defined(GROUPMACH) || defined(GROUPCRE) || defined(GROUPRAD) || defined(GROUPRADINDEX) || defined(GROUPDENSITY)
-    long p;
-    FILE *fd0;
+    long p, *pidx, nidx;
     struct group_properties g;
-    double L, dL, *mass, r200, w, area, fac_to_arcmin, Lz; 
-    int *num, g_index, i, j, x, y,
-         xo, yo, pic_index, ii, jj, z, proj_tmp;
+    double L, dL, *mass, r200, area, fac_to_arcmin, Lz, px, py, h, fac,
+            u, r, m, rho, wk, hinv, hinv3, hinv4, dwk; 
+    int  g_index, i, j, x, y, k,
+         pic_index, z, proj_tmp, i1, i2, j1, j2;
 
     char buf[100], buf1[100];
     double *data[GROUP_FIELD_NBLOCKS];
     put_header( "group_plot" );
 
-//#define GROUP_PLOT_DEBUG
-#ifdef GROUP_PLOT_DEBUG
-    FILE *fd_d;
-    int ti, tj;
-    fd_d = myfopen( "w", "group_plot-test.dat" );
-#endif
-
     fac_to_arcmin = 1 / PI * 180 * 60;
 
+   mymalloc1( pidx, sizeof(long)*N_Gas );
 #ifdef GROUPFIXEDSIZE
     double L3[3];
     if ( All.GroupSize > 0 ) {
@@ -217,8 +211,6 @@ void group_plot() {
     writelog( "L: %g %g %g\n", L3[0], L3[1], L3[2] );
 #endif
 
-    mymalloc2( num, PicSize2 * sizeof( int ) );
-
     for( i=0; i<GROUP_FIELD_NBLOCKS; i++ ) {
 
         if ( !group_filed_present( i ) )
@@ -229,9 +221,10 @@ void group_plot() {
         create_dir( "%s%s", GroupDir, buf1 );
 
     }
-
-    xo = PicSize / 2;
-    yo = PicSize / 2;
+#ifdef GROUPDENSITYWEIGHTED
+    double *ww;
+    mymalloc1( ww, PicSize2 * sizeof(double) );
+#endif
     
     proj_tmp = All.ProjectDirection;
     for( z=0; z<3; z++ ) {
@@ -248,173 +241,90 @@ void group_plot() {
             if ( !group_present( g_index ) )
                 break;
 
-            if ( !g_index ) {
-                sprintf( buf, "g0_%c.txt", 'x' + z );
-                fd0 = myfopen( "w", buf );
-            }
-
             if ( (g_index * 3 + z) % NTask_Local != ThisTask_Local )
                 continue;
     
-            memset( num, 0, PicSize2 * sizeof( int ) );
             for( i=0; i<GROUP_FIELD_NBLOCKS; i++ ) {
     
                 if ( !group_filed_present(i) )
                     continue;
                 memset( data[i], 0, PicSize2 * sizeof( double ) );
-    
             }
-//#define PRINT_GROUP_INFO
+#ifdef GROUPDENSITYWEIGHTED
+            memset( ww, 0, PicSize2 * sizeof( double ) );
+#endif
+
             g = Gprops[g_index];
             p = g.Head;
             mass = g.mass_table;
             r200 = g.vr200;
     
 #ifndef GROUPFIXEDSIZE
-           L = vmax( g.size[x], g.size[y] );
-           L *= 1.1;
+            L = vmax( g.size[x], g.size[y] );
+            L *= 1.1;
 #else
-           L = L3[z];
+            L = vmax(L3[x], L3[y]);
 #endif
     
-           dL = 2 * L / PicSize;
-#ifdef PRINT_GROUP_INFO
-            writelog( "group plot[%c]: %i ...\n", Sproj, g_index );
-            writelog( "center of mass: %g %g %g\n",
-                    g.cm[0], g.cm[1], g.cm[2] );
-    
-            writelog( "r200: %g\n", r200 );
-            writelog( "npart: " );
-            for ( i=0; i<6; i++ )
-                writelog( "%li ", g.npart[i] );
-            writelog( "\n" );
-    
-            writelog( "mass: " );
-            for ( i=0; i<6; i++ ) {
-                writelog( "%g ", mass[i] );
-            }
-            writelog( "\n" );
-            writelog( "L: %g, dL:%g\n", 2*L, dL );
-#endif
+            dL = 2 * L / PicSize;
             p = g.Head;
             Lz = All.GroupSizeZ;
             if ( Lz == 0 )
                 Lz = g.size[z];
 
-          // while( p>=0 ){
-          //    if ( P[p].Type != 0 ) {
-          //       p = FoFNext[p];
-          //      continue;
-          // }
-
-            //if ( ( NGB_PERIODIC(P[p].Pos[z] - g.cm[z]) > Lz )  ) { 
-            //     p = FoFNext[p];
-            //    continue;
-            //}
-
-
-                for( p=0; p<N_Gas; p++ ) {
-                    if ( 
-                        ( NGB_PERIODIC(P[p].Pos[x] - g.cm[x]) > L ) ||
-                        ( NGB_PERIODIC(P[p].Pos[y] - g.cm[y]) > L ) ||
-                        NGB_PERIODIC(P[p].Pos[z] - g.cm[z]) > Lz ) 
+            for( p=0, nidx=0; p<N_Gas; p++ ) {
+                if (
+                    ( NGB_PERIODIC(P[p].Pos[x] - g.cm[x]) > L ) ||
+                    ( NGB_PERIODIC(P[p].Pos[y] - g.cm[y]) > L ) ||
+                      NGB_PERIODIC(P[p].Pos[z] - g.cm[z]) > Lz ) 
                         continue;
-
-                if ( !g_index )
-                    fprintf( fd0, "%g, %g, %g, %g\n", 
-                        PERIODIC_HALF(P[p].Pos[x] - g.cm[x]),
-                        PERIODIC_HALF(P[p].Pos[y] - g.cm[y]), SphP[p].Density,
-                        SphP[p].Hsml
-                    );
-
-                //printf( "%g\n", SphP[p].Hsml );
-                ii = PERIODIC_HALF( P[p].Pos[x] - g.cm[x] ) / dL + xo;
-                jj = PERIODIC_HALF( P[p].Pos[y] - g.cm[y] ) / dL + yo;
-#ifdef GROUP_PLOT_DEBUG
-                //for( ti=-1; ti<2; ti++ )
-                //    for( tj=-1; tj<2; tj++ ) {
-                 //       if ( ii==xo+ti && jj==yo+tj )
-                            fprintf( fd_d, "%g %g %g\n", get_B(p)*1e6,
-                            SphP[p].MachNumber, SphP[p].Hsml );
-                //}
-                //p = FoFNext[p];
-                //continue;
-#endif
-                check_picture_index( ii );
-                check_picture_index( jj );
-                pic_index= ii*PicSize + jj;
-    
-                num[pic_index] ++;
-    
-#ifdef GROUPDENSITYWEIGHTED
-                w = SphP[p].Density;
-#else
-                w = 1;
-#endif
-                for( i=0; i<GROUP_FIELD_NBLOCKS; i++ ) {
-                    if ( !group_filed_present(i) )
-                        continue;
-#ifdef ALTINDEX
-                    if ( i == GROUP_RADINDEX )
-                        continue;
-#endif
-                    if ( i == GROUP_DENS )
-                        data[i][pic_index] += get_group_filed_data(i, p);
-                    else
-                        data[i][pic_index] += get_group_filed_data(i, p) * w;
-#ifdef GROUP_PLOT_DEBUG
-                get_group_filed_name( i, buf1 );
-                printf( "%s: %g ", buf1, get_group_filed_data( i, p ) );
-#endif
-                }
-#ifdef GROUP_PLOT_DEBUG
-                printf( "\n" );
-#endif
-                //p = FoFNext[p];
-
-            } 
-
-            if ( !g_index )
-                 fclose( fd0 );
-#ifdef GROUP_PLOT_DEBUG
-            endruns( "group-plot-debug" );
-#endif
-    
-            for ( i=0; i<PicSize2; i++ ) {
-    
-                if ( data[GROUP_DENS][i] == 0 ) continue;
-    
-                for ( j=0; j<GROUP_FIELD_NBLOCKS; j++ ) {
-    
-                    if ( !group_filed_present( j ) )
-                        continue;
-
-                    if ( j==GROUP_DENS )
-                        continue;
-#ifdef ALTINDEX
-                    if ( i == GROUP_RADINDEX )
-                        continue;
-#endif
-    
-#ifdef GROUPDENSITYWEIGHTED
-                        data[j][i] /= data[GROUP_DENS][i];
-#else
-                        data[j][i] /= num[i];
-#endif
-    
-                }
-    
+                pidx[nidx++] = p;
             }
-            for ( i=0; i<PicSize2; i++ ) {
-    
-                if ( num[i] == 0 )
-                    continue;
-                data[GROUP_DENS][i] /= num[i];
-                data[GROUP_DENS][i] /= Time3;
-                data[GROUP_DENS][i] /= RhoBaryon;
-                //data[GROUP_DENS][i]  *= (( g2c.g ) / CUBE( g2c.cm ) / CUBE( Time ));
-    
+            
+            for ( p=0; p<nidx; p++ ) {
+            
+                h = SphP[pidx[p]].Hsml;                             
+                m = P[pidx[p]].Mass;       
+                rho = SphP[pidx[p]].Density;    
+                px = PERIODIC_HALF(P[pidx[p]].Pos[x] - g.cm[x]) + L;
+                py = PERIODIC_HALF(P[pidx[p]].Pos[y] - g.cm[y]) + L;
+            
+                j1 = (px-h)/dL-1;
+                j2 = (px+h)/dL+1;
+                i1 = (py-h)/dL-1;
+                i2 = (py+h)/dL+1;
+                //printf( "%i, %i, %i, %i\n", i1, i2, j1, j2 );
+            
+                for ( i=i1; i<=i2; i++ ) {
+                    for (j=j1; j<=j2; j++) {
+                        pic_index = j * PicSize + i;
+                        if ( pic_index < 0 || pic_index > PicSize*PicSize-1 )
+                            continue;
+                        r = sqrt( pow( i*dL - dL/2 - py, 2 ) + 
+                                  pow( j*dL - dL/2 - px, 2 ) );
+                        //printf( "%g\n", r );
+                        if ( r > h )
+                            continue;
+            
+                        u = r / h;
+                        kernel_hinv( h, &hinv, &hinv3, &hinv4 );
+                        kernel_main( u, hinv3, hinv4, &wk, &dwk, -1 );
+                        fac = wk * m / rho;
+
+                        for( k=0; k<GROUP_FIELD_NBLOCKS; k++ ) {
+                            if ( !group_filed_present(k) )
+                                continue;
+#ifdef ALTINDEX
+                            if ( k == GROUP_RADINDEX )
+                                continue;
+#endif
+                            data[k][pic_index] += get_group_filed_data(k, pidx[p]) * fac;
+                        }
+                    }
+                }
+                
             }
+
 #ifdef ALTINDEX
 #ifdef GROUPRADINDEX
             for( i=0; i<PicSize2; i++ ) {
@@ -465,13 +375,8 @@ void group_plot() {
                 get_group_filed_name( i, buf1 );
                 make_group_output_filename( buf, buf1, g_index );
                 write_img( buf );
-    
             }
-    
-#ifdef GROUP_PLOT_DEBUG
-            //break;
-#endif
-    
+        break;
         } // for gindex
 
     } // for z
@@ -479,7 +384,9 @@ void group_plot() {
     All.ProjectDirection = proj_tmp;
     Sproj = proj_tmp + 'x';
     
-    myfree( num );
+#ifdef GROUPDENSITYWEIGHTED
+    myfree( ww );
+#endif
 
     for( i=0; i<GROUP_FIELD_NBLOCKS; i++ ) {
         if ( !group_filed_present( i ) )
@@ -487,13 +394,12 @@ void group_plot() {
         myfree( data[i] );
     }
 
-#ifdef GROUP_PLOT_DEBUG
-        fclose( fd_d );
-        endruns( "group_plot-test" );
-#endif
+    myfree( pidx );
 
     reset_img();
     put_end();
 
 #endif
 }
+
+

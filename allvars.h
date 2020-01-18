@@ -414,7 +414,6 @@ typedef struct GlobalParams{
         MFBins, BPdfBins, DivBErrPdfBins,
         GroupTempProfileRN,
         GroupRadProfileRN,
-        KernelInterpolation,
         ConvN,
         PowSpecNGrid, PowSpecPartType, PowSpecBins,
         ParallelIO,
@@ -431,7 +430,7 @@ typedef struct GlobalParams{
         CREPPdfN,
         MachPdfN,
         CRPPdfN,
-        StartSnapIndex, ProjectDirection, KernelN,
+        StartSnapIndex, ProjectDirection,
         MachDensN,
         PicSize;
 
@@ -645,7 +644,7 @@ extern double
             UnitTime_in_s,
             SofteningTable[6], 
             SliceL, SliceStart[3], SliceEnd[3],
-            *PartRad, *KernelMat2D[6], *KernelMat3D[6],
+            *PartRad,
             *ShortRangeTablePotential;
 extern gsl_integration_workspace *inte_ws;
 extern gsl_integration_workspace *inte_ws2;

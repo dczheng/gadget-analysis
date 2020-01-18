@@ -25,8 +25,8 @@ fig_name = [  r"$ {\rho}/{\bar{\rho}}$", \
               ]
 norms   = [  mplc.LogNorm,\
              mplc.LogNorm,\
-             #mplc.LogNorm,\
-             None,
+             mplc.LogNorm,\
+             #None,
              mplc.LogNorm,\
              mplc.LogNorm,
              None,
@@ -40,7 +40,8 @@ cmaps   = [ \
         #cm.ocean,\
         #cm.winter,\
         cm.jet,\
-        cm.magma,\
+        cm.jet,\
+        #cm.magma,\
         cm.jet,\
         #plt.get_cmap( 'ds9a' ),\
         #cm.jet,\
@@ -130,8 +131,8 @@ for j in range(m):
             d = ds[j][i]
             mm, nn = d.shape
             print( len(d[d>mmax]), len(d[d>mmax]) / ( mm*nn ), d[d>mmax] )
-            d[d>mmax] = mmax
-            #d[d<mmin] = 0
+            #d[d>mmax] = mmax
+            d[d<mmin] = 0
 
 for j in range(m):
     print( '-' * 30 )
@@ -150,6 +151,16 @@ for j in range(m):
             #print( len(d[d>emax]), d[d>emax] )
             #d[d>emax] = emax
             d[d<d.max()*r_cre_e] = 0
+            ds[j][i] = d
+        #vmin = vmax * 1e-4
+
+    if "MagneticField"  in ds_name[j]:
+        r_B = 1e-8
+        for i in range(n):
+            d = ds[j][i]
+            #print( len(d[d>emax]), d[d>emax] )
+            #d[d>emax] = emax
+            #d[d<d.max()*r_B] = 0
             ds[j][i] = d
         #vmin = vmax * 1e-4
 
@@ -189,8 +200,8 @@ for j in range(m):
     #        d[d>mmax] = mmax
     #        d[d<mmin] = 0
 
-    for i in range(n):
-        ds[j][i][ np.where( ds[mach_index][i] == 0 ) ] =  0
+    #for i in range(n):
+    #    ds[j][i][ np.where( ds[mach_index][i] == 0 ) ] =  0
 
     vmin = np.min( [ dd[dd>0].min() for dd in ds[j] ] )
     vmax = np.max( [ dd.max() for dd in ds[j]] )

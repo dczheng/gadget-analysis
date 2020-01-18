@@ -13,10 +13,6 @@ void init_analysis() {
     PicSize2 = SQR( All.PicSize );
 
     do_sync( "" );
-
-    if ( All.KernelInterpolation )
-        init_kernel_matrix();
-
     slice_init();
     mymalloc1( ShortRangeTablePotential, sizeof(double) * NSRPTAB );
 
@@ -33,8 +29,6 @@ void init_analysis() {
 
 void free_analysis() {
     put_header( "free analysis" );
-    if ( All.KernelInterpolation )
-        free_kernel_matrix();
     free_img();
 
     myfree( ShortRangeTablePotential );
